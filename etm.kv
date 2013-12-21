@@ -1,0 +1,30 @@
+#:import TextInput kivy.uix.textinput.TextInput
+#:import RstDocument kivy.uix.rst.RstDocument
+
+<BoxIOWidget>:
+    BoxLayout:
+        orientation: 'vertical'
+        canvas.before:
+            Color:
+                rgba: .8, .8, .8, 1
+            Rectangle:
+                # self here refers to the widget i.e FloatLayout
+                pos: self.pos
+                size: self.size
+        padding: 3
+        spacing: 3
+        ETMTextInput:
+            id: input
+            size_hint_y: None
+            height: 30
+            hint_text: 'command'
+            focus: True
+            # multiline: False
+            multiline: True
+            # on_text_validate: root.process_input()
+            # on_enter: root.process_input()
+        RstDocument:
+            id: output
+            # 31 is the default base_font_size, setting new in 1.8.0
+            base_font_size: 24
+            text: root.set_text()
