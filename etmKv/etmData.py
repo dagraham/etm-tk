@@ -45,7 +45,7 @@ qt2dt = [
     ("a", "%p"),
     ("dddd", "%A"),
     ("ddd", "%a"),
-    ("dd", "%d"),
+    # ("dd", "%d"), # this and tne next make dd -> %%d
     ("d", "%d"),
     ("MMMM", "%B"),
     ("MMM", "%b"),
@@ -60,6 +60,8 @@ qt2dt = [
 QT_VERSION_STR = PYQT_VERSION_STR = SIP_VERSION_STR = 0
 
 tr = str
+
+from kivy import __version__ as KIVY_VERSION_STR
 
 
 def run_cmd(cmd):
@@ -174,16 +176,6 @@ def s2or3(s):
     else:
         return(s)
 
-
-# def term_print(s):
-#     if python_version2:
-#         try:
-#             print(unicode(s).encode(term_encoding))
-#         except Exception as e:
-#             print(s, type(s), e)
-#     else:
-#         # print(unicode(s).encode(term_encoding))
-#         print(s)
 
 def term_print(s):
     if type(s) is unicode:
@@ -318,9 +310,13 @@ zonelist = [
     'US/Pacific']
 
 
+def get_current_time():
+    return(datetime.now(tzlocal()))
+
+
 def get_localtz(zones=zonelist):
     linfo = gettz()
-    now = datetime.now(tzlocal())
+    now = get_current_time()
     # get the abbreviation for the local timezone, e.g, EDT
     possible = []
     # try the zone list first unless windows system
@@ -498,7 +494,7 @@ hour_regex = re.compile(r'[+-]?(\d+)h', flags=re.I)
 minute_regex = re.compile(r'[+-]?(\d+)m', flags=re.I)
 period_string_regex = re.compile(r'^\s*([+-]?(\d+[wWdDhHmM]?)+\s*$)')
 int_regex = re.compile(r'^\s*([+-]?\d+)\s*$')
-leadingzero = re.compile(r'(?<!(:|\d))0+(?=\d)')
+leadingzero = re.compile(r'(?<!(:|\d|-))0+(?=\d)')
 trailingzeros = re.compile(r'(:00)')
 at_regex = re.compile(r'\s+@', re.MULTILINE)
 minus_regex = re.compile(r'\s+\-(?=[a-zA-Z])')
@@ -1202,11 +1198,12 @@ def makeTree(list_of_lists, view=None, cal_regex=None, sort=True):
                 tree[parent_key].append(child_key)
     if empty:
         return({})
+    # print('makeTree', tree)
     return(tree)
 
 
 def truncate(s, l):
-    if len(s) >= l:
+    if len(s) > l:
         if re.search(' ~ ', s):
             s = s.split(' ~ ')[0]
         s = "%s.." % s[:l - 2]
@@ -2415,11 +2412,11 @@ def str2opts(s, options={}):
             filters['groupby'].append(group[0])
         if include:
             if include == set(['y', 'm', 'd']):
-                groupby['include'] = "MMM d yyyy"
+                groupby['include'] = "yyyy-MM-d"
             elif include == set(['m', 'd']):
                 groupby['include'] = "MMM d"
             elif include == set(['y', 'd']):
-                groupby['include'] = "MMM d yyyy"
+                groupby['include'] = "yyyy-MM-d"
             elif include == set(['d']):
                 groupby['include'] = "MMM d"
             else:
@@ -2613,21 +2610,24 @@ def applyFilters(file2uuids, uuid2hash, filters):
 def reportDT(dt, include, options={}):
     # include will be something like "MMM d yyyy"
     qlcl = options['qlcl']
+    res = ''
     if dt.hour == 0 and dt.minute == 0:
         if not include:
             return('')
-        return(d_to_str(qlcl, dt, "MMM d yyyy"))
+        # return(d_to_str(qlcl, dt, "MMM d yyyy"))
+        return(d_to_str(qlcl, dt, "yyyy-MM-d"))
     else:
         if options['ampm']:
             if include:
-                return(dt_to_str(qlcl, dt, "%s h:mma" % include))
+                res = dt_to_str(qlcl, dt, "%s h:mma" % include)
             else:
-                return(dt_to_str(qlcl, dt, "h:mma"))
+                res = dt_to_str(qlcl, dt, "h:mma")
         else:
             if include:
-                return(dt_to_str(qlcl, dt, "%s hh:mm" % include))
+                res = dt_to_str(qlcl, dt, "%s hh:mm" % include)
             else:
-                return(dt_to_str(qlcl, dt, "hh:mm"))
+                res = dt_to_str(qlcl, dt, "hh:mm")
+        return(leadingzero.sub('', res.lower()))
 
 
 def makeReportTuples(uuids, uuid2hash, groupby, dated, options={}):
@@ -2675,6 +2675,7 @@ def makeReportTuples(uuids, uuid2hash, groupby, dated, options={}):
                     bisect.insort(dates, dt)
             for dt in dates:
                 item = []
+                # print('dt', type(dt), dt)
                 for g in groupby['tuples']:
                     if groupdate_regex.search(g):
                         item.append(d_to_str(qlcl, dt, g))
@@ -2688,6 +2689,7 @@ def makeReportTuples(uuids, uuid2hash, groupby, dated, options={}):
                     dt,
                     reportDT(dt, groupby['include'], options),
                     uuid])
+                # print('insort', tuple(item))
                 bisect.insort(tups, tuple(item))
 
         else:  # no date spec in groupby
@@ -2887,6 +2889,7 @@ def getReportData(s, file2uuids, uuid2hash, options={}, export=False,
 
         try:
             row = (cols.format(*eval_fmts)).split('::')
+            # print('row', row)
         except:
             us = u"{0}".format(*eval_fmts)
             print(*eval_fmts)
@@ -2913,6 +2916,8 @@ def getReportData(s, file2uuids, uuid2hash, options={}, export=False,
             rows.append(row)
     count = 0
     count2id = None
+    # for row in rows:
+    #     print(row)
     if groupby['report'] == 'c' and not export:
         if colors is not None:
             clrs = colors
@@ -2935,6 +2940,7 @@ def getReportData(s, file2uuids, uuid2hash, options={}, export=False,
                 count2id=count2id)
             return((lst, count2id))
         else:   # mode == 'rst':
+            # print('groupby', groupby)
             lst, count, count2id = tree2Rst(
                 tree, width1=groupby['width1'],
                 width2=groupby['width2'],
@@ -3248,6 +3254,7 @@ last_added = None
 def add2list(lst, item, expand=True):
     global last_added
     """Add item to lst if not already present using bisect to maintain order."""
+    # print('add2list', item)
     if expand and len(item) == 3:
         # this is a tree entry, so we need to expand the middle tuple
         # for makeTree
@@ -3261,7 +3268,6 @@ def add2list(lst, item, expand=True):
             print('error expanding', len(item))
             for i in item:
                 print("   ", type(i), i)
-
             return()
     try:
         i = bisect.bisect_left(lst, item)
@@ -4191,6 +4197,8 @@ def getViewData(bef, file2uuids={}, uuid2hash={}, options={}):
                         (u, typ, summary, extstr, etmdt)]
                     add2list(rows, item)
                     continue
+    # for row in rows:
+    #     print(row)
     return(rows, busytimes, busydays, alerts, datetimes, occasions)
 
 
@@ -4700,7 +4708,7 @@ Either ITEM must be provided or edit_cmd must be specified in etm.cfg.
             fo.write(str)
             fo.close()
         except:
-            term_print('error writing to file - aborted')
+            return('error writing to file - aborted')
             return(False)
         shutil.copy2(self.tmpfile, file)
         return self.commit(file)
@@ -4709,10 +4717,10 @@ Either ITEM must be provided or edit_cmd must be specified in etm.cfg.
         try:
             count = int(arg_str)
         except:
-            term_print(tr('an integer argument is required'))
+            return(tr('an integer argument is required'))
             return()
         if count not in self.count2id:
-            term_print('Item number %d not found' % count)
+            return('Item number %d not found' % count)
             return()
         id, dtstr = self.count2id[count].split('::')
         hsh = self.uuid2hash[id]
@@ -4727,32 +4735,51 @@ Either ITEM must be provided or edit_cmd must be specified in etm.cfg.
             return()
         arg = arg.split('#')[0]
         arg_str = "a {0}".format(arg)
-        term_print('\nreport: {0}'.format(arg_str))
+        return('\nreport: {0}'.format(arg_str))
         self.mk_rep(arg_str)
 
     def help_a(self):
-        term_print("""
-Generate an action report. Usage:
+        return("""
+Usage::
+
     a <groupby> [options]
-where groupby can include semicolon separated date specifications
-and elements from:
+
+Generate an action report. Groupby can include *semicolon* separated date
+specifications and elements from:
+
     c context
+
     f file path
+
     k keyword
+
     u user
+
 Options include:
-    -b begin date
-    -c context regex
-    -d depth
-    -e end date
-    -f file regex
-    -k keyword regex
-    -l location regex
-    -s summary regex
-    -t tags regex
-    -u user regex
-    -w column 1 width
-    -W column 2 width\
+
+    \-b begin date
+
+    \-c context regex
+
+    \-d depth
+
+    \-e end date
+
+    \-f file regex
+
+    \-k keyword regex
+
+    \-l location regex
+
+    \-s summary regex
+
+    \-t tags regex
+
+    \-u user regex
+
+    \-w column 1 width
+
+    \-W column 2 width\
 """)
 
     def do_c(self, arg):
@@ -4761,36 +4788,59 @@ Options include:
             self.help_c()
             return()
         arg_str = "c {0}".format(arg)
-        term_print('\nreport: {0}'.format(arg_str))
-        self.mk_rep(arg_str)
+        # return('\nreport: {0}'.format(arg_str))
+        return(self.mk_rep(arg_str))
 
     def help_c(self):
-        term_print("""
-Usage:
+        return("""
+Usage::
+
     c <groupby> [options]
+
 Generate a custom report. Groupby can include semicolon separated
 date specifications and elements from:
     c context
+
     f file path
+
     k keyword
+
     t tag
+
     u user
+
 Options include:
-    -b begin date
-    -c context regex
-    -d depth
-    -e end date
-    -f file regex
-    -k keyword regex
-    -l location regex
-    -o omit
-    -s summary regex
-    -t tags regex
-    -u user regex
-    -w column 1 width
-    -W column 2 width
-Example
+
+    \-b begin date
+
+    \-c context regex
+
+    \-d depth
+
+    \-e end date
+
+    \-f file regex
+
+    \-k keyword regex
+
+    \-l location regex
+
+    \-o omit
+
+    \-s summary regex
+
+    \-t tags regex
+
+    \-u user regex
+
+    \-w column 1 width
+
+    \-W column 2 width
+
+Example::
+
     c t -t tag 1 -t !tag 2
+
 would group by tag, showing items that have tag 1 but not tag 2.\
 """)
 
@@ -4801,9 +4851,11 @@ would group by tag, showing items that have tag 1 but not tag 2.\
         self.do_n('', hsh['entry'])
 
     def help_C(self):
-        term_print("""
-Usage
+        return("""
+Usage::
+
     C INT
+
 If there is an item number INT among those displayed by the previous
 'c' or 's' command then open a COPY of the item for editing. The edited
 copy will be saved as a new item.\
@@ -4823,6 +4875,7 @@ copy will be saved as a new item.\
             rev_str = ''
             instance = fmt_datetime(hsh['_dt'], self.options)
             choice = self.delete_which(instance)
+            print(choice)
             if choice is None:
                 return(False)
             dt = parse(
@@ -4879,23 +4932,26 @@ copy will be saved as a new item.\
 
         # not repeating or all instances
         # delete item
-        term_print(tr("\nReady to delete:"))
-        term_print("-" * self.line_length)
-        term_print(hsh['entry'])
-        term_print("-" * self.line_length)
-        term_print(tr('WARNING: THIS ACTION CANNOT BE UNDONE!'))
+        ret = []
+        ret.append(tr("\nReady to delete:"))
+        ret.append("-" * self.line_length)
+        ret.append(hsh['entry'])
+        ret.append("-" * self.line_length)
+        ret.append(tr('WARNING: THIS ACTION CANNOT BE UNDONE!'))
         rep = raw_input(tr("Continue? [Yn] "))
         if rep.lower() == 'n':
-            term_print(tr('canceled'))
+            ret.append(tr('canceled'))
             return(False)
         self.replace_lines(fp, lines, begline, endline, [])
         self.load_data()
         return(False)
 
     def help_d(self):
-        term_print("""
-Usage
+        return("""
+Usage::
+
     d INT
+
 If there is an item number INT among those displayed by the previous
 'c' or 's' command then delete that item, first prompting for
 confirmation. When a repeating item is selected, you will first be
@@ -4907,7 +4963,7 @@ prompted to choose which of the repeated instances should be deleted. \
         if not hsh:
             return()
         if not self.editcmd:
-            term_print("""
+            return("""
 edit_cmd must be specified in etm.cfg.
 """)
             return(False)
@@ -4938,8 +4994,8 @@ edit_cmd must be specified in etm.cfg.
                         dtstr = parse_datetime(res)
                         new_dt = parse(dtstr).replace(tzinfo=tzlocal()).astimezone(gettz(hsh['z']))
                     except Exception as e:
-                        term_print(tr("Could not parse"), "{0}".format(res))
-                        term_print(e)
+                        return(tr("Could not parse"), "{0}".format(res))
+                        return(e)
                         return(False)
                     old_dt = parse(
                         hsh['_dt']).replace(
@@ -4951,10 +5007,10 @@ edit_cmd must be specified in etm.cfg.
                         old_dt.strftime(sfmt))
                     edit_str = hsh2str(hsh, self.options)
                     newlines = edit_str.split('\n')
-                    term_print(s2or3("Ready to replace {0} with {1}").format(fmt_datetime(old_dt, self.options), fmt_datetime(new_dt, self.options)))
+                    return(s2or3("Ready to replace {0} with {1}").format(fmt_datetime(old_dt, self.options), fmt_datetime(new_dt, self.options)))
                     rep = raw_input(tr("Continue? [Yn] "))
                     if rep.lower() == 'n':
-                        term_print(tr('canceled'))
+                        return(tr('canceled'))
                         return(False)
                     self.mode = 'changed datetime'
                     self.replace_lines(fp, lines, begline, endline, newlines)
@@ -5049,32 +5105,35 @@ edit_cmd must be specified in etm.cfg.
         if modified == os.path.getmtime(self.tmpfile):
             if not item:
                 # unchanged
-                term_print(tr('unchanged'))
+                return(tr('unchanged'))
                 return(False)
         if not newlines:
             return(False)
         newstr = "\n".join(newlines)
-        term_print("{0:-^{4}}\n{1}\n{2:-^{4}}\n{3}".format(
+        return("{0:-^{4}}\n{1}\n{2:-^{4}}\n{3}".format(
             tr(' Ready to replace '),
             newstr, tr(" in "), self.currfile, self.line_length))
-        term_print("-" * self.line_length)
+        return("-" * self.line_length)
         rep = raw_input("Continue? [Yn] ")
         if rep.lower() == 'n':
-            term_print(tr('canceled'))
+            return(tr('canceled'))
             return(False)
         self.mode = tr('changed all instances')
         self.replace_lines(fp, lines, begline, endline, newlines)
         self.load_data()
 
     def help_e(self):
-        term_print("""
-Usage
+        return("""
+Usage::
+
     e INT
-If there is an item numberINT among those displayed by the previous
+
+If there is an item number INT among those displayed by the previous
 'c' or 's' command then open it for editing. When a repeating item is
 selected, you will first be prompted to choose which of the repeated
 instances should be changed. The entry will be validated and any errors
 can be corrected before any changes are made.
+
 This command requires a setting for 'edit_cmd' in etm.cfg.\
 """)
 
@@ -5083,7 +5142,7 @@ This command requires a setting for 'edit_cmd' in etm.cfg.\
         if not item_hsh:
             return()
         if not self.editcmd:
-            term_print("""
+            return("""
 edit_cmd must be specified in etm.cfg.
 """)
             return(False)
@@ -5094,16 +5153,18 @@ edit_cmd must be specified in etm.cfg.
         modified = os.path.getmtime(fp)
         os.system(cmd)
         if modified == os.path.getmtime(fp):
-            term_print(tr('unchanged'))
+            return(tr('unchanged'))
             return(False)
         self.mode = tr('edited file')
         self.commit(fp)
         self.load_data()
 
     def help_E(self):
-        term_print("""
-Usage
+        return("""
+Usage::
+
     E INT
+
 If there is an item number INT among those displayed
 by the previous 'c' or 's' command then open the file
 containing the item for editing at the beginning line of
@@ -5118,9 +5179,9 @@ in etm.cfg.\
         if not (hsh['itemtype'] in [u'-', u'+', u'%'] and
                 (u'_r' in hsh or u'f' not in hsh)):
             if hsh['itemtype'] in [u'-', u'+', u'%']:
-                term_print(tr('already finished'))
+                return(tr('already finished'))
             else:
-                term_print(tr('not a task'))
+                return(tr('not a task'))
             return(False)
         f, begline, endline = hsh['fileinfo']
         fp = os.path.join(self.options['datadir'], f)
@@ -5128,7 +5189,7 @@ in etm.cfg.\
         lines = fo.readlines()
         fo.close()
         now = datetime.now(tzlocal())
-        term_print("""
+        return("""
 Finishing "{0}".
 Enter a date and time (fuzzy parsed) to use as the completion
 datetime, an empty string to use the current date and time or
@@ -5136,7 +5197,7 @@ datetime, an empty string to use the current date and time or
 """.format(hsh['_summary']))
         rep = raw_input("Completion date and time? ")
         if rep.lower() == 'n':
-            term_print(tr('canceled'))
+            return(tr('canceled'))
             return(False)
         if not rep:
             # use default
@@ -5187,14 +5248,16 @@ datetime, an empty string to use the current date and time or
         fp = os.path.join(self.options['datadir'], f)
         self.replace_lines(fp, lines, begline, endline, newlines)
         self.load_data()
-        term_print('Finished "{0}"\nat {1}.'.format(
+        return('Finished "{0}"\nat {1}.'.format(
             hsh['_summary'], dt.strftime(rfmt)))
 
     def help_f(self):
-        term_print("""
-Usage
+        return("""
+Usage::
+
     f INT
-if there is an item number INT among those displayed by the previous
+
+If there is an item number INT among those displayed by the previous
 'c' or 's' command and that item is an unfinished task, then first
 prompt for a completion date and time and then mark the task finished.""")
 
@@ -5206,9 +5269,11 @@ prompt for a completion date and time and then mark the task finished.""")
             os.system(cmd)
 
     def help_h(self):
-        term_print("""
-Usage
+        return("""
+Usage::
+
     h ARGS
+
 If 'hg_command' is specified in etm.cfg, then execute that command
 with ARGS.
 """)
@@ -5218,14 +5283,15 @@ with ARGS.
         if not hsh:
             return()
         filetext = "{0}, {1} {2}-{3}".format(os.path.join(self.options['datadir'], hsh['fileinfo'][0]), tr('lines'), hsh['fileinfo'][1], hsh['fileinfo'][2])
-        term_print("\n{0:-^{4}}\n{1}\n{2:-^{4}}\n{3}".format(
-            tr(' item '), hsh['entry'], tr(" file "), filetext, self.line_length))
-        term_print("-" * self.line_length)
+        return("**{0}**\n\n\{1}\n\n\n\n**{2}**\n\n{3}".format(
+            tr('item'), hsh['entry'].lstrip(), tr("file"), filetext))
 
     def help_i(self):
-        term_print("""
-Usage
+        return("""
+Usage::
+
     i INT
+
 If there is an item number INT among those displayed by the previous
 'c' or 's' command then display information about that item.\
 """)
@@ -5233,7 +5299,7 @@ If there is an item number INT among those displayed by the previous
     def do_m(self, arg_str):
         f = self.options['report_specifications']
         if not f or not os.path.isfile(f):
-            term_print("""
+            return("""
 This option requires a valid report_specifications setting in etm.cfg.""")
             return()
         with open(f, 'r') as fo:
@@ -5241,37 +5307,33 @@ This option requires a valid report_specifications setting in etm.cfg.""")
         try:
             n = int(arg_str)
             if n < 1 or n > len(lines):
-                term_print('\n{0} is out of range'.format(n))
+                return('\n{0} is out of range'.format(n))
                 raise Exception
         except:
-            term_print("""
-Usage:
-    m N
-where N is the number of a report specification
-from {0}:""".format(f))
-            for i in range(len(lines)):
-                term_print("{0:>3}. {1}".format(i + 1, lines[i].strip()))
-            return()
+            return(self.help_m())
         rep_spec = lines[n - 1].strip().split('#')[0]
-        term_print('\nreport: (#{0}) {1}'.format(n, rep_spec.strip()))
-        self.mk_rep(rep_spec)
+        # return('\nreport: (#{0}) {1}'.format(n, rep_spec.strip()))
+        return(self.mk_rep(rep_spec))
 
     def help_m(self):
+        res = []
         f = self.options['report_specifications']
         if not f or not os.path.isfile(f):
-            term_print("""
+            return("""
 This option requires a valid report_specifications setting in etm.cfg.""")
-            return()
         with open(f, 'r') as fo:
             lines = [x for x in fo.readlines() if x[0] != "#"]
         if lines:
-            term_print("""
+            res.append("""\
 Usage:
     m N
+
 where N is the number of a report specification from
-the file {0}:""".format(f))
+the file {0}:\n """.format(f))
             for i in range(len(lines)):
-                term_print("{0:>3}. {1}".format(i + 1, lines[i].strip()))
+                res.append("{0:>2}. {1}".format(i + 1, lines[i].strip()))
+        return("\n".join(res))
+
 
     def do_n(self, arg_str='', itemstr=""):
         if type(arg_str) == unicode:
@@ -5281,7 +5343,7 @@ the file {0}:""".format(f))
         if item:
             new_hsh, msg = str2hsh(item, options=self.options)
             if msg:
-                term_print("\n".join(msg))
+                return("\n".join(msg))
                 return(False)
         else:  # empty arg_str, use editcmd
             # make sure file is empty
@@ -5304,19 +5366,19 @@ the file {0}:""".format(f))
         items.append(new_item)
         itemstr = "\n".join(items)
         # TODO: How to prevent losing data here?
-        term_print("{0:-^{4}}\n{1}\n{2:-^{4}}\n{3}".format(
+        return("{0:-^{4}}\n{1}\n{2:-^{4}}\n{3}".format(
             tr(' Ready to append '), new_item, tostr, self.currfile, self.line_length))
-        term_print("-" * self.line_length)
+        return("-" * self.line_length)
         rep = raw_input("Continue? [Yn] ")
         if rep.lower() == 'n':
-            term_print(tr('canceled'))
+            return(tr('canceled'))
             return(False)
         self.mode = tr('added lines')
         self.safe_save(self.currfile, itemstr)
         self.load_data()
 
     def help_n(self):
-        term_print("""
+        return("""
 Usage
     n ITEM
 Create a new item from ITEM. When this command is run from the
@@ -5336,10 +5398,10 @@ The new item will be validated and any errors can be corrected.\
 """)
 
     def do_s(self, arg_str):
-        self.mk_rep('s')
+        return(self.mk_rep('s'))
 
     def help_s(self):
-        term_print("""
+        return("""
 Usage
     s
 Generate a schedule report including dated items for the
@@ -5352,7 +5414,7 @@ now and next items.\
         if not hsh:
             return()
         if not self.editcmd:
-            term_print("""
+            return("""
 edit_cmd must be specified in etm.cfg.
 """)
             return(False)
@@ -5366,17 +5428,17 @@ edit_cmd must be specified in etm.cfg.
         else:
             p = tr("New datetime? ")
 
-        term_print(tr('Editing "{0}"').format(hsh['_summary']))
+        return(tr('Editing "{0}"').format(hsh['_summary']))
         res = raw_input(p)
         if not res:
-            term_print(tr('Cancelled'))
+            return(tr('Cancelled'))
             return(False)
         try:
             dtstr = parse_datetime(res)
             new_dt = parse(dtstr).replace(tzinfo=tzlocal()).astimezone(gettz(hsh['z']))
         except Exception as e:
-            term_print(tr("Could not parse"), "{0}".format(res))
-            term_print(e)
+            return(tr("Could not parse"), "{0}".format(res))
+            return(e)
             return(False)
         new_dt = new_dt.replace(tzinfo=None)
 
@@ -5393,10 +5455,10 @@ edit_cmd must be specified in etm.cfg.
             hsh['s'] = new_dt
         edit_str = hsh2str(hsh, self.options)
         newlines = edit_str.split('\n')
-        term_print(tr('Changed entry:'), '\n  ', "\n  ".join(newlines))
+        return(tr('Changed entry:'), '\n  ', "\n  ".join(newlines))
         rep = raw_input(tr("Record changes? [Yn] "))
         if rep.lower() == 'n':
-            term_print(tr('canceled'))
+            return(tr('canceled'))
             return(False)
         self.mode = 'changed datetime'
         self.replace_lines(fp, lines, begline, endline, newlines)
@@ -5404,7 +5466,7 @@ edit_cmd must be specified in etm.cfg.
         return(False)
 
     def help_S(self):
-        term_print("""
+        return("""
 Usage
     S INT
 if there is an item number INT among those displayed by the previous
@@ -5415,11 +5477,11 @@ item.\
     def do_o(self, arg):
         f = os.path.join(self.options['etmdir'], 'etm.cfg')
         if not f or not os.path.isfile(f):
-            term_print("""
+            return("""
 This option requires a valid path to etm.cfg.""")
             return()
         if not self.editcmd:
-            term_print("""
+            return("""
 edit_cmd must be specified in etm.cfg.
 """)
         hsh = {'file': f, 'line': 1}
@@ -5427,7 +5489,7 @@ edit_cmd must be specified in etm.cfg.
         os.system(cmd)
 
     def help_o(self):
-        term_print("""
+        return("""
 Usage
     o
 Open etm.cfg for editing. This command requires a setting for
@@ -5437,11 +5499,11 @@ Open etm.cfg for editing. This command requires a setting for
     def do_r(self, arg):
         f = self.options['report_specifications']
         if not f or not os.path.isfile(f):
-            term_print("""
+            return("""
 This option requires a valid report_specifications setting in etm.cfg.""")
             return()
         if not self.editcmd:
-            term_print("""
+            return("""
 edit_cmd must be specified in etm.cfg.
 """)
         hsh = {'file': f, 'line': 1}
@@ -5449,7 +5511,7 @@ edit_cmd must be specified in etm.cfg.
         os.system(cmd)
 
     def help_r(self):
-        term_print("""
+        return("""
 Usage
     r
 Open 'report_specifications'  (specified in etm.cfg) for editing.
@@ -5460,14 +5522,14 @@ This command requires a setting for 'edit_cmd' in etm.cfg.\
         self.number = not self.number
 
     def help_t(self):
-        term_print("""\
+        return("""\
 Toggle the display of item numbers for 'c' and 's' reports.""")
 
     def do_q(self, line):
-        return True
+        sys.exit()
 
     def help_q(self):
-        term_print('quit\n')
+        return('quit\n')
 
     def do_v(self, arg_str):
         d = {
@@ -5476,126 +5538,106 @@ Toggle the display of item numbers for 'c' and 's' reports.""")
             'dev': 'daniel.graham@duke.edu',
             'group': "groups.google.com/group/eventandtaskmanager/topics",
             'gpl': 'www.gnu.org/licenses/gpl.html',
-            'version': version,
+            'etm_kv': version,
             'platform': platform.system(),
             'python': platform.python_version(),
-            'dateutil': dateutil_version}
-        term_print("""
-Event and Task Manager version {0[version]}
+            'dateutil': dateutil_version,
+            'kivy': KIVY_VERSION_STR}
+        # print(d)
+        return("""\
+Event and Task Manager
 
-This application provides a format for using plain text files to store actions,
-events, notes, and tasks and a PyQt based GUI for creating and modifying items
-as well as viewing them.
+This application provides a format for using plain text files to store events, tasks and other items and a Kivy based GUI for creating and modifying items as well as viewing them.
 
-Copyright {0[copyright]} {0[dev]}. All rights reserved. This program
-is free software; you can redistribute it and/or modify it under the terms of
-the GNU General Public License as published by the Free Software Foundation;
-either version 3 of the License, or (at your option) any later version.
+Copyright {0[copyright]} {0[dev]}. All rights reserved. This programis free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
 
 System Information:
-    Python:   {0[python]}
-    dateutil: {0[dateutil]}
-    Platform: {0[platform]}
+    etm_kv:             {0[etm_kv]}
+    Python:             {0[python]}
+    Kivy:               {0[kivy]}
+    Dateutil:           {0[dateutil]}
+    Platform:           {0[platform]}
 
 Homepage:                {0[home]}
 Developer:               {0[dev]}
-Discussion Group:        {0[group]}
-GPL License Information: {0[gpl]}\
+GPL License Information: {0[gpl]}
+Discussion:
+        {0[group]}
 """.format(d))
 
     def help_l(self):
-        term_print("""
+        return("""
 Begin an interactive shell loop in which commands can be adjusted and run
 again without reloading the data files. Enter ? in the shell loop for a
 listing of additional commands available there.\
             """)
 
     def help_v(self):
-        term_print("""
+        return("""
 Display information about etm and the operating system.""")
 
     def help_help(self):
-        if self.loop:
-            term_print("""
-Editing requires that edit_cmd is specified in etm.cfg. If hg_commit
-is also specified then changes will automatically be committed. When
-a repeating item is selected for editing (e) or deleting (d), you
-will first be prompted to choose which of the repeated instances will
-be affected.
+        return("""\
+If hg_commit is specified in etm.cfg then changes will automatically be committed. When a repeating item is selected for editing (e) or deleting (d), you will first be prompted to choose which of the repeated instances will be affected.
+
 Commands:
-    a ARGS  display an action report using the remaining arguments as
-            the report specification.
-    c ARGS  display a custom report using the remaining arguments as
-            the report specification.
-    C INT   if there is an item number INT among those displayed by
-            the previous 'c' or 's' command then open the editor with
-            a COPY of that item for editing. The edited copy will be
-            saved as a new item.
-    d INT   if there is an item number INT among those displayed by
-            the previous 'c' or 's' command then delete that ITEM,
-            first prompting for confirmation.
-    e INT   if there is an item number INT among those displayed by
-            the previous 'c' or 's' command then open that ITEM for
+    a ARGS  display an action report using the remaining
+            arguments as the report specification.
+    c ARGS  display a custom report using the remaining
+            arguments as the report specification.
+    C INT   if there is an item number INT among those
+            displayed by the previous 'c' or 's' command
+            then open the editor with a COPY of that item
+            for editing. The edited copy will be saved as
+            a new item.
+    d INT   if there is an item number INT among those
+            displayed by the previous 'c' or 's' command
+            then delete that ITEM, first prompting for
+            confirmation.
+    e INT   if there is an item number INT among those
+            displayed by the previous 'c' or 's' command
+            then open that ITEM for editing.
+    E INT   if there is an item number INT among those
+            displayed by the previous 'c' or 's' command
+            then open the FILE containing that item for
             editing.
-    E INT   if there is an item number INT among those displayed
-            by the previous 'c' or 's' command then open the FILE
-            containing that item for editing.
-    f INT   if there is an item number INT among those displayed by
-            the previous 'c' or 's' command and that item is an
-            unfinished task, then first prompt for a completion date
-            and time and then mark the task finished.
-    h ARGS  if 'hg_command' is specified in etm.cfg, then execute
-            that command with ARGS.
-    i INT   if there is an item number INT among those displayed by
-            the previous 'c' or 's' command then display information
-            about that item.
-    m INT   display a report using the remaining argument, which must
-            be a positive integer, to display a report using the
-            corresponding entry from 'report_specifications' (specified
-            in etm.cfg). Use ? m to display the numbered list of entries
+    f INT   if there is an item number INT among those
+            displayed by the previous 'c' or 's' command
+            and that item is an unfinished task, then first
+            prompt for a completion date and time and then
+            mark the task finished.
+    h ARGS  if 'hg_command' is specified in etm.cfg, then
+            execute that command with ARGS.
+    i INT   if there is an item number INT among those
+            displayed by the previous 'c' or 's' command
+            then display information about that item.
+    m INT   display a report using the remaining argument,
+            which mustbe a positive integer, to display a
+            report using the corresponding entry from
+            'report_specifications' (specifiedin etm.cfg).
+            Use ? m to display the numbered list of entries
             from this file.
-    n ARGS  create a new item using the remaining arguments as the
-            item specification. If ARGS is not given, then use edit_cmd
-            to create the new item.
+    n ARGS  create a new item using the remaining arguments
+            as the item specification. If ARGS is not given,
+            then use edit_cmd to create the new item.
     o       open etm.cfg for editing.
-    r       open 'report_specifications' (specified in etm.cfg) for
+    r       open 'report_specifications' (from etm.cfg) for
             editing.
-    s       display the next few days from the day view combined with
-            any items in the now and next views.
-    S INT   if there is an item number INT among those displayed by
-            the previous 'c' or 's' command then change the starting
-            date and time of that item.
-    t       toggle the display of item numbers in 'c' and 's' reports.
-    v       display information about etm and the operating system.
+    s       display the next few days from the day view
+            combined with any items in the now and next
+            views.
+    S INT   if there is an item number INT among those
+            displayed bythe previous 'c' or 's' command
+            then change the starting date and time of that
+            item.
+    t       toggle the display of item numbers in 'c' and
+            's' reports.
+    v       display information about etm and the operating
+            system.
 
-    ? ARGS  if ARGS = 'help' then display this help information or,
-            if ARGS = X, then display details for command X.\
-""")
-        else:
-            term_print("""\
-etm commands:
-    a ARGS  display an action report using the remaining arguments as the
-            report specification.
-    c ARGS  display a custom report using the remaining arguments as the
-            report specification.
-    m INT   display a report using the remaining argument, which must be a
-            positive integer, to display a report using the corresponding
-            entry from the file given by report_specifications in etm.cfg. Use
-            ? m to display the numbered list of entries from this file.
-    n ARGS  create a new item using the remaining arguments as the
-            item specification. If ARGS is not given, then use 'edit_cmd'
-            from etm.cfg to create the new item.
-    s       display the next few days from the day view combined with any
-            items in the now and next views. This command uses no further
-            arguments.
-    v       display information about etm and the operating system.
-
-    ? ARGS  display (this) command line help information if ARGS = '' or,
-            if ARGS = X, then display details about command X.
-    l       begin an interactive shell loop in which the above commands are
-            available and can be adjusted and run again without reloading the
-            data files. Enter ? in the shell loop for a listing of
-            additional commands available there.\
+    ? ARGS  if ARGS = 'help' then display this help
+            information or, if ARGS = X, then display details
+            for command X.\
 """)
 
     def delete_which(self, instance):
@@ -5607,17 +5649,17 @@ etm commands:
             "  1. {0}".format(tr("this instance")),
             "  2. {0}".format(tr("this and all subsequent instances")),
             "  3. {0}".format(tr("all instances"))]
-        term_print("\n".join(map(str, itemList)))
-        res = raw_input(tr('Choice [1-3] or 0 to cancel? '))
+        itemList.append(tr('Choice [1-3] or 0 to cancel? '))
+        return("\n".join(map(str, itemList)))
         try:
             choice = int(res)
         except:
             choice = 0
         if not choice:
-            term_print(tr('canceled'))
+            return(tr('canceled'))
             return(None)
         if choice < 0 or choice > 3:
-            term_print(bad_response)
+            return(bad_response)
             return(None)
         return(choice)
 
@@ -5631,17 +5673,17 @@ etm commands:
             "  2. {0}".format(tr("this instance")),
             "  3. {0}".format(tr("this and all subsequent instances")),
             "  4. {0}".format(tr("all instances"))]
-        term_print("\n".join(map(str, itemList)))
+        return("\n".join(map(str, itemList)))
         res = raw_input(tr('Choice [1-4] or 0 to cancel? '))
         try:
             choice = int(res)
         except:
             choice = 0
         if not choice:
-            term_print(tr('canceled'))
+            return(tr('canceled'))
             return(None)
         if choice < 0 or choice > 4:
-            term_print(bad_response)
+            return(bad_response)
             return(None)
         return(choice)
 
@@ -5690,26 +5732,70 @@ etm commands:
                 lng = max([len(x) for x in txt])
                 s = '-' * lng
                 if self.output == 'text':
-                    term_print(s)
+                    return(s)
                 for l in txt:
                     if self.output == 'text':
-                        term_print(l)
+                        return(l)
                     else:
-                        term_print("{0}\n".format(l))
+                        return("{0}\n".format(l))
                 if self.output == 'text':
-                    term_print(s)
+                    return(s)
             else:
-                term_print(str(tr('No output was generated.')))
+                return(str(tr('No output was generated.')))
         except:
-            term_print(str(tr('Could not process "{0}".')).format(arg_str))
-            term_print(str(tr('Enter ? s or ? c for help.')))
+            return(str(tr('Could not process "{0}".')).format(arg_str))
+            return(str(tr('Enter ? s or ? c for help.')))
 
 
 class ETMLoop(ETMCmd):
+
     def __init__(self, options={}):
         # delete the next line to use in kivy
         cmd.Cmd.__init__(self)
         self.options = options
+        self.cmdDict = {
+            'C': self.do_C,
+            'E': self.do_E,
+            'S': self.do_S,
+            'a': self.do_a,
+            'c': self.do_c,
+            'd': self.do_d,
+            'e': self.do_e,
+            'f': self.do_f,
+            'h': self.do_h,
+            'i': self.do_i,
+            'm': self.do_m,
+            'n': self.do_n,
+            'o': self.do_o,
+            'q': self.do_q,
+            'r': self.do_r,
+            's': self.do_s,
+            't': self.do_t,
+            'v': self.do_v,
+            '?': self.do_help,
+        }
+
+        self.helpDict = {
+            'C': self.help_C,
+            'E': self.help_E,
+            'S': self.help_S,
+            'a': self.help_a,
+            'c': self.help_c,
+            'd': self.help_d,
+            'e': self.help_e,
+            'f': self.help_f,
+            'h': self.help_h,
+            'i': self.help_i,
+            'm': self.help_m,
+            'n': self.help_n,
+            'o': self.help_o,
+            'q': self.help_q,
+            'r': self.help_r,
+            's': self.help_s,
+            't': self.help_t,
+            'v': self.help_v,
+            'help': self.help_help,
+        }
         self.ruler = '-'
         self.rows = []
         self.file2uuids = {}
@@ -5719,7 +5805,7 @@ class ETMLoop(ETMCmd):
         self.count2id = {}
         self.last_rep = ""
         self.mode = ''
-        self.output = 'rst'
+        self.output = 'text'
         self.line_length = self.options['agenda_indent'] + self.options['agenda_width1'] + self.options['agenda_width2']
         self.currfile = ''  # ensureMonthly(options)
         if ('edit_cmd' in self.options and self.options['edit_cmd']):
@@ -5728,6 +5814,22 @@ class ETMLoop(ETMCmd):
             self.editcmd = ''
         self.tmpfile = os.path.join(self.options['etmdir'], '.temp.txt')
         self.load_data()
+
+    def do_command(self, s):
+        args = s.split(' ')
+        cmd = args.pop(0)
+        if args:
+            arg_str = " ".join(args)
+        else:
+            arg_str = ''
+        # print('do_command', cmd, arg_str)
+        return self.cmdDict[cmd](arg_str)
+
+    def do_help(self, cmd):
+        if cmd:
+            return(self.helpDict[cmd]())
+        else:
+            return(self.help_help())
 
     def mk_rep(self, arg_str):
         # we need to return the output string rather than print it
@@ -5756,33 +5858,14 @@ class ETMLoop(ETMCmd):
             if txt and not txt[0]:
                 txt.pop(0)
             if txt:
-                lng = max([len(x) for x in txt])
-                s = '-' * lng
-                if self.output == 'text':
-                    term_print(s)
-                if self.output == 'text':
-                    for l in txt:
-                        term_print(l)
-                    term_print(s)
-                else:
-                    ret.extend(txt)
+                ret.extend(txt)
             else:
-                s = str(tr('No output was generated.'))
-                if self.output == 'text':
-                    term_print(s)
-                else:
-                    ret.append(s)
+                ret.append(str(tr('No output was generated.')))
         except:
             s = str(tr('Could not process "{0}".')).format(arg_str)
             p = str(tr('Enter ? s or ? c for help.'))
-            if self.output == 'text':
-                term_print(s)
-                term_print(p)
-            else:
-                ret.extend([s, p])
-        if self.output == 'rst':
-            print('\n\n'.join(ret))
-
+            ret.extend([s, p])
+        return('\n'.join(ret))
 
 
 def main(etmdir='', argv=[]):
