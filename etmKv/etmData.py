@@ -2822,7 +2822,7 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54, width2=14,
                 output.extend(lst)
     return((output, count2id))
 
-
+@memoize
 def getReportData(s, file2uuids, uuid2hash, options={}, export=False,
                   colors=None, mode='html', number=True):
     """
@@ -3623,7 +3623,6 @@ def setItemPeriod(hsh, start, end, short=False, options={}):
             fmt_time(end, options=options), fmt_date(end, True))
 
     return(period)
-
 
 @memoize
 def getViewData(bef, file2uuids={}, uuid2hash={}, options={}):
@@ -4739,47 +4738,30 @@ Either ITEM must be provided or edit_cmd must be specified in etm.cfg.
         self.mk_rep(arg_str)
 
     def help_a(self):
-        return("""
-Usage::
+        return("""\
+Usage:
 
     a <groupby> [options]
 
-Generate an action report. Groupby can include *semicolon* separated date
-specifications and elements from:
-
+Generate an action report. Groupby can include *semicolon* separated date specifications and elements from:
     c context
-
     f file path
-
     k keyword
-
     u user
 
 Options include:
-
-    \-b begin date
-
-    \-c context regex
-
-    \-d depth
-
-    \-e end date
-
-    \-f file regex
-
-    \-k keyword regex
-
-    \-l location regex
-
-    \-s summary regex
-
-    \-t tags regex
-
-    \-u user regex
-
-    \-w column 1 width
-
-    \-W column 2 width\
+    -b begin date
+    -c context regex
+    -d depth
+    -e end date
+    -f file regex
+    -k keyword regex
+    -l location regex
+    -s summary regex
+    -t tags regex
+    -u user regex
+    -w column 1 width
+    -W column 2 width\
 """)
 
     def do_c(self, arg):
@@ -4792,56 +4774,38 @@ Options include:
         return(self.mk_rep(arg_str))
 
     def help_c(self):
-        return("""
-Usage::
+        return("""\
+Usage:
 
     c <groupby> [options]
 
-Generate a custom report. Groupby can include semicolon separated
-date specifications and elements from:
+Generate a custom report. Groupby can include semicolon separated date specifications and elements from:
     c context
-
     f file path
-
     k keyword
-
     t tag
-
     u user
 
 Options include:
+    -b begin date
+    -c context regex
+    -d depth
+    -e end date
+    -f file regex
+    -k keyword regex
+    -l location regex
+    -o omit
+    -s summary regex
+    -t tags regex
+    -u user regex
+    -w column 1 width
+    -W column 2 width
 
-    \-b begin date
-
-    \-c context regex
-
-    \-d depth
-
-    \-e end date
-
-    \-f file regex
-
-    \-k keyword regex
-
-    \-l location regex
-
-    \-o omit
-
-    \-s summary regex
-
-    \-t tags regex
-
-    \-u user regex
-
-    \-w column 1 width
-
-    \-W column 2 width
-
-Example::
+Example:
 
     c t -t tag 1 -t !tag 2
 
-would group by tag, showing items that have tag 1 but not tag 2.\
+Group by tag, showing items that have tag 1 but not tag 2.
 """)
 
     def do_C(self, arg_str):
@@ -4851,14 +4815,12 @@ would group by tag, showing items that have tag 1 but not tag 2.\
         self.do_n('', hsh['entry'])
 
     def help_C(self):
-        return("""
-Usage::
+        return("""\
+Usage:
 
     C INT
 
-If there is an item number INT among those displayed by the previous
-'c' or 's' command then open a COPY of the item for editing. The edited
-copy will be saved as a new item.\
+If there is an item number INT among those displayed by the previous'c' or 's' command then open a COPY of the item for editing. The edited copy will be saved as a new item.\
 """)
 
     def do_d(self, arg_str):
@@ -4947,15 +4909,12 @@ copy will be saved as a new item.\
         return(False)
 
     def help_d(self):
-        return("""
-Usage::
+        return("""\
+Usage:
 
     d INT
 
-If there is an item number INT among those displayed by the previous
-'c' or 's' command then delete that item, first prompting for
-confirmation. When a repeating item is selected, you will first be
-prompted to choose which of the repeated instances should be deleted. \
+If there is an item number INT among those displayed by the previous'c' or 's' command then delete that item, first prompting for confirmation. When a repeating item is selected, you will first be prompted to choose which of the repeated instances should be deleted. \
 """)
 
     def do_e(self, arg_str, item=''):
@@ -5123,18 +5082,12 @@ edit_cmd must be specified in etm.cfg.
         self.load_data()
 
     def help_e(self):
-        return("""
-Usage::
+        return("""\
+Usage:
 
     e INT
 
-If there is an item number INT among those displayed by the previous
-'c' or 's' command then open it for editing. When a repeating item is
-selected, you will first be prompted to choose which of the repeated
-instances should be changed. The entry will be validated and any errors
-can be corrected before any changes are made.
-
-This command requires a setting for 'edit_cmd' in etm.cfg.\
+If there is an item number INT among those displayed by the previous'c' or 's' command then open it for editing. When a repeating item is selected, you will first be prompted to choose which of the repeatedinstances should be changed. The entry will be validated and any errors can be corrected before any changes are made.
 """)
 
     def do_E(self, arg_str):
@@ -5142,7 +5095,7 @@ This command requires a setting for 'edit_cmd' in etm.cfg.\
         if not item_hsh:
             return()
         if not self.editcmd:
-            return("""
+            return("""\
 edit_cmd must be specified in etm.cfg.
 """)
             return(False)
@@ -5160,16 +5113,12 @@ edit_cmd must be specified in etm.cfg.
         self.load_data()
 
     def help_E(self):
-        return("""
-Usage::
+        return("""\
+Usage:
 
     E INT
 
-If there is an item number INT among those displayed
-by the previous 'c' or 's' command then open the file
-containing the item for editing at the beginning line of
-the item. This command requires a setting for 'edit_cmd'
-in etm.cfg.\
+If there is an item number INT among those displayedby the previous 'c' or 's' command then open the file containing the item for editing at the beginning line of the item.\
 """)
 
     def do_f(self, arg_str):
@@ -5189,7 +5138,7 @@ in etm.cfg.\
         lines = fo.readlines()
         fo.close()
         now = datetime.now(tzlocal())
-        return("""
+        return("""\
 Finishing "{0}".
 Enter a date and time (fuzzy parsed) to use as the completion
 datetime, an empty string to use the current date and time or
@@ -5252,14 +5201,12 @@ datetime, an empty string to use the current date and time or
             hsh['_summary'], dt.strftime(rfmt)))
 
     def help_f(self):
-        return("""
-Usage::
+        return("""\
+Usage:
 
     f INT
 
-If there is an item number INT among those displayed by the previous
-'c' or 's' command and that item is an unfinished task, then first
-prompt for a completion date and time and then mark the task finished.""")
+If there is an item number INT among those displayed by the previous'c' or 's' command and that item is an unfinished task, then first prompt for a completion date and time and then mark the task finished.""")
 
     def do_h(self, arg_str):
         if 'hg_command' in self.options and self.options['hg_command']:
@@ -5269,13 +5216,12 @@ prompt for a completion date and time and then mark the task finished.""")
             os.system(cmd)
 
     def help_h(self):
-        return("""
-Usage::
+        return("""\
+Usage:
 
     h ARGS
 
-If 'hg_command' is specified in etm.cfg, then execute that command
-with ARGS.
+If 'hg_command' is specified in etm.cfg, then execute that command with ARGS.
 """)
 
     def do_i(self, arg_str):
@@ -5283,17 +5229,16 @@ with ARGS.
         if not hsh:
             return()
         filetext = "{0}, {1} {2}-{3}".format(os.path.join(self.options['datadir'], hsh['fileinfo'][0]), tr('lines'), hsh['fileinfo'][1], hsh['fileinfo'][2])
-        return("**{0}**\n\n\{1}\n\n\n\n**{2}**\n\n{3}".format(
+        return("{0}:\n    {1}\n\n{2}:\n    {3}".format(
             tr('item'), hsh['entry'].lstrip(), tr("file"), filetext))
 
     def help_i(self):
-        return("""
-Usage::
+        return("""\
+Usage:
 
     i INT
 
-If there is an item number INT among those displayed by the previous
-'c' or 's' command then display information about that item.\
+If there is an item number INT among those displayed by the previous 'c' or 's' command then display information about that item.\
 """)
 
     def do_m(self, arg_str):
@@ -5326,14 +5271,13 @@ This option requires a valid report_specifications setting in etm.cfg.""")
         if lines:
             res.append("""\
 Usage:
+
     m N
 
-where N is the number of a report specification from
-the file {0}:\n """.format(f))
+where N is the number of a report specification from the file {0}:\n """.format(f))
             for i in range(len(lines)):
                 res.append("{0:>2}. {1}".format(i + 1, lines[i].strip()))
         return("\n".join(res))
-
 
     def do_n(self, arg_str='', itemstr=""):
         if type(arg_str) == unicode:
@@ -5378,21 +5322,18 @@ the file {0}:\n """.format(f))
         self.load_data()
 
     def help_n(self):
-        return("""
-Usage
+        return("""\
+Usage:
+
     n ITEM
-Create a new item from ITEM. When this command is run from the
-command line ITEM should be enclosed in quotes to prevent shell
-expansion. E.g.,
-    $ etm_qt n "* meeting @s +0 4p @e 1h30m"
-(Omit the quotes when run from within the shell loop).
 
-When the item is dated, it will be appended to the corresponding
-monthly file, otherwise it will be appended to the current monthly
-file.
+Create a new item from ITEM. E.g.,
 
-If ITEM is missing and edit_cmd is specified in etm.cfg, this command
-will be used to create the new item.
+    n * meeting @s +0 4p @e 1h30m
+
+When the item is dated, it will be appended to the correspondingmonthly file, otherwise it will be appended to the current monthly file.
+
+If ITEM is missing and edit_cmd is specified in etm.cfg, this command will be used to create the new item.
 
 The new item will be validated and any errors can be corrected.\
 """)
@@ -5401,12 +5342,12 @@ The new item will be validated and any errors can be corrected.\
         return(self.mk_rep('s'))
 
     def help_s(self):
-        return("""
-Usage
+        return("""\
+Usage:
+
     s
-Generate a schedule report including dated items for the
-next {0} days (agenda_days from etm.cfg) together with any
-now and next items.\
+
+Generate a schedule report including dated items for thenext {0} days (agenda_days from etm.cfg) together with any now and next items.\
 """.format(self.options['agenda_days']))
 
     def do_S(self, arg_str):
@@ -5414,7 +5355,7 @@ now and next items.\
         if not hsh:
             return()
         if not self.editcmd:
-            return("""
+            return("""\
 edit_cmd must be specified in etm.cfg.
 """)
             return(False)
@@ -5466,12 +5407,12 @@ edit_cmd must be specified in etm.cfg.
         return(False)
 
     def help_S(self):
-        return("""
-Usage
+        return("""\
+Usage:
+
     S INT
-if there is an item number INT among those displayed by the previous
-'c' or 's' command, then change the starting date and time for that
-item.\
+
+Ff there is an item number INT among those displayed by the previous'c' or 's' command, then change the starting date and time for that item.\
 """)
 
     def do_o(self, arg):
@@ -5489,11 +5430,12 @@ edit_cmd must be specified in etm.cfg.
         os.system(cmd)
 
     def help_o(self):
-        return("""
-Usage
+        return("""\
+Usage:
+
     o
-Open etm.cfg for editing. This command requires a setting for
-'edit_cmd' in etm.cfg.\
+
+Open etm.cfg for editing. This command requires a setting for 'edit_cmd' in etm.cfg.\
 """)
 
     def do_r(self, arg):
@@ -5511,11 +5453,12 @@ edit_cmd must be specified in etm.cfg.
         os.system(cmd)
 
     def help_r(self):
-        return("""
-Usage
+        return("""\
+Usage:
+
     r
-Open 'report_specifications'  (specified in etm.cfg) for editing.
-This command requires a setting for 'edit_cmd' in etm.cfg.\
+
+Open 'report_specifications'  (specified in etm.cfg) for editing. This command requires a setting for 'edit_cmd' in etm.cfg.\
 """)
 
     def do_t(self, arg):
@@ -5573,7 +5516,7 @@ listing of additional commands available there.\
             """)
 
     def help_v(self):
-        return("""
+        return("""\
 Display information about etm and the operating system.""")
 
     def help_help(self):
@@ -5749,7 +5692,7 @@ Commands:
 
 class ETMLoop(ETMCmd):
 
-    def __init__(self, options={}):
+    def __init__(self, options={}, parent=None):
         # delete the next line to use in kivy
         cmd.Cmd.__init__(self)
         self.options = options

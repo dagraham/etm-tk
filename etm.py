@@ -10,14 +10,15 @@ from etmKv.etmData import get_current_time, leadingzero
 
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.anchorlayout import AnchorLayout
+# from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.codeinput import CodeInput
 from pygments.lexers.special import TextLexer
 
 from kivy.uix.label import Label
-from kivy.uix.popup import Popup
-from kivy.uix.button import Button
+# from kivy.uix.popup import Popup
+from kivy.uix.modalview import ModalView
+# from kivy.uix.button import Button
 from kivy.properties import ObjectProperty
 from kivy.config import Config
 from kivy.clock import Clock
@@ -34,6 +35,8 @@ class ETMTextInput(TextInput):
     input_wid = ObjectProperty()
     output_wid = ObjectProperty()
     options = {}
+    popup = ''
+
 
     def _keyboard_on_key_down(self, window, keycode, text, modifiers):
         # print(keycode)
@@ -53,8 +56,9 @@ class ETMTextInput(TextInput):
                 window, keycode, text, modifiers)
 
     def init(self):
-        res = loop.do_command('s')
-        self.options = loop.options
+        self.loop = loop
+        res = self.loop.do_command('s')
+        self.options = self.loop.options
         # print(self.options)
         self.start_timer()
         return(res)
@@ -92,38 +96,63 @@ class ETMTextInput(TextInput):
             try:
                 res = loop.do_command(cmd)
             except:
-                self.show_popup()
-                res = 'Could not process "{0}"'.format(cmd)
+                res = self.my_dialog()
+                # res = self.dialog
+                print('got here')
             if not res:
                 return(True)
             self.output_wid.text = res
             self.output_wid.scroll_y = 1
 
-    def get_input(self):
-        popup = Popup(title='Test popup',
-                      content=Label(text='Hello world'),
-                      size_hint=(None, None), size=(380, 500))
+    # def show_popup(self):
+    #     y = max(self.output_wid.minimum_height, self.output_wid.height)
+    #     print('y', y)
+    #     btnclose = Button(text='Save', size_hint_y=None, height='40sp')
+    #     btnsave = Button(text='Cancel', size_hint_y=None, height='40sp')
+    #     buttons = BoxLayout(orientation='horizontal', height='40sp')
+    #     buttons.add_widget(btnclose)
+    #     buttons.add_widget(btnsave)
+    #     content = BoxLayout(orientation='vertical')
+    #     # content.add_widget(Label(text='Hello world'))
+    #     content.add_widget(CodeInput(multiline=True, size_hint=(1, None), height=350, focus=True, lexer=TextLexer()))
+    #     content.add_widget(buttons)
+    #     popup = ModalView(size_hint=(None, None), size=(400, 400))
+    #     popup.add_widget(content)
+    #     btnclose.bind(on_release=popup.dismiss)
+    #     btnsave.bind(on_release=popup.dismiss)
+    #     popup.open()
+
+    def my_dialog(self):
+        def validate(value):
+            print('validate', value)
+            self.output_wid.text = input.text
+            self.output_wid.scroll_y = 1
+            self.output_wid.readonly = False
+            self.output_wid.focus = True
+            self.output_wid.cursor = (0, 0)
+            popup.dismiss()
+
+        content = BoxLayout(orientation='vertical')
+        content.add_widget(Label(text='etm'))
+        input = CodeInput(multiline=False, size_hint=(1, None), height=30, focus=True, lexer=TextLexer())
+        content.add_widget(input)
+        popup = ModalView(size_hint=(None, None), size=(400, 200))
+        popup.add_widget(content)
+        input.bind(on_text_validate=validate)
         popup.open()
 
-    def show_popup(self):
-        y = max(self.output_wid.minimum_height, self.output_wid.height)
-        print('y', y)
-        btnclose = Button(text='Save', size_hint_y=None, height='40sp')
-        btnsave = Button(text='Cancel', size_hint_y=None, height='40sp')
-        buttons = BoxLayout(orientation='horizontal', height='40sp')
-        buttons.add_widget(btnclose)
-        buttons.add_widget(btnsave)
-        content = BoxLayout(orientation='vertical')
-        # content.add_widget(Label(text='Hello world'))
-        content.add_widget(CodeInput(multiline=True, size_hint=(1, None), height=.5 * y, focus=True, lexer=TextLexer()))
-        content.add_widget(buttons)
-        popup = Popup(content=content, title='Modal popup example')
-        btnclose.bind(on_release=popup.dismiss)
-        btnsave.bind(on_release=popup.dismiss)
-        popup.open()
-        # col = AnchorLayout()
-        # col.add_popup(button)
-        # return col
+    # def on_enter(self, instance):
+    #     print('User pressed enter in', instance)
+
+    # def on_text(self, instance, value):
+    #     self.popup = value
+    #     print("value", self.popup)
+
+    # def validate(self, instance):
+    #     print("final value", self.popup)
+    #     self.output_wid.text = self.popup
+    #     self.output_wid.scroll_y = 1
+    #     return(True)
 
     def previous_history(self):
         """
