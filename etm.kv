@@ -23,6 +23,12 @@
         # input_wid: input
         ETMTextInput:
             id: input
+            # canvas.before:
+            #     Color:
+            #         rgba: 1, 1, 1, 1
+            #     Rectangle:
+            #         pos: self.pos
+            #         size: self.size
             output_wid: output
             status_wid: status
             size_hint_y: None
@@ -31,12 +37,13 @@
             focus: True
             multiline: True
             output_text: output.text
-        # RstDocument:
         ScrollView:
             id: scrlv
             focus: False
             CodeInput:
                 id: output
+                background_color: [1, 1, 1, 1]
+                # border: [16, 16, 32, 16]
                 lexer: TextLexer()
                 text: input.init()
                 focus: False

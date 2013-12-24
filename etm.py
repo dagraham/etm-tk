@@ -7,19 +7,22 @@ from etmKv.etmData import get_current_time, leadingzero
 # from dateutil.tz import tzlocal, gettz
 # from dateutil.parser import parse
 
+
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.textinput import TextInput
-# from kivy.uix.codeinput import CodeInput
+from kivy.uix.codeinput import CodeInput
+from pygments.lexers.special import TextLexer
+
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 from kivy.properties import ObjectProperty
 from kivy.config import Config
 from kivy.clock import Clock
-Config.set('graphics', 'width', '560')
-Config.set('graphics', 'height', '500')
+Config.set('graphics', 'height', '440')
+Config.set('graphics', 'width', '530')
 
 
 class ETMTextInput(TextInput):
@@ -89,7 +92,7 @@ class ETMTextInput(TextInput):
             try:
                 res = loop.do_command(cmd)
             except:
-                # self.show_popup()
+                self.show_popup()
                 res = 'Could not process "{0}"'.format(cmd)
             if not res:
                 return(True)
@@ -99,25 +102,28 @@ class ETMTextInput(TextInput):
     def get_input(self):
         popup = Popup(title='Test popup',
                       content=Label(text='Hello world'),
-                      size_hint=(None, None), size=(400, 400))
+                      size_hint=(None, None), size=(380, 500))
         popup.open()
 
     def show_popup(self):
-        btnclose = Button(text='Close this popup', size_hint_y=None, height='50sp')
+        y = max(self.output_wid.minimum_height, self.output_wid.height)
+        print('y', y)
+        btnclose = Button(text='Save', size_hint_y=None, height='40sp')
+        btnsave = Button(text='Cancel', size_hint_y=None, height='40sp')
+        buttons = BoxLayout(orientation='horizontal', height='40sp')
+        buttons.add_widget(btnclose)
+        buttons.add_widget(btnsave)
         content = BoxLayout(orientation='vertical')
-        content.add_widget(Label(text='Hello world'))
-        content.add_widget(TextInput(multiline=False, size_hint_y=None, height=30, focus=True))
-        content.add_widget(btnclose)
-        popup = Popup(content=content, title='Modal popup example',
-                      size_hint=(None, None), size=('300dp', '300dp'))
+        # content.add_widget(Label(text='Hello world'))
+        content.add_widget(CodeInput(multiline=True, size_hint=(1, None), height=.5 * y, focus=True, lexer=TextLexer()))
+        content.add_widget(buttons)
+        popup = Popup(content=content, title='Modal popup example')
         btnclose.bind(on_release=popup.dismiss)
-        button = Button(text='Open popup', size_hint=(None, None),
-                        size=('150sp', '70dp'),
-                        on_release=popup.open)
+        btnsave.bind(on_release=popup.dismiss)
         popup.open()
-        col = AnchorLayout()
-        col.add_widget(button)
-        return col
+        # col = AnchorLayout()
+        # col.add_popup(button)
+        # return col
 
     def previous_history(self):
         """
