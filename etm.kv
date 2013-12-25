@@ -20,23 +20,6 @@
                 size: self.size
         padding: 3
         spacing: 3
-        # input_wid: input
-        ETMTextInput:
-            id: input
-            # canvas.before:
-            #     Color:
-            #         rgba: 1, 1, 1, 1
-            #     Rectangle:
-            #         pos: self.pos
-            #         size: self.size
-            output_wid: output
-            status_wid: status
-            size_hint_y: None
-            height: 30
-            hint_text: 'command'
-            focus: True
-            multiline: True
-            output_text: output.text
         ScrollView:
             id: scrlv
             focus: False
@@ -51,15 +34,19 @@
                 font_size: input.options['fontsize']
                 size_hint: 1, None
                 line_height: 1.2
+                # for kivy < 1.8
                 height: max( (len(self._lines)+1) * self.line_height, scrlv.height)
+                # for kivy >= 1.8
                 # height: max(self.minimum_height, scrlv.height)
                 scroll_y: 1
-        Label:
-            id: status
-            focus: False
+        ETMTextInput:
+            id: input
+            input_wid: input
+            output_wid: output
+            # status_wid: status
             size_hint_y: None
-            height: 20
-            font_size: '14sp'
-            color: [0, 0, 0, 1]
-            text: ''
-            # text: get_current_time().strftime(input_wid.options['reprdatetime'])
+            height: 30
+            hint_text: 'command'
+            focus: True
+            multiline: True
+            output_text: output.text
