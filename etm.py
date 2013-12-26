@@ -19,12 +19,6 @@ Config.set('graphics', 'height', '440')
 Config.set('graphics', 'width', '530')
 
 
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.label import Label
-from kivy.uix.codeinput import CodeInput
-from kivy.uix.modalview import ModalView
-
-
 class ETMDialog():
 
     def __init__(self, parent=None, prompt="etm", validator=lambda x: True):
@@ -37,18 +31,16 @@ class ETMDialog():
         self.content.add_widget(Label(text=self.prompt))
         self.input = CodeInput(multiline=False, size_hint=(1, None), height=30, lexer=TextLexer())
         self.input.bind(on_text_validate=self.validate)
-        # self.input.bind(on_dismiss=self.dismiss)
         self.content.add_widget(self.input)
-
-    def run(self):
         self.popup = ModalView(size_hint=(None, None), size=(400, 200))
         self.popup.add_widget(self.content)
-        # self.parent.input_wid.focus = False
+
+    def run(self):
+        self.input.text = ''
         self.input.focus = True
         self.popup.open()
 
     def validate(self, value):
-        print('validate', value, self.input.text)
         if self.validator(self.input.text):
             self.parent.output_wid.text = self.input.text
             self.input.focus = False
@@ -64,6 +56,7 @@ class ETMTextInput(TextInput):
     options = {}
     popup = ''
     value = ''
+    firsttime = True
 
     def _keyboard_on_key_down(self, window, keycode, text, modifiers):
         # print(keycode)
@@ -83,12 +76,16 @@ class ETMTextInput(TextInput):
                 window, keycode, text, modifiers)
 
     def init(self):
-        self.Dialog = ETMDialog(parent=self, prompt="etm text")
-        self.loop = loop
-        res = self.loop.do_command('s')
-        self.options = self.loop.options
-        self.start_timer()
-        return(res)
+        if self.firsttime:
+            # only do this once
+            self.firsttime = False
+            self.Dialog = ETMDialog(parent=self, prompt="etm text")
+            self.loop = loop
+            res = self.loop.do_command('s')
+            self.options = self.loop.options
+            self.start_timer()
+            return(res)
+        return()
 
     def start_timer(self):
         self.now = get_current_time()
@@ -117,7 +114,6 @@ class ETMTextInput(TextInput):
             except:
                 self.Dialog.run()
                 res = self.Dialog.text
-                print('res', res)
                 self.output_wid.text = self.text
                 self.output_wid.scroll_y = 1
                 self.output_wid.readonly = False

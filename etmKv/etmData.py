@@ -5690,45 +5690,6 @@ Commands:
             return(str(tr('Enter ? s or ? c for help.')))
 
 
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.label import Label
-from kivy.uix.codeinput import CodeInput
-from kivy.uix.modalview import ModalView
-from pygments.lexers.special import TextLexer
-
-
-class ETMDialog():
-
-    def __init__(self):
-        self.prompt = "my prompt"
-        self.value = ""
-
-    def my_dialog(self):
-        def validate(value):
-            print('validate', value)
-            # check out value
-            if value:
-                print('validate', value, codeinput.text)
-                self.value = codeinput.text
-                popup.dismiss()
-                return()
-        content = BoxLayout(orientation='vertical')
-        content.add_widget(Label(text=self.prompt))
-        codeinput = CodeInput(multiline=False, size_hint=(1, None), height=30, focus=True, lexer=TextLexer())
-        codeinput.bind(on_text_validate=validate)
-        content.add_widget(codeinput)
-        popup = ModalView(size_hint=(None, None), size=(400, 200))
-        popup.add_widget(content)
-        codeinput.focus = True
-        popup.open()
-
-        # self.output_wid.text = input.text
-        # self.output_wid.scroll_y = 1
-        # self.output_wid.readonly = False
-        # self.output_wid.focus = True
-        # self.output_wid.cursor = (0, 0)
-
-
 class ETMLoop(ETMCmd):
 
     def __init__(self, options={}, parent=None):
