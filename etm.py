@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import etmKv.etmData as etmData
-from etmKv.etmData import get_current_time, leadingzero, tr
+from etmKv.etmData import get_current_time, leadingzero, init_localization
 
 
 from kivy.app import App
@@ -18,8 +18,11 @@ from kivy.uix.modalview import ModalView
 from kivy.properties import ObjectProperty
 from kivy.config import Config
 from kivy.clock import Clock
-Config.set('graphics', 'height', '440')
+Config.set('graphics', 'height', '430')
 Config.set('graphics', 'width', '520')
+
+import gettext
+_ = gettext.gettext
 
 
 class ETMEditor(CodeInput):
@@ -56,8 +59,8 @@ class ETMDialog():
         self.text = ''
         self.editor = ETMEditor()
 
-        self.btnclose = Button(text=tr('Close'), size_hint_y=None, height='30sp')
-        self.btnsave = Button(text=tr('Save'), size_hint_y=None, height='30sp')
+        self.btnclose = Button(text=_('Close'), size_hint_y=None, height='30sp')
+        self.btnsave = Button(text=_('Save'), size_hint_y=None, height='30sp')
         buttons = BoxLayout(orientation='horizontal', height='30sp')
         buttons.add_widget(self.btnsave)
         buttons.add_widget(self.btnclose)
@@ -242,6 +245,7 @@ class etmApp(App):
         return BoxIOWidget()
 
 if __name__ == "__main__":
+    init_localization()
     etmdir = ''
     if len(sys.argv) > 1:
         etmdir = sys.argv.pop(1)
