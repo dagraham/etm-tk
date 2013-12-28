@@ -25,15 +25,20 @@
             focus: False
             CodeInput:
                 id: output
-                background_color: [1, 1, 1, 1]
-                # border: [16, 16, 32, 16]
+                canvas.before:
+                    Color:
+                        rgba: 1, 1, 1, 1
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                focus: False
                 lexer: TextLexer()
                 text: input.init()
-                focus: False
+                # focus: False
                 readonly: True
                 font_size: input.options['fontsize']
                 size_hint: 1, None
-                line_height: 1.2
+                line_height: 1.1
                 # for kivy < 1.8
                 height: max( (len(self._lines)+1) * self.line_height, scrlv.height)
                 # for kivy >= 1.8
@@ -43,6 +48,7 @@
             id: input
             input_wid: input
             output_wid: output
+            scroll_wid: scrlv
             # status_wid: status
             size_hint_y: None
             height: 30
