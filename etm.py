@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
-import etmKv.etmData as etmData
-from etmKv.etmData import get_current_time, leadingzero, init_localization
+import etmKv.data as data
+from etmKv.data import get_current_time, leadingzero, init_localization
 
 
 from kivy.app import App
@@ -249,6 +249,6 @@ if __name__ == "__main__":
     etmdir = ''
     if len(sys.argv) > 1:
         etmdir = sys.argv.pop(1)
-    (user_options, options, use_locale) = etmData.get_options(etmdir)
-    loop = etmData.ETMLoop(options)
+    (user_options, options, use_locale) = data.get_options(etmdir)
+    loop = data.ETMLoop(options)
     etmApp().run()

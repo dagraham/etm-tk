@@ -23,7 +23,7 @@ else:
     python_version2 = True
     from cStringIO import StringIO
     import cPickle as pickle
-    QString = lambda x: x
+    # QString = lambda x: x
 
 dayfirst = False
 yearfirst = True
@@ -34,14 +34,6 @@ import locale
 
 # term_encoding = locale.getdefaultlocale()[1]
 term_locale = locale.getdefaultlocale()[0]
-
-qt_version = 0  # don't use the Qt based GUI - command line only
-
-
-def QLocale(**args):
-    return(None)
-
-QString = str
 
 qt2dt = [
     ("a", "%p"),
@@ -58,8 +50,6 @@ qt2dt = [
     ("hh", "%H"),
     ("h", "%I"),
     ("mm", "%M")]
-
-QT_VERSION_STR = PYQT_VERSION_STR = SIP_VERSION_STR = 0
 
 # gettext.bindtextdomain('etm-kv', '/Users/dag/etm-kv/language')
 # gettext.textdomain('etm-kv')
@@ -828,29 +818,15 @@ def get_options(etmdir=''):
     if use_locale:
         locale.setlocale(locale.LC_ALL, map(str, use_locale[0]))
         lcl = locale.getlocale()
-        if qt_version:
-            qlcl = QLocale(QLocale(eval(use_locale[1]), eval(use_locale[2])))
-            Qlcl = QLocale()
-            Qlcl.setDefault(qlcl)
-        else:
-            qlcl = None
     else:
         lcl = locale.getdefaultlocale()
-        if qt_version:
-            Qlcl = QLocale()
-            qlcl = Qlcl.system()
-        else:
-            qlcl = None
 
     options['lcl'] = lcl
-    options['qlcl'] = qlcl
     # define parse using dayfirst and yearfirst
     setup_parse(options['dayfirst'], options['yearfirst'])
     term_encoding = options['encoding']['term']
     file_encoding = options['encoding']['file']
-    # print('options["encoding"]', options['encoding'])
     return(user_options, options, use_locale)
-
 
 def get_fmts(options):
     df = "%x"
@@ -5887,17 +5863,6 @@ class ETMLoop(ETMCmd):
 def main(etmdir='', argv=[]):
     use_locale = ()
     (user_options, options, use_locale) = get_options(etmdir)
-    if qt_version:
-        if use_locale:
-            locale.setlocale(locale.LC_ALL, map(str, use_locale[0]))
-            qlcl = options['qlcl']
-            Qlcl = QLocale()
-            Qlcl.setDefault(qlcl)
-        else:
-            Qlcl = QLocale()
-            qlcl = Qlcl.system()
-
-        QLocale.setDefault(qlcl)
 
     if len(argv) > 1:
         if argv[1] in ['a', 'c', 's', 'm', 'n', 'v', '?']:
