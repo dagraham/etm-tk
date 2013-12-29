@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import etmKv.data as data
-from etmKv.data import get_current_time, leadingzero, init_localization
-
+from etmKv.data import get_current_time, init_localization, str2hsh, hsh2str
 
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
@@ -18,7 +17,7 @@ from kivy.uix.modalview import ModalView
 from kivy.properties import ObjectProperty
 from kivy.config import Config
 from kivy.clock import Clock
-Config.set('graphics', 'height', '430')
+Config.set('graphics', 'height', '420')
 Config.set('graphics', 'width', '520')
 
 import gettext
@@ -31,7 +30,7 @@ class ETMEditor(CodeInput):
         self.parent = parent
         self.button = Button
         self.callback = callback
-        super(ETMEditor, self).__init__(multiline=True, size_hint=(1, None), height=380, lexer=TextLexer())
+        super(ETMEditor, self).__init__(multiline=True, size_hint=(1, None), height=300, lexer=TextLexer())
         self.modified = False
         self.bind(focus=self.on_focus)
 
@@ -52,50 +51,70 @@ class ETMEditor(CodeInput):
 
 class ETMDialog():
 
-    def __init__(self, parent=None, prompt="etm", validator=lambda x: True):
+    def __init__(self, parent=None, options={}):
         self.parent = parent
-        self.prompt = prompt
-        self.validator = validator
-        self.text = ''
+        self.options = options
         self.editor = ETMEditor()
+        self.text = ''
 
-        self.btnclose = Button(text=_('Close'), size_hint_y=None, height='30sp')
-        self.btnsave = Button(text=_('Save'), size_hint_y=None, height='30sp')
+        self.btnvalidate = Button(text=_('Close'), size_hint_y=None, height='30sp')
+        self.btncancel = Button(text=_('Cancel'), size_hint_y=None, height='30sp')
         buttons = BoxLayout(orientation='horizontal', height='30sp')
-        buttons.add_widget(self.btnsave)
-        buttons.add_widget(self.btnclose)
-
+        buttons.add_widget(self.btncancel)
+        buttons.add_widget(self.btnvalidate)
+        self.message = Label(text="", size_hint_y=None, height=80)
         self.content = BoxLayout(orientation='vertical')
 
         self.input = ETMEditor(callback=self.set_modified)
         self.input.background_color = [1, 1, 1, 1]
-        self.input.bind(on_text_validate=self.validate)
+        self.input.font_size =  self.options['fontsize']
+
+        # self.input.bind(on_text_validate=self.validate)
         # self.input.bind(on_key_up=self.on_text)
         self.content.add_widget(self.input)
         self.content.add_widget(buttons)
+        self.content.add_widget(self.message)
         self.popup = ModalView(size_hint=(None, None), size=(500, 420))
         self.popup.add_widget(self.content)
-        self.btnsave.bind(on_release=self.validate)
-        self.btnclose.bind(on_release=self.popup.dismiss)
-        self.btnsave.disabled = True
+        self.btnvalidate.bind(on_release=self.validate)
+        self.btncancel.bind(on_release=self.popup.dismiss)
 
-    def run(self):
+    def run(self, text="", msg=""):
+        print('run', text, msg)
+        self.input.text = text
+        self.message.text = msg
         self.input.reset_undo()
-        self.input.text = ''
         self.input.focus = True
         self.popup.open()
 
     def validate(self, value):
-        if self.validator(self.input.text):
-            self.parent.output_wid.text = self.input.text
-            self.input.focus = False
+        new_str = ''
+        if self.modified:
+            new_hsh, msg = str2hsh(self.input.text, options=self.options)
+            if msg:
+                self.message.text = "\n".join(msg)
+            else:
+                try:
+                    new_str = hsh2str(new_hsh, self.options)
+                    new_item = unicode(u"{0}".format(hsh2str(new_hsh, self.options)))
+                    self.input.text = new_item
+                    self.message.text = self.parent.loop.do_n(arg_str=new_item)
+                    self.set_modified(False)
+                except:
+                    self.message.text = "Error processing %s" % new_hsh
+        else:
+            if new_str:
+                self.parent.output_wid.text = new_str
             self.popup.dismiss()
-            self.parent.input_wid.focus = True
+
 
     def set_modified(self, bool):
         print('set_modified', bool)
         self.modified = bool
-        self.btnsave.disabled = not bool
+        if bool:
+            self.btnvalidate.text = _('Validate')
+        else:
+            self.btnvalidate.text = _('Close')
 
 
 class ETMTextInput(TextInput):
@@ -133,11 +152,11 @@ class ETMTextInput(TextInput):
             self.firsttime = False
             self.bind(focus=self.on_focus)
 
-            self.Dialog = ETMDialog(parent=self, prompt="etm text")
             self.loop = loop
+            self.options = self.loop.options
+            self.Dialog = ETMDialog(parent=self, options=self.options)
             self.loop.parent = self
             res = self.loop.do_command('a')
-            self.options = self.loop.options
             self.start_timer()
             return(res)
         return()
@@ -176,17 +195,21 @@ class ETMTextInput(TextInput):
                     self.history.remove(cmd)
                 self.history.append(cmd)
                 self.index = len(self.history) - 1
+            # select everything in input to make it easy to clear
             self.select_all()
             try:
                 res = loop.do_command(cmd)
             except:
+                return _('could not process command "{0}"').format(cmd)
+
+                # self.Dialog = ETMDialog(parent=self, text='except')
                 self.Dialog.run()
                 res = self.Dialog.text
                 print('res', res)
 
         elif self.mode == 'edit':
             print('edit', cmd)
-            res = loop.do_edit(cmd)
+            res = loop._do_edit(cmd)
 
         elif self.mode == 'delete':
             print('deleted', cmd)
@@ -194,10 +217,11 @@ class ETMTextInput(TextInput):
 
         elif self.mode == 'new_date':
             print('date', cmd)
-            res = loop.new_date(cmd)
+            res = loop._new_date(cmd)
 
         if not res:
             return(True)
+        print('display and scroll to top')
         self.output_wid.text = res
         self.scroll_wid.scroll_y = 1
         self.scroll_to_top()
@@ -250,5 +274,5 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         etmdir = sys.argv.pop(1)
     (user_options, options, use_locale) = data.get_options(etmdir)
-    loop = data.ETMLoop(options)
+    loop = data.ETMCmd(options)
     etmApp().run()

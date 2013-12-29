@@ -9,6 +9,7 @@ from textwrap import wrap
 import platform
 import gettext
 import logging
+import subprocess
 
 if platform.python_version() >= '3':
     python_version = 3
@@ -23,10 +24,11 @@ else:
     python_version2 = True
     from cStringIO import StringIO
     import cPickle as pickle
-    # QString = lambda x: x
 
 dayfirst = False
 yearfirst = True
+
+from kivy import __version__ as KIVY_VERSION_STR
 
 import re
 import sys
@@ -75,21 +77,17 @@ def init_localization():
 
     trans.install()
 
-
-from kivy import __version__ as KIVY_VERSION_STR
-
-
 def run_cmd(cmd):
     os.system(cmd)
 
 
-def d_to_str(qlcl, d, s):
+def d_to_str(d, s):
     for key, val in qt2dt:
         s = s.replace(key, val)
     return(s2or3(d.strftime(s)))
 
 
-def dt_to_str(qlcl, dt, s):
+def dt_to_str(dt, s):
     for key, val in qt2dt:
         s = s.replace(key, val)
     return(s2or3(dt.strftime(s)))
@@ -1580,6 +1578,7 @@ def parse_dtstr(dtstr, timezone="", fmt=rfmt):
         string. E.g., ('2/5/12', 'US/Pacific') => "20120205T0000-0800"
     """
     if type(dtstr) in [str, unicode]:
+        print('processing dtstr', dtstr)
         if dtstr == 'now':
             if timezone:
                 dt = datetime.now().replace(
@@ -1722,6 +1721,7 @@ For editing one or more, but not all, instances of an item. Needed:
     else:
         sl = ["%s %s" % (hsh['itemtype'], hsh['_summary'])]
     for key in item_keys:
+        print('processking key', key)
         amp_key = None
         if key == 'a' and '_a' in hsh:
             alerts = []
@@ -2373,7 +2373,7 @@ def str2opts(s, options={}):
                 include.discard('d')
             groupby['tuples'].append(" ".join(d_lst))
             groupby['fmts'].append(
-                "d_to_str(qlcl, tup[-3], '%s')" % group)
+                "d_to_str(tup[-3], '%s')" % group)
 
         elif '[' in group:
             if group[0] == 'f':
@@ -2610,24 +2610,22 @@ def applyFilters(file2uuids, uuid2hash, filters):
 
 def reportDT(dt, include, options={}):
     # include will be something like "MMM d yyyy"
-    qlcl = options['qlcl']
     res = ''
     if dt.hour == 0 and dt.minute == 0:
         if not include:
             return('')
-        # return(d_to_str(qlcl, dt, "MMM d yyyy"))
-        return(d_to_str(qlcl, dt, "yyyy-MM-d"))
+        return(d_to_str(dt, "yyyy-MM-d"))
     else:
         if options['ampm']:
             if include:
-                res = dt_to_str(qlcl, dt, "%s h:mma" % include)
+                res = dt_to_str(dt, "%s h:mma" % include)
             else:
-                res = dt_to_str(qlcl, dt, "h:mma")
+                res = dt_to_str(dt, "h:mma")
         else:
             if include:
-                res = dt_to_str(qlcl, dt, "%s hh:mm" % include)
+                res = dt_to_str(dt, "%s hh:mm" % include)
             else:
-                res = dt_to_str(qlcl, dt, "hh:mm")
+                res = dt_to_str(dt, "hh:mm")
         return(leadingzero.sub('', res.lower()))
 
 
@@ -2642,7 +2640,6 @@ def makeReportTuples(uuids, uuid2hash, groupby, dated, options={}):
     today_datetime = datetime.now().replace(
         hour=0, minute=0, second=0, microsecond=0)
     today_date = datetime.now().date()
-    qlcl = options['qlcl']
     tups = []
     for uuid in uuids:
         hsh = {}
@@ -2679,7 +2676,7 @@ def makeReportTuples(uuids, uuid2hash, groupby, dated, options={}):
                 # print('dt', type(dt), dt)
                 for g in groupby['tuples']:
                     if groupdate_regex.search(g):
-                        item.append(d_to_str(qlcl, dt, g))
+                        item.append(d_to_str(dt, g))
                     elif g in ['c', 'u']:
                         item.append(hsh[g])
                     else:  # should be f or k
@@ -2730,7 +2727,7 @@ def makeReportTuples(uuids, uuid2hash, groupby, dated, options={}):
                     dt = ''
             for g in groupby['tuples']:
                 if groupdate_regex.search(g):
-                    item.append(dt_to_str(qlcl, dt, g))
+                    item.append(dt_to_str(dt, g))
                 else:
                     try:
                         res = eval(g)
@@ -2839,13 +2836,11 @@ def getReportData(s, file2uuids, uuid2hash, options={}, export=False,
     groupby, dated, filters = str2opts(s, options)
     if not groupby:
         return([str(_('invalid groupby setting'))])
-
     uuids = applyFilters(file2uuids, uuid2hash, filters)
     tups = makeReportTuples(uuids, uuid2hash, groupby, dated, options)
     rows = []
     cols = groupby['cols']
     fmts = groupby['fmts']
-    qlcl = options['qlcl']
 
     for tup in tups:
         hsh = uuid2hash[tup[-1]]
@@ -2859,13 +2854,13 @@ def getReportData(s, file2uuids, uuid2hash, options={}, export=False,
             # and {'tup' ... dt_to_str} is the local namespace
             eval_fmts = [
                 eval(x, {},
-                     {'tup': tup, 'hsh': hsh, 'rsplit': rsplit, 'qlcl': qlcl,
+                     {'tup': tup, 'hsh': hsh, 'rsplit': rsplit,
                       'd_to_str': d_to_str, 'dt_to_str': dt_to_str})
                 for x in fmts]
         except Exception as e:
             print('getReportData exception', type(e), e)
             print(fmts)
-            print(tup, hsh, rsplit, qlcl, d_to_str, dt_to_str)
+            print(tup, hsh, rsplit, d_to_str, dt_to_str)
             for x in fmts:
                 print('x', x)
             continue
@@ -3112,7 +3107,7 @@ def str2hsh(s, id=None, options={}):
                 # print('hsh[s]', hsh['s'].strftime(reprdatefmt))
 
             except:
-                err = "error: could not parse h['s']: '%s'" % hsh['s']
+                err = "error: could not parse '@s {0}'".format(hsh['s'])
                 msg.append(err)
         if '+' in hsh:
             tmp = []
@@ -3129,8 +3124,8 @@ def str2hsh(s, id=None, options={}):
                 hsh['b'] = int(hsh['b'])
             except:
                 msg.append(
-                    "the value of @b should be an integer: hsh['b'] = '%s'" %
-                    hsh['b'])
+                    "the value of @b should be an integer: '@b {0}'".format(
+                    hsh['b']))
         if 'f' in hsh:
             # this will be a list of done:due pairs
             # 20120201T1325;20120202T1400, ...
@@ -4582,11 +4577,11 @@ def ensureMonthly(options, now=None):
 
 import cmd
 
-# this is used by cmd whatever pep8 thinks
-try:
-    import pyreadline as readline
-except ImportError:
-    import readline
+# # this is used by cmd whatever pep8 thinks
+# try:
+#     import pyreadline as readline
+# except ImportError:
+#     import readline
 
 
 class ETMCmd(cmd.Cmd):
@@ -4594,9 +4589,52 @@ class ETMCmd(cmd.Cmd):
         Accepts commands via the normal interactive
         prompt or on the command line.
     """
-    def __init__(self, options={}):
+    def __init__(self, options={}, parent=None):
+        # delete the next line to use in kivy
         cmd.Cmd.__init__(self)
         self.options = options
+        self.parent = parent
+        self.cmdDict = {
+            '?': self.do_help,
+            'a': self.do_a,
+            'c': self.do_c,
+            'd': self.do_d,
+            'E': self.do_E,
+            'e': self.do_e,
+            'f': self.do_f,
+            'h': self.do_h,
+            'i': self.do_i,
+            'm': self.do_m,
+            'n': self.do_n,
+            'O': self.do_O,
+            'q': self.do_q,
+            'r': self.do_r,
+            'R': self.do_R,
+            's': self.do_s,
+            't': self.do_t,
+            'v': self.do_v,
+        }
+
+        self.helpDict = {
+            'help': self.help_help,
+            'a': self.help_a,
+            'c': self.help_c,
+            'd': self.help_d,
+            'E': self.help_E,
+            'e': self.help_e,
+            'f': self.help_f,
+            'h': self.help_h,
+            'i': self.help_i,
+            'm': self.help_m,
+            'n': self.help_n,
+            'O': self.help_O,
+            'q': self.help_q,
+            'r': self.help_r,
+            'R': self.help_R,
+            's': self.help_s,
+            't': self.help_t,
+            'v': self.help_v,
+        }
         self.ruler = '-'
         self.rows = []
         self.file2uuids = {}
@@ -4615,6 +4653,61 @@ class ETMCmd(cmd.Cmd):
             self.editcmd = ''
         self.tmpfile = os.path.join(self.options['etmdir'], '.temp.txt')
         self.load_data()
+
+    def do_command(self, s):
+        args = s.split(' ')
+        cmd = args.pop(0)
+        if args:
+            arg_str = " ".join(args)
+        else:
+            arg_str = ''
+        # print('do_command', cmd, arg_str)
+        if cmd not in self.cmdDict:
+            return _('"{0}" is an unrecognized command.').format(cmd)
+        return self.cmdDict[cmd](arg_str)
+
+    def do_help(self, cmd):
+        if cmd:
+            return(self.helpDict[cmd]())
+        else:
+            return(self.help_help())
+
+    def mk_rep(self, arg_str):
+        # we need to return the output string rather than print it
+        self.last_rep = arg_str
+        ret = []
+        try:
+            if arg_str == 'a':
+                txt, self.count2id = getAgenda(
+                    self.rows,
+                    colors=self.options['agenda_colors'],
+                    days=self.options['agenda_days'],
+                    indent=self.options['agenda_indent'],
+                    width1=self.options['agenda_width1'],
+                    width2=self.options['agenda_width2'],
+                    calendars=self.options['calendars'],
+                    mode=self.output,
+                    number=self.number)
+            else:
+                txt, self.count2id = getReportData(
+                    arg_str,
+                    self.file2uuids,
+                    self.uuid2hash,
+                    self.options,
+                    mode=self.output,
+                    number=self.number)
+            if txt and not txt[0]:
+                txt.pop(0)
+            if txt:
+                ret.extend(txt)
+            else:
+                ret.append(str(_('No output was generated.')))
+        except:
+            s = str(_('Could not process "{0}".')).format(arg_str)
+            p = str(_('Enter ? r or ? t for help.'))
+            ret.extend([s, p])
+        return('\n'.join(ret))
+
 
     def load_data(self):
         self.count2id = {}
@@ -4721,86 +4814,18 @@ Either ITEM must be provided or edit_cmd must be specified in etm.cfg.
             hsh['_dt'] = parse(parse_dtstr(dtstr, hsh['z']))
         return(hsh)
 
-    def do_t(self, arg):
-        'time and expense report specification:'
-        if not arg:
-            self.help_a()
-            return()
-        arg = arg.split('#')[0]
-        arg_str = "t {0}".format(arg)
-        return('\nreport: {0}'.format(arg_str))
-        return(self.mk_rep(arg_str))
+    def do_a(self, arg_str):
+        return(self.mk_rep('a'))
 
-    def help_t(self):
+    def help_a(self):
         return("""\
 Usage:
 
-    t <groupby> [options]
+    a
 
-Generate an action report. Groupby can include *semicolon* separated date specifications and elements from:
-    c context
-    f file path
-    k keyword
-    u user
+Generate an agenda including dated items for the next {0} days (agenda_days from etm.cfg) together with any now and next items.\
+""".format(self.options['agenda_days']))
 
-Options include:
-    -b begin date
-    -c context regex
-    -d depth
-    -e end date
-    -f file regex
-    -k keyword regex
-    -l location regex
-    -s summary regex
-    -t tags regex
-    -u user regex
-    -w column 1 width
-    -W column 2 width\
-""")
-
-    def do_r(self, arg):
-        'report (non actions) specification'
-        if not arg:
-            self.help_r()
-            return()
-        arg_str = "r {0}".format(arg)
-        # return('\nreport: {0}'.format(arg_str))
-        return(self.mk_rep(arg_str))
-
-    def help_r(self):
-        return("""\
-Usage:
-
-    r <groupby> [options]
-
-Generate a custom report. Groupby can include semicolon separated date specifications and elements from:
-    c context
-    f file path
-    k keyword
-    t tag
-    u user
-
-Options include:
-    -b begin date
-    -c context regex
-    -d depth
-    -e end date
-    -f file regex
-    -k keyword regex
-    -l location regex
-    -o omit
-    -s summary regex
-    -t tags regex
-    -u user regex
-    -w column 1 width
-    -W column 2 width
-
-Example:
-
-    r t -t tag 1 -t !tag 2
-
-Group by tag, showing items that have tag 1 but not tag 2.
-""")
 
     def do_c(self, arg_str):
         hsh = self.get_itemhash(arg_str)
@@ -4809,7 +4834,7 @@ Group by tag, showing items that have tag 1 but not tag 2.
         self.do_n('', hsh['entry'])
 
     def help_c(self):
-        return("""\
+        return _("""\
 Usage:
 
     c INT
@@ -4831,7 +4856,7 @@ If there is an item number INT among those displayed by the previous'a' or 'r'  
             rev_str = ''
             instance = fmt_datetime(hsh['_dt'], self.options)
             prompt = "\n".join([
-                _("\nYou have selected instance"),
+                _("You have selected instance"),
                 "    {0}".format(instance),
                 _("of a repeating item. What do you want to delete?"),
                 "  1. {0}".format(_("this instance")),
@@ -4843,80 +4868,76 @@ If there is an item number INT among those displayed by the previous'a' or 'r'  
             self.parent.input_wid.text = ''
             return(prompt)
 
-            choice = self.delete_which(instance)
-            print(choice)
-            if choice is None:
-                return(False)
-            dt = parse(
-                hsh['_dt']).replace(
-                tzinfo=tzlocal()).astimezone(
-                gettz(hsh['z']))
-            dtn = dt.replace(tzinfo=None)
+    def _do_delete(self, choice):
+        print('choice', "{0}".format(choice))
+        if not choice:
+            return(False)
+        try:
+            choice = int(choice)
+        except:
+            return(False)
 
-            if choice == 1:
-                # delete this instance only by removing it from @+
-                # or adding it to @-
-                hsh_rev = deepcopy(hsh)
-                if '+' in hsh_rev and dtn in hsh_rev['+']:
-                    hsh_rev['+'].remove(dtn)
-                    if not hsh_rev['+'] and hsh_rev['r'] == 'l':
-                        del hsh_rev['r']
-                        del hsh_rev['_r']
-                else:
-                    hsh_rev.setdefault('-', []).append(dt)
-                newstr = hsh2str(hsh_rev)
-                newlines = newstr.split('\n')
-                self.replace_lines(fp, lines, begline, endline, newlines)
-                self.load_data()
-                return(False)
+        dt = parse(
+            hsh['_dt']).replace(
+            tzinfo=tzlocal()).astimezone(
+            gettz(hsh['z']))
+        dtn = dt.replace(tzinfo=None)
 
-            if choice == 2:
-                # delete this and all subsequent instances by adding
-                # this instance - one minute to &u for each @r
+        if choice == 1:
+            # delete this instance only by removing it from @+
+            # or adding it to @-
+            hsh_rev = deepcopy(hsh)
+            if '+' in hsh_rev and dtn in hsh_rev['+']:
+                hsh_rev['+'].remove(dtn)
+                if not hsh_rev['+'] and hsh_rev['r'] == 'l':
+                    del hsh_rev['r']
+                    del hsh_rev['_r']
+            else:
+                hsh_rev.setdefault('-', []).append(dt)
+            newstr = hsh2str(hsh_rev)
+            newlines = newstr.split('\n')
+            self.replace_lines(fp, lines, begline, endline, newlines)
+            self.load_data()
+            return(False)
 
-                tmp = []
-                for h in hsh_rev['_r']:
-                    if 'f' in h and h['f'] != u'l':
-                        h['u'] = dt - oneminute
-                    tmp.append(h)
-                hsh_rev['_r'] = tmp
-                if u'+' in hsh:
-                    tmp_rev = []
-                    for d in hsh_rev['+']:
-                        if d < dt:
-                            tmp_rev.append(d)
-                    hsh_rev['+'] = tmp_rev
-                if u'-' in hsh:
-                    tmp_rev = []
-                    for d in hsh_rev['-']:
-                        if d < dt:
-                            tmp_rev.append(d)
-                    hsh_rev['-'] = tmp_rev
-                hsh_cpy['s'] = dt
-                rev_str = hsh2str(hsh_rev, self.options)
-                newlines = rev_str.split('\n')
-                self.replace_lines(fp, lines, begline, endline, newlines)
-                self.load_data()
-                return(False)
+        if choice == 2:
+            # delete this and all subsequent instances by adding
+            # this instance - one minute to &u for each @r
+
+            tmp = []
+            for h in hsh_rev['_r']:
+                if 'f' in h and h['f'] != u'l':
+                    h['u'] = dt - oneminute
+                tmp.append(h)
+            hsh_rev['_r'] = tmp
+            if u'+' in hsh:
+                tmp_rev = []
+                for d in hsh_rev['+']:
+                    if d < dt:
+                        tmp_rev.append(d)
+                hsh_rev['+'] = tmp_rev
+            if u'-' in hsh:
+                tmp_rev = []
+                for d in hsh_rev['-']:
+                    if d < dt:
+                        tmp_rev.append(d)
+                hsh_rev['-'] = tmp_rev
+            hsh_cpy['s'] = dt
+            rev_str = hsh2str(hsh_rev, self.options)
+            newlines = rev_str.split('\n')
+            self.replace_lines(fp, lines, begline, endline, newlines)
+            self.load_data()
+            return(False)
 
         # not repeating or all instances
         # delete item
         ret = []
-        ret.append(_("\nReady to delete:"))
-        ret.append("-" * self.line_length)
-        ret.append(hsh['entry'])
-        ret.append("-" * self.line_length)
-        ret.append(_('WARNING: THIS ACTION CANNOT BE UNDONE!'))
-        rep = raw_input(_("Continue? [Yn] "))
-        if rep.lower() == 'n':
-            ret.append(_('canceled'))
-            return(False)
         self.replace_lines(fp, lines, begline, endline, [])
         self.load_data()
         return(False)
 
     def help_d(self):
-        return("""\
+        return _("""\
 Usage:
 
     d INT
@@ -4930,20 +4951,13 @@ If there is an item number INT among those displayed by the previous'a' or 'r'  
         hsh = self.get_itemhash(args[0])
         if not hsh:
             return()
-        if not self.editcmd:
-            return("""
-edit_cmd must be specified in etm.cfg.
-""")
-            return(False)
-        # f, begline, endline = hsh['fileinfo']
-        # fp = os.path.join(self.options['datadir'], f)
-        # fo = codecs.open(fp, 'r', file_encoding)
-        # lines = fo.readlines()
-        # fo.close()
         if item:
             self.mode = _('finished task')
             # item_str = item
         else:
+            self.parent.mode = 'edit'
+            self.parent.item_hsh = hsh
+            self.parent.input_wid.text = ''
             if 'r' in hsh:
                 # repeating
                 # term_print('do_e', hsh)
@@ -4958,12 +4972,14 @@ edit_cmd must be specified in etm.cfg.
                     "  3. {0}".format(_("this and all subsequent instances")),
                     "  4. {0}".format(_("all instances")),
                     "{0}".format(_('Choice [1-4] or 0 to cancel?'))])
-                self.parent.mode = 'edit'
-                self.parent.item_hsh = hsh
-                self.parent.input_wid.text = ''
+                # self.parent.mode = 'edit'
+                # self.parent.item_hsh = hsh
+                # self.parent.input_wid.text = ''
                 return(prompt)
+            else:
+                self._do_edit(4)
 
-    def new_date(self, arg):
+    def _new_date(self, arg):
         print('new_date', arg)
         # no more input is needed
         self.parent.mode = 'command'
@@ -5002,19 +5018,20 @@ edit_cmd must be specified in etm.cfg.
         self.load_data()
         self.parent.mode = 'command'
         self.parent.input_wid.text = ''
-        # self.parent.output_wid.text = ''
-        # return(False)
+        return _("""\
+Changed datetime
+    from {0}
+    to   {1}
+in item "{2}".""").format(old_dt, new_dt, hsh['_summary'])
 
-    def do_edit(self, choice):
-        print('choice', "{0}".format(choice))
-        choice = int(choice)
-        print('int choice', choice)
+    def _do_edit(self, choice):
         if not choice:
             return(False)
         try:
             choice = int(choice)
         except:
             return(False)
+        print('choice', "{0}".format(choice))
 
         if choice == 1:
             # only the datetime of this instance
@@ -5025,114 +5042,94 @@ edit_cmd must be specified in etm.cfg.
             self.parent.input_wid.text = ''
             return(prompt)
 
-
-        if choice == 2:
-            # this instance
-            # remove this instance by adding it to @-
-            # open a non-repeating copy with this instance as @s
-            hsh_cpy = deepcopy(hsh)
-            hsh_rev = deepcopy(hsh)
+        elif choice in [2, 3]:
+            hsh_cpy = deepcopy(self.parent.item_hsh)
+            hsh_rev = deepcopy(self.parent.item_hsh)
             hsh_cpy['i'] = uniqueId()
+
             dt = parse(
-                hsh['_dt']).replace(
+                hsh_cpy['_dt']).replace(
                 tzinfo=tzlocal()).astimezone(
                 gettz(hsh['z']))
             dtn = dt.replace(tzinfo=None)
-            if '+' in hsh_rev and dtn in hsh_rev['+']:
-                hsh_rev['+'].remove(dtn)
-                if not hsh_rev['+'] and hsh_rev['r'] == 'l':
-                    del hsh_rev['r']
-                    del hsh_rev['_r']
-            else:
-                hsh_rev.setdefault('-', []).append(dt)
-            for k in ['_r', 'o', '+', '-']:
-                if k in hsh_cpy:
-                    del hsh_cpy[k]
-            hsh_cpy['s'] = dt
-            rev_str = hsh2str(hsh_rev, self.options)
-            rev_lines = rev_str.split('\n')
-            self.mode = 'changed instance'
-            self.replace_lines(fp, lines, begline, endline, rev_lines)
-            edit_str = hsh2str(hsh_cpy, self.options)
-            self.do_n(itemstr=edit_str)
-            return(False)
 
-        if choice == 3:
-            # this and all subsequent instances
-            # add this instance - one minute as &u to each @r entry
-            # open a copy with with this instance as @s
-            hsh_cpy = deepcopy(hsh)
-            hsh_rev = deepcopy(hsh)
-            hsh_cpy['i'] = uniqueId()
-            dtstr = hsh['_dt']
-            dt = parse(parse_dtstr(dtstr, hsh['z'])).replace(
-                tzinfo=None)
-            tmp = []
-            for h in hsh_rev['_r']:
-                if 'f' in h and h['f'] != u'l':
-                    h['u'] = dt - oneminute
-                tmp.append(h)
-            hsh_rev['_r'] = tmp
-            if u'+' in hsh:
-                tmp_rev = []
-                tmp_cpy = []
-                for d in hsh_rev['+']:
-                    if d < dt:
-                        tmp_rev.append(d)
-                    else:
-                        tmp_cpy.append(d)
-                hsh_rev['+'] = tmp_rev
-                hsh_cpy['+'] = tmp_cpy
-            if u'-' in hsh:
-                tmp_rev = []
-                tmp_cpy = []
-                for d in hsh_rev['-']:
-                    if d < dt:
-                        tmp_rev.append(d)
-                    else:
-                        tmp_cpy.append(d)
-                hsh_rev['-'] = tmp_rev
-                hsh_cpy['-'] = tmp_cpy
-            hsh_cpy['s'] = dt
-            rev_str = hsh2str(hsh_rev, self.options)
-            rev_lines = rev_str.split('\n')
-            self.mode = "changed this and subsequent instances"
-            self.replace_lines(fp, lines, begline, endline, rev_lines)
-            edit_str = hsh2str(hsh_cpy, self.options)
-            self.do_n(itemstr=edit_str)
-            return(False)
-
-        # not repeating or all instances
-        item_str = "\n".join(
-            [unicode(u'%s') % x.rstrip() for x in
-                lines[begline - 1:endline]])
-        fo = codecs.open(self.tmpfile, 'w', file_encoding)
-        fo.write(item_str)
-        fo.close()
-        modified = os.path.getmtime(self.tmpfile)
-        newlines, new_hsh = self.edit_tmp()
-        if modified == os.path.getmtime(self.tmpfile):
-            if not item:
-                # unchanged
-                return(_('unchanged'))
+            if choice == 2:
+                # this instance
+                # remove this instance by adding it to @-
+                # open a non-repeating copy with this instance as @s
+                if '+' in hsh_rev and dtn in hsh_rev['+']:
+                    hsh_rev['+'].remove(dtn)
+                    if not hsh_rev['+'] and hsh_rev['r'] == 'l':
+                        del hsh_rev['r']
+                        del hsh_rev['_r']
+                else:
+                    hsh_rev.setdefault('-', []).append(dt)
+                for k in ['_r', 'o', '+', '-']:
+                    if k in hsh_cpy:
+                        del hsh_cpy[k]
+                hsh_cpy['s'] = dt
+                rev_str = hsh2str(hsh_rev, self.options)
+                rev_lines = rev_str.split('\n')
+                self.mode = 'changed instance'
+                self.replace_lines(fp, lines, begline, endline, rev_lines)
+                edit_str = hsh2str(hsh_cpy, self.options)
+                self.do_n(itemstr=edit_str)
                 return(False)
-        if not newlines:
-            return(False)
-        newstr = "\n".join(newlines)
-        return("{0:-^{4}}\n{1}\n{2:-^{4}}\n{3}".format(
-            _(' Ready to replace '),
-            newstr, _(" in "), self.currfile, self.line_length))
-        return("-" * self.line_length)
-        rep = raw_input("Continue? [Yn] ")
-        if rep.lower() == 'n':
-            return(_('canceled'))
-            return(False)
-        self.mode = _('changed all instances')
-        self.replace_lines(fp, lines, begline, endline, newlines)
-        self.load_data()
+
+            elif choice == 3:
+                # this and all subsequent instances
+                # add this instance - one minute as &u to each @r entry
+                # open a copy with with this instance as @s
+                tmp = []
+                for h in hsh_rev['_r']:
+                    if 'f' in h and h['f'] != u'l':
+                        h['u'] = dt - oneminute
+                    tmp.append(h)
+                hsh_rev['_r'] = tmp
+                if u'+' in hsh:
+                    tmp_rev = []
+                    tmp_cpy = []
+                    for d in hsh_rev['+']:
+                        if d < dt:
+                            tmp_rev.append(d)
+                        else:
+                            tmp_cpy.append(d)
+                    hsh_rev['+'] = tmp_rev
+                    hsh_cpy['+'] = tmp_cpy
+                if u'-' in hsh:
+                    tmp_rev = []
+                    tmp_cpy = []
+                    for d in hsh_rev['-']:
+                        if d < dt:
+                            tmp_rev.append(d)
+                        else:
+                            tmp_cpy.append(d)
+                    hsh_rev['-'] = tmp_rev
+                    hsh_cpy['-'] = tmp_cpy
+                hsh_cpy['s'] = dt
+                rev_str = hsh2str(hsh_rev, self.options)
+                rev_lines = rev_str.split('\n')
+                self.mode = "changed this and subsequent instances"
+                self.replace_lines(fp, lines, begline, endline, rev_lines)
+                edit_str = hsh2str(hsh_cpy, self.options)
+                self.do_n(itemstr=edit_str)
+                return(False)
+        else:
+            print('got here')
+            # not repeating or choice 4
+            f, begline, endline = self.parent.item_hsh['fileinfo']
+            fp = os.path.join(self.options['datadir'], f)
+            fo = codecs.open(fp, 'r', file_encoding)
+            lines = fo.readlines()
+            fo.close()
+            item_str = "\n".join(
+                [unicode(u'%s') % x.rstrip() for x in
+                    lines[begline - 1:endline]])
+            print('calling do_n', item_str)
+            self.do_n(itemstr=item_str)
 
     def help_e(self):
-        return("""\
+        return _("""\
 Usage:
 
     e INT
@@ -5163,7 +5160,7 @@ edit_cmd must be specified in etm.cfg.
         self.load_data()
 
     def help_E(self):
-        return("""\
+        return _("""\
 Usage:
 
     E INT
@@ -5188,7 +5185,7 @@ If there is an item number INT among those displayedby the previous 'a' or 'r'  
         lines = fo.readlines()
         fo.close()
         now = datetime.now(tzlocal())
-        return("""\
+        return _("""\
 Finishing "{0}".
 Enter a date and time (fuzzy parsed) to use as the completion
 datetime, an empty string to use the current date and time or
@@ -5251,7 +5248,7 @@ datetime, an empty string to use the current date and time or
             hsh['_summary'], dt.strftime(rfmt)))
 
     def help_f(self):
-        return("""\
+        return _("""\
 Usage:
 
     f INT
@@ -5263,10 +5260,10 @@ If there is an item number INT among those displayed by the previous'a' or 'r'  
             cmd = self.options['hg_command'].format(
                 repo=self.options['datadir'])
             cmd = "%s %s" % (cmd, arg_str)
-            os.system(cmd)
+            return(subprocess.check_output(cmd, shell=True))
 
     def help_h(self):
-        return("""\
+        return _("""\
 Usage:
 
     h ARGS
@@ -5283,7 +5280,7 @@ If 'hg_command' is specified in etm.cfg, then execute that command with ARGS.
             _('item'), hsh['entry'].lstrip(), _("file"), filetext))
 
     def help_i(self):
-        return("""\
+        return _("""\
 Usage:
 
     i INT
@@ -5293,17 +5290,17 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
 
     def do_m(self, arg_str):
         f = self.options['report_specifications']
+        if not arg_str.strip():
+            self.help_m()
         if not f or not os.path.isfile(f):
-            return("""
+            return _("""
 This option requires a valid report_specifications setting in etm.cfg.""")
-            return()
         with open(f, 'r') as fo:
             lines = [x for x in fo.readlines() if x[0] != "#"]
         try:
             n = int(arg_str)
             if n < 1 or n > len(lines):
-                return('\n{0} is out of range'.format(n))
-                raise Exception
+                return _('report {0} does not exist'.format(n))
         except:
             return(self.help_m())
         rep_spec = lines[n - 1].strip().split('#')[0]
@@ -5314,38 +5311,40 @@ This option requires a valid report_specifications setting in etm.cfg.""")
         res = []
         f = self.options['report_specifications']
         if not f or not os.path.isfile(f):
-            return("""
+            return _("""
 This option requires a valid report_specifications setting in etm.cfg.""")
         with open(f, 'r') as fo:
             lines = [x for x in fo.readlines() if x[0] != "#"]
         if lines:
-            res.append("""\
+            res.append(_("""\
 Usage:
 
     m N
 
-where N is the number of a report specification from the file {0}:\n """.format(f))
+where N is the number of a report specification from the file {0}:\n """.format(f)))
             for i in range(len(lines)):
                 res.append("{0:>2}. {1}".format(i + 1, lines[i].strip()))
         return("\n".join(res))
 
     def do_n(self, arg_str='', itemstr=""):
-        if type(arg_str) == unicode:
-            item = arg_str
-        else:
-            item = unicode(arg_str.strip(), term_encoding)
-        if item:
+        # if type(arg_str) == unicode:
+        #     item = arg_str.strip()
+        # else:
+        #     item = unicode(arg_str.strip(), term_encoding)
+        if arg_str:
+            item = s2or3(arg_str)
             new_hsh, msg = str2hsh(item, options=self.options)
             if msg:
                 return("\n".join(msg))
                 # return(False)
-        else:  # empty arg_str, use editcmd
-            # make sure file is empty
-            fo = codecs.open(self.tmpfile, 'w', file_encoding)
-            if itemstr:
-                fo.write(itemstr)
-            fo.close()
-            lines, new_hsh = self.edit_tmp()
+        else:  # empty arg_str, open dialog
+            print('starting dialog', itemstr)
+            # self.Dialog = ETMDialog(parent=self.parent)
+            self.parent.Dialog.run(text=itemstr)
+            # self.parent.Dialog.message.text = 'xxx'
+            lines = self.parent.Dialog.input.text
+            print('lines', lines)
+            # lines, new_hsh = self.edit_tmp()
             if not lines:
                 return(False)
         # make sure we have an entry for 's'
@@ -5355,24 +5354,20 @@ where N is the number of a report specification from the file {0}:\n """.format(
         old_items = getFileItems(self.currfile, self.options['datadir'], False)
         items = [u'%s' % x[0].rstrip() for x in old_items if x[0].strip()]
         old_len = len(items)
-        tostr = " to {0} existing items in ".format(old_len)
+        tostr = _("to {0} existing items in ").format(old_len)
         new_item = unicode(u"{0}".format(hsh2str(new_hsh, self.options)))
         items.append(new_item)
         itemstr = "\n".join(items)
         # TODO: How to prevent losing data here?
-        return("{0:-^{4}}\n{1}\n{2:-^{4}}\n{3}".format(
-            _(' Ready to append '), new_item, tostr, self.currfile, self.line_length))
-        return("-" * self.line_length)
-        rep = raw_input("Continue? [Yn] ")
-        if rep.lower() == 'n':
-            return(_('canceled'))
-            return(False)
         self.mode = _('added lines')
         self.safe_save(self.currfile, itemstr)
         self.load_data()
+        self.parent.input_wid.text = ''
+        return("{0}\n  {1}\n{2}\n  {3}".format(
+            _('appended'), new_item, tostr, self.currfile))
 
     def help_n(self):
-        return("""\
+        return _("""\
 Usage:
 
     n ITEM
@@ -5384,83 +5379,6 @@ Create a new item from ITEM. E.g.,
 When the item is dated, it will be appended to the monthly file that corresponds to the date, otherwise it will be appended to the monthly file for the current month.
 
 If ITEM is missing the editor will be used to create the new item.\
-""")
-
-    def do_a(self, arg_str):
-        return(self.mk_rep('a'))
-
-    def help_a(self):
-        return("""\
-Usage:
-
-    a
-
-Generate an agenda including dated items for the next {0} days (agenda_days from etm.cfg) together with any now and next items.\
-""".format(self.options['agenda_days']))
-
-    def do_s(self, arg_str):
-        hsh = self.get_itemhash(arg_str)
-        if not hsh:
-            return()
-        if not self.editcmd:
-            return("""\
-edit_cmd must be specified in etm.cfg.
-""")
-            return(False)
-        f, begline, endline = hsh['fileinfo']
-        fp = os.path.join(self.options['datadir'], f)
-        fo = codecs.open(fp, 'r', file_encoding)
-        lines = fo.readlines()
-        fo.close()
-        if 'r' in hsh or 's' in hsh:
-            p = _("new date and time to replace {0}? ").format(hsh['_dt'].replace(tzinfo=None).strftime(rfmt))
-        else:
-            p = _("New datetime? ")
-
-        return(_('Editing "{0}"').format(hsh['_summary']))
-        res = raw_input(p)
-        if not res:
-            return(_('cancelled'))
-            return(False)
-        try:
-            dtstr = parse_datetime(res)
-            new_dt = parse(dtstr).replace(tzinfo=tzlocal()).astimezone(gettz(hsh['z']))
-        except Exception as e:
-            return(_("Could not parse"), "{0}".format(res))
-            return(e)
-            return(False)
-        new_dt = new_dt.replace(tzinfo=None)
-
-        if 'r' in hsh:  # repeating
-            old_dt = parse(
-                hsh['_dt']).replace(
-                tzinfo=tzlocal()).astimezone(
-                gettz(hsh['z']))
-            hsh.setdefault('+', []).append(
-                new_dt.strftime(sfmt))
-            hsh.setdefault('-', []).append(
-                old_dt.strftime(sfmt))
-        else:  # not repeating
-            hsh['s'] = new_dt
-        edit_str = hsh2str(hsh, self.options)
-        newlines = edit_str.split('\n')
-        return(_('Changed entry:'), '\n  ', "\n  ".join(newlines))
-        rep = raw_input(_("Record changes? [Yn] "))
-        if rep.lower() == 'n':
-            return(_('canceled'))
-            return(False)
-        self.mode = 'changed datetime'
-        self.replace_lines(fp, lines, begline, endline, newlines)
-        self.load_data()
-        return(False)
-
-    def help_s(self):
-        return("""\
-Usage:
-
-    s INT
-
-Ff there is an item number INT among those displayed by the previous'a' or 'r'  command, then change the starting date and time for that item.\
 """)
 
     def do_O(self, arg):
@@ -5478,7 +5396,7 @@ edit_cmd must be specified in etm.cfg.
         os.system(cmd)
 
     def help_O(self):
-        return("""\
+        return _("""\
 Usage:
 
     o
@@ -5486,14 +5404,65 @@ Usage:
 Open etm.cfg for editing. This command requires a setting for 'edit_cmd' in etm.cfg.\
 """)
 
+    def do_q(self, line):
+        sys.exit()
+
+    def help_q(self):
+        return _('quit\n')
+
+    def do_r(self, arg):
+        'report (non actions) specification'
+        if not arg:
+            self.help_r()
+            return()
+        arg_str = "r {0}".format(arg)
+        # return('\nreport: {0}'.format(arg_str))
+        return(self.mk_rep(arg_str))
+
+    def help_r(self):
+        return _("""\
+Usage:
+
+    r <groupby> [options]
+
+Generate a custom report. Groupby can include semicolon separated date specifications and elements from:
+    c context
+    f file path
+    k keyword
+    t tag
+    u user
+
+Options include:
+    -b begin date
+    -c context regex
+    -d depth
+    -e end date
+    -f file regex
+    -k keyword regex
+    -l location regex
+    -o omit
+    -s summary regex
+    -t tags regex
+    -u user regex
+    -w column 1 width
+    -W column 2 width
+
+Example:
+
+    r t -t tag 1 -t !tag 2
+
+Group by tag, showing items that have tag 1 but not tag 2.
+""")
+
+
     def do_R(self, arg):
         f = self.options['report_specifications']
         if not f or not os.path.isfile(f):
-            return("""
+            return _("""
 This option requires a valid report_specifications setting in etm.cfg.""")
             return()
         if not self.editcmd:
-            return("""
+            return ("""
 edit_cmd must be specified in etm.cfg.
 """)
         hsh = {'file': f, 'line': 1}
@@ -5501,7 +5470,7 @@ edit_cmd must be specified in etm.cfg.
         os.system(cmd)
 
     def help_R(self):
-        return("""\
+        return _("""\
 Usage:
 
     r
@@ -5509,25 +5478,81 @@ Usage:
 Open 'report_specifications'  (specified in etm.cfg) for editing. This command requires a setting for 'edit_cmd' in etm.cfg.\
 """)
 
-#     def do_t(self, arg):
-#         self.number = not self.number
+    def do_s(self, arg_str):
+        if not arg_str:
+            return _("an integer item number is required")
+        try:
+            num = int(arg_str)
+            hsh = self.get_itemhash(num)
+        except:
+            return _('"{0}" must be an item number.').format(arg_str)
+        # f, begline, endline = hsh['fileinfo']
+        # fp = os.path.join(self.options['datadir'], f)
+        # fo = codecs.open(fp, 'r', file_encoding)
+        # lines = fo.readlines()
+        # fo.close()
+        print('got here')
+        if 'r' in hsh or 's' in hsh:
+            prompt = _("new date and time to replace {0}? ").format(hsh['_dt'].replace(tzinfo=None).strftime(rfmt))
+        else:
+            prompt = _("New datetime? ")
+        self.parent.mode = 'new_date'
+        self.parent.item_hsh = hsh
+        self.parent.input_wid.text = ''
+        return(prompt)
 
-#     def help_t(self):
-#         return("""\
-# Toggle the display of item numbers for 'c' and 's' reports.""")
+    def help_s(self):
+        return _("""\
+Usage:
 
-    def do_q(self, line):
-        sys.exit()
+    s INT
 
-    def help_q(self):
-        return('quit\n')
+Ff there is an item number INT among those displayed by the previous'a' or 'r'  command, then change the starting date and time for that item.\
+""")
+
+    def do_t(self, arg):
+        'time and expense report specification:'
+        if not arg:
+            self.help_a()
+            return()
+        arg = arg.split('#')[0]
+        arg_str = "t {0}".format(arg)
+        return('\nreport: {0}'.format(arg_str))
+        return(self.mk_rep(arg_str))
+
+    def help_t(self):
+        return _("""\
+Usage:
+
+    t <groupby> [options]
+
+Generate an action report. Groupby can include *semicolon* separated date specifications and elements from:
+    c context
+    f file path
+    k keyword
+    u user
+
+Options include:
+    -b begin date
+    -c context regex
+    -d depth
+    -e end date
+    -f file regex
+    -k keyword regex
+    -l location regex
+    -s summary regex
+    -t tags regex
+    -u user regex
+    -w column 1 width
+    -W column 2 width\
+""")
 
     def do_v(self, arg_str):
         d = {
             'copyright': '2009-%s' % datetime.today().strftime("%Y"),
             'home': 'www.duke.edu/~dgraham/etmqt',
             'dev': 'daniel.graham@duke.edu',
-            'group': "groups.google.com/group/eventandtaskmanager/topics",
+            'group': "groups.google.com/group/eventandtaskmanager",
             'gpl': 'www.gnu.org/licenses/gpl.html',
             'etm_kv': version,
             'platform': platform.system(),
@@ -5535,36 +5560,28 @@ Open 'report_specifications'  (specified in etm.cfg) for editing. This command r
             'dateutil': dateutil_version,
             'kivy': KIVY_VERSION_STR}
         # print(d)
-        return("""\
-Event and Task Manager
+        return _("""\
+                Event and Task Manager {0[etm_kv]}
 
 This application provides a format for using plain text files to store events, tasks and other items and a Kivy based GUI for creating and modifying items as well as viewing them.
 
-Copyright {0[copyright]} {0[dev]}. All rights reserved. This programis free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
+Copyright {0[copyright]} {0[dev]}. All rights reserved. This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
 
 System Information:
-    etm_kv:             {0[etm_kv]}
-    Python:             {0[python]}
-    Kivy:               {0[kivy]}
-    Dateutil:           {0[dateutil]}
-    Platform:           {0[platform]}
+  Python:        {0[python]}
+  Kivy:          {0[kivy]}
+  Dateutil:      {0[dateutil]}
+  Platform:      {0[platform]}
 
-Homepage:                {0[home]}
-Developer:               {0[dev]}
-GPL License Information: {0[gpl]}
-Discussion:
-        {0[group]}
+ETM Information:
+  Homepage:      {0[home]}
+  Developer:     {0[dev]}
+  GPL License:   {0[gpl]}
+  Discussion:    {0[group]}\
 """.format(d))
 
-    def help_l(self):
-        return("""
-Begin an interactive shell loop in which commands can be adjusted and run
-again without reloading the data files. Enter ? in the shell loop for a
-listing of additional commands available there.\
-            """)
-
     def help_v(self):
-        return("""\
+        return _("""\
 Display information about etm and the operating system.""")
 
     def help_help(self):
@@ -5695,170 +5712,6 @@ Commands:
                              if x.strip()])
         self.safe_save(fp, itemstr)
 
-    def mk_rep(self, arg_str):
-        print('mk_rep', arg_str)
-        self.last_rep = arg_str
-        try:
-            if arg_str == 'a':
-                txt, self.count2id = getAgenda(
-                    self.rows,
-                    colors=self.options['agenda_colors'],
-                    days=self.options['agenda_days'],
-                    indent=self.options['agenda_indent'],
-                    width1=self.options['agenda_width1'],
-                    width2=self.options['agenda_width2'],
-                    calendars=self.options['calendars'],
-                    mode=self.output,
-                    number=self.number)
-            else:
-                txt, self.count2id = getReportData(
-                    arg_str,
-                    self.file2uuids,
-                    self.uuid2hash,
-                    self.options,
-                    mode=self.output,
-                    number=self.number)
-            if txt and not txt[0]:
-                txt.pop(0)
-            if txt:
-                lng = max([len(x) for x in txt])
-                s = '-' * lng
-                if self.output == 'text':
-                    return(s)
-                for l in txt:
-                    if self.output == 'text':
-                        return(l)
-                    else:
-                        return("{0}\n".format(l))
-                if self.output == 'text':
-                    return(s)
-                    # self.parent.output_wid.text = s
-            else:
-                return(str(_('No output was generated.')))
-        except:
-            return(str(_('Could not process "{0}".')).format(arg_str))
-            return(str(_('Enter ? s or ? c for help.')))
-
-
-class ETMLoop(ETMCmd):
-
-    def __init__(self, options={}, parent=None):
-        # delete the next line to use in kivy
-        cmd.Cmd.__init__(self)
-        self.options = options
-        self.parent = parent
-        self.cmdDict = {
-            '?': self.do_help,
-            'a': self.do_a,
-            'c': self.do_c,
-            'd': self.do_d,
-            'E': self.do_E,
-            'e': self.do_e,
-            'f': self.do_f,
-            'h': self.do_h,
-            'i': self.do_i,
-            'm': self.do_m,
-            'n': self.do_n,
-            'O': self.do_O,
-            'q': self.do_q,
-            'r': self.do_r,
-            'R': self.do_R,
-            's': self.do_s,
-            't': self.do_t,
-            'v': self.do_v,
-        }
-
-        self.helpDict = {
-            'help': self.help_help,
-            'a': self.help_a,
-            'c': self.help_c,
-            'd': self.help_d,
-            'E': self.help_E,
-            'e': self.help_e,
-            'f': self.help_f,
-            'h': self.help_h,
-            'i': self.help_i,
-            'm': self.help_m,
-            'n': self.help_n,
-            'O': self.help_O,
-            'q': self.help_q,
-            'r': self.help_r,
-            'R': self.help_R,
-            's': self.help_s,
-            't': self.help_t,
-            'v': self.help_v,
-        }
-        self.ruler = '-'
-        self.rows = []
-        self.file2uuids = {}
-        self.uuid2hash = {}
-        self.loop = False
-        self.number = True
-        self.count2id = {}
-        self.last_rep = ""
-        self.mode = ''
-        self.output = 'text'
-        self.line_length = self.options['agenda_indent'] + self.options['agenda_width1'] + self.options['agenda_width2']
-        self.currfile = ''  # ensureMonthly(options)
-        if ('edit_cmd' in self.options and self.options['edit_cmd']):
-            self.editcmd = self.options['edit_cmd']
-        else:
-            self.editcmd = ''
-        self.tmpfile = os.path.join(self.options['etmdir'], '.temp.txt')
-        self.load_data()
-
-    def do_command(self, s):
-        args = s.split(' ')
-        cmd = args.pop(0)
-        if args:
-            arg_str = " ".join(args)
-        else:
-            arg_str = ''
-        # print('do_command', cmd, arg_str)
-        return self.cmdDict[cmd](arg_str)
-
-    def do_help(self, cmd):
-        if cmd:
-            return(self.helpDict[cmd]())
-        else:
-            return(self.help_help())
-
-    def mk_rep(self, arg_str):
-        # we need to return the output string rather than print it
-        self.last_rep = arg_str
-        ret = []
-        try:
-            if arg_str == 'a':
-                txt, self.count2id = getAgenda(
-                    self.rows,
-                    colors=self.options['agenda_colors'],
-                    days=self.options['agenda_days'],
-                    indent=self.options['agenda_indent'],
-                    width1=self.options['agenda_width1'],
-                    width2=self.options['agenda_width2'],
-                    calendars=self.options['calendars'],
-                    mode=self.output,
-                    number=self.number)
-            else:
-                txt, self.count2id = getReportData(
-                    arg_str,
-                    self.file2uuids,
-                    self.uuid2hash,
-                    self.options,
-                    mode=self.output,
-                    number=self.number)
-            if txt and not txt[0]:
-                txt.pop(0)
-            if txt:
-                ret.extend(txt)
-            else:
-                ret.append(str(_('No output was generated.')))
-        except:
-            s = str(_('Could not process "{0}".')).format(arg_str)
-            p = str(_('Enter ? r or ? t for help.'))
-            ret.extend([s, p])
-        return('\n'.join(ret))
-
 
 def main(etmdir='', argv=[]):
     use_locale = ()
@@ -5867,7 +5720,7 @@ def main(etmdir='', argv=[]):
     if len(argv) > 1:
         if argv[1] in ['a', 'c', 's', 'm', 'n', 'v', '?']:
             # c = ETMCmd(options)
-            c = ETMLoop(options)
+            c = ETMCmd(options)
             c.loop = False
             c.number = False
             args = []
