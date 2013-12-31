@@ -77,6 +77,7 @@ def init_localization():
 
     trans.install()
 
+
 def run_cmd(cmd):
     os.system(cmd)
 
@@ -826,6 +827,7 @@ def get_options(etmdir=''):
     file_encoding = options['encoding']['file']
     return(user_options, options, use_locale)
 
+
 def get_fmts(options):
     df = "%x"
 
@@ -1254,7 +1256,7 @@ def tree2Html(tree, indent=2, width1=54, width2=14, colors=2):
 
 
 def tree2Rst(tree, indent=2, width1=54, width2=14, colors=0,
-              number=False, count=0, count2id=None):
+             number=False, count=0, count2id=None):
     global text_lst
     args = [count, count2id]
     text_lst = []
@@ -1303,6 +1305,7 @@ def tree2Rst(tree, indent=2, width1=54, width2=14, colors=0,
 
     t2H(tree)
     return(([x for x in text_lst], args[0], args[1]))
+
 
 def tree2Text(tree, indent=2, width1=54, width2=14, colors=0,
               number=False, count=0, count2id=None):
@@ -1578,7 +1581,6 @@ def parse_dtstr(dtstr, timezone="", fmt=rfmt):
         string. E.g., ('2/5/12', 'US/Pacific') => "20120205T0000-0800"
     """
     if type(dtstr) in [str, unicode]:
-        print('processing dtstr', dtstr)
         if dtstr == 'now':
             if timezone:
                 dt = datetime.now().replace(
@@ -1721,7 +1723,6 @@ For editing one or more, but not all, instances of an item. Needed:
     else:
         sl = ["%s %s" % (hsh['itemtype'], hsh['_summary'])]
     for key in item_keys:
-        print('processking key', key)
         amp_key = None
         if key == 'a' and '_a' in hsh:
             alerts = []
@@ -2820,6 +2821,7 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54, width2=14,
                 output.extend(lst)
     return((output, count2id))
 
+
 @memoize
 def getReportData(s, file2uuids, uuid2hash, options={}, export=False,
                   colors=None, mode='html', number=True):
@@ -3125,7 +3127,7 @@ def str2hsh(s, id=None, options={}):
             except:
                 msg.append(
                     "the value of @b should be an integer: '@b {0}'".format(
-                    hsh['b']))
+                        hsh['b']))
         if 'f' in hsh:
             # this will be a list of done:due pairs
             # 20120201T1325;20120202T1400, ...
@@ -3619,6 +3621,7 @@ def setItemPeriod(hsh, start, end, short=False, options={}):
             fmt_time(end, options=options), fmt_date(end, True))
 
     return(period)
+
 
 @memoize
 def getViewData(bef, file2uuids={}, uuid2hash={}, options={}):
@@ -4192,8 +4195,6 @@ def getViewData(bef, file2uuids={}, uuid2hash={}, options={}):
                         (u, typ, summary, extstr, etmdt)]
                     add2list(rows, item)
                     continue
-    # for row in rows:
-    #     print(row)
     return(rows, busytimes, busydays, alerts, datetimes, occasions)
 
 
@@ -4599,7 +4600,6 @@ class ETMCmd(cmd.Cmd):
             'a': self.do_a,
             'c': self.do_c,
             'd': self.do_d,
-            'E': self.do_E,
             'e': self.do_e,
             'f': self.do_f,
             'h': self.do_h,
@@ -4620,7 +4620,6 @@ class ETMCmd(cmd.Cmd):
             'a': self.help_a,
             'c': self.help_c,
             'd': self.help_d,
-            'E': self.help_E,
             'e': self.help_e,
             'f': self.help_f,
             'h': self.help_h,
@@ -4708,7 +4707,6 @@ class ETMCmd(cmd.Cmd):
             ret.extend([s, p])
         return('\n'.join(ret))
 
-
     def load_data(self):
         self.count2id = {}
         now = datetime.now()
@@ -4733,6 +4731,7 @@ class ETMCmd(cmd.Cmd):
         self.uuid2hash = uuid2hash
         self.currfile = ensureMonthly(self.options, now)
         if self.last_rep:
+            print('load_data calling mk_rep with ', self.last_rep)
             self.parent.output_wid.text = self.mk_rep(self.last_rep)
 
     def edit_tmp(self):
@@ -4826,7 +4825,6 @@ Usage:
 Generate an agenda including dated items for the next {0} days (agenda_days from etm.cfg) together with any now and next items.\
 """.format(self.options['agenda_days']))
 
-
     def do_c(self, arg_str):
         hsh = self.get_itemhash(arg_str)
         if not hsh:
@@ -4846,14 +4844,14 @@ If there is an item number INT among those displayed by the previous'a' or 'r'  
         hsh = self.get_itemhash(arg_str)
         if not hsh:
             return()
-        f, begline, endline = hsh['fileinfo']
-        fp = os.path.join(self.options['datadir'], f)
-        fo = codecs.open(fp, 'r', file_encoding)
-        lines = fo.readlines()
-        fo.close()
+        # f, begline, endline = hsh['fileinfo']
+        # fp = os.path.join(self.options['datadir'], f)
+        # fo = codecs.open(fp, 'r', file_encoding)
+        # lines = fo.readlines()
+        # fo.close()
+        self.parent.item_hsh = hsh
         if 'r' in hsh:
             # repeating
-            rev_str = ''
             instance = fmt_datetime(hsh['_dt'], self.options)
             prompt = "\n".join([
                 _("You have selected instance"),
@@ -4864,77 +4862,71 @@ If there is an item number INT among those displayed by the previous'a' or 'r'  
                 "  3. {0}".format(_("all instances")),
                 "{0}".format(_('Choice [1-3] or 0 to cancel? '))])
             self.parent.mode = 'delete'
-            self.parent.item_hsh = hsh
             self.parent.input_wid.text = ''
             return(prompt)
+        else:
+            # not repeating
+            self._do_delete(4)
 
     def _do_delete(self, choice):
-        print('choice', "{0}".format(choice))
         if not choice:
             return(False)
         try:
             choice = int(choice)
         except:
+            print('returning')
             return(False)
 
-        dt = parse(
-            hsh['_dt']).replace(
-            tzinfo=tzlocal()).astimezone(
-            gettz(hsh['z']))
-        dtn = dt.replace(tzinfo=None)
-
-        if choice == 1:
-            # delete this instance only by removing it from @+
-            # or adding it to @-
+        if choice in [1, 2]:
+            hsh = self.parent.item_hsh
+            dt = parse(
+                hsh['_dt']).replace(
+                tzinfo=tzlocal()).astimezone(
+                gettz(hsh['z']))
+            dtn = dt.replace(tzinfo=None)
             hsh_rev = deepcopy(hsh)
-            if '+' in hsh_rev and dtn in hsh_rev['+']:
-                hsh_rev['+'].remove(dtn)
-                if not hsh_rev['+'] and hsh_rev['r'] == 'l':
-                    del hsh_rev['r']
-                    del hsh_rev['_r']
-            else:
-                hsh_rev.setdefault('-', []).append(dt)
-            newstr = hsh2str(hsh_rev)
-            newlines = newstr.split('\n')
-            self.replace_lines(fp, lines, begline, endline, newlines)
-            self.load_data()
-            return(False)
 
-        if choice == 2:
-            # delete this and all subsequent instances by adding
-            # this instance - one minute to &u for each @r
+            if choice == 1:
+                # delete this instance only by removing it from @+
+                # or adding it to @-
+                if '+' in hsh_rev and dtn in hsh_rev['+']:
+                    hsh_rev['+'].remove(dtn)
+                    if not hsh_rev['+'] and hsh_rev['r'] == 'l':
+                        del hsh_rev['r']
+                        del hsh_rev['_r']
+                else:
+                    hsh_rev.setdefault('-', []).append(dt)
+                newstr = hsh2str(hsh_rev, self.parent.options)
+                self.replace_item(hsh_rev, newstr)
 
-            tmp = []
-            for h in hsh_rev['_r']:
-                if 'f' in h and h['f'] != u'l':
-                    h['u'] = dt - oneminute
-                tmp.append(h)
-            hsh_rev['_r'] = tmp
-            if u'+' in hsh:
-                tmp_rev = []
-                for d in hsh_rev['+']:
-                    if d < dt:
-                        tmp_rev.append(d)
-                hsh_rev['+'] = tmp_rev
-            if u'-' in hsh:
-                tmp_rev = []
-                for d in hsh_rev['-']:
-                    if d < dt:
-                        tmp_rev.append(d)
-                hsh_rev['-'] = tmp_rev
-            hsh_cpy['s'] = dt
-            rev_str = hsh2str(hsh_rev, self.options)
-            newlines = rev_str.split('\n')
-            self.replace_lines(fp, lines, begline, endline, newlines)
-            self.load_data()
-            return(False)
+            elif choice == 2:
+                # delete this and all subsequent instances by adding
+                # this instance - one minute to &u for each @r
 
-        # not repeating or all instances
-        # delete item
-        ret = []
-        self.replace_lines(fp, lines, begline, endline, [])
-        self.load_data()
-        return(False)
+                tmp = []
+                for h in hsh_rev['_r']:
+                    if 'f' in h and h['f'] != u'l':
+                        h['u'] = dt - oneminute
+                    tmp.append(h)
+                hsh_rev['_r'] = tmp
+                if u'+' in hsh:
+                    tmp_rev = []
+                    for d in hsh_rev['+']:
+                        if d < dt:
+                            tmp_rev.append(d)
+                    hsh_rev['+'] = tmp_rev
+                if u'-' in hsh:
+                    tmp_rev = []
+                    for d in hsh_rev['-']:
+                        if d < dt:
+                            tmp_rev.append(d)
+                    hsh_rev['-'] = tmp_rev
+                hsh_rev['s'] = dt
+                rev_str = hsh2str(hsh_rev, self.options)
+                self.replace_item(hsh_rev, rev_str)
+
+        else:
+            self.delete_item()
 
     def help_d(self):
         return _("""\
@@ -4960,8 +4952,6 @@ If there is an item number INT among those displayed by the previous'a' or 'r'  
             self.parent.input_wid.text = ''
             if 'r' in hsh:
                 # repeating
-                # term_print('do_e', hsh)
-                # rev_str = ''
                 instance = fmt_datetime(hsh['_dt'], self.options)
                 prompt = "\n".join([
                     _("You have selected instance"),
@@ -4972,14 +4962,14 @@ If there is an item number INT among those displayed by the previous'a' or 'r'  
                     "  3. {0}".format(_("this and all subsequent instances")),
                     "  4. {0}".format(_("all instances")),
                     "{0}".format(_('Choice [1-4] or 0 to cancel?'))])
-                # self.parent.mode = 'edit'
-                # self.parent.item_hsh = hsh
-                # self.parent.input_wid.text = ''
                 return(prompt)
             else:
                 self._do_edit(4)
 
     def _new_date(self, arg):
+        """
+        Called by _do_edit to get the new datetime.
+        """
         print('new_date', arg)
         # no more input is needed
         self.parent.mode = 'command'
@@ -5007,24 +4997,13 @@ If there is an item number INT among those displayed by the previous'a' or 'r'  
             new_dt.strftime(sfmt))
         hsh.setdefault('-', []).append(
             old_dt.strftime(sfmt))
-        edit_str = hsh2str(hsh, self.options)
-        newlines = edit_str.split('\n')
-        f, begline, endline = hsh['fileinfo']
-        fp = os.path.join(self.options['datadir'], f)
-        fo = codecs.open(fp, 'r', file_encoding)
-        lines = fo.readlines()
-        fo.close()
-        self.replace_lines(fp, lines, begline, endline, newlines)
-        self.load_data()
-        self.parent.mode = 'command'
-        self.parent.input_wid.text = ''
-        return _("""\
-Changed datetime
-    from {0}
-    to   {1}
-in item "{2}".""").format(old_dt, new_dt, hsh['_summary'])
+        item = hsh2str(hsh, self.options)
+        self.replace_item(hsh, item)
 
     def _do_edit(self, choice):
+        """
+        Called by do_e to process the choice.
+        """
         if not choice:
             return(False)
         try:
@@ -5037,7 +5016,7 @@ in item "{2}".""").format(old_dt, new_dt, hsh['_summary'])
             # only the datetime of this instance
             # get the new datetime, add it to @+ and remove this
             # instance by adding it to @-
-            prompt = "{0}".format(_("new date and time for this instance?"))
+            prompt = _("new date and time to replace {0}?").format(self.parent.item_hsh['_dt'].strftime(rfmt))
             self.parent.mode = 'new_date'
             self.parent.input_wid.text = ''
             return(prompt)
@@ -5046,11 +5025,12 @@ in item "{2}".""").format(old_dt, new_dt, hsh['_summary'])
             hsh_cpy = deepcopy(self.parent.item_hsh)
             hsh_rev = deepcopy(self.parent.item_hsh)
             hsh_cpy['i'] = uniqueId()
+            self.parent.mode = 'append'
 
             dt = parse(
                 hsh_cpy['_dt']).replace(
                 tzinfo=tzlocal()).astimezone(
-                gettz(hsh['z']))
+                gettz(hsh_cpy['z']))
             dtn = dt.replace(tzinfo=None)
 
             if choice == 2:
@@ -5069,12 +5049,10 @@ in item "{2}".""").format(old_dt, new_dt, hsh['_summary'])
                         del hsh_cpy[k]
                 hsh_cpy['s'] = dt
                 rev_str = hsh2str(hsh_rev, self.options)
-                rev_lines = rev_str.split('\n')
                 self.mode = 'changed instance'
-                self.replace_lines(fp, lines, begline, endline, rev_lines)
                 edit_str = hsh2str(hsh_cpy, self.options)
-                self.do_n(itemstr=edit_str)
-                return(False)
+                self.parent.mode = 'append'
+                self.parent.Dialog.run(text=edit_str)
 
             elif choice == 3:
                 # this and all subsequent instances
@@ -5108,25 +5086,53 @@ in item "{2}".""").format(old_dt, new_dt, hsh['_summary'])
                     hsh_cpy['-'] = tmp_cpy
                 hsh_cpy['s'] = dt
                 rev_str = hsh2str(hsh_rev, self.options)
-                rev_lines = rev_str.split('\n')
                 self.mode = "changed this and subsequent instances"
-                self.replace_lines(fp, lines, begline, endline, rev_lines)
+                self.replace_item(rev_str)
                 edit_str = hsh2str(hsh_cpy, self.options)
-                self.do_n(itemstr=edit_str)
-                return(False)
+                self.parent.mode = 'append'
+                self.parent.Dialog.run(text=edit_str)
         else:
-            print('got here')
-            # not repeating or choice 4
-            f, begline, endline = self.parent.item_hsh['fileinfo']
-            fp = os.path.join(self.options['datadir'], f)
-            fo = codecs.open(fp, 'r', file_encoding)
-            lines = fo.readlines()
-            fo.close()
-            item_str = "\n".join(
-                [unicode(u'%s') % x.rstrip() for x in
-                    lines[begline - 1:endline]])
-            print('calling do_n', item_str)
-            self.do_n(itemstr=item_str)
+            self.parent.mode = 'replace'
+            item_str = self.parent.item_hsh['entry']
+            self.parent.Dialog.run(text=item_str)
+
+    def delete_item(self):
+        f, begline, endline = self.parent.item_hsh['fileinfo']
+        fp = os.path.join(self.options['datadir'], f)
+        fo = codecs.open(fp, 'r', file_encoding)
+        lines = fo.readlines()
+        fo.close()
+        self.mode = 'deleted item'
+        self.replace_lines(fp, lines, begline, endline, [])
+        self.load_data()
+        self.parent.mode = 'command'
+        self.parent.input_wid.text = ''
+
+    def replace_item(self, new_hsh, new_item):
+        newlines = new_item.split('\n')
+        f, begline, endline = self.parent.item_hsh['fileinfo']
+        fp = os.path.join(self.options['datadir'], f)
+        fo = codecs.open(fp, 'r', file_encoding)
+        lines = fo.readlines()
+        fo.close()
+        self.mode = _('changed all instances')
+        self.replace_lines(fp, lines, begline, endline, newlines)
+        self.load_data()
+        self.parent.mode = 'command'
+        self.parent.input_wid.text = ''
+
+    def append_item(self, new_hsh, new_item):
+        if 's' not in new_hsh:
+            new_hsh['s'] = None
+        self.currfile = ensureMonthly(self.options, new_hsh['s'])
+        old_items = getFileItems(self.currfile, self.options['datadir'], False)
+        items = [u'%s' % x[0].rstrip() for x in old_items if x[0].strip()]
+        items.append(new_item)
+        itemstr = "\n".join(items)
+        self.mode = _('added item')
+        self.safe_save(self.currfile, itemstr)
+        self.load_data()
+        self.parent.input_wid.text = ''
 
     def help_e(self):
         return _("""\
@@ -5134,38 +5140,7 @@ Usage:
 
     e INT
 
-If there is an item number INT among those displayed by the previous'a' or 'r'  command then open it for editing. When a repeating item is selected, you will first be prompted to choose which of the repeatedinstances should be changed. The entry will be validated and any errors can be corrected before any changes are made.
-""")
-
-    def do_E(self, arg_str):
-        item_hsh = self.get_itemhash(arg_str)
-        if not item_hsh:
-            return()
-        if not self.editcmd:
-            return("""\
-edit_cmd must be specified in etm.cfg.
-""")
-            return(False)
-        f, s = item_hsh['fileinfo'][:2]
-        fp = os.path.join(self.options['datadir'], f)
-        hsh = {'file': fp, 'line': s}
-        cmd = expand_template(self.editcmd, hsh)
-        modified = os.path.getmtime(fp)
-        os.system(cmd)
-        if modified == os.path.getmtime(fp):
-            return(_('unchanged'))
-            return(False)
-        self.mode = _('edited file')
-        self.commit(fp)
-        self.load_data()
-
-    def help_E(self):
-        return _("""\
-Usage:
-
-    E INT
-
-If there is an item number INT among those displayedby the previous 'a' or 'r'  command then open the file containing the item for editing at the beginning line of the item.\
+If there is an item number INT among those displayed by the previous'a' or 'r'  command then open it for editing. When a repeating item is selected, you will first be prompted to choose which of the repeatedinstances should be changed. The entry will be validated and any errors can be corrected before any changes are made.\
 """)
 
     def do_f(self, arg_str):
@@ -5179,25 +5154,32 @@ If there is an item number INT among those displayedby the previous 'a' or 'r'  
             else:
                 return(_('not a task'))
             return(False)
-        f, begline, endline = hsh['fileinfo']
-        fp = os.path.join(self.options['datadir'], f)
-        fo = codecs.open(fp, 'r', file_encoding)
-        lines = fo.readlines()
-        fo.close()
-        now = datetime.now(tzlocal())
+        # f, begline, endline = hsh['fileinfo']
+        # fp = os.path.join(self.options['datadir'], f)
+        # fo = codecs.open(fp, 'r', file_encoding)
+        # lines = fo.readlines()
+        # fo.close()
+        # now = datetime.now(tzlocal())
+        self.parent.mode = 'finish'
+        self.parent.item_hsh = hsh
+        self.parent.input_wid.text = ''
         return _("""\
 Finishing "{0}".
 Enter a date and time (fuzzy parsed) to use as the completion
 datetime, an empty string to use the current date and time or
 "n" to cancel.\
 """.format(hsh['_summary']))
-        rep = raw_input("Completion date and time? ")
+
+    def _do_finish(self, rep):
+        """
+        Called by do_f to process the finish datetime and add it to the file.
+        """
+        hsh = self.parent.item_hsh
         if rep.lower() == 'n':
             return(_('canceled'))
-            return(False)
         if not rep:
             # use default
-            dt = now
+            dt = datetime.now(tzlocal())
         else:
             dtstr = parse_datetime(rep, hsh['z'])
             if dtstr:
@@ -5238,14 +5220,8 @@ datetime, an empty string to use the current date and time or
             if not ddn:
                 ddn = dtz
             hsh.setdefault('f', []).append((dtz, ddn))
-        item_str = hsh2str(hsh, self.options)
-        newlines = item_str.split('\n')
-        f, begline, endline = hsh['fileinfo']
-        fp = os.path.join(self.options['datadir'], f)
-        self.replace_lines(fp, lines, begline, endline, newlines)
-        self.load_data()
-        return('Finished "{0}"\nat {1}.'.format(
-            hsh['_summary'], dt.strftime(rfmt)))
+        item = hsh2str(hsh, self.options)
+        self.replace_item(hsh, item)
 
     def help_f(self):
         return _("""\
@@ -5327,44 +5303,17 @@ where N is the number of a report specification from the file {0}:\n """.format(
         return("\n".join(res))
 
     def do_n(self, arg_str='', itemstr=""):
-        # if type(arg_str) == unicode:
-        #     item = arg_str.strip()
-        # else:
-        #     item = unicode(arg_str.strip(), term_encoding)
         if arg_str:
-            item = s2or3(arg_str)
-            new_hsh, msg = str2hsh(item, options=self.options)
+            new_item = s2or3(arg_str)
+            new_hsh, msg = str2hsh(new_item, options=self.options)
             if msg:
                 return("\n".join(msg))
-                # return(False)
+            if 's' not in new_hsh:
+                new_hsh['s'] = None
+            self.append_item(new_hsh, new_item)
         else:  # empty arg_str, open dialog
-            print('starting dialog', itemstr)
-            # self.Dialog = ETMDialog(parent=self.parent)
+            self.parent.mode = 'append'
             self.parent.Dialog.run(text=itemstr)
-            # self.parent.Dialog.message.text = 'xxx'
-            lines = self.parent.Dialog.input.text
-            print('lines', lines)
-            # lines, new_hsh = self.edit_tmp()
-            if not lines:
-                return(False)
-        # make sure we have an entry for 's'
-        if 's' not in new_hsh:
-            new_hsh['s'] = None
-        self.currfile = ensureMonthly(self.options, new_hsh['s'])
-        old_items = getFileItems(self.currfile, self.options['datadir'], False)
-        items = [u'%s' % x[0].rstrip() for x in old_items if x[0].strip()]
-        old_len = len(items)
-        tostr = _("to {0} existing items in ").format(old_len)
-        new_item = unicode(u"{0}".format(hsh2str(new_hsh, self.options)))
-        items.append(new_item)
-        itemstr = "\n".join(items)
-        # TODO: How to prevent losing data here?
-        self.mode = _('added lines')
-        self.safe_save(self.currfile, itemstr)
-        self.load_data()
-        self.parent.input_wid.text = ''
-        return("{0}\n  {1}\n{2}\n  {3}".format(
-            _('appended'), new_item, tostr, self.currfile))
 
     def help_n(self):
         return _("""\
@@ -5453,7 +5402,6 @@ Example:
 
 Group by tag, showing items that have tag 1 but not tag 2.
 """)
-
 
     def do_R(self, arg):
         f = self.options['report_specifications']
@@ -5603,10 +5551,6 @@ Commands:
     e INT   if there is an item number INT among those
             displayed by the previous 'a' or 'r'  command
             then open that ITEM for editing.
-    E INT   if there is an item number INT among those
-            displayed by the previous 'a' or 'r'  command
-            then open the FILE containing that item for
-            editing.
     f INT   if there is an item number INT among those
             displayed by the previous 'a' or 'r'  command
             and that item is an unfinished task, then first

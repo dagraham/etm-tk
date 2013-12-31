@@ -12,7 +12,6 @@ from kivy.uix.button import Button
 
 from pygments.lexers.special import TextLexer
 
-from kivy.uix.label import Label
 from kivy.uix.modalview import ModalView
 from kivy.properties import ObjectProperty
 from kivy.config import Config
@@ -57,27 +56,29 @@ class ETMDialog():
         self.editor = ETMEditor()
         self.text = ''
 
-        self.btnvalidate = Button(text=_('Close'), size_hint_y=None, height='30sp')
+        self.btnchecksave = Button(text=_('Close'), size_hint_y=None, height='30sp')
         self.btncancel = Button(text=_('Cancel'), size_hint_y=None, height='30sp')
         buttons = BoxLayout(orientation='horizontal', height='30sp')
         buttons.add_widget(self.btncancel)
-        buttons.add_widget(self.btnvalidate)
-        self.message = Label(text="", size_hint_y=None, height=80)
+        buttons.add_widget(self.btnchecksave)
+        self.message = TextInput(text="", size_hint_y=None, height=80)
+        self.message.readonly = True
+        self.message.background = [1, 1, 1, 1]
         self.content = BoxLayout(orientation='vertical')
+        self.content.padding = 3
+        self.content.spacing = 3
 
         self.input = ETMEditor(callback=self.set_modified)
         self.input.background_color = [1, 1, 1, 1]
-        self.input.font_size =  self.options['fontsize']
+        self.input.font_size = self.options['fontsize']
 
-        # self.input.bind(on_text_validate=self.validate)
-        # self.input.bind(on_key_up=self.on_text)
         self.content.add_widget(self.input)
-        self.content.add_widget(buttons)
         self.content.add_widget(self.message)
+        self.content.add_widget(buttons)
         self.popup = ModalView(size_hint=(None, None), size=(500, 420))
         self.popup.add_widget(self.content)
-        self.btnvalidate.bind(on_release=self.validate)
-        self.btncancel.bind(on_release=self.popup.dismiss)
+        self.btnchecksave.bind(on_release=self.check_save)
+        self.btncancel.bind(on_release=self.cancel)
 
     def run(self, text="", msg=""):
         print('run', text, msg)
@@ -85,36 +86,47 @@ class ETMDialog():
         self.message.text = msg
         self.input.reset_undo()
         self.input.focus = True
+        print('opening popup')
         self.popup.open()
 
-    def validate(self, value):
+    def cancel(self, value):
+        self.parent.mode = 'command'
+        self.input.text = ''
+        self.popup.dismiss()
+
+    def check_save(self, value):
         new_str = ''
         if self.modified:
+            print('check_save', self.input.text)
             new_hsh, msg = str2hsh(self.input.text, options=self.options)
             if msg:
                 self.message.text = "\n".join(msg)
             else:
                 try:
                     new_str = hsh2str(new_hsh, self.options)
+                    # print('new_str', new_str, self.parent.mode)
                     new_item = unicode(u"{0}".format(hsh2str(new_hsh, self.options)))
                     self.input.text = new_item
-                    self.message.text = self.parent.loop.do_n(arg_str=new_item)
+                    if self.parent.mode == 'append':
+                        self.parent.loop.append_item(new_hsh, new_item)
+                    elif self.parent.mode == 'replace':
+                        self.parent.loop.replace_item(new_hsh, new_item)
+                    # self.message.text = self.parent.loop.do_n(arg_str=new_item)
                     self.set_modified(False)
                 except:
                     self.message.text = "Error processing %s" % new_hsh
-        else:
+        else:  # close
             if new_str:
                 self.parent.output_wid.text = new_str
-            self.popup.dismiss()
-
+            self.cancel(value)
 
     def set_modified(self, bool):
-        print('set_modified', bool)
+        # print('set_modified', bool)
         self.modified = bool
         if bool:
-            self.btnvalidate.text = _('Validate')
+            self.btnchecksave.text = _('Save')
         else:
-            self.btnvalidate.text = _('Close')
+            self.btnchecksave.text = _('Close')
 
 
 class ETMTextInput(TextInput):
@@ -149,6 +161,7 @@ class ETMTextInput(TextInput):
     def init(self):
         if self.firsttime:
             # only do this once
+            print('init one time only')
             self.firsttime = False
             self.bind(focus=self.on_focus)
 
@@ -182,8 +195,8 @@ class ETMTextInput(TextInput):
         """
         cmd = self.text.strip()
 
-        if not cmd:
-            return(True)
+        # if not cmd:
+        #     return(True)
 
         if self.mode == 'command':
             if cmd == 'q':
@@ -202,17 +215,18 @@ class ETMTextInput(TextInput):
             except:
                 return _('could not process command "{0}"').format(cmd)
 
-                # self.Dialog = ETMDialog(parent=self, text='except')
-                self.Dialog.run()
-                res = self.Dialog.text
-                print('res', res)
-
         elif self.mode == 'edit':
             print('edit', cmd)
             res = loop._do_edit(cmd)
 
         elif self.mode == 'delete':
             print('deleted', cmd)
+            loop._do_delete(cmd)
+            res = ''
+
+        elif self.mode == 'finish':
+            print('finish', cmd)
+            loop._do_finish(cmd)
             res = ''
 
         elif self.mode == 'new_date':
