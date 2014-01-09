@@ -28,7 +28,7 @@ else:
 dayfirst = False
 yearfirst = True
 
-from kivy import __version__ as KIVY_VERSION_STR
+# from kivy import __version__ as KIVY_VERSION_STR
 
 import re
 import sys
@@ -94,7 +94,7 @@ def dt_to_str(dt, s):
     return(s2or3(dt.strftime(s)))
 
 
-from etmKv.v import version
+from etmTk.v import version
 last_version = version
 
 
@@ -603,7 +603,9 @@ def get_options(etmdir=''):
         default_datadir = os.path.join(etmdir, 'data')
 
     locale_cfg = os.path.join(etmdir, 'locale.cfg')
+    print('looking for', locale_cfg)
     if os.path.isfile(locale_cfg):
+        print('using', locale_cfg)
         fo = codecs.open(locale_cfg, 'r', dfile_encoding)
         use_locale = yaml.load(fo)
         fo.close()
@@ -1164,12 +1166,33 @@ amp_keys = {
 
 
 def makeTree(list_of_lists, view=None, cal_regex=None, sort=True):
-     # item = [(view, sort1, sort2, sort3, relpath), (path), (display)]
+    # view='folder':
+    # {(u'', u'_'): [(u'_', 'personal'), (u'_', 'shared')],i
+    #  (u'_', 'personal'): [(u'personal', 'monthly')],
+    #  (u'_', 'shared'): [(u'shared', 'sample_datafile')],
+    #  (u'personal', 'monthly'): [(u'personal:monthly', '1951'),
+    #                             (u'personal:monthly', '2013'),
+    #                             (u'personal:monthly', '2014')],
+    #  (u'personal:monthly', '1951'): [(u'personal:monthly:1951', '01')],
+    #  (u'personal:monthly', '2013'): [(u'personal:monthly:2013', '11'),
+    #                                  (u'personal:monthly:2013', '12')],
+    #  (u'personal:monthly', '2014'): [(u'personal:monthly:2014', '01'),
+    #                                  (u'personal:monthly:2014', '02'),
+    #                                  (u'personal:monthly:2014', '06')],
+    #  (u'personal:monthly:1951', '01'): [(u'personal:monthly:1951:01',
+    #                                      (u'1bd62d1d-a6a4-4bca-8001-9980373de648',
+    #                                       u'oc',
+    #                                       u'63rd birthday Teresa',
+    #                                       u'sty 24',
+    #                                       u'2014-01-24 '))],
+    # ...
+
     tree = {}
     lofl = []
     root = '_'
     empty = True
     for pc in list_of_lists:
+        # print('pc', pc)
         # toss the sort key
         root_key = tuple(["", root])
         tree.setdefault(root_key, [])
@@ -2793,33 +2816,13 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54, width2=14,
     output = []
     count = 0
     count2id = None
+    tree = {}
     for lst in [day, now, next]:
         if lst:
-            tree = makeTree(lst)
-            if mode == 'html':
-                output.extend(
-                    tree2Html(
-                        tree, indent=indent, width1=width1, width2=width2,
-                        colors=colors))
-            elif mode == 'text':
-                lst, count, count2id = tree2Text(
-                    tree, width1=width1,
-                    width2=width2,
-                    colors=colors,
-                    number=number,
-                    count=count,
-                    count2id=count2id)
-                output.extend(lst)
-            else:   # mode == 'rst':
-                lst, count, count2id = tree2Rst(
-                    tree, width1=width1,
-                    width2=width2,
-                    colors=colors,
-                    number=number,
-                    count=count,
-                    count2id=count2id)
-                output.extend(lst)
-    return((output, count2id))
+            update = makeTree(lst)
+            for key in update.keys():
+                tree.setdefault(key, []).extend(update[key])
+    return(tree)
 
 
 @memoize
@@ -2922,56 +2925,57 @@ def getReportData(s, file2uuids, uuid2hash, options={}, export=False,
         else:
             clrs = groupby['colors']
         tree = makeTree(rows, sort=False)
+        return(tree)
 
-        if mode == 'html':
-            return((
-                tree2Html(tree, width1=groupby['width1'],
-                          width2=groupby['width2'], colors=clrs),
-                count2id))
-        elif mode == 'text':
-            lst, count, count2id = tree2Text(
-                tree, width1=groupby['width1'],
-                width2=groupby['width2'],
-                colors=clrs,
-                number=number,
-                count=count,
-                count2id=count2id)
-            return((lst, count2id))
-        else:   # mode == 'rst':
-            # print('groupby', groupby)
-            lst, count, count2id = tree2Rst(
-                tree, width1=groupby['width1'],
-                width2=groupby['width2'],
-                colors=clrs,
-                number=number,
-                count=count,
-                count2id=count2id)
-            return((lst, count2id))
+        # if mode == 'html':
+        #     return((
+        #         tree2Html(tree, width1=groupby['width1'],
+        #                   width2=groupby['width2'], colors=clrs),
+        #         count2id))
+        # elif mode == 'text':
+        #     lst, count, count2id = tree2Text(
+        #         tree, width1=groupby['width1'],
+        #         width2=groupby['width2'],
+        #         colors=clrs,
+        #         number=number,
+        #         count=count,
+        #         count2id=count2id)
+        #     return((lst, count2id))
+        # else:   # mode == 'rst':
+        #     # print('groupby', groupby)
+        #     lst, count, count2id = tree2Rst(
+        #         tree, width1=groupby['width1'],
+        #         width2=groupby['width2'],
+        #         colors=clrs,
+        #         number=number,
+        #         count=count,
+        #         count2id=count2id)
+        #     return((lst, count2id))
     else:
         if groupby['report'] == 't' and 'depth' in groupby and groupby['depth']:
             depth = min(groupby['depth'], len(groupby['lst']))
         else:
             depth = len(groupby['lst'])
-        if export:
-            head = map(str, groupby['lst'][:depth])
-            csv = [head]
-            if groupby['report'] == 'r':
-                for row in rows:
-                    tup = row.pop(-1)[2:6]
-                    row.extend(tup)
-                    csv.append(row)
-            else:
-                head.extend(['minutes', 'value', 'expense', 'charge'])
-                csv = [head]
-                lst = tallyByGroup(
-                    rows, max_level=depth, options=options, export=True)
-                for row in lst:
-                    tup = map(str, list(row.pop(-1)))
-                    row.extend(tup)
-                    csv.append(row)
-            return((csv, count2id))
-        else:
-            return(
+        # if export:
+        #     head = map(str, groupby['lst'][:depth])
+        #     csv = [head]
+        #     if groupby['report'] == 'r':
+        #         for row in rows:
+        #             tup = row.pop(-1)[2:6]
+        #             row.extend(tup)
+        #             csv.append(row)
+        #     else:
+        #         head.extend(['minutes', 'value', 'expense', 'charge'])
+        #         csv = [head]
+        #         lst = tallyByGroup(
+        #             rows, max_level=depth, options=options, export=True)
+        #         for row in lst:
+        #             tup = map(str, list(row.pop(-1)))
+        #             row.extend(tup)
+        #             csv.append(row)
+        #     return((csv, count2id))
+        # else:
+        return(
                 (tallyByGroup(
                     rows, max_level=depth, options=options),
                  count2id))
@@ -4644,6 +4648,7 @@ class ETMCmd(cmd.Cmd):
         self.last_rep = ""
         self.mode = ''
         self.output = 'text'
+        self.tkversion = ''
         self.line_length = self.options['agenda_indent'] + self.options['agenda_width1'] + self.options['agenda_width2']
         self.currfile = ''  # ensureMonthly(options)
         if ('edit_cmd' in self.options and self.options['edit_cmd']):
@@ -4677,7 +4682,7 @@ class ETMCmd(cmd.Cmd):
         ret = []
         try:
             if arg_str == 'a':
-                txt, self.count2id = getAgenda(
+                return(getAgenda(
                     self.rows,
                     colors=self.options['agenda_colors'],
                     days=self.options['agenda_days'],
@@ -4686,21 +4691,15 @@ class ETMCmd(cmd.Cmd):
                     width2=self.options['agenda_width2'],
                     calendars=self.options['calendars'],
                     mode=self.output,
-                    number=self.number)
+                    number=self.number))
             else:
-                txt, self.count2id = getReportData(
+                return(getReportData(
                     arg_str,
                     self.file2uuids,
                     self.uuid2hash,
                     self.options,
                     mode=self.output,
-                    number=self.number)
-            if txt and not txt[0]:
-                txt.pop(0)
-            if txt:
-                ret.extend(txt)
-            else:
-                ret.append(str(_('No output was generated.')))
+                    number=self.number))
         except:
             s = str(_('Could not process "{0}".')).format(arg_str)
             p = str(_('Enter ? r or ? t for help.'))
@@ -4837,7 +4836,7 @@ Usage:
 
     c INT
 
-If there is an item number INT among those displayed by the previous'a' or 'r'  command then open a COPY of the item for editing. The edited copy will be saved as a new item.\
+If there is an item number INT among those displayed by the previous 'a' or 'r'  command then open a COPY of the item for editing. The edited copy will be saved as a new item.\
 """)
 
     def do_d(self, arg_str):
@@ -4934,7 +4933,7 @@ Usage:
 
     d INT
 
-If there is an item number INT among those displayed by the previous'a' or 'r'  command then delete that item, first prompting for confirmation. When a repeating item is selected, you will first be prompted to choose which of the repeated instances should be deleted. \
+If there is an item number INT among those displayed by the previous 'a' or 'r' command then delete that item, first prompting for confirmation. When a repeating item is selected, you will first be prompted to choose which of the repeated instances should be deleted. \
 """)
 
     def do_e(self, arg_str, item=''):
@@ -5140,7 +5139,7 @@ Usage:
 
     e INT
 
-If there is an item number INT among those displayed by the previous'a' or 'r'  command then open it for editing. When a repeating item is selected, you will first be prompted to choose which of the repeatedinstances should be changed. The entry will be validated and any errors can be corrected before any changes are made.\
+If there is an item number INT among those displayed by the previous 'a' or 'r' command then open it for editing. When a repeating item is selected, you will first be prompted to choose which of the instances should be changed.\
 """)
 
     def do_f(self, arg_str):
@@ -5229,7 +5228,7 @@ Usage:
 
     f INT
 
-If there is an item number INT among those displayed by the previous'a' or 'r'  command and that item is an unfinished task, then first prompt for a completion date and time and then mark the task finished.""")
+If there is an item number INT among those displayed by the previous 'a' or 'r' command and that item is an unfinished task, then first prompt for a completion date and time and then mark the task finished.""")
 
     def do_h(self, arg_str):
         if 'hg_command' in self.options and self.options['hg_command']:
@@ -5261,7 +5260,7 @@ Usage:
 
     i INT
 
-If there is an item number INT among those displayed by the previous 'a' or 'r'  command then display information about that item.\
+If there is an item number INT among those displayed by the previous 'a' or 'r' command then display information about that item.\
 """)
 
     def do_m(self, arg_str):
@@ -5301,6 +5300,7 @@ where N is the number of a report specification from the file {0}:\n """.format(
             for i in range(len(lines)):
                 res.append("{0:>2}. {1}".format(i + 1, lines[i].strip()))
         return("\n".join(res))
+        # return(res)
 
     def do_n(self, arg_str='', itemstr=""):
         if arg_str:
@@ -5506,26 +5506,31 @@ Options include:
             'platform': platform.system(),
             'python': platform.python_version(),
             'dateutil': dateutil_version,
-            'kivy': KIVY_VERSION_STR}
+            'tkversion': self.tkversion
+            }
         # print(d)
         return _("""\
-                Event and Task Manager {0[etm_kv]}
+Event and Task Manager {0[etm_kv]}
 
 This application provides a format for using plain text files to store events, tasks and other items and a Kivy based GUI for creating and modifying items as well as viewing them.
 
 Copyright {0[copyright]} {0[dev]}. All rights reserved. This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
 
 System Information:
-  Python:        {0[python]}
-  Kivy:          {0[kivy]}
-  Dateutil:      {0[dateutil]}
-  Platform:      {0[platform]}
+  Python:    {0[python]}
+  Dateutil:  {0[dateutil]}
+  Tk:        {0[tkversion]}
+  Platform:  {0[platform]}
 
 ETM Information:
-  Homepage:      {0[home]}
-  Developer:     {0[dev]}
-  GPL License:   {0[gpl]}
-  Discussion:    {0[group]}\
+  Homepage:
+    {0[home]}
+  Developer:
+    {0[dev]}
+  GPL License:
+    {0[gpl]}
+  Discussion:
+    {0[group]}\
 """.format(d))
 
     def help_v(self):
@@ -5535,54 +5540,26 @@ Display information about etm and the operating system.""")
     def help_help(self):
         return(_("""\
 Commands:
-    ? ARGS  if ARGS = X then display details for command X
-            or, without ARGS, display this help information.
-    a       display the agenda for next few days combined
-            with any items in the now and next views.
-    c INT   if there is an item number INT among those
-            displayed by the previous 'a' or 'r'  command
-            then open the editor with a COPY of that item
-            for editing. The edited copy will be saved as
-            a new item.
-    d INT   if there is an item number INT among those
-            displayed by the previous 'a' or 'r'  command
-            then delete that ITEM, first prompting for
-            confirmation.
-    e INT   if there is an item number INT among those
-            displayed by the previous 'a' or 'r'  command
-            then open that ITEM for editing.
-    f INT   if there is an item number INT among those
-            displayed by the previous 'a' or 'r'  command
-            and that item is an unfinished task, then first
-            prompt for a completion date and time and then
-            mark the task finished.
-    h ARGS  if 'hg_command' is specified in etm.cfg, then
-            execute that command with ARGS.
-    i INT   if there is an item number INT among those
-            displayed by the previous 'a' or 'r'  command
-            then display information about that item.
-    m INT   display a report using the remaining argument,
-            which mustbe a positive integer, to display a
-            report using the corresponding entry from
-            'report_specifications' (specifiedin etm.cfg).
-            Use ? m to display the numbered list of entries
-            from this file.
-    n ARGS  create a new item using the remaining arguments
-            as the item specification. If ARGS is not given,
-            then use edit_cmd to create the new item.
-    O       open etm.cfg for editing.
-    r ARGS  display a report using the remaining arguments
-            as the report specification.
-    R       open 'report_specifications' (from etm.cfg) for
-            editing.
-    s INT   if there is an item number INT among those
-            displayed bythe previous 'a' or 'r'  command
-            then change the starting date and time of that
-            item.
-    t ARGS  display a time report using the remaining
-            arguments as the report specification.
-    v       display information about etm and the operating
-            system.\
+?  CMD   Display details for CMD or, without CMD,
+         display this help information.
+a        Display the agenda for next few days
+         combined with any now and next items.
+c  INT   Open the editor with a COPY of item INT
+         for editing.
+d  INT   Delete item INT, first prompting for
+         confirmation.
+e  INT   Open item INT for editing.
+f  INT   Mark task INT finished.
+h  ARGS  Execute 'hg_command' with ARGS.
+i  INT   Display details about item INT.
+m  INT   Display 'report_specifications' INT.
+n  ARGS  Create a new item from ARGS.
+O        Open etm.cfg for editing.
+r  ARGS  Display a report using ARGS.
+R        Open 'report_specifications' for editing.
+s  INT   Change the starting time of item INT.
+t  ARGS  Display a time report using ARGS.
+v        Display system and etm information.\
 """))
 
     def delete_which(self, instance):
