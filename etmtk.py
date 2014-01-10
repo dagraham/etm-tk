@@ -5,17 +5,19 @@ import platform
 import sys
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, END, Label, Toplevel, Button
+    from tkinter import Tk, Entry, END, Label, Toplevel, Button, Frame, LEFT
     from tkinter import messagebox as tkMessageBox
     from tkinter import ttk
     from tkinter import font as tkFont
+    from tkinter import simpledialog as tkSimpleDialog
     # import tkFont
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, END, Label, Toplevel, Button
+    from Tkinter import Tk, Entry, END, Label, Toplevel, Button, Frame, LEFT
     import tkMessageBox
     import ttk
     import tkFont
+    import tkSimpleDialog
 
 tkversion = tkinter.TkVersion
 
@@ -36,7 +38,86 @@ from etmTk.data import (
     import_ical, export_ical, has_icalendar, expand_template, ensureMonthly,
     sys_platform, id2Type)
 
-# import tkSimpleDialog
+
+class MessageWindow():
+    def __init__(self, parent, title, prompt):
+        self.win = Toplevel(parent)
+        self.parent = parent
+        self.win.title(title)
+        Label(self.win, text=prompt).pack(fill=tkinter.BOTH, expand=1, padx=10, pady=10)
+        b = Button(self.win, text='Ok', command=self.cancel, default='active')
+        b.pack()
+        self.win.bind('<Return>', (lambda e, b=b: b.invoke()))
+        self.win.bind('<Escape>', (lambda e, b=b: b.invoke()))
+        self.win.focus_set()
+        self.win.grab_set()
+        self.win.transient(parent)
+        self.win.wait_window(self.win)
+        return
+
+    def cancel(self, event=None):
+        # put focus back to the parent window
+        self.parent.focus_set()
+        self.win.destroy()
+
+
+class DialogWindow():
+    def __init__(self, parent, title="", prompt=""):
+        self.win = Toplevel(parent)
+        # win = Toplevel(self)
+        self.parent = parent
+
+        self.win.title(title)
+        Label(self.win, text=prompt, justify='left').pack(fill=tkinter.BOTH, expand=1, padx=10, pady=5)
+        self.e = Entry(self.win).pack(padx=5, pady=5)
+        box = Frame(self.win)
+        o = Button(box, text="OK", width=10, default='active', command=self.ok)
+        o.pack(side=LEFT, padx=5, pady=5)
+        c = Button(box, text="Cancel", width=10, command=self.cancel)
+        c.pack(side=LEFT, padx=5, pady=5)
+        box.pack()
+        self.win.bind('<Return>', (lambda e, o=o: o.invoke()))
+        self.win.bind('<Escape>', (lambda e, c=c: c.invoke()))
+        self.win.focus_set()
+        self.win.grab_set()
+        self.win.transient(parent)
+        self.win.wait_window(self.win)
+        return(self.e)
+
+    def ok(self, event=None):
+        if not self.validate():
+            self.messageWindow('error', self.error_message)
+            self.parent.focus_set()
+            return
+
+        # self.withdraw()
+        self.parent.update_idletasks()
+
+        self.apply()
+
+        self.cancel()
+
+    def cancel(self, event=None):
+
+        # put focus back to the parent window
+        self.parent.focus_set()
+        self.win.destroy()
+
+    #
+    # command hooks
+
+    def validate(self):
+        self.error_message = "an integer between 1 and 4 is required"
+
+        return 0 # override
+
+    def apply(self):
+
+        pass # override
+
+    def messageWindow(self, title, prompt):
+        MessageWindow(self.parent, title, prompt)
+
 
 
 class App(Tk):
@@ -90,23 +171,33 @@ class App(Tk):
         self.e.focus_set()
         self.lift()
 
-    def messageWindow(self, title, message):
+    def messageWindow(self, title, prompt):
         win = Toplevel()
-        # win = Toplevel(self)
         win.title(title)
-        # Label(win, text=message, width=50, wraplength=350, justify='left', font=tkFont.Font(family='TkFixedFont')).pack()
-        # Label(win, text=message, width=50, wraplength=350, justify='left', font=('TkFixedFont', 13)).pack()
-        Label(win, text=message, width=54, wraplength=400, justify='left', font=tkFont.Font(family="Lucida Sans Typewriter"), fg="darkblue").pack(fill=tkinter.BOTH, expand=1)
+        Label(win, text=prompt, width=54, wraplength=400, justify='left', font=tkFont.Font(family="Lucida Sans Typewriter"), fg="darkblue").pack(fill=tkinter.BOTH, expand=1)
         b = Button(win, text='Ok', command=win.destroy, default='active')
         b.pack()
-        # b.focus_set()
         win.bind('<Return>', (lambda e, b=b: b.invoke()))
         win.bind('<Escape>', (lambda e, b=b: b.invoke()))
         win.focus_set()
         win.grab_set()
         win.transient(self)
-        # win.wait_window(self)
         win.wait_window(win)
+
+    def getInteger(self, title, prompt):
+        DialogWindow(self, title, prompt)
+
+    def editWhich(self, instance="xyz"):
+        prompt = "\n".join([
+            _("You have selected instance"),
+            "    {0}".format(instance),
+            _("of a repeating item. What do you want to change?"),
+            "  1. {0}".format(_("only the datetime of this instance")),
+            "  2. {0}".format(_("this instance")),
+            "  3. {0}".format(_("this and all subsequent instances")),
+            "  4. {0}".format(_("all instances")),
+            "{0}".format(_('Choice [1-4] or 0 to cancel?'))])
+        self.getInteger(title='which instance', prompt=prompt)
 
 
     def gettext(self, event=None):
@@ -129,7 +220,10 @@ class App(Tk):
 
         if self.mode == 'command':
             cmd = cmd.strip()
-            if cmd[0] in ['a', 'r', 't']:
+            if cmd[0] == 'w':
+                self.editWhich()
+                return()
+            elif cmd[0] in ['a', 'r', 't']:
                 # simple command history for report commands
                 if cmd in self.history:
                     self.history.remove(cmd)
@@ -179,7 +273,7 @@ class App(Tk):
         if type(res) == dict:
             self.showTree(res)
         else:
-            self.messageWindow(title='etm', message=res)
+            self.messageWindow(title='etm', prompt=res)
             # d = ETMDialog(self, title='etm', message=ress)
             # self.wait_window(d)
             # tkMessageBox.showinfo('etm', res, icon='info')
