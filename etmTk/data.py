@@ -4558,7 +4558,7 @@ class ETMCmd(cmd.Cmd):
         # delete the next line to use in kivy
         cmd.Cmd.__init__(self)
         self.options = options
-        self.parent = parent
+        # self.parent = parent
         self.cmdDict = {
             '?': self.do_help,
             'a': self.do_a,
@@ -4607,6 +4607,7 @@ class ETMCmd(cmd.Cmd):
         self.count2id = {}
         self.last_rep = ""
         self.mode = ''
+        self.item_hsh = {}
         self.output = 'text'
         self.tkversion = ''
         self.line_length = self.options['agenda_indent'] + self.options['agenda_width1'] + self.options['agenda_width2']
@@ -4689,7 +4690,7 @@ class ETMCmd(cmd.Cmd):
         self.currfile = ensureMonthly(self.options, now)
         if self.last_rep:
             print('load_data calling mk_rep with ', self.last_rep)
-            self.parent.output_wid.text = self.mk_rep(self.last_rep)
+            return(self.mk_rep(self.last_rep))
 
     def edit_tmp(self):
         if not self.editcmd:
@@ -4804,7 +4805,7 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         # fo = codecs.open(fp, 'r', file_encoding)
         # lines = fo.readlines()
         # fo.close()
-        self.parent.item_hsh = hsh
+        self.item_hsh = hsh
         if 'r' in hsh:
             # repeating
             instance = fmt_datetime(hsh['_dt'], self.options)
@@ -4816,8 +4817,7 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
                 "  2. {0}".format(_("this and all subsequent instances")),
                 "  3. {0}".format(_("all instances")),
                 "{0}".format(_('Choice [1-3] or 0 to cancel? '))])
-            self.parent.mode = 'delete'
-            self.parent.input_wid.text = ''
+            self.mode = 'delete'
             return(prompt)
         else:
             # not repeating
@@ -4833,7 +4833,7 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
             return(False)
 
         if choice in [1, 2]:
-            hsh = self.parent.item_hsh
+            hsh = self.item_hsh
             dt = parse(
                 hsh['_dt']).replace(
                 tzinfo=tzlocal()).astimezone(
@@ -4851,7 +4851,7 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
                         del hsh_rev['_r']
                 else:
                     hsh_rev.setdefault('-', []).append(dt)
-                newstr = hsh2str(hsh_rev, self.parent.options)
+                newstr = hsh2str(hsh_rev, self.options)
                 self.replace_item(hsh_rev, newstr)
 
             elif choice == 2:
@@ -4894,17 +4894,18 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
 
     def do_e(self, arg_str, item=''):
         args = arg_str.split(' ')
-        print('args', len(args), args)
         hsh = self.get_itemhash(args[0])
+        print('do_e args', len(args), args, hsh)
         if not hsh:
             return()
         if item:
             self.mode = _('finished task')
             # item_str = item
         else:
-            self.parent.mode = 'edit'
-            self.parent.item_hsh = hsh
-            self.parent.input_wid.text = ''
+            print('setting mode ...')
+            self.mode = 'edit'
+            self.item_hsh = hsh
+            print('mode', self.mode, self.item_hsh)
             if 'r' in hsh:
                 # repeating
                 instance = fmt_datetime(hsh['_dt'], self.options)
@@ -4917,8 +4918,10 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
                     "  3. {0}".format(_("this and all subsequent instances")),
                     "  4. {0}".format(_("all instances")),
                     "{0}".format(_('Choice [1-4] or 0 to cancel?'))])
+                print('returning', prompt)
                 return(prompt)
             else:
+                print('do_e calling _do_edit(4)')
                 self._do_edit(4)
 
     def _new_date(self, arg):
@@ -4927,8 +4930,8 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         """
         print('new_date', arg)
         # no more input is needed
-        self.parent.mode = 'command'
-        hsh = self.parent.item_hsh
+        self.mode = 'command'
+        hsh = self.item_hsh
         if not arg:
             return(False)
         try:
@@ -4959,28 +4962,26 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         """
         Called by do_e to process the choice.
         """
+        print('do_edit', choice)
         if not choice:
             return(False)
         try:
             choice = int(choice)
         except:
             return(False)
-        print('choice', "{0}".format(choice))
-
         if choice == 1:
             # only the datetime of this instance
             # get the new datetime, add it to @+ and remove this
             # instance by adding it to @-
-            prompt = _("new date and time to replace {0}?").format(self.parent.item_hsh['_dt'].strftime(rfmt))
-            self.parent.mode = 'new_date'
-            self.parent.input_wid.text = ''
+            prompt = _("new date and time to replace {0}?").format(self.item_hsh['_dt'].strftime(rfmt))
+            self.mode = 'new_date'
             return(prompt)
 
         elif choice in [2, 3]:
-            hsh_cpy = deepcopy(self.parent.item_hsh)
-            hsh_rev = deepcopy(self.parent.item_hsh)
+            hsh_cpy = deepcopy(self.item_hsh)
+            hsh_rev = deepcopy(self.item_hsh)
             hsh_cpy['i'] = uniqueId()
-            self.parent.mode = 'append'
+            self.mode = 'append'
 
             dt = parse(
                 hsh_cpy['_dt']).replace(
@@ -5006,8 +5007,8 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
                 rev_str = hsh2str(hsh_rev, self.options)
                 self.mode = 'changed instance'
                 edit_str = hsh2str(hsh_cpy, self.options)
-                self.parent.mode = 'append'
-                self.parent.Dialog.run(text=edit_str)
+                self.mode = 'append'
+                # self.Dialog.run(text=edit_str)
 
             elif choice == 3:
                 # this and all subsequent instances
@@ -5044,15 +5045,15 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
                 self.mode = "changed this and subsequent instances"
                 self.replace_item(rev_str)
                 edit_str = hsh2str(hsh_cpy, self.options)
-                self.parent.mode = 'append'
-                self.parent.Dialog.run(text=edit_str)
+                self.mode = 'append'
+                # self.parent.Dialog.run(text=edit_str)
         else:
-            self.parent.mode = 'replace'
-            item_str = self.parent.item_hsh['entry']
-            self.parent.Dialog.run(text=item_str)
+            self.mode = 'replace'
+            item_str = self.item_hsh['entry']
+            # self.parent.Dialog.run(text=item_str)
 
     def delete_item(self):
-        f, begline, endline = self.parent.item_hsh['fileinfo']
+        f, begline, endline = self.item_hsh['fileinfo']
         fp = os.path.join(self.options['datadir'], f)
         fo = codecs.open(fp, 'r', file_encoding)
         lines = fo.readlines()
@@ -5060,12 +5061,11 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         self.mode = 'deleted item'
         self.replace_lines(fp, lines, begline, endline, [])
         self.load_data()
-        self.parent.mode = 'command'
-        self.parent.input_wid.text = ''
+        self.mode = 'command'
 
     def replace_item(self, new_hsh, new_item):
         newlines = new_item.split('\n')
-        f, begline, endline = self.parent.item_hsh['fileinfo']
+        f, begline, endline = self.item_hsh['fileinfo']
         fp = os.path.join(self.options['datadir'], f)
         fo = codecs.open(fp, 'r', file_encoding)
         lines = fo.readlines()
@@ -5073,8 +5073,7 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         self.mode = _('changed all instances')
         self.replace_lines(fp, lines, begline, endline, newlines)
         self.load_data()
-        self.parent.mode = 'command'
-        self.parent.input_wid.text = ''
+        self.mode = 'command'
 
     def append_item(self, new_hsh, new_item):
         if 's' not in new_hsh:
@@ -5087,7 +5086,7 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         self.mode = _('added item')
         self.safe_save(self.currfile, itemstr)
         self.load_data()
-        self.parent.input_wid.text = ''
+        self.input_wid.text = ''
 
     def help_e(self):
         return _("""\
@@ -5115,9 +5114,8 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         # lines = fo.readlines()
         # fo.close()
         # now = datetime.now(tzlocal())
-        self.parent.mode = 'finish'
-        self.parent.item_hsh = hsh
-        self.parent.input_wid.text = ''
+        self.mode = 'finish'
+        self.item_hsh = hsh
         return _("""\
 Finishing "{0}".
 Enter a date and time (fuzzy parsed) to use as the completion
@@ -5129,7 +5127,7 @@ datetime, an empty string to use the current date and time or
         """
         Called by do_f to process the finish datetime and add it to the file.
         """
-        hsh = self.parent.item_hsh
+        hsh = self.item_hsh
         if rep.lower() == 'n':
             return(_('canceled'))
         if not rep:
@@ -5268,8 +5266,8 @@ where N is the number of a report specification from the file {0}:\n """.format(
                 new_hsh['s'] = None
             self.append_item(new_hsh, new_item)
         else:  # empty arg_str, open dialog
-            self.parent.mode = 'append'
-            self.parent.Dialog.run(text=itemstr)
+            self.mode = 'append'
+            # self.parent.Dialog.run(text=itemstr)
 
     def help_n(self):
         return _("""\
@@ -5400,9 +5398,8 @@ Open 'report_specifications'  (specified in etm.cfg) for editing. This command r
             prompt = _("new date and time to replace {0}? ").format(hsh['_dt'].replace(tzinfo=None).strftime(rfmt))
         else:
             prompt = _("New datetime? ")
-        self.parent.mode = 'new_date'
-        self.parent.item_hsh = hsh
-        self.parent.input_wid.text = ''
+        self.mode = 'new_date'
+        self.item_hsh = hsh
         return(prompt)
 
     def help_s(self):
@@ -5557,7 +5554,6 @@ v        Display system and etm information.\
         return(question)
 
         print('posing', question)
-        # self.parent.get_input(question)
         res = self.parent.input_wid.text
         # res = raw_input(_('Choice [1-4] or 0 to cancel? '))
         try:

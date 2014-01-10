@@ -40,10 +40,10 @@ from etmTk.data import (
 
 
 class App(Tk):
-    def __init__(self, path):
+    def __init__(self, path=None):
         Tk.__init__(self)
         # print(tkFont.names())
-        self.minsize(400, 430)
+        self.minsize(400, 370)
         self.title("etm tk")
         if sys_platform == 'Linux':
             self.wm_iconbitmap('@'+'etmlogo-4.xbm')
@@ -61,7 +61,7 @@ class App(Tk):
         self.tree.column("#2", minwidth=30, width=40, stretch=0, anchor="e")
         self.date2id = {}
 
-        abspath = os.path.abspath(path)
+        # abspath = os.path.abspath(path)
         # root_node = self.tree.insert(u'', 'end', text=abspath, open=True)
         self.root = (u'', u'_')
 
@@ -92,6 +92,7 @@ class App(Tk):
 
     def messageWindow(self, title, message):
         win = Toplevel()
+        # win = Toplevel(self)
         win.title(title)
         # Label(win, text=message, width=50, wraplength=350, justify='left', font=tkFont.Font(family='TkFixedFont')).pack()
         # Label(win, text=message, width=50, wraplength=350, justify='left', font=('TkFixedFont', 13)).pack()
@@ -104,6 +105,7 @@ class App(Tk):
         win.focus_set()
         win.grab_set()
         win.transient(self)
+        # win.wait_window(self)
         win.wait_window(win)
 
 
@@ -133,6 +135,18 @@ class App(Tk):
                     self.history.remove(cmd)
                 self.history.append(cmd)
                 self.index = len(self.history) - 1
+            else:
+                parts = cmd.split(' ')
+                if len(parts) == 2:
+                    try:
+                        i = int(parts[0])
+                    except:
+                        i = None
+                    if i:
+                        parts.pop(0)
+                        parts.append(str(i))
+                        cmd = " ".join(parts)
+
             # select everything in input to make it easy to clear
             self.e.select_range(0, END)
             try:
@@ -180,7 +194,7 @@ class App(Tk):
         # self.tree.selection_set( 'I001' )
         # self.tree.focus_set()
         # self.tree.focus( 'I001' ) # this fixes a problem.
-        self.tree.yview(12)
+        self.tree.yview(0)  # this is a line number
 
     def deleteItems(self):
         for child in self.tree.get_children():
@@ -221,17 +235,17 @@ class App(Tk):
                         self.date2id[d] = parent
 
 
-    def process_directory(self, parent, path):
-        for p in os.listdir(path):
-            print(parent, path, p)
-            abspath = os.path.join(path, p)
-            isdir = os.path.isdir(abspath)
-            if os.path.isfile(abspath):
-                oid = self.tree.insert(parent, 'end', text=p, open=False, value=[os.path.getsize(abspath)])
-            else:
-                oid = self.tree.insert(parent, 'end', text=p, open=False)
-            if isdir:
-                self.process_directory(oid, abspath)
+    # def process_directory(self, parent, path):
+    #     for p in os.listdir(path):
+    #         print(parent, path, p)
+    #         abspath = os.path.join(path, p)
+    #         isdir = os.path.isdir(abspath)
+    #         if os.path.isfile(abspath):
+    #             oid = self.tree.insert(parent, 'end', text=p, open=False, value=[os.path.getsize(abspath)])
+    #         else:
+    #             oid = self.tree.insert(parent, 'end', text=p, open=False)
+    #         if isdir:
+    #             self.process_directory(oid, abspath)
 
 
 if __name__ == "__main__":
@@ -245,7 +259,8 @@ if __name__ == "__main__":
     (user_options, options, use_locale) = data.get_options(etmdir)
     loop = data.ETMCmd(options)
     loop.tkversion = tkversion
-    app = App(path='/Users/dag/etm-tk')
+    # app = App(path='/Users/dag/etm-tk')
+    app = App()
     app.mainloop()
 
 
