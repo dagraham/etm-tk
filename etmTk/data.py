@@ -2666,115 +2666,121 @@ def makeReportTuples(uuids, uuid2hash, groupby, dated, options={}):
     today_date = datetime.now().date()
     tups = []
     for uuid in uuids:
-        hsh = {}
-        for k, v in uuid2hash[uuid].items():
-            hsh[k] = v
-        # we'll make anniversary subs to a copy later
-        hsh['summary'] = hsh['_summary']
-        tchr = hsh['itemtype']
-        tstr = type2Str[tchr]
-        if 't' not in hsh:
-            hsh['t'] = []
-        if dated['groupby']:
-            dates = []
-            start = parse(parse_dtstr(hsh['s'], hsh['z'])).astimezone(
-                tzlocal()).replace(tzinfo=None)
-            if 'rrule' in hsh:
-                if dated['b'] > start:
-                    start = dated['b']
-                for date in hsh['rrule'].between(start, dated['e'], inc=True):
-                    # on or after start but before 'e'
-                    if date < dated['e']:
-                        bisect.insort(dates, date)
-            elif 's' in hsh and hsh['s'] and 'f' not in hsh:
-                if hsh['s'] < dated['e'] and hsh['s'] >= dated['b']:
-                    bisect.insort(dates, start)
-            if 'f' in hsh and hsh['f']:
-                dt = parse(parse_dtstr(
-                    hsh['f'][-1][0], hsh['z'])).astimezone(
+        try:
+            hsh = {}
+            for k, v in uuid2hash[uuid].items():
+                hsh[k] = v
+            # we'll make anniversary subs to a copy later
+            hsh['summary'] = hsh['_summary']
+            tchr = hsh['itemtype']
+            tstr = type2Str[tchr]
+            if 't' not in hsh:
+                hsh['t'] = []
+            if dated['groupby']:
+                dates = []
+                start = parse(parse_dtstr(hsh['s'], hsh['z'])).astimezone(
                     tzlocal()).replace(tzinfo=None)
-                if dt <= dated['e'] and dt >= dated['b']:
-                    bisect.insort(dates, dt)
-            for dt in dates:
+                if 'rrule' in hsh:
+                    if dated['b'] > start:
+                        start = dated['b']
+                    for date in hsh['rrule'].between(start, dated['e'], inc=True):
+                        # on or after start but before 'e'
+                        if date < dated['e']:
+                            bisect.insort(dates, date)
+                elif 's' in hsh and hsh['s'] and 'f' not in hsh:
+                    if hsh['s'] < dated['e'] and hsh['s'] >= dated['b']:
+                        bisect.insort(dates, start)
+                if 'f' in hsh and hsh['f']:
+                    dt = parse(parse_dtstr(
+                        hsh['f'][-1][0], hsh['z'])).astimezone(
+                        tzlocal()).replace(tzinfo=None)
+                    if dt <= dated['e'] and dt >= dated['b']:
+                        bisect.insort(dates, dt)
+                for dt in dates:
+                    item = []
+                    # print('dt', type(dt), dt)
+                    for g in groupby['tuples']:
+                        if groupdate_regex.search(g):
+                            item.append(d_to_str(dt, g))
+                        elif g in ['c', 'u']:
+                            item.append(hsh[g])
+                        else:  # should be f or k
+                            item.append(eval(g))
+                    item.extend([
+                        tstr2SCI[tstr][0],
+                        tstr,
+                        dt,
+                        reportDT(dt, groupby['include'], options),
+                        uuid])
+                    # print('insort', tuple(item))
+                    bisect.insort(tups, tuple(item))
+
+            else:  # no date spec in groupby
                 item = []
-                # print('dt', type(dt), dt)
+                dt = ''
+                if hsh['itemtype'] in [u'+', u'-', u'%']:
+                    # task type
+                    done, next, following = getDoneAndTwo(hsh)
+                    if next:
+                        # add a next entry
+                        if next.date() < today_date:
+                            if tchr == '+':
+                                tstr = 'pc'
+                            elif tchr == '-':
+                                tstr = 'pt'
+                            elif tchr == '%':
+                                tstr = 'pd'
+                        dt = next
+                    elif done:
+                        dt = done
+                else:
+                    # not a task type
+                    if 's' in hsh:
+                        if 'rrule' in hsh:
+                            if tchr in ['^', '*', '~']:
+                                dt = (hsh['rrule'].after(
+                                    today_datetime, inc=True)
+                                    or hsh['rrule'].before(
+                                        today_datetime, inc=True))
+                                if dt is None:
+                                    print('Error: no valid datetimes for', hsh['_summary'], hsh['fileinfo'])
+                                    continue
+                            else:
+                                dt = hsh['rrule'].after(hsh['s'], inc=True)
+                        else:
+                            dt = parse(
+                                parse_dtstr(hsh['s'], hsh['z'])).replace(tzinfo=None)
+                    else:
+                        # undated
+                        dt = ''
                 for g in groupby['tuples']:
                     if groupdate_regex.search(g):
-                        item.append(d_to_str(dt, g))
-                    elif g in ['c', 'u']:
-                        item.append(hsh[g])
-                    else:  # should be f or k
-                        item.append(eval(g))
+                        item.append(dt_to_str(dt, g))
+                    else:
+                        try:
+                            res = eval(g)
+                            item.append(res)
+                        except:
+                            pass
+                if type(dt) == datetime:
+                    dtstr = reportDT(dt, groupby['include'], options)
+                    dt = dt.strftime(etmdatefmt)
+                else:
+                    dtstr = dt
                 item.extend([
                     tstr2SCI[tstr][0],
                     tstr,
                     dt,
-                    reportDT(dt, groupby['include'], options),
+                    dtstr,
                     uuid])
-                # print('insort', tuple(item))
                 bisect.insort(tups, tuple(item))
-
-        else:  # no date spec in groupby
-            item = []
-            dt = ''
-            if hsh['itemtype'] in [u'+', u'-', u'%']:
-                # task type
-                done, next, following = getDoneAndTwo(hsh)
-                if next:
-                    # add a next entry
-                    if next.date() < today_date:
-                        if tchr == '+':
-                            tstr = 'pc'
-                        elif tchr == '-':
-                            tstr = 'pt'
-                        elif tchr == '%':
-                            tstr = 'pd'
-                    dt = next
-                elif done:
-                    dt = done
-            else:
-                # not a task type
-                if 's' in hsh:
-                    if 'rrule' in hsh:
-                        if tchr in ['^', '*', '~']:
-                            dt = (hsh['rrule'].after(
-                                today_datetime, inc=True)
-                                or hsh['rrule'].before(
-                                    today_datetime, inc=True))
-                        else:
-                            dt = hsh['rrule'].after(hsh['s'], inc=True)
-                    else:
-                        dt = parse(
-                            parse_dtstr(hsh['s'], hsh['z'])).replace(tzinfo=None)
-                else:
-                    # undated
-                    dt = ''
-            for g in groupby['tuples']:
-                if groupdate_regex.search(g):
-                    item.append(dt_to_str(dt, g))
-                else:
-                    try:
-                        res = eval(g)
-                        item.append(res)
-                    except:
-                        pass
-            if type(dt) == datetime:
-                dtstr = reportDT(dt, groupby['include'], options)
-                dt = dt.strftime(etmdatefmt)
-            else:
-                dtstr = dt
-            item.extend([
-                tstr2SCI[tstr][0],
-                tstr,
-                dt,
-                dtstr,
-                uuid])
-            bisect.insort(tups, tuple(item))
+        except:
+            print('Error processing', hsh['_summary'], hsh['fileinfo'])
     return(tups)
 
 
 def getAgenda(allrows, colors=2, days=4, indent=2, width1=54, width2=14,
-              calendars=[], mode='html', number=True):
+              calendars=[], mode='html'):
     cal_regex = None
     if calendars:
         cal_pattern = r'^%s' % '|'.join([x[2] for x in calendars if x[1]])
@@ -2827,7 +2833,7 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54, width2=14,
 
 @memoize
 def getReportData(s, file2uuids, uuid2hash, options={}, export=False,
-                  colors=None, mode='html', number=True):
+                  colors=None, mode='html'):
     """
         getViewData returns rows with the format:
             [(view, (sort)), node1, node2, ...,
@@ -2926,60 +2932,14 @@ def getReportData(s, file2uuids, uuid2hash, options={}, export=False,
             clrs = groupby['colors']
         tree = makeTree(rows, sort=False)
         return(tree)
-
-        # if mode == 'html':
-        #     return((
-        #         tree2Html(tree, width1=groupby['width1'],
-        #                   width2=groupby['width2'], colors=clrs),
-        #         count2id))
-        # elif mode == 'text':
-        #     lst, count, count2id = tree2Text(
-        #         tree, width1=groupby['width1'],
-        #         width2=groupby['width2'],
-        #         colors=clrs,
-        #         number=number,
-        #         count=count,
-        #         count2id=count2id)
-        #     return((lst, count2id))
-        # else:   # mode == 'rst':
-        #     # print('groupby', groupby)
-        #     lst, count, count2id = tree2Rst(
-        #         tree, width1=groupby['width1'],
-        #         width2=groupby['width2'],
-        #         colors=clrs,
-        #         number=number,
-        #         count=count,
-        #         count2id=count2id)
-        #     return((lst, count2id))
     else:
         if groupby['report'] == 't' and 'depth' in groupby and groupby['depth']:
             depth = min(groupby['depth'], len(groupby['lst']))
         else:
             depth = len(groupby['lst'])
-        # if export:
-        #     head = map(str, groupby['lst'][:depth])
-        #     csv = [head]
-        #     if groupby['report'] == 'r':
-        #         for row in rows:
-        #             tup = row.pop(-1)[2:6]
-        #             row.extend(tup)
-        #             csv.append(row)
-        #     else:
-        #         head.extend(['minutes', 'value', 'expense', 'charge'])
-        #         csv = [head]
-        #         lst = tallyByGroup(
-        #             rows, max_level=depth, options=options, export=True)
-        #         for row in lst:
-        #             tup = map(str, list(row.pop(-1)))
-        #             row.extend(tup)
-        #             csv.append(row)
-        #     return((csv, count2id))
-        # else:
         return(
-                (tallyByGroup(
-                    rows, max_level=depth, options=options),
+                (tallyByGroup(rows, max_level=depth, options=options),
                  count2id))
-
 
 def str2hsh(s, id=None, options={}):
     msg = []
@@ -4690,16 +4650,14 @@ class ETMCmd(cmd.Cmd):
                     width1=self.options['agenda_width1'],
                     width2=self.options['agenda_width2'],
                     calendars=self.options['calendars'],
-                    mode=self.output,
-                    number=self.number))
+                    mode=self.output))
             else:
                 return(getReportData(
                     arg_str,
                     self.file2uuids,
                     self.uuid2hash,
                     self.options,
-                    mode=self.output,
-                    number=self.number))
+                    mode=self.output))
         except:
             s = str(_('Could not process "{0}".')).format(arg_str)
             p = str(_('Enter ? r or ? t for help.'))
@@ -4802,10 +4760,8 @@ Either ITEM must be provided or edit_cmd must be specified in etm.cfg.
             count = int(arg_str)
         except:
             return(_('an integer argument is required'))
-            return()
         if count not in self.count2id:
-            return('Item number %d not found' % count)
-            return()
+            return(_('Item number {0} not found').format(count))
         id, dtstr = self.count2id[count].split('::')
         hsh = self.uuid2hash[id]
         if dtstr:
@@ -5251,7 +5207,7 @@ If 'hg_command' is specified in etm.cfg, then execute that command with ARGS.
         if not hsh:
             return()
         filetext = "{0}, {1} {2}-{3}".format(os.path.join(self.options['datadir'], hsh['fileinfo'][0]), _('lines'), hsh['fileinfo'][1], hsh['fileinfo'][2])
-        return("{0}:\n    {1}\n\n{2}:\n    {3}".format(
+        return("=== {0} ===\n{1}\n\n=== {2} ===\n{3}".format(
             _('item'), hsh['entry'].lstrip(), _("file"), filetext))
 
     def help_i(self):
@@ -5502,7 +5458,7 @@ Options include:
             'dev': 'daniel.graham@duke.edu',
             'group': "groups.google.com/group/eventandtaskmanager",
             'gpl': 'www.gnu.org/licenses/gpl.html',
-            'etm_kv': version,
+            'etm_tk': version,
             'platform': platform.system(),
             'python': platform.python_version(),
             'dateutil': dateutil_version,
@@ -5510,9 +5466,9 @@ Options include:
             }
         # print(d)
         return _("""\
-Event and Task Manager {0[etm_kv]}
+Event and Task Manager Tk {0[etm_tk]}
 
-This application provides a format for using plain text files to store events, tasks and other items and a Kivy based GUI for creating and modifying items as well as viewing them.
+This application provides a format for using plain text files to store events, tasks and other items and a Tk based GUI for creating and modifying items as well as viewing them.
 
 Copyright {0[copyright]} {0[dev]}. All rights reserved. This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
 
