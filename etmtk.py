@@ -38,6 +38,9 @@ from etmTk.data import (
     import_ical, export_ical, has_icalendar, expand_template, ensureMonthly,
     sys_platform, id2Type, get_current_time)
 
+import gettext
+_ = gettext.gettext
+
 
 class MessageWindow():
     def __init__(self, parent, title, prompt):
@@ -64,7 +67,6 @@ class MessageWindow():
 class DialogWindow():
     def __init__(self, parent, title="", prompt=""):
         self.win = Toplevel(parent)
-        # win = Toplevel(self)
         self.parent = parent
 
         self.win.title(title)
@@ -90,7 +92,6 @@ class DialogWindow():
             self.parent.focus_set()
             return
 
-        # self.withdraw()
         self.parent.update_idletasks()
 
         self.apply()
@@ -123,7 +124,7 @@ class App(Tk):
     def __init__(self, path=None):
         Tk.__init__(self)
         # print(tkFont.names())
-        self.minsize(400, 375)
+        self.minsize(400, 380)
         self.history = []
         self.index = 0
         self.count2id = {}
@@ -141,21 +142,20 @@ class App(Tk):
         # self.wm_iconbitmap('etmlogo-4.xbm')
         # self.call('wm', 'iconbitmap', self._w, '/Users/dag/etm-tk/etmlogo_128x128x32.ico')
             # self.iconbitmap(ICON_PATH)
-        self.columnconfigure(0, minsize=300, weight=1)
-        # self.columnconfigure(1, minsize=50, weight=0)
-        # self.columnconfigure(2, minsize=10, weight=0)
 
-        self.rowconfigure(1, weight=3)
-        self.rowconfigure(2, weight=2)
+        self.columnconfigure(0, minsize=300, weight=1)
+        self.rowconfigure(1, weight=2)
+        self.rowconfigure(2, weight=1)
+
         self.tree = ttk.Treeview(self, show='tree', columns=["#1"], selectmode='browse')
         self.tree.column("#0", minwidth=200, width=300, stretch=1)
         self.tree.column("#1", minwidth=80, width=140, stretch=0, anchor="center")
-        # self.tree.column("#2", minwidth=30, width=40, stretch=0, anchor="e")
         self.tree.bind("<<TreeviewSelect>>", self.OnSelect)
-        # self.tree.bind("<Button-1>", self.OnSingleClick)
         self.tree.bind("<Double-1>", self.OnDoubleClick)
+        self.tree.bind("<Return>", self.OnActivate)
 
         self.date2id = {}
+        padx = 2
 
         # abspath = os.path.abspath(path)
         # root_node = self.tree.insert(u'', 'end', text=abspath, open=True)
@@ -169,46 +169,81 @@ class App(Tk):
         self.e.bind('<Down>', self.next_history)
         self.e.grid(row=0, column=0, sticky='ew')
 
-        self.showTree(loop.do_a(''))
-        self.tree.grid(row=1, column=0, sticky='nsew')
+        for t in (self.e, self.tree):
+            t.bind('<Tab>', lambda e, t=t: self.focusNext(t))
+            t.bind('<Shift-Tab>', lambda e, t=t: self.focusPrev(t))
 
-        # self.l = Label(self, text=text, anchor="nw", wraplength=400, justify='left', bd=5, font=tkFont.Font(family="Lucida Sans Typewriter"), fg="darkblue")
-        # self.l = Label(self, textvariable=self.l_text, anchor="nw", justify='left', bd=2, padx=4, pady=4, relief="sunken", width=80)
-        # self.l = Text(self, wrap="word", bd=2, relief="sunken", padx=4, pady=4, font=tkFont.Font(family="Lucida Sans"), height=6, width=50)
-        self.l = Text(self, wrap="word", bd=2, relief="sunken", padx=4, pady=4, font=tkFont.Font(family="Lucida Sans"), height=6, width=50)
-        # self.l.insert(INSERT, text)
+        self.tree.grid(row=1, column=0, sticky='nsew', padx=padx)
+
+        self.l = Text(self, wrap="word", bd=1, relief="sunken", padx=padx, pady=4, font=tkFont.Font(family="Lucida Sans"), height=6, width=50)
+        self.l.configure(state="disabled")
 
         self.l.grid(row=2, column=0, sticky="nesw")
         self.grid()
-        self.e.focus_set()
         self.update_clock()
+        self.showTree(loop.do_a(''))
         self.lift()
 
+    def focusNext(self, widget):
+        print('focus next')
+        widget.tk_focusNext().focus_set()
+        return 'break'
+
+    def focusPrev(self, widget):
+        print('focus prev')
+        widget.tk_focusPrev().focus_set()
+        return 'break'
+
     def OnSelect(self, event=None):
+        """
+        Tree row has gained selection.
+        """
         item = self.tree.selection()[0]
-        instance = self.count2id[item]
-        self.l.config(state="normal")
+        uuid, dt, hsh = self.getInstance(item)
+        self.l.configure(state="normal")
         self.l.delete("0.0", END)
-        if instance is not None:
-            uuid, dt = self.count2id[item].split("::")
-            hsh = loop.uuid2hash[uuid]
-            text = hsh['entry']
+        if uuid is not None:
+            if 'r' in hsh and dt:
+                item = "{0} {1}".format(_('selected'), dt)
+            else:
+                item = _('selected')
+            l1 = hsh['fileinfo'][1]
+            l2 = hsh['fileinfo'][2]
+            if l1 == l2:
+                lines = "{0} {1}".format(_('line'), l1)
+            else:
+                lines = "{0} {1}-{2}".format(_('lines'), l1, l2)
+            filetext = "{0}, {1}".format(hsh['fileinfo'][0], lines)
+            text = "=== {0} ===\n{1}\n\n=== {2} ===\n{3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
         else:
             text = ""
         self.l.insert(INSERT, text)
-        self.l.config(state="disabled")
+        self.l.configure(state="disabled")
 
-       # print("you selected", self.tree.item(item, "text"), item, self.count2id[item])
-
-    # def OnSingleClick(self, event):
-    #     # item = self.tree.selection()[0]
-    #     item = self.tree.identify('item', event.x, event.y)
-    #     print("you clicked on", self.tree.item(item, "text"), self.tree.item(item, "values"), self.tree.item(item), item)
+    def OnActivate(self, event):
+        """
+        Return pressed with tree row selected
+        """
+        item = self.tree.selection()[0]
+        uuid, dt, hsh = self.getInstance(item)
+        print("you pressed <Return> on", item, uuid, dt, hsh['entry'])
 
     def OnDoubleClick(self, event):
-        # item = self.tree.selection()[0]
+        """
+        Double click on tree row
+        """
         item = self.tree.identify('item', event.x, event.y)
-        print("you clicked on", self.tree.item(item, "text"), self.tree.item(item, "values"), self.tree.item(item), item)
+        uuid, dt, hsh = self.getInstance(item)
+        print("you double clicked on", item, uuid, dt, hsh)
+
+    def getInstance(self, item):
+        instance = self.count2id[item]
+        if instance is None:
+            return(None, None, None)
+        uuid, dt = self.count2id[item].split("::")
+        hsh = loop.uuid2hash[uuid]
+        return(uuid, dt, hsh)
+
 
     def update_clock(self):
         self.now = get_current_time()
@@ -220,7 +255,6 @@ class App(Tk):
 
         print(self.now)
         self.title("{0}".format(nowfmt))
-        # self.label.configure(text=now)
         self.after(nxt, self.update_clock)
 
     def prev_history(self, event):
@@ -248,7 +282,6 @@ class App(Tk):
     def messageWindow(self, title, prompt):
         win = Toplevel()
         win.title(title)
-        # Label(win, text=prompt, width=54, wraplength=400, justify='left', font=tkFont.Font(family="Lucida Sans Typewriter"), fg="darkblue").pack(fill=tkinter.BOTH, expand=1)
         Label(win, text=prompt, wraplength=400, justify='left', font=tkFont.Font(family="Lucida Sans Typewriter"), fg="darkblue").pack(fill=tkinter.BOTH, expand=1, padx=10)
         b = Button(win, text=_('OK'), width=10, command=win.destroy, default='active')
         b.pack()
@@ -290,8 +323,8 @@ class App(Tk):
         """
         cmd = self.e.get().strip()
 
-        # if not cmd:
-        #     return(True)
+        if not cmd:
+            return(True)
 
         if self.mode == 'command':
             cmd = cmd.strip()
@@ -341,17 +374,13 @@ class App(Tk):
             print('date', cmd)
             res = loop._new_date(cmd)
 
-        # print('res', type(res), res)
-
         if not res:
             res = _('command "{0}" returned no output').format(cmd)
         if type(res) == dict:
             self.showTree(res)
         else:
+            # not a hash => not a tree
             self.messageWindow(title='etm', prompt=res)
-            # d = ETMDialog(self, title='etm', message=ress)
-            # self.wait_window(d)
-            # tkMessageBox.showinfo('etm', res, icon='info')
             return(0)
 
     def showTree(self, tree):
@@ -360,9 +389,13 @@ class App(Tk):
         self.count2id = {}
         self.addItems(u'', tree[self.root], tree)
         loop.count2id = self.count2id
-        # self.tree.selection_set( 'I001' )
-        # self.tree.focus_set()
-        # self.tree.focus( 'I001' ) # this fixes a problem.
+        self.l.configure(state="normal")
+        self.l.delete("0.0", END)
+        self.l.configure(state="disabled")
+        top = self.tree.get_children()[0]
+        self.tree.focus_set()
+        self.tree.focus(top)
+        self.tree.selection_set(top)
         self.tree.yview(0)  # this is a line number
 
     def deleteItems(self):
@@ -376,7 +409,7 @@ class App(Tk):
             # these keys are (parent, item) tuples
             if text in tree:
                 # this is a branch
-                item = text[1]  # this is the label of the parent
+                item = " " + text[1]  # this is the label of the parent
                 children = tree[text]  # this are the children tuples of item
                 oid = self.tree.insert(parent, 'end', text=item, open=True)
                 # recurse to get children
@@ -390,8 +423,8 @@ class App(Tk):
                 else:  # len 5 day view with datetime appended
                     uuid, item_type, col1, col2, dt = text[1]
 
+                # This hack avoids encoding issues under python 2
                 col1 = "{0} ".format(id2Type[item_type]) + col1
-                # col1 = "{0}  [{1}] {2}".format(id2Type[item_type], self.count, col1)
 
                 if type(col2) == int:
                     col2 = '%s' % col2
@@ -404,20 +437,6 @@ class App(Tk):
                     d = parse(dt[:10]).date()
                     if d not in self.date2id:
                         self.date2id[d] = parent
-
-
-    # def process_directory(self, parent, path):
-    #     for p in os.listdir(path):
-    #         print(parent, path, p)
-    #         abspath = os.path.join(path, p)
-    #         isdir = os.path.isdir(abspath)
-    #         if os.path.isfile(abspath):
-    #             oid = self.tree.insert(parent, 'end', text=p, open=False, value=[os.path.getsize(abspath)])
-    #         else:
-    #             oid = self.tree.insert(parent, 'end', text=p, open=False)
-    #         if isdir:
-    #             self.process_directory(oid, abspath)
-
 
 if __name__ == "__main__":
     etmdir = ''
@@ -433,16 +452,3 @@ if __name__ == "__main__":
     # app = App(path='/Users/dag/etm-tk')
     app = App()
     app.mainloop()
-
-
-# #create a new window
-# main = tkinter.Tk()
-# main.geometry('520x420+100+100')
-# main.title('etm')
-# content = ttk.Frame(main)
-# content['width'] = 520
-# content['height'] = 420
-# content.grid()
-# # window.wm_iconbitmap('etmlogo_512x512x32.ico')
-# #draw the window, and start the 'application'
-# main.mainloop()
