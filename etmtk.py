@@ -5,7 +5,7 @@ import platform
 import sys
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, END, Label, Toplevel, Button, Frame, LEFT
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text
     from tkinter import messagebox as tkMessageBox
     from tkinter import ttk
     from tkinter import font as tkFont
@@ -13,7 +13,7 @@ if platform.python_version() >= '3':
     # import tkFont
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, END, Label, Toplevel, Button, Frame, LEFT
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text
     import tkMessageBox
     import ttk
     import tkFont
@@ -124,6 +124,17 @@ class App(Tk):
         Tk.__init__(self)
         # print(tkFont.names())
         self.minsize(400, 375)
+        self.history = []
+        self.index = 0
+        self.count2id = {}
+        self.now = None
+        self.options = {}
+        self.popup = ''
+        self.value = ''
+        self.firsttime = True
+        self.mode = 'command'   # or edit or delete
+        self.item_hsh = {}
+
         self.title("etm tk")
         if sys_platform == 'Linux':
             self.wm_iconbitmap('@' + 'etmlogo-4.xbm')
@@ -134,11 +145,16 @@ class App(Tk):
         # self.columnconfigure(1, minsize=50, weight=0)
         # self.columnconfigure(2, minsize=10, weight=0)
 
-        self.rowconfigure(0, weight=1)
-        self.tree = ttk.Treeview(self, show='tree', columns=["#1", "#2"], selectmode='browse')
+        self.rowconfigure(1, weight=3)
+        self.rowconfigure(2, weight=2)
+        self.tree = ttk.Treeview(self, show='tree', columns=["#1"], selectmode='browse')
         self.tree.column("#0", minwidth=200, width=300, stretch=1)
         self.tree.column("#1", minwidth=80, width=140, stretch=0, anchor="center")
-        self.tree.column("#2", minwidth=30, width=40, stretch=0, anchor="e")
+        # self.tree.column("#2", minwidth=30, width=40, stretch=0, anchor="e")
+        self.tree.bind("<<TreeviewSelect>>", self.OnSelect)
+        # self.tree.bind("<Button-1>", self.OnSingleClick)
+        self.tree.bind("<Double-1>", self.OnDoubleClick)
+
         self.date2id = {}
 
         # abspath = os.path.abspath(path)
@@ -151,27 +167,48 @@ class App(Tk):
         self.e.bind('<Escape>', self.cleartext)
         self.e.bind('<Up>', self.prev_history)
         self.e.bind('<Down>', self.next_history)
+        self.e.grid(row=0, column=0, sticky='ew')
 
         self.showTree(loop.do_a(''))
+        self.tree.grid(row=1, column=0, sticky='nsew')
 
-        self.tree.grid(row=0, column=0, sticky='nsew')
-        self.e.grid(row=1, column=0, sticky='ew')
+        # self.l = Label(self, text=text, anchor="nw", wraplength=400, justify='left', bd=5, font=tkFont.Font(family="Lucida Sans Typewriter"), fg="darkblue")
+        # self.l = Label(self, textvariable=self.l_text, anchor="nw", justify='left', bd=2, padx=4, pady=4, relief="sunken", width=80)
+        # self.l = Text(self, wrap="word", bd=2, relief="sunken", padx=4, pady=4, font=tkFont.Font(family="Lucida Sans"), height=6, width=50)
+        self.l = Text(self, wrap="word", bd=2, relief="sunken", padx=4, pady=4, font=tkFont.Font(family="Lucida Sans"), height=6, width=50)
+        # self.l.insert(INSERT, text)
 
+        self.l.grid(row=2, column=0, sticky="nesw")
         self.grid()
-        self.history = []
-        self.index = 0
-        self.count = 0
-        self.count2id = {}
-        self.now = None
-        self.options = {}
-        self.popup = ''
-        self.value = ''
-        self.firsttime = True
-        self.mode = 'command'   # or edit or delete
-        self.item_hsh = {}
         self.e.focus_set()
         self.update_clock()
         self.lift()
+
+    def OnSelect(self, event=None):
+        item = self.tree.selection()[0]
+        instance = self.count2id[item]
+        self.l.config(state="normal")
+        self.l.delete("0.0", END)
+        if instance is not None:
+            uuid, dt = self.count2id[item].split("::")
+            hsh = loop.uuid2hash[uuid]
+            text = hsh['entry']
+        else:
+            text = ""
+        self.l.insert(INSERT, text)
+        self.l.config(state="disabled")
+
+       # print("you selected", self.tree.item(item, "text"), item, self.count2id[item])
+
+    # def OnSingleClick(self, event):
+    #     # item = self.tree.selection()[0]
+    #     item = self.tree.identify('item', event.x, event.y)
+    #     print("you clicked on", self.tree.item(item, "text"), self.tree.item(item, "values"), self.tree.item(item), item)
+
+    def OnDoubleClick(self, event):
+        # item = self.tree.selection()[0]
+        item = self.tree.identify('item', event.x, event.y)
+        print("you clicked on", self.tree.item(item, "text"), self.tree.item(item, "values"), self.tree.item(item), item)
 
     def update_clock(self):
         self.now = get_current_time()
@@ -343,10 +380,10 @@ class App(Tk):
                 children = tree[text]  # this are the children tuples of item
                 oid = self.tree.insert(parent, 'end', text=item, open=True)
                 # recurse to get children
+                self.count2id[oid] = None
                 self.addItems(oid, children, tree)
             else:
                 # this is a leaf
-                self.count += 1
                 if len(text[1]) == 4:
                     uuid, item_type, col1, col2 = text[1]
                     dt = ''
@@ -361,8 +398,8 @@ class App(Tk):
                 else:
                     col2 = s2or3(col2)
 
-                oid = self.tree.insert(parent, 'end', text=col1, open=True, value=[col2, self.count])
-                self.count2id[self.count] = "{0}::{1}".format(uuid, dt)
+                oid = self.tree.insert(parent, 'end', text=col1, open=True, value=[col2])
+                self.count2id[oid] = "{0}::{1}".format(uuid, dt)
                 if dt:
                     d = parse(dt[:10]).date()
                     if d not in self.date2id:
