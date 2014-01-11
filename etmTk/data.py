@@ -2472,7 +2472,7 @@ def str2opts(s, options={}):
                 filters['search'] = (True, re.compile(r'%s' % value,
                                      re.IGNORECASE))
         elif key == 'd':
-            if groupby['report'] == 'a':
+            if groupby['report'] == 't':
                 groupby['depth'] = int(part[1:])
         elif key == 't':
             value = [x.strip() for x in part[1:].split(',')]
@@ -2937,9 +2937,9 @@ def getReportData(s, file2uuids, uuid2hash, options={}, export=False,
             depth = min(groupby['depth'], len(groupby['lst']))
         else:
             depth = len(groupby['lst'])
-        return(
-                (tallyByGroup(rows, max_level=depth, options=options),
-                 count2id))
+        rows = tallyByGroup(rows, max_level=depth, options=options)
+        # print('rows', rows)
+        return("\n".join(rows))
 
 def str2hsh(s, id=None, options={}):
     msg = []
@@ -5219,6 +5219,7 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
 
     def do_m(self, arg_str):
         f = self.options['report_specifications']
+        print('report_specifications', f)
         if not arg_str.strip():
             self.help_m()
         if not f or not os.path.isfile(f):

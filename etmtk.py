@@ -36,7 +36,7 @@ from etmTk.data import (
     updateCurrentFiles, get_changes, checkForNewerVersion, getAgenda,
     date_calculator, datetime2minutes, calyear, export_ical_item,
     import_ical, export_ical, has_icalendar, expand_template, ensureMonthly,
-    sys_platform, id2Type)
+    sys_platform, id2Type, get_current_time)
 
 
 class MessageWindow():
@@ -45,7 +45,7 @@ class MessageWindow():
         self.parent = parent
         self.win.title(title)
         Label(self.win, text=prompt).pack(fill=tkinter.BOTH, expand=1, padx=10, pady=10)
-        b = Button(self.win, text='Ok', command=self.cancel, default='active')
+        b = Button(self.win, text=_('OK'), width=10, command=self.cancel, default='active')
         b.pack()
         self.win.bind('<Return>', (lambda e, b=b: b.invoke()))
         self.win.bind('<Escape>', (lambda e, b=b: b.invoke()))
@@ -109,25 +109,24 @@ class DialogWindow():
     def validate(self):
         self.error_message = "an integer between 1 and 4 is required"
 
-        return 0 # override
+        return 0  # override
 
     def apply(self):
 
-        pass # override
+        pass  # override
 
     def messageWindow(self, title, prompt):
         MessageWindow(self.parent, title, prompt)
-
 
 
 class App(Tk):
     def __init__(self, path=None):
         Tk.__init__(self)
         # print(tkFont.names())
-        self.minsize(400, 370)
+        self.minsize(400, 375)
         self.title("etm tk")
         if sys_platform == 'Linux':
-            self.wm_iconbitmap('@'+'etmlogo-4.xbm')
+            self.wm_iconbitmap('@' + 'etmlogo-4.xbm')
         # self.wm_iconbitmap('etmlogo-4.xbm')
         # self.call('wm', 'iconbitmap', self._w, '/Users/dag/etm-tk/etmlogo_128x128x32.ico')
             # self.iconbitmap(ICON_PATH)
@@ -150,6 +149,8 @@ class App(Tk):
 
         self.e.bind('<Return>', self.process_input)
         self.e.bind('<Escape>', self.cleartext)
+        self.e.bind('<Up>', self.prev_history)
+        self.e.bind('<Down>', self.next_history)
 
         self.showTree(loop.do_a(''))
 
@@ -169,13 +170,50 @@ class App(Tk):
         self.mode = 'command'   # or edit or delete
         self.item_hsh = {}
         self.e.focus_set()
+        self.update_clock()
         self.lift()
+
+    def update_clock(self):
+        self.now = get_current_time()
+        nxt = (60*1000 - self.now.second*1000 - self.now.microsecond//1000)
+        nowfmt = "{0} {1}".format(
+            s2or3(self.now.strftime(loop.options['reprtimefmt']).lower()),
+            s2or3(self.now.strftime("%a %b %d %Z")))
+        nowfmt = leadingzero.sub("", nowfmt)
+
+        print(self.now)
+        self.title("{0}".format(nowfmt))
+        # self.label.configure(text=now)
+        self.after(nxt, self.update_clock)
+
+    def prev_history(self, event):
+        """
+        Replace input with the previous history item.
+        """
+        print('up')
+        if self.index >= 1:
+            self.index -= 1
+            self.e.delete(0, END)
+            self.e.insert(0, self.history[self.index])
+        return 'break'
+
+    def next_history(self, event):
+        """
+        Replace input with the next history item.
+        """
+        print('down')
+        if self.index + 1 < len(self.history):
+            self.index += 1
+            self.e.delete(0, END)
+            self.e.insert(0, self.history[self.index])
+        return 'break'
 
     def messageWindow(self, title, prompt):
         win = Toplevel()
         win.title(title)
-        Label(win, text=prompt, width=54, wraplength=400, justify='left', font=tkFont.Font(family="Lucida Sans Typewriter"), fg="darkblue").pack(fill=tkinter.BOTH, expand=1)
-        b = Button(win, text='Ok', command=win.destroy, default='active')
+        # Label(win, text=prompt, width=54, wraplength=400, justify='left', font=tkFont.Font(family="Lucida Sans Typewriter"), fg="darkblue").pack(fill=tkinter.BOTH, expand=1)
+        Label(win, text=prompt, wraplength=400, justify='left', font=tkFont.Font(family="Lucida Sans Typewriter"), fg="darkblue").pack(fill=tkinter.BOTH, expand=1, padx=10)
+        b = Button(win, text=_('OK'), width=10, command=win.destroy, default='active')
         b.pack()
         win.bind('<Return>', (lambda e, b=b: b.invoke()))
         win.bind('<Escape>', (lambda e, b=b: b.invoke()))
@@ -269,7 +307,7 @@ class App(Tk):
         # print('res', type(res), res)
 
         if not res:
-            return(True)
+            res = _('command "{0}" returned no output').format(cmd)
         if type(res) == dict:
             self.showTree(res)
         else:
@@ -315,11 +353,13 @@ class App(Tk):
                 else:  # len 5 day view with datetime appended
                     uuid, item_type, col1, col2, dt = text[1]
 
-                col1 = "{0} {1}     ".format(id2Type[item_type], col1)
+                col1 = "{0} ".format(id2Type[item_type]) + col1
                 # col1 = "{0}  [{1}] {2}".format(id2Type[item_type], self.count, col1)
 
                 if type(col2) == int:
                     col2 = '%s' % col2
+                else:
+                    col2 = s2or3(col2)
 
                 oid = self.tree.insert(parent, 'end', text=col1, open=True, value=[col2, self.count])
                 self.count2id[self.count] = "{0}::{1}".format(uuid, dt)
