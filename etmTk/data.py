@@ -3677,7 +3677,7 @@ def getViewData(bef, file2uuids={}, uuid2hash={}, options={}):
                             hsh['_summary'], f), tuple(folders),
                         (u, typ, setSummary(hsh, next), time_str, etmdt)]
                     add2list(rows, item)
-                    if 'k' in hsh:
+                    if 'k' in hsh and hsh['k'] != 'none':
                         keywords = [x.strip() for x in hsh['k'].split(':')]
                         item = [
                             ('keyword', (hsh['k'], tstr2SCI[typ][0]),
@@ -3705,7 +3705,7 @@ def getViewData(bef, file2uuids={}, uuid2hash={}, options={}):
                         tuple(folders),
                         (u, typ, setSummary(hsh, ''), '')]
                     add2list(rows, item)
-                    if 'k' in hsh:
+                    if 'k' in hsh and hsh['k'] != 'none':
                         keywords = [x.strip() for x in hsh['k'].split(':')]
                         item = [
                             ('keyword', (hsh['k'], tstr2SCI[typ][0]), '',
@@ -4660,7 +4660,6 @@ class ETMCmd(cmd.Cmd):
                     f = arg_str[1:].strip()
                 else:
                     f = None
-                print('calling makeTree', cmd, f)
                 return(makeTree(
                     self.rows,
                     view=view,
