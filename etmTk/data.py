@@ -1165,35 +1165,21 @@ amp_keys = {
 }
 
 
-def makeTree(list_of_lists, view=None, cal_regex=None, sort=True):
-    # view='folder':
-    # {(u'', u'_'): [(u'_', 'personal'), (u'_', 'shared')],i
-    #  (u'_', 'personal'): [(u'personal', 'monthly')],
-    #  (u'_', 'shared'): [(u'shared', 'sample_datafile')],
-    #  (u'personal', 'monthly'): [(u'personal:monthly', '1951'),
-    #                             (u'personal:monthly', '2013'),
-    #                             (u'personal:monthly', '2014')],
-    #  (u'personal:monthly', '1951'): [(u'personal:monthly:1951', '01')],
-    #  (u'personal:monthly', '2013'): [(u'personal:monthly:2013', '11'),
-    #                                  (u'personal:monthly:2013', '12')],
-    #  (u'personal:monthly', '2014'): [(u'personal:monthly:2014', '01'),
-    #                                  (u'personal:monthly:2014', '02'),
-    #                                  (u'personal:monthly:2014', '06')],
-    #  (u'personal:monthly:1951', '01'): [(u'personal:monthly:1951:01',
-    #                                      (u'1bd62d1d-a6a4-4bca-8001-9980373de648',
-    #                                       u'oc',
-    #                                       u'63rd birthday Teresa',
-    #                                       u'sty 24',
-    #                                       u'2014-01-24 '))],
-    # ...
-
+def makeTree(list_of_lists, view=None, cal_regex=None, sort=True, filter=None):
     tree = {}
     lofl = []
     root = '_'
     empty = True
-    for pc in list_of_lists:
-        # print('pc', pc)
-        # toss the sort key
+    rows = deepcopy(list_of_lists)
+    if filter is not None:
+        filter_regex = re.compile(r'{0}'.format(filter), re.IGNORECASE)
+    else:
+        filter_regex = None
+    for pc in rows:
+        if filter_regex is not None:
+            m = filter_regex.search(pc[-1][2])
+            if not m:
+                continue
         root_key = tuple(["", root])
         tree.setdefault(root_key, [])
         if cal_regex and not cal_regex.match(pc[0][-1]):
@@ -1202,8 +1188,6 @@ def makeTree(list_of_lists, view=None, cal_regex=None, sort=True):
             continue
         if sort:
             pc.pop(0)
-        # dt = None
-        # print('makeTree', pc[0])
         empty = False
         key = tuple([root, pc[0]])
         if key not in tree[root_key]:
@@ -1222,7 +1206,6 @@ def makeTree(list_of_lists, view=None, cal_regex=None, sort=True):
                 tree[parent_key].append(child_key)
     if empty:
         return({})
-    # print('makeTree', tree)
     return(tree)
 
 
@@ -4568,10 +4551,12 @@ class ETMCmd(cmd.Cmd):
             'e': self.do_e,
             'f': self.do_f,
             'h': self.do_h,
-            'i': self.do_i,
+            'k': self.do_k,
+            'l': self.do_l,
             'm': self.do_m,
             'n': self.do_n,
             'O': self.do_O,
+            'p': self.do_p,
             'q': self.do_q,
             'r': self.do_r,
             'R': self.do_R,
@@ -4588,10 +4573,12 @@ class ETMCmd(cmd.Cmd):
             'e': self.help_e,
             'f': self.help_f,
             'h': self.help_h,
-            'i': self.help_i,
+            'k': self.help_k,
+            'l': self.help_l,
             'm': self.help_m,
             'n': self.help_n,
             'O': self.help_O,
+            'p': self.help_p,
             'q': self.help_q,
             'r': self.help_r,
             'R': self.help_R,
@@ -4641,9 +4628,16 @@ class ETMCmd(cmd.Cmd):
     def mk_rep(self, arg_str):
         # we need to return the output string rather than print it
         self.last_rep = arg_str
+        cmd = arg_str[0]
         ret = []
+        views = {
+            's': 'day',
+            'p': 'folder',
+            't': 'tag',
+            'k': 'keyword'
+        }
         try:
-            if arg_str == 'a':
+            if cmd == 'a':
                 return(getAgenda(
                     self.rows,
                     colors=self.options['agenda_colors'],
@@ -4653,10 +4647,16 @@ class ETMCmd(cmd.Cmd):
                     width2=self.options['agenda_width2'],
                     calendars=self.options['calendars'],
                     mode=self.output))
-            elif arg_str == 's':
+            elif cmd in views:  # ['s', 'p', 't', 'k']:
+                view = views[cmd]
+                if len(arg_str) > 2:
+                    f = arg_str[1:].strip()
+                else:
+                    f = None
                 return(makeTree(
                     self.rows,
-                    'day'))
+                    view=view,
+                    filter=f))
             else:
                 return(getReportData(
                     arg_str,
@@ -5207,21 +5207,17 @@ Usage:
 If 'hg_command' is specified in etm.cfg, then execute that command with ARGS.
 """)
 
-    def do_i(self, arg_str):
-        hsh = self.get_itemhash(arg_str)
-        if not hsh:
-            return()
-        filetext = "{0}, {1} {2}-{3}".format(os.path.join(self.options['datadir'], hsh['fileinfo'][0]), _('lines'), hsh['fileinfo'][1], hsh['fileinfo'][2])
-        return("=== {0} ===\n{1}\n\n=== {2} ===\n{3}".format(
-            _('item'), hsh['entry'].lstrip(), _("file"), filetext))
+    def do_k(self, arg_str):
+        # self.prevnext = getPrevNext(self.dates)
+        return(self.mk_rep('k {0}'.format(arg_str)))
 
-    def help_i(self):
-        return _("""\
+    def help_k(self):
+        return("""\
 Usage:
 
-    i INT
+    k [FILTER]
 
-If there is an item number INT among those displayed by the previous 'a' or 'r' command then display information about that item.\
+Show items grouped and sorted by keyword optionally limited to those containing a case insenstive match for the regex FILTER.\
 """)
 
     def do_m(self, arg_str):
@@ -5390,7 +5386,43 @@ Open 'report_specifications'  (specified in etm.cfg) for editing. This command r
 
     def do_s(self, arg_str):
         self.prevnext = getPrevNext(self.dates)
-        return(self.mk_rep('s'))
+        return(self.mk_rep('s {0}'.format(arg_str)))
+
+    def help_s(self):
+        return("""\
+Usage:
+
+    s [FILTER]
+
+Show dated items grouped and sorted by date and type, optionally limited to those containing a case insensitive match for the regex FILTER.\
+""")
+
+    def do_p(self, arg_str):
+        # self.prevnext = getPrevNext(self.dates)
+        return(self.mk_rep('p {0}'.format(arg_str)))
+
+    def help_p(self):
+        return("""\
+Usage:
+
+    p [FILTER]
+
+Show items grouped and sorted by file path, optionally limited to those containing a case insensitive match for the regex FILTER.\
+""")
+
+    def do_t(self, arg_str):
+        # self.prevnext = getPrevNext(self.dates)
+        return(self.mk_rep('t {0}'.format(arg_str)))
+
+    def help_t(self):
+        return("""\
+Usage:
+
+    t [FILTER]
+
+Show items grouped and sorted by tag, optionally limited to those containing a case insensitive match for the regex FILTER.\
+""")
+
 
     # def do_s(self, arg_str):
     #     if not arg_str:
@@ -5414,30 +5446,30 @@ Open 'report_specifications'  (specified in etm.cfg) for editing. This command r
     #     self.item_hsh = hsh
     #     return(prompt)
 
-    def help_s(self):
-        return _("""\
-Usage:
+#     def help_s(self):
+#         return _("""\
+# Usage:
 
-    s INT
+#     s INT
 
-Ff there is an item number INT among those displayed by the previous'a' or 'r'  command, then change the starting date and time for that item.\
-""")
+# Ff there is an item number INT among those displayed by the previous'a' or 'r'  command, then change the starting date and time for that item.\
+# """)
 
-    def do_t(self, arg):
-        'time and expense report specification:'
+    def do_l(self, arg):
+        'time and expense ledger specification:'
         if not arg:
             self.help_a()
             return()
         arg = arg.split('#')[0]
         arg_str = "t {0}".format(arg)
         return('\nreport: {0}'.format(arg_str))
-        return(self.mk_rep(arg_str))
+        return(self.mk_rep('s ' + arg_str))
 
-    def help_t(self):
+    def help_l(self):
         return _("""\
 Usage:
 
-    t <groupby> [options]
+    l <groupby> [options]
 
 Generate an action report. Groupby can include *semicolon* separated date specifications and elements from:
     c context
@@ -5515,13 +5547,26 @@ d        Delete the selected item, first prompting
          for confirmation.
 e        Open the selected item for editing.
 f        Mark the selected task finished.
+k  ARGS  Display items grouped by keyword,
+         optionally having summaries matching the
+         regex ARGS.
 h  ARGS  Execute 'hg_command' with ARGS.
+l  ARGS  Display a time and expensed ledger using
+         ARGS.
 m  INT   Display 'report_specifications' INT.
 n  ARGS  Create a new item from ARGS.
 O        Open etm.cfg for editing.
+p  ARGS  Display items grouped by file path,
+         optionally having summaries that match
+         the regex ARGS.
 r  ARGS  Display a report using ARGS.
 R        Open 'report_specifications' for editing.
-t  ARGS  Display a time report using ARGS.
+s  ARGS  Display dated items grouped by date,
+         optionally having summaries matching the
+         regex ARGS.
+t  ARGS  Display items tags grouped by tag,
+         optionally having summaries matching the
+         regex ARGS.
 v        Display system and etm information.\
 """))
 

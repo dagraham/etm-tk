@@ -369,13 +369,13 @@ class App(Tk):
         Action depends upon comand_mode.
         Append input to history, process it and show the result in output.
         """
-        self.dayview = False
         cmd = self.e.get().strip()
 
         if not cmd:
             return(True)
 
         if self.mode == 'command':
+            self.dayview = False
             cmd = cmd.strip()
             if cmd[0] == 'w':
                 self.editWhich()
@@ -436,10 +436,12 @@ class App(Tk):
 
     def scrollToDate(self, date):
         # only makes sense for dayview
-        if not self.dayview:
+        if not self.dayview or date not in loop.prevnext:
             return()
         active_date = loop.prevnext[date][1]
         print('active_date', active_date)
+        if active_date not in self.date2id:
+            return()
         id = self.date2id[active_date]
         self.scrollToId(id)
 
