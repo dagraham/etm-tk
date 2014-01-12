@@ -3281,6 +3281,7 @@ def add2Dates(lst, tup):
 
 
 def getPrevNext(lst):
+    lst = [x[0] for x in lst]
     prevnext = {}
     if not lst:
         return({})
@@ -3983,7 +3984,7 @@ def getViewData(bef, file2uuids={}, uuid2hash={}, options={}):
                     if time_diff > 0 and time_diff <= hsh['b']:
                         extstr = '%dd' % time_diff
                         exttd = 0 * oneday
-                        add2Dates(datetimes, (today_datetime, f))
+                        # add2Dates(datetimes, (today_datetime, f))
                         item = [('day',
                                 today_datetime.strftime(sortdatefmt),
                                 tstr2SCI['by'][0],
@@ -4652,6 +4653,10 @@ class ETMCmd(cmd.Cmd):
                     width2=self.options['agenda_width2'],
                     calendars=self.options['calendars'],
                     mode=self.output))
+            elif arg_str == 's':
+                return(makeTree(
+                    self.rows,
+                    'day'))
             else:
                 return(getReportData(
                     arg_str,
@@ -4682,9 +4687,11 @@ class ETMCmd(cmd.Cmd):
         if messages:
             for msg in messages:
                 term_print(msg)
-        rows, busytimes, busydays, alerts, dates, occasions = getViewData(
+        self.rows, busytimes, busydays, alerts, self.dates, occasions = getViewData(
             bef, file2uuids, uuid2hash, options=self.options)
-        self.rows = rows
+        # print(self.dates)
+        # self.prevnext = getPrevNext(self.dates)
+        # self.rows = rows
         self.file2uuids = file2uuids
         self.uuid2hash = uuid2hash
         self.currfile = ensureMonthly(self.options, now)
@@ -5382,26 +5389,33 @@ Open 'report_specifications'  (specified in etm.cfg) for editing. This command r
 """)
 
     def do_s(self, arg_str):
-        if not arg_str:
-            return _("an integer item number is required")
-        try:
-            num = int(arg_str)
-            hsh = self.get_itemhash(num)
-        except:
-            return _('"{0}" must be an item number.').format(arg_str)
-        # f, begline, endline = hsh['fileinfo']
-        # fp = os.path.join(self.options['datadir'], f)
-        # fo = codecs.open(fp, 'r', file_encoding)
-        # lines = fo.readlines()
-        # fo.close()
-        print('got here')
-        if 'r' in hsh or 's' in hsh:
-            prompt = _("new date and time to replace {0}? ").format(hsh['_dt'].replace(tzinfo=None).strftime(rfmt))
-        else:
-            prompt = _("New datetime? ")
-        self.mode = 'new_date'
-        self.item_hsh = hsh
-        return(prompt)
+        self.prevnext = getPrevNext(self.dates)
+        today = get_current_time().date()
+        self.active_today = self.prevnext[today][1]
+        print('active_today', self.active_today)
+        return(self.mk_rep('s'))
+
+    # def do_s(self, arg_str):
+    #     if not arg_str:
+    #         return _("an integer item number is required")
+    #     try:
+    #         num = int(arg_str)
+    #         hsh = self.get_itemhash(num)
+    #     except:
+    #         return _('"{0}" must be an item number.').format(arg_str)
+    #     # f, begline, endline = hsh['fileinfo']
+    #     # fp = os.path.join(self.options['datadir'], f)
+    #     # fo = codecs.open(fp, 'r', file_encoding)
+    #     # lines = fo.readlines()
+    #     # fo.close()
+    #     print('got here')
+    #     if 'r' in hsh or 's' in hsh:
+    #         prompt = _("new date and time to replace {0}? ").format(hsh['_dt'].replace(tzinfo=None).strftime(rfmt))
+    #     else:
+    #         prompt = _("New datetime? ")
+    #     self.mode = 'new_date'
+    #     self.item_hsh = hsh
+    #     return(prompt)
 
     def help_s(self):
         return _("""\
@@ -5494,24 +5508,22 @@ Display information about etm and the operating system.""")
     def help_help(self):
         return(_("""\
 Commands:
-?  CMD   Display details for CMD or, without CMD,
+?        Display details for CMD or, without CMD,
          display this help information.
 a        Display the agenda for next few days
          combined with any now and next items.
-c  INT   Open the editor with a COPY of item INT
-         for editing.
-d  INT   Delete item INT, first prompting for
-         confirmation.
-e  INT   Open item INT for editing.
-f  INT   Mark task INT finished.
+c        Open the editor with a COPY of the
+         selected item for editing.
+d        Delete the selected item, first prompting
+         for confirmation.
+e        Open the selected item for editing.
+f        Mark the selected task finished.
 h  ARGS  Execute 'hg_command' with ARGS.
-i  INT   Display details about item INT.
 m  INT   Display 'report_specifications' INT.
 n  ARGS  Create a new item from ARGS.
 O        Open etm.cfg for editing.
 r  ARGS  Display a report using ARGS.
 R        Open 'report_specifications' for editing.
-s  INT   Change the starting time of item INT.
 t  ARGS  Display a time report using ARGS.
 v        Display system and etm information.\
 """))

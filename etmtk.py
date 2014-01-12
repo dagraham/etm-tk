@@ -5,7 +5,7 @@ import platform
 import sys
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow
     from tkinter import messagebox as tkMessageBox
     from tkinter import ttk
     from tkinter import font as tkFont
@@ -13,7 +13,7 @@ if platform.python_version() >= '3':
     # import tkFont
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow
     import tkMessageBox
     import ttk
     import tkFont
@@ -65,13 +65,17 @@ class MessageWindow():
 
 
 class DialogWindow():
-    def __init__(self, parent, title="", prompt=""):
+    def __init__(self, parent, title="", prompt="", maxvalue=0, minvalue=0):
         self.win = Toplevel(parent)
         self.parent = parent
-
+        self.minvalue = minvalue
+        self.maxvalue = maxvalue
+        self.error_message = ""
+        self.value = None
         self.win.title(title)
         Label(self.win, text=prompt, justify='left').pack(fill=tkinter.BOTH, expand=1, padx=10, pady=5)
-        self.e = Entry(self.win).pack(padx=5, pady=5)
+        self.entry = Entry(self.win)
+        self.entry.pack(padx=5, pady=5)
         box = Frame(self.win)
         o = Button(box, text="OK", width=10, default='active', command=self.ok)
         o.pack(side=LEFT, padx=5, pady=5)
@@ -84,7 +88,6 @@ class DialogWindow():
         self.win.grab_set()
         self.win.transient(parent)
         self.win.wait_window(self.win)
-        return(self.e)
 
     def ok(self, event=None):
         if not self.validate():
@@ -108,9 +111,9 @@ class DialogWindow():
     # command hooks
 
     def validate(self):
-        self.error_message = "an integer between 1 and 4 is required"
+        self.error_message = ""
 
-        return 0  # override
+        return 1  # override
 
     def apply(self):
 
@@ -118,6 +121,33 @@ class DialogWindow():
 
     def messageWindow(self, title, prompt):
         MessageWindow(self.parent, title, prompt)
+
+
+class GetInteger(DialogWindow):
+    # def __init__(self, parent, title="", prompt="", minvalue=0, maxvalue=1):
+    #     self.min = minvalue
+    #     self.max = maxvalue
+    #     DialogWindow.__init__(self, parent, title, prompt)
+
+    def validate(self):
+        print(self.__dict__)
+        res = self.entry.get()
+        print('checking', res)
+        try:
+            val = int(res)
+            ok = (val >= self.minvalue and val <= self.maxvalue)
+            print('ok', ok)
+        except:
+            val = None
+            ok = False
+
+        if ok:
+            print('setting value', val)
+            self.value = val
+            return True
+        else:
+            self.error_message = _("an integer between {0} and {1} is required").format(self.minvalue, self.maxvalue)
+            return False
 
 
 class App(Tk):
@@ -129,6 +159,7 @@ class App(Tk):
         self.index = 0
         self.count2id = {}
         self.now = None
+        self.dayview = False
         self.options = {}
         self.popup = ''
         self.value = ''
@@ -147,12 +178,15 @@ class App(Tk):
         self.rowconfigure(1, weight=2)
         self.rowconfigure(2, weight=1)
 
+        pw = PanedWindow(self, orient="vertical")
         self.tree = ttk.Treeview(self, show='tree', columns=["#1"], selectmode='browse')
         self.tree.column("#0", minwidth=200, width=300, stretch=1)
         self.tree.column("#1", minwidth=80, width=140, stretch=0, anchor="center")
         self.tree.bind("<<TreeviewSelect>>", self.OnSelect)
         self.tree.bind("<Double-1>", self.OnDoubleClick)
         self.tree.bind("<Return>", self.OnActivate)
+        # ysb = ttk.Scrollbar(self, orient='vertical', width=10, command=self.tree.yview)
+        # self.tree.configure(yscroll=ysb.set)
 
         self.date2id = {}
         padx = 2
@@ -167,18 +201,21 @@ class App(Tk):
         self.e.bind('<Escape>', self.cleartext)
         self.e.bind('<Up>', self.prev_history)
         self.e.bind('<Down>', self.next_history)
-        self.e.grid(row=0, column=0, sticky='ew')
+        self.e.grid(row=0, column=0, columnspan=2, sticky='ew',
+            # padx=2, pady=2
+            )
 
         for t in (self.e, self.tree):
             t.bind('<Tab>', lambda e, t=t: self.focusNext(t))
             t.bind('<Shift-Tab>', lambda e, t=t: self.focusPrev(t))
 
         self.tree.grid(row=1, column=0, sticky='nsew', padx=padx)
+        # ysb.grid(row=1, column=1, rowspan=2, sticky='ns')
 
         self.l = Text(self, wrap="word", bd=1, relief="sunken", padx=padx, pady=4, font=tkFont.Font(family="Lucida Sans"), height=6, width=50)
         self.l.configure(state="disabled")
 
-        self.l.grid(row=2, column=0, sticky="nesw")
+        self.l.grid(row=2, column=0, columnspan=2, sticky="nesw")
         self.grid()
         self.update_clock()
         self.showTree(loop.do_a(''))
@@ -244,16 +281,16 @@ class App(Tk):
         hsh = loop.uuid2hash[uuid]
         return(uuid, dt, hsh)
 
-
     def update_clock(self):
         self.now = get_current_time()
-        nxt = (60*1000 - self.now.second*1000 - self.now.microsecond//1000)
+        nxt = (60 - self.now.second) * 1000 - self.now.microsecond // 1000
         nowfmt = "{0} {1}".format(
             s2or3(self.now.strftime(loop.options['reprtimefmt']).lower()),
             s2or3(self.now.strftime("%a %b %d %Z")))
         nowfmt = leadingzero.sub("", nowfmt)
 
         print(self.now)
+        # self.bell()
         self.title("{0}".format(nowfmt))
         self.after(nxt, self.update_clock)
 
@@ -292,9 +329,6 @@ class App(Tk):
         win.transient(self)
         win.wait_window(win)
 
-    def getInteger(self, title, prompt):
-        DialogWindow(self, title, prompt)
-
     def editWhich(self, instance="xyz"):
         prompt = "\n".join([
             _("You have selected instance"),
@@ -304,9 +338,9 @@ class App(Tk):
             "  2. {0}".format(_("this instance")),
             "  3. {0}".format(_("this and all subsequent instances")),
             "  4. {0}".format(_("all instances")),
-            "{0}".format(_('Choice [1-4] or 0 to cancel?'))])
-        self.getInteger(title='which instance', prompt=prompt)
-
+            "{0}".format(_('Choice [1-4]?'))])
+        value = GetInteger(parent=self, title='which instance', prompt=prompt, minvalue=1, maxvalue=4).value
+        print('got integer result', value)
 
     def gettext(self, event=None):
         self.string = self.e.get()
@@ -321,6 +355,7 @@ class App(Tk):
         Action depends upon comand_mode.
         Append input to history, process it and show the result in output.
         """
+        self.dayview = False
         cmd = self.e.get().strip()
 
         if not cmd:
@@ -331,7 +366,9 @@ class App(Tk):
             if cmd[0] == 'w':
                 self.editWhich()
                 return()
-            elif cmd[0] in ['a', 'r', 't']:
+            elif cmd[0] == 's':
+                self.dayview = True
+            elif cmd[0] in ['r', 't']:
                 # simple command history for report commands
                 if cmd in self.history:
                     self.history.remove(cmd)
@@ -392,11 +429,25 @@ class App(Tk):
         self.l.configure(state="normal")
         self.l.delete("0.0", END)
         self.l.configure(state="disabled")
-        top = self.tree.get_children()[0]
-        self.tree.focus_set()
-        self.tree.focus(top)
-        self.tree.selection_set(top)
-        self.tree.yview(0)  # this is a line number
+        # top = self.tree.get_children()[0]
+        # self.tree.focus_set()
+        # self.tree.focus(top)
+        # self.tree.selection_set(top)
+        if self.dayview:
+            # print('date2id', type(self.date2id), self.date2id)
+            # keys = self.date2id.keys()
+            # keys.sort()
+            # print(keys)
+            id = self.date2id[loop.active_today]
+            self.tree.focus(id)
+            self.tree.selection_set(id)
+            index = self.tree.index(id)
+            print('active index', id, index, self.tree.identify_row(30000), loop.active_today)
+            # self.update_idletasks()
+            # self.wait_visibility(self.tree)
+            self.tree.see(id)
+        else:
+            self.tree.yview(0)  # this is a line number
 
     def deleteItems(self):
         for child in self.tree.get_children():
