@@ -5390,9 +5390,6 @@ Open 'report_specifications'  (specified in etm.cfg) for editing. This command r
 
     def do_s(self, arg_str):
         self.prevnext = getPrevNext(self.dates)
-        today = get_current_time().date()
-        self.active_today = self.prevnext[today][1]
-        print('active_today', self.active_today)
         return(self.mk_rep('s'))
 
     # def do_s(self, arg_str):

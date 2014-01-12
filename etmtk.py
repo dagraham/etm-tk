@@ -155,8 +155,10 @@ class App(Tk):
         Tk.__init__(self)
         # print(tkFont.names())
         self.minsize(400, 380)
+        # self.configure(background="lightgrey")
         self.history = []
         self.index = 0
+        self.count = 0
         self.count2id = {}
         self.now = None
         self.dayview = False
@@ -176,50 +178,54 @@ class App(Tk):
 
         self.columnconfigure(0, minsize=300, weight=1)
         self.rowconfigure(1, weight=2)
-        self.rowconfigure(2, weight=1)
 
-        pw = PanedWindow(self, orient="vertical")
-        self.tree = ttk.Treeview(self, show='tree', columns=["#1"], selectmode='browse')
+        pw = PanedWindow(self, orient="vertical",
+                         showhandle=True,
+                         sashwidth=0, sashrelief='flat',
+                         )
+        # pw.pack(fill="both", expand=1)
+
+        self.tree = ttk.Treeview(pw, show='tree', columns=["#1"], selectmode='browse', padding=(3, 2, 3, 2))
         self.tree.column("#0", minwidth=200, width=300, stretch=1)
         self.tree.column("#1", minwidth=80, width=140, stretch=0, anchor="center")
         self.tree.bind("<<TreeviewSelect>>", self.OnSelect)
         self.tree.bind("<Double-1>", self.OnDoubleClick)
         self.tree.bind("<Return>", self.OnActivate)
-        # ysb = ttk.Scrollbar(self, orient='vertical', width=10, command=self.tree.yview)
-        # self.tree.configure(yscroll=ysb.set)
 
         self.date2id = {}
-        padx = 2
+        # padx = 2
 
-        # abspath = os.path.abspath(path)
-        # root_node = self.tree.insert(u'', 'end', text=abspath, open=True)
         self.root = (u'', u'_')
 
-        self.e = Entry(self, text='?')
+        self.e = Entry(self, text='?', bd=2)
 
         self.e.bind('<Return>', self.process_input)
         self.e.bind('<Escape>', self.cleartext)
         self.e.bind('<Up>', self.prev_history)
         self.e.bind('<Down>', self.next_history)
-        self.e.grid(row=0, column=0, columnspan=2, sticky='ew',
-            # padx=2, pady=2
-            )
+
+        self.e.grid(row=0, column=0, sticky='ew', padx=3, pady=2)
 
         for t in (self.e, self.tree):
             t.bind('<Tab>', lambda e, t=t: self.focusNext(t))
             t.bind('<Shift-Tab>', lambda e, t=t: self.focusPrev(t))
 
-        self.tree.grid(row=1, column=0, sticky='nsew', padx=padx)
+        pw.add(self.tree, padx=2, pady=0)
+
         # ysb.grid(row=1, column=1, rowspan=2, sticky='ns')
 
-        self.l = Text(self, wrap="word", bd=1, relief="sunken", padx=padx, pady=4, font=tkFont.Font(family="Lucida Sans"), height=6, width=50)
+        self.l = Text(pw, wrap="word", bd=2, relief="sunken", padx=2, pady=2, font=tkFont.Font(family="Lucida Sans"), height=6, width=50)
         self.l.configure(state="disabled")
 
-        self.l.grid(row=2, column=0, columnspan=2, sticky="nesw")
+        # self.l.grid(row=2, column=0, columnspan=2, sticky="nesw")
+        pw.add(self.l, padx=0, pady=0)
+
+        pw.grid(row=1, column=0, sticky="nsew", padx=2, pady=2)
+
         self.grid()
         self.update_clock()
         self.showTree(loop.do_a(''))
-        self.lift()
+        # self.lift()
 
     def focusNext(self, widget):
         print('focus next')
@@ -263,7 +269,11 @@ class App(Tk):
         """
         item = self.tree.selection()[0]
         uuid, dt, hsh = self.getInstance(item)
-        print("you pressed <Return> on", item, uuid, dt, hsh['entry'])
+        if uuid is not None:
+            print("you pressed <Return> on", item, uuid, dt, hsh['_summary'])
+        else:
+            print("you pressed <Return> on", item)
+        return("break")
 
     def OnDoubleClick(self, event):
         """
@@ -271,7 +281,11 @@ class App(Tk):
         """
         item = self.tree.identify('item', event.x, event.y)
         uuid, dt, hsh = self.getInstance(item)
-        print("you double clicked on", item, uuid, dt, hsh)
+        if uuid is not None:
+            print("you double clicked on", item, uuid, dt, hsh['_summary'])
+        else:
+            print("you double clicked on", item)
+        return("break")
 
     def getInstance(self, item):
         instance = self.count2id[item]
@@ -420,6 +434,23 @@ class App(Tk):
             self.messageWindow(title='etm', prompt=res)
             return(0)
 
+    def scrollToDate(self, date):
+        # only makes sense for dayview
+        if not self.dayview:
+            return()
+        active_date = loop.prevnext[date][1]
+        print('active_date', active_date)
+        id = self.date2id[active_date]
+        self.scrollToId(id)
+
+
+    def scrollToId(self, id):
+        self.update_idletasks()
+        self.tree.focus(id)
+        self.tree.selection_set(id)
+        self.tree.yview(int(id) - 1)
+
+
     def showTree(self, tree):
         self.deleteItems()
         self.count = 0
@@ -429,32 +460,35 @@ class App(Tk):
         self.l.configure(state="normal")
         self.l.delete("0.0", END)
         self.l.configure(state="disabled")
-        # top = self.tree.get_children()[0]
-        # self.tree.focus_set()
-        # self.tree.focus(top)
-        # self.tree.selection_set(top)
         if self.dayview:
-            # print('date2id', type(self.date2id), self.date2id)
-            # keys = self.date2id.keys()
-            # keys.sort()
-            # print(keys)
-            id = self.date2id[loop.active_today]
-            self.tree.focus(id)
-            self.tree.selection_set(id)
-            index = self.tree.index(id)
-            print('active index', id, index, self.tree.identify_row(30000), loop.active_today)
+            today = get_current_time().date()
+            self.scrollToDate(today)
+            # active_today = loop.prevnext[today][1]
+            # print('active_today', active_today)
+            # self.scrollToDate(active_today)
+
+            # id = self.date2id[loop.active_today]
+            # self.tree.focus(id)
+            # self.tree.selection_set(id)
+            # print('active index', id, loop.active_today)
+            # # wait for the tree to be filled before scrolling
             # self.update_idletasks()
-            # self.wait_visibility(self.tree)
-            self.tree.see(id)
+            # self.tree.yview(int(id) - 1)
+            # self.tree.see(id)
         else:
             self.tree.yview(0)  # this is a line number
+        self.tree.focus_set()
 
     def deleteItems(self):
+        """
+        Remove all items from the tree
+        """
         for child in self.tree.get_children():
             self.tree.delete(child)
 
     def addItems(self, parent, elements, tree):
         for text in elements:
+            self.count += 1
             # print('text', text)
             # text is a key in the element (tree) hash
             # these keys are (parent, item) tuples
@@ -462,7 +496,8 @@ class App(Tk):
                 # this is a branch
                 item = " " + text[1]  # this is the label of the parent
                 children = tree[text]  # this are the children tuples of item
-                oid = self.tree.insert(parent, 'end', text=item, open=True)
+                oid = self.tree.insert(parent, 'end', iid=self.count, text=item, open=True)
+                # print(self.count, oid)
                 # recurse to get children
                 self.count2id[oid] = None
                 self.addItems(oid, children, tree)
@@ -482,7 +517,8 @@ class App(Tk):
                 else:
                     col2 = s2or3(col2)
 
-                oid = self.tree.insert(parent, 'end', text=col1, open=True, value=[col2])
+                oid = self.tree.insert(parent, 'end', iid=self.count, text=col1, open=True, value=[col2])
+                # print(self.count, oid)
                 self.count2id[oid] = "{0}::{1}".format(uuid, dt)
                 if dt:
                     d = parse(dt[:10]).date()
