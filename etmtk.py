@@ -154,7 +154,7 @@ class App(Tk):
     def __init__(self, path=None):
         Tk.__init__(self)
         # print(tkFont.names())
-        self.minsize(400, 380)
+        self.minsize(400, 400)
         # self.configure(background="lightgrey")
         self.history = []
         self.index = 0
@@ -210,7 +210,7 @@ class App(Tk):
             t.bind('<Tab>', lambda e, t=t: self.focusNext(t))
             t.bind('<Shift-Tab>', lambda e, t=t: self.focusPrev(t))
 
-        pw.add(self.tree, padx=2, pady=0)
+        pw.add(self.tree, padx=2, pady=0, stretch="first")
 
         # ysb.grid(row=1, column=1, rowspan=2, sticky='ns')
 
