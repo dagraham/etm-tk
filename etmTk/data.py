@@ -1172,13 +1172,20 @@ def makeTree(list_of_lists, view=None, cal_regex=None, sort=True, filter=None):
     empty = True
     rows = deepcopy(list_of_lists)
     if filter is not None:
+        print('makeTree', filter)
+        mtch = True
+        if filter[0] == '!':
+            mtch = False
+            filter = filter[1:]
+        print('mtch', mtch, filter)
         filter_regex = re.compile(r'{0}'.format(filter), re.IGNORECASE)
     else:
         filter_regex = None
     for pc in rows:
         if filter_regex is not None:
             m = filter_regex.search(pc[-1][2])
-            if not m:
+            # ok if (mtch and m) or (not mtch and not m):
+            if not ((mtch and m) or (not mtch and not m)):
                 continue
         root_key = tuple(["", root])
         tree.setdefault(root_key, [])
@@ -2799,9 +2806,8 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54, width2=14,
             row.insert(1, "%sNow%s" % (bb, eb))
             now.append(row)
         elif row[0][0] == 'next':
-            if row[0][1][0] == 1:
-                row.insert(1, "%sNext%s" % (bb, eb))
-                next.append(row)
+            row.insert(1, "%sNext%s" % (bb, eb))
+            next.append(row)
     output = []
     count = 0
     count2id = None
@@ -3607,7 +3613,8 @@ def getViewData(bef, file2uuids={}, uuid2hash={}, options={}):
             # we need a context for next view and a keyword for keyword view
             for k in ['c', 'k']:
                 if k not in hsh:
-                    hsh[k] = "%s" % _('none')
+                    # hsh[k] = "%s" % _('none')
+                    hsh[k] = 'none'
             if 't' not in hsh:
                 hsh['t'] = []
             #--------- make entry for folder view ----------#
@@ -3768,7 +3775,7 @@ def getViewData(bef, file2uuids={}, uuid2hash={}, options={}):
                         hsh['_summary'], f), tuple(folders),
                     (u, typ, setSummary(hsh, dt), sdt, etmdt)]
                 add2list(rows, item)
-                if 'k' in hsh:
+                if 'k' in hsh and hsh['k'] != 'none':
                     keywords = [x.strip() for x in hsh['k'].split(':')]
                     item = [
                         ('keyword', (hsh['k'], tstr2SCI[typ][0]), dt,
@@ -4647,12 +4654,13 @@ class ETMCmd(cmd.Cmd):
                     width2=self.options['agenda_width2'],
                     calendars=self.options['calendars'],
                     mode=self.output))
-            elif cmd in views:  # ['s', 'p', 't', 'k']:
+            elif cmd in views:
                 view = views[cmd]
                 if len(arg_str) > 2:
                     f = arg_str[1:].strip()
                 else:
                     f = None
+                print('calling makeTree', cmd, f)
                 return(makeTree(
                     self.rows,
                     view=view,
