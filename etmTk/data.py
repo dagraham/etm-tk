@@ -2344,7 +2344,7 @@ def str2opts(s, options={}):
     head = parts.pop(0)
     report = head[0]
     groupbystr = head[1:].strip()
-    if not report or report not in ['r', 't'] or not groupbystr:
+    if not report or report not in ['r', 'l'] or not groupbystr:
         return({})
 
     groupby = {}
@@ -2841,7 +2841,6 @@ def getReportData(s, file2uuids, uuid2hash, options={}, export=False,
     rows = []
     cols = groupby['cols']
     fmts = groupby['fmts']
-
     for tup in tups:
         hsh = uuid2hash[tup[-1]]
 
@@ -2912,8 +2911,6 @@ def getReportData(s, file2uuids, uuid2hash, options={}, export=False,
             rows.append(row)
     count = 0
     count2id = None
-    # for row in rows:
-    #     print(row)
     if groupby['report'] == 'r' and not export:
         if colors is not None:
             clrs = colors
@@ -2927,7 +2924,6 @@ def getReportData(s, file2uuids, uuid2hash, options={}, export=False,
         else:
             depth = len(groupby['lst'])
         rows = tallyByGroup(rows, max_level=depth, options=options)
-        # print('rows', rows)
         return("\n".join(rows))
 
 def str2hsh(s, id=None, options={}):
@@ -5229,7 +5225,6 @@ Show items grouped and sorted by keyword optionally limited to those containing 
 
     def do_m(self, arg_str):
         f = self.options['report_specifications']
-        print('report_specifications', f)
         if not arg_str.strip():
             self.help_m()
         if not f or not os.path.isfile(f):
