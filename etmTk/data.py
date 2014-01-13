@@ -1172,7 +1172,7 @@ def makeTree(list_of_lists, view=None, cal_regex=None, sort=True, filter=None):
     empty = True
     rows = deepcopy(list_of_lists)
     if filter is not None:
-        print('makeTree', filter)
+        print('makeTree filter', filter)
         mtch = True
         if filter[0] == '!':
             mtch = False
@@ -5543,38 +5543,39 @@ Display information about etm and the operating system.""")
 
     def help_help(self):
         return(_("""\
-Commands:
-?        Display details for CMD or, without CMD,
-         display this help information.
-a        Display the agenda for next few days
-         combined with any now and next items.
-c        Open the editor with a COPY of the
-         selected item for editing.
-d        Delete the selected item, first prompting
-         for confirmation.
-e        Open the selected item for editing.
-f        Mark the selected task finished.
-k  ARGS  Display items grouped by keyword,
-         optionally having summaries matching the
-         regex ARGS.
-h  ARGS  Execute 'hg_command' with ARGS.
-l  ARGS  Display a time and expensed ledger using
-         ARGS.
-m  INT   Display 'report_specifications' INT.
-n  ARGS  Create a new item from ARGS.
-O        Open etm.cfg for editing.
-p  ARGS  Display items grouped by file path,
-         optionally having summaries that match
-         the regex ARGS.
-r  ARGS  Display a report using ARGS.
-R        Open 'report_specifications' for editing.
-s  ARGS  Display dated items grouped by date,
-         optionally having summaries matching the
-         regex ARGS.
-t  ARGS  Display items tags grouped by tag,
-         optionally having summaries matching the
-         regex ARGS.
-v        Display system and etm information.\
+CMD
+ ?        Display details for CMD or, without CMD,
+          display this help information.
+ a        Display the agenda for next few days
+          combined with any now and next items.
+ c        Open the editor with a COPY of the
+          selected item for editing.
+ d        Delete the selected item, first
+          prompting for confirmation.
+ e        Open the selected item for editing.
+ f        Mark the selected task finished.
+ k  ARGS  Display items grouped by keyword,
+          optionally having summaries matching the
+          regex ARGS or not matched by !ARGS.
+ h  ARGS  Execute 'hg_command' with ARGS.
+ l  ARGS  Display a time and expensed ledger using
+          ARGS.
+ m  INT   Display 'report_specifications' INT.
+ n  ARGS  Create a new item from ARGS.
+ O        Open etm.cfg for editing.
+ p  ARGS  Display items grouped by file path,
+          optionally having summaries that match
+          the regex ARGS or not matched by !ARGS.
+ r  ARGS  Display a report using ARGS.
+ R        Open 'report_specifications' for
+          editing.
+ s  ARGS  Display items grouped by date,
+          optionally having summaries matching
+          the regex ARGS or not matched by !ARGS.
+ t  ARGS  Display items grouped by tag, optionally
+          having summaries matching the regex ARGS
+          or not matched by !ARGS.
+ v        Display system and etm information.\
 """))
 
     def delete_which(self, instance):

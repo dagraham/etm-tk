@@ -215,7 +215,6 @@ class App(Tk):
         # ysb.grid(row=1, column=1, rowspan=2, sticky='ns')
 
         self.l = Text(pw, wrap="word", bd=2, relief="sunken", padx=2, pady=2, font=tkFont.Font(family="Lucida Sans"), height=6, width=50)
-        self.l.configure(state="disabled")
 
         # self.l.grid(row=2, column=0, columnspan=2, sticky="nesw")
         pw.add(self.l, padx=0, pady=0)
@@ -223,9 +222,13 @@ class App(Tk):
         pw.grid(row=1, column=0, sticky="nsew", padx=2, pady=2)
 
         self.grid()
+        self.l.configure(state="disabled")
+
+        self.e.insert(0, "        {0}".format(_("Enter commands here, ? for help or press <Esc> to clear.")))
+        self.e.select_range(0, END)
+
         self.update_clock()
         self.showTree(loop.do_a(''))
-        # self.lift()
 
     def focusNext(self, widget):
         print('focus next')
@@ -439,7 +442,6 @@ class App(Tk):
         if not self.dayview or date not in loop.prevnext:
             return()
         active_date = loop.prevnext[date][1]
-        print('active_date', active_date)
         if active_date not in self.date2id:
             return()
         id = self.date2id[active_date]
@@ -448,12 +450,14 @@ class App(Tk):
 
     def scrollToId(self, id):
         self.update_idletasks()
+        self.tree.focus_set()
         self.tree.focus(id)
         self.tree.selection_set(id)
         self.tree.yview(int(id) - 1)
-
+        # self.tree.see(id)
 
     def showTree(self, tree):
+        self.date2id = {}
         self.deleteItems()
         self.count = 0
         self.count2id = {}
@@ -465,21 +469,11 @@ class App(Tk):
         if self.dayview:
             today = get_current_time().date()
             self.scrollToDate(today)
-            # active_today = loop.prevnext[today][1]
-            # print('active_today', active_today)
-            # self.scrollToDate(active_today)
-
-            # id = self.date2id[loop.active_today]
-            # self.tree.focus(id)
-            # self.tree.selection_set(id)
-            # print('active index', id, loop.active_today)
-            # # wait for the tree to be filled before scrolling
-            # self.update_idletasks()
-            # self.tree.yview(int(id) - 1)
-            # self.tree.see(id)
         else:
-            self.tree.yview(0)  # this is a line number
-        self.tree.focus_set()
+            self.tree.focus_set()
+            # self.tree.focus(1)
+            # self.tree.selection_set(1)
+            self.tree.yview(0)
 
     def deleteItems(self):
         """
@@ -499,6 +493,7 @@ class App(Tk):
                 item = " " + text[1]  # this is the label of the parent
                 children = tree[text]  # this are the children tuples of item
                 oid = self.tree.insert(parent, 'end', iid=self.count, text=item, open=True)
+                # oid = self.tree.insert(parent, 'end', text=item, open=True)
                 # print(self.count, oid)
                 # recurse to get children
                 self.count2id[oid] = None
@@ -520,6 +515,7 @@ class App(Tk):
                     col2 = s2or3(col2)
 
                 oid = self.tree.insert(parent, 'end', iid=self.count, text=col1, open=True, value=[col2])
+                # oid = self.tree.insert(parent, 'end', text=col1, open=True, value=[col2])
                 # print(self.count, oid)
                 self.count2id[oid] = "{0}::{1}".format(uuid, dt)
                 if dt:
