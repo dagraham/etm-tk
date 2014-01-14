@@ -168,7 +168,6 @@ class App(Tk):
         self.firsttime = True
         self.mode = 'command'   # or edit or delete
         self.item_hsh = {}
-        # self.bind_all('<Escape>', self.cleartext)
 
         self.title("etm tk")
         if sys_platform == 'Linux':
@@ -195,6 +194,7 @@ class App(Tk):
         self.tree.bind("<Double-1>", self.OnDoubleClick)
         self.tree.bind("<Return>", self.OnActivate)
         self.tree.bind('<Escape>', self.cleartext)
+        self.tree.bind('<space>', self.goHome)
 
         self.date2id = {}
         # padx = 2
@@ -234,6 +234,18 @@ class App(Tk):
     def help(self, event=None):
         res = loop.help_help()
         self.messageWindow(title='etm', prompt=res)
+
+    def goHome(self, event=None):
+        if self.dayview:
+            today = get_current_time().date()
+            self.scrollToDate(today)
+        else:
+            self.tree.focus_set()
+            self.tree.focus(1)
+            self.tree.selection_set(1)
+            self.tree.yview(0)
+        return('break')
+
 
     def OnSelect(self, event=None):
         """
@@ -360,7 +372,7 @@ class App(Tk):
 
     def cleartext(self, event=None):
         self.e.delete(0, END)
-        # self.e.focus_set()
+        return('break')
 
     def process_input(self, event=None):
         """
@@ -461,14 +473,7 @@ class App(Tk):
         self.l.configure(state="normal")
         self.l.delete("0.0", END)
         self.l.configure(state="disabled")
-        if self.dayview:
-            today = get_current_time().date()
-            self.scrollToDate(today)
-        else:
-            self.tree.focus_set()
-            self.tree.focus(1)
-            self.tree.selection_set(1)
-            self.tree.yview(0)
+        self.goHome()
 
     def deleteItems(self):
         """
