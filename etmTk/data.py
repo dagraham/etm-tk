@@ -112,24 +112,22 @@ else:
 import traceback
 
 has_icalendar = False
-try:
-    from icalendar import Calendar, Event, Todo, Journal
-    from icalendar.caselessdict import CaselessDict
-    from icalendar.prop import vDate, vDatetime
-    has_icalendar = True
-except:
-    has_icalendar = False
+# try:
+#     from icalendar import Calendar, Event, Todo, Journal
+#     from icalendar.caselessdict import CaselessDict
+#     from icalendar.prop import vDate, vDatetime
+#     has_icalendar = True
+# except:
+#     has_icalendar = False
 
-if has_icalendar:
-    import pytz
+# if has_icalendar:
+#     import pytz
 
 from datetime import datetime, timedelta, time
 import dateutil.rrule as dr
 # from dateutil.parser import parse
 from dateutil.parser import parse as dparse
 from dateutil import __version__ as dateutil_version
-
-
 from dateutil.tz import gettz as getTz
 
 
@@ -4527,25 +4525,13 @@ def ensureMonthly(options, now=None):
             retval = currfile
     return(retval)
 
-import cmd
 
-# # this is used by cmd whatever pep8 thinks
-# try:
-#     import pyreadline as readline
-# except ImportError:
-#     import readline
-
-
-class ETMCmd(cmd.Cmd):
+class ETMCmd():
     """
-        Accepts commands via the normal interactive
-        prompt or on the command line.
+        Data handling commands
     """
     def __init__(self, options={}, parent=None):
-        # delete the next line to use in kivy
-        cmd.Cmd.__init__(self)
         self.options = options
-        # self.parent = parent
         self.cmdDict = {
             '?': self.do_help,
             'a': self.do_a,
@@ -5539,38 +5525,26 @@ Display information about etm and the operating system.""")
     def help_help(self):
         return(_("""\
 CMD
- ?        Display details for CMD or, without CMD,
-          display this help information.
- a        Display the agenda for next few days
-          combined with any now and next items.
- c        Open the editor with a COPY of the
-          selected item for editing.
- d        Delete the selected item, first
-          prompting for confirmation.
- e        Open the selected item for editing.
+ ? [CMD]  Display this screen or CMD details.
+ a        Display the current agenda.
+ c        Edit a COPY of the selected item.
+ d        Delete the selected item.
+ e        Edit the selected item.
  f        Mark the selected task finished.
- k  ARGS  Display items grouped by keyword,
-          optionally having summaries matching the
-          regex ARGS or not matched by !ARGS.
- h  ARGS  Execute 'hg_command' with ARGS.
- l  ARGS  Display a time and expensed ledger using
-          ARGS.
- m  INT   Display 'report_specifications' INT.
+ k [REGX] Display items grouped by keyword.
+ h  ARGS  Execute 'hg_command' + ARGS.
+ l  ARGS  Display a ledger using ARGS.
+ m  INT   Display report number INT from the
+          file 'report_specifications'.
  n  ARGS  Create a new item from ARGS.
- O        Open etm.cfg for editing.
- p  ARGS  Display items grouped by file path,
-          optionally having summaries that match
-          the regex ARGS or not matched by !ARGS.
+ O        Edit etm.cfg.
+ p [REGX] Display items grouped by file path.
  r  ARGS  Display a report using ARGS.
- R        Open 'report_specifications' for
-          editing.
- s  ARGS  Display items grouped by date,
-          optionally having summaries matching
-          the regex ARGS or not matched by !ARGS.
- t  ARGS  Display items grouped by tag, optionally
-          having summaries matching the regex ARGS
-          or not matched by !ARGS.
- v        Display system and etm information.\
+ R        Edit 'report_specifications'.
+ s [REGX] Display items grouped by date.
+ t [REGX] Display items grouped by tag.
+ v        Display system and etm information.
+<Tab> toggles the focus between the command field (top) and the display panel (middle). <Escape> clears the command field. Enter CMD from list above in the command field and press <Return> to execute it or <Escape> to clear it. When available as an option, using REGX limits the display to items with summaries matching the case-insensitive, regular expression REGX. Prepend an !, i.e., use !REGX instead of REGX, to display items with summaries NOT matching REGX.\
 """))
 
     def delete_which(self, instance):
@@ -5643,31 +5617,5 @@ CMD
                              if x.strip()])
         self.safe_save(fp, itemstr)
 
-
-def main(etmdir='', argv=[]):
-    use_locale = ()
-    (user_options, options, use_locale) = get_options(etmdir)
-
-    if len(argv) > 1:
-        if argv[1] in ['a', 'c', 's', 'm', 'n', 'v', '?']:
-            # c = ETMCmd(options)
-            c = ETMCmd(options)
-            c.loop = False
-            c.number = False
-            args = []
-            for x in argv[1:]:
-                x = s2or3(x)
-                args.append(x)
-            argstr = ' '.join(args)
-            c.onecmd(argstr)
-        else:
-            c = ETMLoop(options)
-            c.loop = True
-            c.cmdloop()
-
-
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        if sys.argv[1] not in ['a', 'c']:
-            etmdir = sys.argv.pop(1)
-    main(etmdir, sys.argv)
+    print('data.py should only be imported. Run etmtk.py instead.')

@@ -168,6 +168,7 @@ class App(Tk):
         self.firsttime = True
         self.mode = 'command'   # or edit or delete
         self.item_hsh = {}
+        # self.bind_all('<Escape>', self.cleartext)
 
         self.title("etm tk")
         if sys_platform == 'Linux':
@@ -178,6 +179,8 @@ class App(Tk):
 
         self.columnconfigure(0, minsize=300, weight=1)
         self.rowconfigure(1, weight=2)
+
+        ef = Frame(self)
 
         pw = PanedWindow(self, orient="vertical",
                          showhandle=True,
@@ -191,54 +194,46 @@ class App(Tk):
         self.tree.bind("<<TreeviewSelect>>", self.OnSelect)
         self.tree.bind("<Double-1>", self.OnDoubleClick)
         self.tree.bind("<Return>", self.OnActivate)
+        self.tree.bind('<Escape>', self.cleartext)
 
         self.date2id = {}
         # padx = 2
 
         self.root = (u'', u'_')
 
-        self.e = Entry(self, text='?', bd=2)
+        ef.grid(row=0, column=0, sticky='ew', padx=3, pady=2)
 
+        self.e = Entry(ef, text='?', bd=2)
         self.e.bind('<Return>', self.process_input)
         self.e.bind('<Escape>', self.cleartext)
         self.e.bind('<Up>', self.prev_history)
         self.e.bind('<Down>', self.next_history)
+        self.e.pack(side="left",fill=tkinter.BOTH, expand=1)
 
-        self.e.grid(row=0, column=0, sticky='ew', padx=3, pady=2)
-
-        for t in (self.e, self.tree):
-            t.bind('<Tab>', lambda e, t=t: self.focusNext(t))
-            t.bind('<Shift-Tab>', lambda e, t=t: self.focusPrev(t))
+        self.b = Button(ef, text=_('?'), command=self.help, takefocus=False)
+        self.b.pack(side="right", expand=0)
 
         pw.add(self.tree, padx=2, pady=0, stretch="first")
 
         # ysb.grid(row=1, column=1, rowspan=2, sticky='ns')
 
-        self.l = Text(pw, wrap="word", bd=2, relief="sunken", padx=2, pady=2, font=tkFont.Font(family="Lucida Sans"), height=6, width=50)
+        self.l = Text(pw, wrap="word", bd=2, relief="sunken", padx=2, pady=2, font=tkFont.Font(family="Lucida Sans"), height=6, width=50, state="disabled", takefocus=False)
 
-        # self.l.grid(row=2, column=0, columnspan=2, sticky="nesw")
         pw.add(self.l, padx=0, pady=0)
 
         pw.grid(row=1, column=0, sticky="nsew", padx=2, pady=2)
 
         self.grid()
-        self.l.configure(state="disabled")
 
-        self.e.insert(0, "        {0}".format(_("Enter commands here, ? for help or press <Esc> to clear.")))
         self.e.select_range(0, END)
 
         self.update_clock()
+
         self.showTree(loop.do_a(''))
 
-    def focusNext(self, widget):
-        print('focus next')
-        widget.tk_focusNext().focus_set()
-        return 'break'
-
-    def focusPrev(self, widget):
-        print('focus prev')
-        widget.tk_focusPrev().focus_set()
-        return 'break'
+    def help(self, event=None):
+        res = loop.help_help()
+        self.messageWindow(title='etm', prompt=res)
 
     def OnSelect(self, event=None):
         """
@@ -365,6 +360,7 @@ class App(Tk):
 
     def cleartext(self, event=None):
         self.e.delete(0, END)
+        # self.e.focus_set()
 
     def process_input(self, event=None):
         """
@@ -447,7 +443,6 @@ class App(Tk):
         id = self.date2id[active_date]
         self.scrollToId(id)
 
-
     def scrollToId(self, id):
         self.update_idletasks()
         self.tree.focus_set()
@@ -471,8 +466,8 @@ class App(Tk):
             self.scrollToDate(today)
         else:
             self.tree.focus_set()
-            # self.tree.focus(1)
-            # self.tree.selection_set(1)
+            self.tree.focus(1)
+            self.tree.selection_set(1)
             self.tree.yview(0)
 
     def deleteItems(self):
@@ -524,13 +519,16 @@ class App(Tk):
                         self.date2id[d] = parent
 
 if __name__ == "__main__":
+    # For production:
     etmdir = ''
-    etm = sys.argv[0]
-    if (len(sys.argv) > 1 and os.path.isdir(sys.argv[1])):
-        etmdir = sys.argv.pop(1)
+    # For testing
+    # etmdir = '/Users/dag/etm-tk/etm-sample'
+    # etm = sys.argv[0]
+    # if (len(sys.argv) > 1 and os.path.isdir(sys.argv[1])):
+    #     etmdir = sys.argv.pop(1)
     init_localization()
-    if len(sys.argv) > 1:
-        etmdir = sys.argv.pop(1)
+    # if len(sys.argv) > 1:
+    #     etmdir = sys.argv.pop(1)
     (user_options, options, use_locale) = data.get_options(etmdir)
     loop = data.ETMCmd(options)
     loop.tkversion = tkversion
