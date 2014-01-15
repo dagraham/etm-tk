@@ -84,7 +84,8 @@ class DialogWindow():
         box.pack()
         self.win.bind('<Return>', (lambda e, o=o: o.invoke()))
         self.win.bind('<Escape>', (lambda e, c=c: c.invoke()))
-        self.win.focus_set()
+        self.entry.focus_set()
+        # self.win.focus_set()
         self.win.grab_set()
         self.win.transient(parent)
         self.win.wait_window(self.win)
@@ -149,12 +150,39 @@ class GetInteger(DialogWindow):
             self.error_message = _("an integer between {0} and {1} is required").format(self.minvalue, self.maxvalue)
             return False
 
+class GetDateTime(DialogWindow):
+    # def __init__(self, parent, title="", prompt="", minvalue=0, maxvalue=1):
+    #     self.min = minvalue
+    #     self.max = maxvalue
+    #     DialogWindow.__init__(self, parent, title, prompt)
+
+    def validate(self):
+        res = self.entry.get()
+        ok = False
+        if not res.strip():
+            # today
+            val = get_current_time()
+            ok = True
+        else:
+            try:
+                x = parse_datetime(res)
+                val = parse(parse_datetime(res))
+                ok = True
+            except:
+                val = None
+
+        if ok:
+            self.value = val
+            return True
+        else:
+            self.error_message = _('could not parse "{0}"').format(res)
+            return False
 
 class App(Tk):
     def __init__(self, path=None):
         Tk.__init__(self)
         # print(tkFont.names())
-        self.minsize(400, 400)
+        self.minsize(400, 450)
         # self.configure(background="lightgrey")
         self.history = []
         self.index = 0
@@ -195,6 +223,7 @@ class App(Tk):
         self.tree.bind("<Return>", self.OnActivate)
         self.tree.bind('<Escape>', self.cleartext)
         self.tree.bind('<space>', self.goHome)
+        self.tree.bind('<j>', self.jumpToDate)
 
         self.date2id = {}
         # padx = 2
@@ -219,7 +248,7 @@ class App(Tk):
 
         self.l = Text(pw, wrap="word", bd=2, relief="sunken", padx=2, pady=2, font=tkFont.Font(family="Lucida Sans"), height=6, width=50, state="disabled", takefocus=False)
 
-        pw.add(self.l, padx=0, pady=0)
+        pw.add(self.l, padx=0, pady=0, stretch="never")
 
         pw.grid(row=1, column=0, sticky="nsew", padx=2, pady=2)
 
@@ -245,7 +274,6 @@ class App(Tk):
             self.tree.selection_set(1)
             self.tree.yview(0)
         return('break')
-
 
     def OnSelect(self, event=None):
         """
@@ -343,9 +371,17 @@ class App(Tk):
     def messageWindow(self, title, prompt):
         win = Toplevel()
         win.title(title)
-        Label(win, text=prompt, wraplength=400, justify='left', font=tkFont.Font(family="Lucida Sans Typewriter"), fg="darkblue").pack(fill=tkinter.BOTH, expand=1, padx=10)
+        f = Frame(win)
+        t = Text(f, wrap="word", bd=2, relief="sunken", font=tkFont.Font(family="Lucida Sans Typewriter"), height=20, width=50, takefocus=False)
+        t.insert("0.0", prompt)
+        t.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0, pady=0)
+        ysb = ttk.Scrollbar(f, orient='vertical', command=t.yview, width=8)
+        ysb.pack(side='right', fill=tkinter.Y, expand=1)
+        t.configure(state="disabled", yscroll=ysb.set)
+        f.pack(padx=2, pady=2)
+
         b = Button(win, text=_('OK'), width=10, command=win.destroy, default='active')
-        b.pack()
+        b.pack(side='bottom')
         win.bind('<Return>', (lambda e, b=b: b.invoke()))
         win.bind('<Escape>', (lambda e, b=b: b.invoke()))
         win.focus_set()
@@ -365,6 +401,16 @@ class App(Tk):
             "{0}".format(_('Choice [1-4]?'))])
         value = GetInteger(parent=self, title='which instance', prompt=prompt, minvalue=1, maxvalue=4).value
         print('got integer result', value)
+
+    def jumpToDate(self, event=None):
+        if not self.dayview:
+            return()
+        prompt = _("""\
+Return an empty string for the current date or a date to be parsed.
+Relative dates and fuzzy parsing are supported.""")
+        value = GetDateTime(parent=self, title='date', prompt=prompt).value
+        self.scrollToDate(value.date())
+        # return("break")
 
     def gettext(self, event=None):
         self.string = self.e.get()
@@ -528,12 +574,7 @@ if __name__ == "__main__":
     etmdir = ''
     # For testing
     # etmdir = '/Users/dag/etm-tk/etm-sample'
-    # etm = sys.argv[0]
-    # if (len(sys.argv) > 1 and os.path.isdir(sys.argv[1])):
-    #     etmdir = sys.argv.pop(1)
     init_localization()
-    # if len(sys.argv) > 1:
-    #     etmdir = sys.argv.pop(1)
     (user_options, options, use_locale) = data.get_options(etmdir)
     loop = data.ETMCmd(options)
     loop.tkversion = tkversion
