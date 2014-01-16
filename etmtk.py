@@ -200,8 +200,8 @@ class App(Tk):
         ef = Frame(self)
 
         pw = PanedWindow(self, orient="vertical",
-                         showhandle=True,
-                         sashwidth=0, sashrelief='flat',
+                         # showhandle=True,
+                         sashwidth=3, sashrelief='flat',
                          )
         # pw.pack(fill="both", expand=1)
 
@@ -214,6 +214,11 @@ class App(Tk):
         self.tree.bind('<Escape>', self.cleartext)
         self.tree.bind('<space>', self.goHome)
         self.tree.bind('<j>', self.jumpToDate)
+        self.tree.bind('<,>', self.agendaView)
+        self.tree.bind('<.>', self.scheduleView)
+        self.tree.bind('</>', self.pathView)
+        self.tree.bind('<;>', self.keywordView)
+        self.tree.bind("<'>", self.tagView)
 
         self.date2id = {}
         # padx = 2
@@ -222,34 +227,53 @@ class App(Tk):
 
         ef.grid(row=0, column=0, sticky='ew', padx=3, pady=2)
 
+        menuwidth = 8
+
         self.vm_options = [[_('agenda'), 'a'],
                            [_('schedule'), 's'],
-                           [_('path'), 'p'],
-                           [_('keyword'), 'k'],
-                           [_('tag'), 't']]
+                           [_('paths'), 'p'],
+                           [_('keywords'), 'k'],
+                           [_('tags'), 't']]
 
         self.vm_opts = [x[0] for x in self.vm_options]
+        self.viewLabel = _("show")
+        self.view = self.vm_options[0][0]
+        self.viewValue = StringVar(self)
         self.currentView = StringVar(self)
-        self.currentView.set(self.vm_opts[0])
-        self.vm = OptionMenu(ef, self.currentView, *self.vm_opts, command=self.setView)
-        self.vm.configure(width=10)
+        self.currentView.set("{0} {1}".format(_("showing"), self.view))
+        self.viewValue.set(self.viewLabel)
+        self.vm = OptionMenu(ef, self.viewValue, *self.vm_opts, command=self.setView)
+        self.vm.configure(width=menuwidth)
         self.vm.pack(side="left")
 
-        self.em_options = [
-                            [_('create new item'), 'n'],
-                            [_('start timer for new action'), '?'],
-                            [_('reschedule selected item'), ''],
-                            [_('edit selected item'), ''],
-                            [_('clone selected item'), ''],
-                            [_('start timer for selected item'), ''],
-                            [_('finish selected task'), ''],
-                            [_('delete selected item'), ''],
-                            [_(''), ''],
-                            [_(''), ''],
-                            ]
-        self.currentFilter = StringVar(self)
-        self.currentFilter.set('')
-        self.e = Entry(ef, textvariable=self.currentFilter, bd=2)
+        self.newValue = StringVar(self)
+        self.newLabel = _("make")
+        self.newValue.set(self.newLabel)
+        self.nm_options = [[_('item'), 'n'],
+                           [_('action timer'), '?']
+                           ]
+        self.nm_opts = [x[0] for x in self.nm_options]
+        self.nm = OptionMenu(ef, self.newValue, *self.nm_opts, command=self.newCommand)
+        self.nm.configure(width=menuwidth)
+        self.nm.pack(side="left")
+
+        self.editValue = StringVar(self)
+        self.editLabel = _("edit")
+        self.editValue.set(self.editLabel)
+        self.em_options = [[_('edit selected item'), ''],
+                           [_('clone selected item'), ''],
+                           [_('delete selected item'), ''],
+                           [_('finish selected task'), ''],
+                           [_('action timer for selected item'), ''],
+                           ]
+        self.em_opts = [x[0] for x in self.em_options]
+        self.em = OptionMenu(ef, self.editValue, *self.em_opts, command=self.editCommand)
+        self.em.configure(width=menuwidth)
+        self.em.pack(side="left")
+
+        self.filterValue = StringVar(self)
+        self.filterValue.set('')
+        self.e = Entry(ef, textvariable=self.filterValue, bd=2)
         self.e.bind('<Return>', self.showView)
         self.e.bind('<Escape>', self.cleartext)
         self.e.bind('<Up>', self.prev_history)
@@ -259,7 +283,7 @@ class App(Tk):
         self.b = Button(ef, text=_('?'), command=self.help, takefocus=False)
         self.b.pack(side="right", expand=0)
 
-        pw.add(self.tree, padx=2, pady=0, stretch="first")
+        pw.add(self.tree, padx=3, pady=0, stretch="first")
 
         # ysb.grid(row=1, column=1, rowspan=2, sticky='ns')
 
@@ -267,7 +291,18 @@ class App(Tk):
 
         pw.add(self.l, padx=0, pady=0, stretch="never")
 
-        pw.grid(row=1, column=0, sticky="nsew", padx=2, pady=2)
+        pw.grid(row=1, column=0, sticky="nsew", padx=2, pady=0)
+
+        sf = Frame(self)
+
+        showing = Label(sf, textvariable=self.currentView, bd=1, relief="flat", anchor="w", padx=0, pady=0)
+        showing.pack(side="left")
+
+        self.currentTime = StringVar(self)
+        currenttime = Label(sf, textvariable=self.currentTime, bd=1, relief="flat", anchor="e", padx=0, pady=0)
+        currenttime.pack(side="right")
+
+        sf.grid(row=2, column=0, sticky="ew", padx=8, pady=4)
 
         self.grid()
 
@@ -277,17 +312,44 @@ class App(Tk):
 
         self.showTree(loop.do_a(''))
 
+    def agendaView(self, e=None):
+        self.setView(self.vm_options[0][0])
+
+    def scheduleView(self, e=None):
+        self.setView(self.vm_options[1][0])
+
+    def pathView(self, e=None):
+        self.setView(self.vm_options[2][0])
+
+    def keywordView(self, e=None):
+        self.setView(self.vm_options[3][0])
+
+    def tagView(self, e=None):
+        self.setView(self.vm_options[4][0])
+
     def setView(self, view):
-        self.currentView.set(view)
+        self.view = view
         self.showView()
 
     def showView(self, e=None):
-        view = self.currentView.get()
-        fltr = self.currentFilter.get()
+        # print('showView', self.view)
+        self.currentView.set("{0} {1}".format(_("showing"), self.view))
+        self.viewValue.set(self.viewLabel)
+        fltr = self.filterValue.get()
         cmd = "{0} {1}".format(
-            self.vm_options[self.vm_opts.index(view)][1], fltr)
+            self.vm_options[self.vm_opts.index(self.view)][1], fltr)
         self.mode = 'command'
         self.process_input(cmd=cmd)
+
+    def newCommand(self, e=None):
+        newcommand = self.newValue.get()
+        self.newValue.set(self.newLabel)
+        print('newCommand', newcommand)
+
+    def editCommand(self, e=None):
+        editcommand = self.editValue.get()
+        self.editValue.set(self.editLabel)
+        print('editCommand', editcommand)
 
     def help(self, event=None):
         res = loop.help_help()
@@ -325,8 +387,10 @@ class App(Tk):
                 lines = "{0} {1}-{2}".format(_('lines'), l1, l2)
             filetext = "{0}, {1}".format(hsh['fileinfo'][0], lines)
             text = "=== {0} ===\n{1}\n\n=== {2} ===\n{3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
+            self.em.configure(state="normal")
         else:
             text = ""
+            self.em.configure(state="disabled")
         self.l.insert(INSERT, text)
         self.l.configure(state="disabled")
 
@@ -372,7 +436,7 @@ class App(Tk):
 
         print(self.now)
         # self.bell()
-        self.title("{0}".format(nowfmt))
+        self.currentTime.set("{0}".format(nowfmt))
         self.after(nxt, self.update_clock)
 
     def prev_history(self, event):
@@ -519,7 +583,8 @@ Relative dates and fuzzy parsing are supported.""")
 
         if not res:
             res = _('command "{0}" returned no output').format(cmd)
-            MessageWindow(self, 'info', res)
+            # MessageWindow(self, 'info', res)
+            self.deleteItems()
             return()
 
         if type(res) == dict:

@@ -1170,7 +1170,7 @@ def makeTree(list_of_lists, view=None, cal_regex=None, sort=True, filter=None):
     empty = True
     rows = deepcopy(list_of_lists)
     if filter is not None:
-        print('makeTree filter', filter)
+        # print('makeTree filter', filter)
         mtch = True
         if filter[0] == '!':
             mtch = False
