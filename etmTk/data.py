@@ -1175,7 +1175,6 @@ def makeTree(list_of_lists, view=None, cal_regex=None, sort=True, filter=None):
         if filter[0] == '!':
             mtch = False
             filter = filter[1:]
-        print('mtch', mtch, filter)
         filter_regex = re.compile(r'{0}'.format(filter), re.IGNORECASE)
     else:
         filter_regex = None
@@ -2768,7 +2767,7 @@ def makeReportTuples(uuids, uuid2hash, groupby, dated, options={}):
 
 
 def getAgenda(allrows, colors=2, days=4, indent=2, width1=54, width2=14,
-              calendars=[], mode='html'):
+              calendars=[], mode='html', filter=None):
     cal_regex = None
     if calendars:
         cal_pattern = r'^%s' % '|'.join([x[2] for x in calendars if x[1]])
@@ -2812,7 +2811,7 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54, width2=14,
     tree = {}
     for lst in [day, now, next]:
         if lst:
-            update = makeTree(lst)
+            update = makeTree(lst, filter=filter)
             for key in update.keys():
                 tree.setdefault(key, []).extend(update[key])
     return(tree)
@@ -4627,6 +4626,10 @@ class ETMCmd():
         }
         try:
             if cmd == 'a':
+                if len(arg_str) > 2:
+                    f = arg_str[1:].strip()
+                else:
+                    f = None
                 return(getAgenda(
                     self.rows,
                     colors=self.options['agenda_colors'],
@@ -4635,7 +4638,8 @@ class ETMCmd():
                     width1=self.options['agenda_width1'],
                     width2=self.options['agenda_width2'],
                     calendars=self.options['calendars'],
-                    mode=self.output))
+                    mode=self.output,
+                    filter=f))
             elif cmd in views:
                 view = views[cmd]
                 if len(arg_str) > 2:
@@ -4766,7 +4770,8 @@ Either ITEM must be provided or edit_cmd must be specified in etm.cfg.
         return(hsh)
 
     def do_a(self, arg_str):
-        return(self.mk_rep('a'))
+        return(self.mk_rep('a {0}'.format(arg_str)))
+
 
     def help_a(self):
         return("""\
@@ -5524,28 +5529,46 @@ Display information about etm and the operating system.""")
 
     def help_help(self):
         return(_("""\
-CMD
- ? [CMD]  Display this screen or CMD details.
- a        Display the current agenda.
+Enter a CMD from list below in the command entry field (top) and press <Return> to execute it.
+
+ ?  CMD   Display details about CMD.
  c        Edit a COPY of the selected item.
  d        Delete the selected item.
  e        Edit the selected item.
  f        Mark the selected task finished.
- k [REGX] Display items grouped by keyword.
  h  ARGS  Execute 'hg_command' + ARGS.
  l  ARGS  Display a ledger using ARGS.
  m  INT   Display report number INT from the
           file 'report_specifications'.
  n  ARGS  Create a new item from ARGS.
  O        Edit etm.cfg.
- p [REGX] Display items grouped by file path.
  r  ARGS  Display a report using ARGS.
+ s  REGX  Limit the display to items with summaries
+          matching the case-insensitive regular
+          expression REGX.
  R        Edit 'report_specifications'.
- s [REGX] Display items grouped by date.
- t [REGX] Display items grouped by tag.
  v        Display system and etm information.
-<Tab> toggles the focus between the command field (top) and the display panel (middle). <Escape> clears the command field. Enter CMD from list above in the command field and press <Return> to execute it or <Escape> to clear it. When available as an option, using REGX limits the display to items with summaries matching the case-insensitive, regular expression REGX. Prepend an !, i.e., use !REGX instead of REGX, to display items with summaries NOT matching REGX.\
+
+Keyboard Shortcuts:
+<Escape> Clear the command entry field.
+<Tab>    Toggle the focus between the command
+         field and the display panel.
+<Space>  When the display panel has focus, scroll
+         to the current date in day view or to the
+         top element in other views.
+j        When the day view is displayed, select the
+         date to display.\
 """))
+
+
+ # a        Display the current agenda.
+ # k [REGX] Display items grouped by KEYWORD.
+ # p [REGX] Display items grouped by file PATH.
+ # s [REGX] Display SCHEDULED items grouped by date.
+ # t [REGX] Display items grouped by TAG.
+
+
+# When available as an option, REGX limits the display to items with summaries matching the case-insensitive, regular expression REGX. Prepend an !, i.e., use !REGX instead of REGX, to display items with summaries NOT matching REGX.
 
     def delete_which(self, instance):
         bad_response = _("An integer response between 0 and 3 is required.")

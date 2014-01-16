@@ -5,7 +5,7 @@ import platform
 import sys
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar
     from tkinter import messagebox as tkMessageBox
     from tkinter import ttk
     from tkinter import font as tkFont
@@ -13,7 +13,7 @@ if platform.python_version() >= '3':
     # import tkFont
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar
     import tkMessageBox
     import ttk
     import tkFont
@@ -125,11 +125,6 @@ class DialogWindow():
 
 
 class GetInteger(DialogWindow):
-    # def __init__(self, parent, title="", prompt="", minvalue=0, maxvalue=1):
-    #     self.min = minvalue
-    #     self.max = maxvalue
-    #     DialogWindow.__init__(self, parent, title, prompt)
-
     def validate(self):
         print(self.__dict__)
         res = self.entry.get()
@@ -151,11 +146,6 @@ class GetInteger(DialogWindow):
             return False
 
 class GetDateTime(DialogWindow):
-    # def __init__(self, parent, title="", prompt="", minvalue=0, maxvalue=1):
-    #     self.min = minvalue
-    #     self.max = maxvalue
-    #     DialogWindow.__init__(self, parent, title, prompt)
-
     def validate(self):
         res = self.entry.get()
         ok = False
@@ -232,8 +222,35 @@ class App(Tk):
 
         ef.grid(row=0, column=0, sticky='ew', padx=3, pady=2)
 
-        self.e = Entry(ef, text='?', bd=2)
-        self.e.bind('<Return>', self.process_input)
+        self.vm_options = [[_('agenda'), 'a'],
+                           [_('schedule'), 's'],
+                           [_('path'), 'p'],
+                           [_('keyword'), 'k'],
+                           [_('tag'), 't']]
+
+        self.vm_opts = [x[0] for x in self.vm_options]
+        self.currentView = StringVar(self)
+        self.currentView.set(self.vm_opts[0])
+        self.vm = OptionMenu(ef, self.currentView, *self.vm_opts, command=self.setView)
+        self.vm.configure(width=10)
+        self.vm.pack(side="left")
+
+        self.em_options = [
+                            [_('create new item'), 'n'],
+                            [_('start timer for new action'), '?'],
+                            [_('reschedule selected item'), ''],
+                            [_('edit selected item'), ''],
+                            [_('clone selected item'), ''],
+                            [_('start timer for selected item'), ''],
+                            [_('finish selected task'), ''],
+                            [_('delete selected item'), ''],
+                            [_(''), ''],
+                            [_(''), ''],
+                            ]
+        self.currentFilter = StringVar(self)
+        self.currentFilter.set('')
+        self.e = Entry(ef, textvariable=self.currentFilter, bd=2)
+        self.e.bind('<Return>', self.showView)
         self.e.bind('<Escape>', self.cleartext)
         self.e.bind('<Up>', self.prev_history)
         self.e.bind('<Down>', self.next_history)
@@ -259,6 +276,18 @@ class App(Tk):
         self.update_clock()
 
         self.showTree(loop.do_a(''))
+
+    def setView(self, view):
+        self.currentView.set(view)
+        self.showView()
+
+    def showView(self, e=None):
+        view = self.currentView.get()
+        fltr = self.currentFilter.get()
+        cmd = "{0} {1}".format(
+            self.vm_options[self.vm_opts.index(view)][1], fltr)
+        self.mode = 'command'
+        self.process_input(cmd=cmd)
 
     def help(self, event=None):
         res = loop.help_help()
@@ -371,17 +400,18 @@ class App(Tk):
     def messageWindow(self, title, prompt):
         win = Toplevel()
         win.title(title)
+        win.minsize(400, 400)
         f = Frame(win)
-        t = Text(f, wrap="word", bd=2, relief="sunken", font=tkFont.Font(family="Lucida Sans Typewriter"), height=20, width=50, takefocus=False)
+        t = Text(f, wrap="word", padx=2, pady=2, bd=2, relief="sunken", font=tkFont.Font(family="Lucida Sans Typewriter"), height=20, width=52, takefocus=False)
         t.insert("0.0", prompt)
         t.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0, pady=0)
         ysb = ttk.Scrollbar(f, orient='vertical', command=t.yview, width=8)
-        ysb.pack(side='right', fill=tkinter.Y, expand=1)
+        ysb.pack(side='right', fill=tkinter.Y, expand=1, padx=0, pady=0)
         t.configure(state="disabled", yscroll=ysb.set)
-        f.pack(padx=2, pady=2)
+        f.pack(padx=2, pady=2, fill=tkinter.BOTH, expand=1)
 
         b = Button(win, text=_('OK'), width=10, command=win.destroy, default='active')
-        b.pack(side='bottom')
+        b.pack(side='bottom', pady=0)
         win.bind('<Return>', (lambda e, b=b: b.invoke()))
         win.bind('<Escape>', (lambda e, b=b: b.invoke()))
         win.focus_set()
@@ -393,11 +423,11 @@ class App(Tk):
         prompt = "\n".join([
             _("You have selected instance"),
             "    {0}".format(instance),
-            _("of a repeating item. What do you want to change?"),
-            "  1. {0}".format(_("only the datetime of this instance")),
-            "  2. {0}".format(_("this instance")),
-            "  3. {0}".format(_("this and all subsequent instances")),
-            "  4. {0}".format(_("all instances")),
+            _("of a repeating item. What do you want to do?"),
+            "  1. {0}".format(_("change the datetime of this instance")),
+            "  2. {0}".format(_("edit this instance")),
+            "  3. {0}".format(_("edit this and all subsequent instances")),
+            "  4. {0}".format(_("edit all instances")),
             "{0}".format(_('Choice [1-4]?'))])
         value = GetInteger(parent=self, title='which instance', prompt=prompt, minvalue=1, maxvalue=4).value
         print('got integer result', value)
@@ -413,20 +443,25 @@ Relative dates and fuzzy parsing are supported.""")
         # return("break")
 
     def gettext(self, event=None):
-        self.string = self.e.get()
-        print(self.string)
+        s = self.e.get()
+        if s is not None:
+            return(s)
+        else:
+            return('')
 
     def cleartext(self, event=None):
         self.e.delete(0, END)
+        self.showView()
         return('break')
 
-    def process_input(self, event=None):
+    def process_input(self, event=None, cmd=None):
         """
         This is called whenever enter is pressed in the input field.
         Action depends upon comand_mode.
         Append input to history, process it and show the result in output.
         """
-        cmd = self.e.get().strip()
+        # if not cmd:
+        #     cmd = self.e.get().strip()
 
         if not cmd:
             return(True)
@@ -484,6 +519,9 @@ Relative dates and fuzzy parsing are supported.""")
 
         if not res:
             res = _('command "{0}" returned no output').format(cmd)
+            MessageWindow(self, 'info', res)
+            return()
+
         if type(res) == dict:
             self.showTree(res)
         else:
@@ -572,7 +610,7 @@ Relative dates and fuzzy parsing are supported.""")
 if __name__ == "__main__":
     # For production:
     etmdir = ''
-    # For testing
+    # For testing override etmdir:
     # etmdir = '/Users/dag/etm-tk/etm-sample'
     init_localization()
     (user_options, options, use_locale) = data.get_options(etmdir)
