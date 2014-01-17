@@ -123,6 +123,51 @@ class DialogWindow():
     def messageWindow(self, title, prompt):
         MessageWindow(self.parent, title, prompt)
 
+class OptionsDialog():
+    def __init__(self, parent, title="", prompt="", options=[]):
+        self.win = Toplevel(parent)
+        self.parent = parent
+        self.options = options
+        self.value = options[0]
+        print('OptionsDialog', parent, options)
+        self.win.title(title)
+        Label(self.win, text=prompt, justify='left').pack(fill=tkinter.BOTH, expand=1, padx=10, pady=5)
+        self.sv = StringVar(parent)
+        self.sv.set(options[0])
+        print('sv', self.sv.get())
+        self.choice = OptionMenu(self.win, self.sv, *options, command=self.setValue)
+        self.choice.pack(padx=5, pady=5)
+        box = Frame(self.win)
+        o = Button(box, text="OK", width=10, default='active', command=self.ok)
+        o.pack(side=LEFT, padx=5, pady=5)
+        c = Button(box, text="Cancel", width=10, command=self.cancel)
+        c.pack(side=LEFT, padx=5, pady=5)
+        box.pack()
+        self.win.bind('<Return>', (lambda e, o=o: o.invoke()))
+        self.win.bind('<Escape>', (lambda e, c=c: c.invoke()))
+        self.choice.focus_set()
+        # self.win.focus_set()
+        self.win.grab_set()
+        self.win.transient(parent)
+        self.win.wait_window(self.win)
+
+    def setValue(self, e=None):
+        self.value = self.sv.get()
+        print('set', self.value)
+
+    def ok(self, event=None):
+
+        self.parent.update_idletasks()
+
+        self.cancel()
+
+    def cancel(self, event=None):
+        # put focus back to the parent window
+        if event is not None:
+            self.value = None
+        self.parent.focus_set()
+        self.win.destroy()
+
 
 class GetInteger(DialogWindow):
     def validate(self):
@@ -178,7 +223,8 @@ class App(Tk):
         self.index = 0
         self.count = 0
         self.count2id = {}
-        self.now = None
+        self.now = get_current_time()
+        self.today = self.now.date()
         self.dayview = False
         self.options = {}
         self.popup = ''
@@ -201,7 +247,7 @@ class App(Tk):
 
         pw = PanedWindow(self, orient="vertical",
                          # showhandle=True,
-                         sashwidth=3, sashrelief='flat',
+                         sashwidth=4, sashrelief='flat',
                          )
         # pw.pack(fill="both", expand=1)
 
@@ -240,7 +286,7 @@ class App(Tk):
         self.view = self.vm_options[0][0]
         self.viewValue = StringVar(self)
         self.currentView = StringVar(self)
-        self.currentView.set("{0} {1}".format(_("showing"), self.view))
+        self.currentView.set(self.view)
         self.viewValue.set(self.viewLabel)
         self.vm = OptionMenu(ef, self.viewValue, *self.vm_opts, command=self.setView)
         self.vm.configure(width=menuwidth)
@@ -250,7 +296,8 @@ class App(Tk):
         self.newLabel = _("make")
         self.newValue.set(self.newLabel)
         self.nm_options = [[_('item'), 'n'],
-                           [_('action timer'), '?']
+                           [_('action timer'), '?'],
+                           [_('action timer for selected item'), ''],
                            ]
         self.nm_opts = [x[0] for x in self.nm_options]
         self.nm = OptionMenu(ef, self.newValue, *self.nm_opts, command=self.newCommand)
@@ -264,7 +311,6 @@ class App(Tk):
                            [_('clone selected item'), ''],
                            [_('delete selected item'), ''],
                            [_('finish selected task'), ''],
-                           [_('action timer for selected item'), ''],
                            ]
         self.em_opts = [x[0] for x in self.em_options]
         self.em = OptionMenu(ef, self.editValue, *self.em_opts, command=self.editCommand)
@@ -278,7 +324,7 @@ class App(Tk):
         self.e.bind('<Escape>', self.cleartext)
         self.e.bind('<Up>', self.prev_history)
         self.e.bind('<Down>', self.next_history)
-        self.e.pack(side="left",fill=tkinter.BOTH, expand=1)
+        self.e.pack(side="left", fill=tkinter.BOTH, expand=1)
 
         self.b = Button(ef, text=_('?'), command=self.help, takefocus=False)
         self.b.pack(side="right", expand=0)
@@ -287,7 +333,7 @@ class App(Tk):
 
         # ysb.grid(row=1, column=1, rowspan=2, sticky='ns')
 
-        self.l = Text(pw, wrap="word", bd=2, relief="sunken", padx=2, pady=2, font=tkFont.Font(family="Lucida Sans"), height=6, width=50, state="disabled", takefocus=False)
+        self.l = Text(pw, wrap="word", bd=2, relief="sunken", padx=2, pady=2, font=tkFont.Font(family="Lucida Sans Typewriter"), height=6, width=50, state="disabled", takefocus=False)
 
         pw.add(self.l, padx=0, pady=0, stretch="never")
 
@@ -333,7 +379,7 @@ class App(Tk):
 
     def showView(self, e=None):
         # print('showView', self.view)
-        self.currentView.set("{0} {1}".format(_("showing"), self.view))
+        self.currentView.set(self.view)
         self.viewValue.set(self.viewLabel)
         fltr = self.filterValue.get()
         cmd = "{0} {1}".format(
@@ -350,6 +396,7 @@ class App(Tk):
         editcommand = self.editValue.get()
         self.editValue.set(self.editLabel)
         print('editCommand', editcommand)
+        self.editWhich()
 
     def help(self, event=None):
         res = loop.help_help()
@@ -379,6 +426,7 @@ class App(Tk):
                 item = "{0} {1}".format(_('selected'), dt)
             else:
                 item = _('selected')
+            isTask = (hsh['itemtype'] in ['-', '+'])
             l1 = hsh['fileinfo'][1]
             l2 = hsh['fileinfo'][2]
             if l1 == l2:
@@ -387,10 +435,20 @@ class App(Tk):
                 lines = "{0} {1}-{2}".format(_('lines'), l1, l2)
             filetext = "{0}, {1}".format(hsh['fileinfo'][0], lines)
             text = "=== {0} ===\n{1}\n\n=== {2} ===\n{3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
-            self.em.configure(state="normal")
+            for i in range(3):
+                self.em["menu"].entryconfig(i, state='normal')
+            # self.em.configure(state="normal")
+            if isTask:
+                self.em["menu"].entryconfig(3, state='normal')
+            else:
+                self.em["menu"].entryconfig(3, state='disabled')
+            self.nm["menu"].entryconfig(2, state='normal')
         else:
             text = ""
-            self.em.configure(state="disabled")
+            for i in range(4):
+                self.em["menu"].entryconfig(i, state='disabled')
+            # self.em.configure(state="disabled")
+            self.nm["menu"].entryconfig(2, state='disabled')
         self.l.insert(INSERT, text)
         self.l.configure(state="disabled")
 
@@ -428,6 +486,10 @@ class App(Tk):
 
     def update_clock(self):
         self.now = get_current_time()
+        today = self.now.date()
+        newday = (today != self.today)
+        self.today = today
+
         nxt = (60 - self.now.second) * 1000 - self.now.microsecond // 1000
         nowfmt = "{0} {1}".format(
             s2or3(self.now.strftime(loop.options['reprtimefmt']).lower()),
@@ -487,14 +549,15 @@ class App(Tk):
         prompt = "\n".join([
             _("You have selected instance"),
             "    {0}".format(instance),
-            _("of a repeating item. What do you want to do?"),
-            "  1. {0}".format(_("change the datetime of this instance")),
-            "  2. {0}".format(_("edit this instance")),
-            "  3. {0}".format(_("edit this and all subsequent instances")),
-            "  4. {0}".format(_("edit all instances")),
-            "{0}".format(_('Choice [1-4]?'))])
-        value = GetInteger(parent=self, title='which instance', prompt=prompt, minvalue=1, maxvalue=4).value
+            _("of a repeating item. What do you want to change?")])
+        options = [
+            _("only the datetime of this instance"),
+            _("this instance"),
+            _("this and all subsequent instances"),
+            _("all instances")]
+        value = OptionsDialog(parent=self, title="which", prompt=prompt, options=options).value
         print('got integer result', value)
+
 
     def jumpToDate(self, event=None):
         if not self.dayview:
