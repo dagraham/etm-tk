@@ -307,10 +307,11 @@ class App(Tk):
         self.editValue = StringVar(self)
         self.editLabel = _("edit")
         self.editValue.set(self.editLabel)
-        self.em_options = [[_('edit selected item'), ''],
-                           [_('clone selected item'), ''],
-                           [_('delete selected item'), ''],
-                           [_('finish selected task'), ''],
+        self.em_options = [
+                           [_('clone'), ''],
+                           [_('delete'), ''],
+                           [_('edit'), ''],
+                           [_('finish'), ''],
                            ]
         self.em_opts = [x[0] for x in self.em_options]
         self.em = OptionMenu(ef, self.editValue, *self.em_opts, command=self.editCommand)
@@ -422,9 +423,14 @@ class App(Tk):
         self.l.configure(state="normal")
         self.l.delete("0.0", END)
         if uuid is not None:
-            if 'r' in hsh and dt:
+            isRepeating = ('r' in hsh and dt)
+            if isRepeating:
                 item = "{0} {1}".format(_('selected'), dt)
+                self.em["menu"].entryconfig(1, label="{0} ...".format(self.em_opts[1]))
+                self.em["menu"].entryconfig(2, label="{0} ...".format(self.em_opts[2]))
             else:
+                self.em["menu"].entryconfig(1, label=self.em_opts[1])
+                self.em["menu"].entryconfig(2, label=self.em_opts[2])
                 item = _('selected')
             isTask = (hsh['itemtype'] in ['-', '+'])
             l1 = hsh['fileinfo'][1]
@@ -434,7 +440,8 @@ class App(Tk):
             else:
                 lines = "{0} {1}-{2}".format(_('lines'), l1, l2)
             filetext = "{0}, {1}".format(hsh['fileinfo'][0], lines)
-            text = "=== {0} ===\n{1}\n\n=== {2} ===\n{3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
+            # text = "=== {0} ===\n{1}\n\n=== {2} ===\n{3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
+            text = "{1}\n\n{2}: {3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
             for i in range(3):
                 self.em["menu"].entryconfig(i, state='normal')
             # self.em.configure(state="normal")

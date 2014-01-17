@@ -28,8 +28,6 @@ else:
 dayfirst = False
 yearfirst = True
 
-# from kivy import __version__ as KIVY_VERSION_STR
-
 import re
 import sys
 import locale
