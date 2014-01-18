@@ -427,7 +427,7 @@ class App(Tk):
         Tree row has gained selection.
         """
         item = self.tree.selection()[0]
-        # print('OnSelect', item)
+        type_chr = self.tree.item(item)['text'][0]
         uuid, dt, hsh = self.getInstance(item)
         self.l.configure(state="normal")
         self.l.delete("0.0", END)
@@ -441,7 +441,7 @@ class App(Tk):
                 self.em["menu"].entryconfig(1, label=self.em_opts[1])
                 self.em["menu"].entryconfig(2, label=self.em_opts[2])
                 item = _('selected')
-            isTask = (hsh['itemtype'] in ['-', '+'])
+            isUnfinished = (type_chr in ['-', '+', '%'])
             l1 = hsh['fileinfo'][1]
             l2 = hsh['fileinfo'][2]
             if l1 == l2:
@@ -454,7 +454,7 @@ class App(Tk):
             for i in range(3):
                 self.em["menu"].entryconfig(i, state='normal')
             # self.em.configure(state="normal")
-            if isTask:
+            if isUnfinished:
                 self.em["menu"].entryconfig(3, state='normal')
             else:
                 self.em["menu"].entryconfig(3, state='disabled')
@@ -509,13 +509,13 @@ class App(Tk):
         if newday:
             print('update_clock newday', newday)
         self.today = today
-        # new, modified, deleted = get_changes(
-        #     self.options, loop.file2lastmodified)
-        # if new or modified or deleted:
-        #     loop.load_data()
-        # if newday or new or modified or deleted:
-        #     print('refreshing view')
-        #     self.showView()
+        new, modified, deleted = get_changes(
+            self.options, loop.file2lastmodified)
+        if new or modified or deleted:
+            loop.load_data()
+        if newday or new or modified or deleted:
+            print('refreshing view')
+            self.showView()
 
         nxt = (60 - self.now.second) * 1000 - self.now.microsecond // 1000
         nowfmt = "{0} {1}".format(
