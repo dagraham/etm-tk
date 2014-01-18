@@ -2168,8 +2168,10 @@ def get_reps(bef, hsh):
                 start = following
             elif next:
                 start = next
-        else:
+        elif next:
             start = next
+        else:
+            start = done
     else:
         start = parse(parse_dtstr(hsh['s'])).replace(tzinfo=None)
     tmp = []
@@ -3608,7 +3610,7 @@ def getViewData(bef, file2uuids={}, uuid2hash={}, options={}):
                     hsh[k] = 'none'
             if 't' not in hsh:
                 hsh['t'] = []
-            #--------- make entry for folder view ----------#
+         #--------- make entry for folder view ----------#
             if hsh['itemtype'] in [u'+', u'-', u'%']:
                 done, next, following = getDoneAndTwo(hsh)
                 if done:
@@ -3622,7 +3624,7 @@ def getViewData(bef, file2uuids={}, uuid2hash={}, options={}):
                             ('day', done.strftime(sortdatefmt),
                                 tstr2SCI[typ][0], hsh['_p'], '', f),
                             (fmt_date(done),),
-                            (u, typ, setSummary(hsh, done), '')]
+                            (u, typ, setSummary(hsh, done), '', fmt_date(done))]
                         add2list(rows, item)
                         # add each relevant done date to index
                         add2Dates(datetimes, (done, f))
@@ -3684,7 +3686,7 @@ def getViewData(bef, file2uuids={}, uuid2hash={}, options={}):
                                 (u, typ,
                                     setSummary(hsh, next), time_str, etmdt)]
                             add2list(rows, item)
-                else:  # undated
+                if not next and not done:  # undated
                     dts = "none"
                     dtl = today_datetime
                     etmdt = "%s %s" % (
@@ -3843,13 +3845,14 @@ def getViewData(bef, file2uuids={}, uuid2hash={}, options={}):
                     tzlocal()).replace(tzinfo=None)
                 dates.append(thisdate)
                 add2Dates(datetimes, (thisdate, f))
-            if 'f' in hsh and hsh['f']:
-                # make sure finish dates are indexed
-                thisdate = parse(
-                    parse_dtstr(
-                        hsh['f'][-1][0], hsh['z'])).astimezone(
-                    tzlocal()).replace(tzinfo=None)
-                add2Dates(datetimes, (thisdate, f))
+            # elif 'f' in hsh and hsh['f']:
+            #     # make sure finish dates are indexed
+            #     thisdate = parse(
+            #         parse_dtstr(
+            #             hsh['f'][-1][0], hsh['z'])).astimezone(
+            #         tzlocal()).replace(tzinfo=None)
+            #     # dates.append(thisdate)
+            #     # add2Dates(datetimes, (thisdate, f))
 
             for dt in dates:
                 dtl = dt
@@ -3913,9 +3916,7 @@ def getViewData(bef, file2uuids={}, uuid2hash={}, options={}):
                                         dtl, True, options=options)
                                 amn = adt.hour * 60 + adt.minute
                                 add2list(alerts, (amn, this_hsh, f), False)
-                if 'f' in hsh and 'rrule' not in hsh:
-                    pass
-                elif (hsh['itemtype'] in ['+', '-', '%'] and
+                if (hsh['itemtype'] in ['+', '-', '%'] and
                         dtl < today_datetime):
                     time_diff = (dtl - today_datetime).days
                     # start_day = fmt_date(dtl, True)
@@ -3955,9 +3956,12 @@ def getViewData(bef, file2uuids={}, uuid2hash={}, options={}):
                                 typ = 'av'
                             cat = 'Available'
                             sn = (1, tstr2SCI[typ][0])
-                    item = [
-                        ('now', sn, dtl, hsh['_p'], summary, f), (cat,),
-                        (u, typ, summary, time_str, etmdt)]
+                    if 'f' in hsh and 'rrule' not in hsh:
+                        continue
+                    else:
+                        item = [
+                            ('now', sn, dtl, hsh['_p'], summary, f), (cat,),
+                            (u, typ, summary, time_str, etmdt)]
                     add2list(rows, item)
 
                 if 'b' in hsh:
@@ -4095,6 +4099,8 @@ def getViewData(bef, file2uuids={}, uuid2hash={}, options={}):
                         extstr = fmt_period(hsh['e'])
                     else:
                         extstr = ''
+                    if 'f' in hsh and 'bath' in hsh['_summary']:
+                        print('f in hsh', hsh['_summary'], hsh['f'][-1][1], dtl, typ)
                     if 'f' in hsh and hsh['f'][-1][1] == dtl:
                         typ = 'fn'
                     else:
@@ -4575,6 +4581,7 @@ class ETMCmd():
         self.ruler = '-'
         self.rows = []
         self.file2uuids = {}
+        self.file2lastmodified = {}
         self.uuid2hash = {}
         self.loop = False
         self.number = True
@@ -4673,7 +4680,7 @@ class ETMCmd():
         week_beg = now - days * oneday
         bef = (week_beg + (7 * (weeks_after + 1)) * oneday)
 
-        uuid2hash, file2uuids, file2lastmodified, bad_datafiles, messages = \
+        uuid2hash, file2uuids, self.file2lastmodified, bad_datafiles, messages = \
             get_data(options=self.options, use_pickle=True)
         if messages:
             for msg in messages:

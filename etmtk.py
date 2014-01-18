@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 #import the 'tkinter' module
 import os
-import platform
 import sys
+
+import platform
 if platform.python_version() >= '3':
     import tkinter
     from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar
@@ -226,7 +230,7 @@ class App(Tk):
         self.now = get_current_time()
         self.today = self.now.date()
         self.dayview = False
-        self.options = {}
+        self.options = loop.options
         self.popup = ''
         self.value = ''
         self.firsttime = True
@@ -280,6 +284,10 @@ class App(Tk):
                            [_('paths'), 'p'],
                            [_('keywords'), 'k'],
                            [_('tags'), 't']]
+
+        self.view2cmd = {}
+        for v, c in self.vm_options:
+            self.view2cmd[v] = c
 
         self.vm_opts = [x[0] for x in self.vm_options]
         self.viewLabel = _("show")
@@ -419,6 +427,7 @@ class App(Tk):
         Tree row has gained selection.
         """
         item = self.tree.selection()[0]
+        # print('OnSelect', item)
         uuid, dt, hsh = self.getInstance(item)
         self.l.configure(state="normal")
         self.l.delete("0.0", END)
@@ -467,6 +476,7 @@ class App(Tk):
         uuid, dt, hsh = self.getInstance(item)
         if uuid is not None:
             print("you pressed <Return> on", item, uuid, dt, hsh['_summary'])
+            print(hsh)
         else:
             print("you pressed <Return> on", item)
         return("break")
@@ -492,10 +502,20 @@ class App(Tk):
         return(uuid, dt, hsh)
 
     def update_clock(self):
+        # print('update_clock', loop.options)
         self.now = get_current_time()
         today = self.now.date()
         newday = (today != self.today)
+        if newday:
+            print('update_clock newday', newday)
         self.today = today
+        # new, modified, deleted = get_changes(
+        #     self.options, loop.file2lastmodified)
+        # if new or modified or deleted:
+        #     loop.load_data()
+        # if newday or new or modified or deleted:
+        #     print('refreshing view')
+        #     self.showView()
 
         nxt = (60 - self.now.second) * 1000 - self.now.microsecond // 1000
         nowfmt = "{0} {1}".format(
@@ -507,6 +527,7 @@ class App(Tk):
         # self.bell()
         self.currentTime.set("{0}".format(nowfmt))
         self.after(nxt, self.update_clock)
+
 
     def prev_history(self, event):
         """
