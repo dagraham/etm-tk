@@ -5,11 +5,13 @@ from __future__ import (absolute_import, division, print_function,
 #import the 'tkinter' module
 import os
 import sys
+import re
+from copy import deepcopy
 
 import platform
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, Menu, BooleanVar
     from tkinter import messagebox as tkMessageBox
     from tkinter import ttk
     from tkinter import font as tkFont
@@ -17,7 +19,7 @@ if platform.python_version() >= '3':
     # import tkFont
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, Menu, BooleanVar
     import tkMessageBox
     import ttk
     import tkFont
@@ -40,7 +42,7 @@ from etmTk.data import (
     updateCurrentFiles, get_changes, checkForNewerVersion, getAgenda,
     date_calculator, datetime2minutes, calyear, export_ical_item,
     import_ical, export_ical, has_icalendar, expand_template, ensureMonthly,
-    sys_platform, id2Type, get_current_time)
+    sys_platform, id2Type, get_current_time, mac)
 
 import gettext
 _ = gettext.gettext
@@ -194,6 +196,7 @@ class GetInteger(DialogWindow):
             self.error_message = _("an integer between {0} and {1} is required").format(self.minvalue, self.maxvalue)
             return False
 
+
 class GetDateTime(DialogWindow):
     def validate(self):
         res = self.entry.get()
@@ -204,7 +207,6 @@ class GetDateTime(DialogWindow):
             ok = True
         else:
             try:
-                x = parse_datetime(res)
                 val = parse(parse_datetime(res))
                 ok = True
             except:
@@ -217,12 +219,54 @@ class GetDateTime(DialogWindow):
             self.error_message = _('could not parse "{0}"').format(res)
             return False
 
+
 class App(Tk):
     def __init__(self, path=None):
         Tk.__init__(self)
         # print(tkFont.names())
         self.minsize(400, 450)
+
+        menubar = Menu(self)
+
+        # File menu
+        filemenu = Menu(menubar, tearoff=0)
+        ## open
+        l, c = self.platformShortcut('o')
+        filemenu.add_command(label="Open", underline=0, accelerator=l, command=self.donothing)
+        self.bind(c, self.donothing)
+        ## export
+        l, c = self.platformShortcut('x')
+        filemenu.add_command(label="Export ...", accelerator=l, underline=1, command=self.donothing)
+        self.bind(c, self.donothing)
+        filemenu.add_separator()
+        ## quit
+        l, c = self.platformShortcut('w')
+        filemenu.add_command(label="Quit", underline=0,
+                             accelerator=l, command=self.quit)
+        self.bind(c, self.quit)
+        menubar.add_cascade(label="File", underline=0, menu=filemenu)
+
+        calendarmenu = Menu(menubar, tearoff=0)
+        self.calendars = deepcopy(loop.options['calendars'])
+
+        # print('calendars\n', self.calendars)
+        self.calendarValues = []
+        for i in range(len(self.calendars)):
+            self.calendarValues.append(BooleanVar())
+            self.calendarValues[i].set(self.calendars[i][1])
+            self.calendarValues[i].trace_variable("w", self.updateCalendars)
+            calendarmenu.add_checkbutton(label=self.calendars[i][0], onvalue=True, offvalue=False, variable=self.calendarValues[i])
+        menubar.add_cascade(label="Calendars", menu=calendarmenu)
+
+        helpmenu = Menu(menubar, tearoff=0)
+        helpmenu.add_command(label="Help Index", command=self.donothing)
+        helpmenu.add_command(label="About...", command=self.donothing)
+        menubar.add_cascade(label="Help", menu=helpmenu)
+
+        self.config(menu=menubar)
+
         # self.configure(background="lightgrey")
+
         self.history = []
         self.index = 0
         self.count = 0
@@ -309,6 +353,11 @@ class App(Tk):
                            ]
         self.nm_opts = [x[0] for x in self.nm_options]
         self.nm = OptionMenu(ef, self.newValue, *self.nm_opts, command=self.newCommand)
+        self.nm["menu"].add_separator()
+        self.nm["menu"].add_command(label="ledger", underline=1, accelerator="Ctrl+L", command=self.newCommand)
+        self.bind("<Control-l>", self.donothing)
+        self.nm["menu"].add_command(label="report", underline=1, accelerator="Cmd+R", command=self.newCommand)
+        self.bind("<Command-r>", self.donothing)
         self.nm.configure(width=menuwidth)
         self.nm.pack(side="left")
 
@@ -353,6 +402,11 @@ class App(Tk):
         showing = Label(sf, textvariable=self.currentView, bd=1, relief="flat", anchor="w", padx=0, pady=0)
         showing.pack(side="left")
 
+        self.nonDefaultCalendars = StringVar(self)
+        self.nonDefaultCalendars.set("")
+        nonDefCal = Label(sf, textvariable=self.nonDefaultCalendars, bd=1, relief="flat", anchor="center", padx=0, pady=0)
+        nonDefCal.pack(side="left")
+
         self.currentTime = StringVar(self)
         currenttime = Label(sf, textvariable=self.currentTime, bd=1, relief="flat", anchor="e", padx=0, pady=0)
         currenttime.pack(side="right")
@@ -366,6 +420,39 @@ class App(Tk):
         self.update_clock()
 
         self.showTree(loop.do_a(''))
+
+    def platformShortcut(self, s):
+        """
+        Produce label, command pairs from s based on Command for OSX
+        and Control otherwise.
+        """
+        if mac:
+            return("Cmd-{0}".format(s), "<Command-{0}>".format(s))
+        else:
+            return("Ctrl-{0}".format(s), "<Control-{0}>".format(s))
+
+    def updateCalendars(self, *args):
+        for i in range(len(loop.calendars)):
+            loop.calendars[i][1] = self.calendarValues[i].get()
+        if loop.calendars != loop.options['calendars']:
+            cal_pattern = r'^%s' % '|'.join(
+                [x[2] for x in loop.calendars if x[1]])
+            loop.cal_regex = re.compile(cal_pattern)
+            self.nonDefaultCalendars.set("*")
+        else:
+            cal_pattern = ''
+            loop.cal_regex = None
+            self.nonDefaultCalendars.set("")
+        # print('updateCalendars', loop.calendars, cal_pattern, loop.cal_regex)
+        self.showView()
+
+
+    def quit(self, e=None):
+        self.destroy()
+
+    def donothing(self, e=None):
+        "For testing"
+        print('donothing')
 
     def agendaView(self, e=None):
         self.setView(self.vm_options[0][0])
@@ -585,7 +672,6 @@ class App(Tk):
             _("all instances")]
         value = OptionsDialog(parent=self, title="which", prompt=prompt, options=options).value
         print('got integer result', value)
-
 
     def jumpToDate(self, event=None):
         if not self.dayview:

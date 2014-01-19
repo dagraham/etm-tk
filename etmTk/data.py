@@ -3571,11 +3571,12 @@ def setItemPeriod(hsh, start, end, short=False, options={}):
 
 
 @memoize
-def getViewData(bef, file2uuids={}, uuid2hash={}, options={}):
+def getViewData(bef, file2uuids={}, uuid2hash={}, options={}, calendars=[]):
     """
         TODO: put something informative here
     """
-    calendars = options['calendars']
+    if not calendars:
+        calendars = options['calendars']
     cal_regex = []
     for lab, chck, relpth in calendars:
         if chck:
@@ -4535,6 +4536,8 @@ class ETMCmd():
     """
     def __init__(self, options={}, parent=None):
         self.options = options
+        self.calendars = deepcopy(options['calendars'])
+        self.cal_regex = None
         self.cmdDict = {
             '?': self.do_help,
             'a': self.do_a,
@@ -4642,7 +4645,7 @@ class ETMCmd():
                     indent=self.options['agenda_indent'],
                     width1=self.options['agenda_width1'],
                     width2=self.options['agenda_width2'],
-                    calendars=self.options['calendars'],
+                    calendars=self.calendars,
                     mode=self.output,
                     filter=f))
             elif cmd in views:
@@ -4654,6 +4657,7 @@ class ETMCmd():
                 return(makeTree(
                     self.rows,
                     view=view,
+                    cal_regex=self.cal_regex,
                     filter=f))
             else:
                 return(getReportData(
@@ -4661,6 +4665,7 @@ class ETMCmd():
                     self.file2uuids,
                     self.uuid2hash,
                     self.options,
+                    calendars=self.calendars,
                     mode=self.output))
         except:
             s = str(_('Could not process "{0}".')).format(arg_str)
