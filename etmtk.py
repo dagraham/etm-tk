@@ -7,6 +7,7 @@ import os
 import sys
 import re
 from copy import deepcopy
+import subprocess
 
 import platform
 if platform.python_version() >= '3':
@@ -354,18 +355,20 @@ class App(Tk):
         self.nm_opts = [x[0] for x in self.nm_options]
         self.nm = OptionMenu(ef, self.newValue, *self.nm_opts, command=self.newCommand)
         self.nm["menu"].add_separator()
-        self.nm["menu"].add_command(label="ledger", underline=1, accelerator="Ctrl+L", command=self.newCommand)
-        self.bind("<Control-l>", self.donothing)
-        self.nm["menu"].add_command(label="report", underline=1, accelerator="Cmd+R", command=self.newCommand)
-        self.bind("<Command-r>", self.donothing)
+
+        l, c = self.platformShortcut('l')
+        self.nm["menu"].add_command(label="ledger", underline=1, accelerator=l, command=self.newCommand)
+        self.bind(c, self.donothing)
+        l, c = self.platformShortcut('r')
+        self.nm["menu"].add_command(label="report", underline=1, accelerator=l, command=self.newCommand)
+        self.bind(c, self.donothing)
         self.nm.configure(width=menuwidth)
         self.nm.pack(side="left")
 
         self.editValue = StringVar(self)
         self.editLabel = _("edit")
         self.editValue.set(self.editLabel)
-        self.em_options = [
-                           [_('clone'), ''],
+        self.em_options = [[_('clone'), ''],
                            [_('delete'), ''],
                            [_('edit'), ''],
                            [_('finish'), ''],
@@ -397,27 +400,34 @@ class App(Tk):
 
         pw.grid(row=1, column=0, sticky="nsew", padx=2, pady=0)
 
-        sf = Frame(self)
+        self.sf = Frame(self)
+        self.pendingAlerts = StringVar(self)
+        self.pendingAlerts.set("")
 
-        showing = Label(sf, textvariable=self.currentView, bd=1, relief="flat", anchor="w", padx=0, pady=0)
+        showing = Label(self.sf, textvariable=self.currentView, bd=1, relief="flat", anchor="w", padx=0, pady=0)
         showing.pack(side="left")
 
         self.nonDefaultCalendars = StringVar(self)
         self.nonDefaultCalendars.set("")
-        nonDefCal = Label(sf, textvariable=self.nonDefaultCalendars, bd=1, relief="flat", anchor="center", padx=0, pady=0)
+        nonDefCal = Label(self.sf, textvariable=self.nonDefaultCalendars, bd=1, relief="flat", anchor="center", padx=0, pady=0)
         nonDefCal.pack(side="left")
 
+
+        self.pending = Button(self.sf, textvariable=self.pendingAlerts, command=self.showAlerts, bd=0)
+        self.pending.pack(side="right", padx=3)
+        self.showPending = True
+
         self.currentTime = StringVar(self)
-        currenttime = Label(sf, textvariable=self.currentTime, bd=1, relief="flat", anchor="e", padx=0, pady=0)
+        currenttime = Label(self.sf, textvariable=self.currentTime, bd=1, relief="flat", anchor="e", padx=2, pady=0)
         currenttime.pack(side="right")
 
-        sf.grid(row=2, column=0, sticky="ew", padx=8, pady=4)
+        self.sf.grid(row=2, column=0, sticky="ew", padx=8, pady=4)
 
         self.grid()
 
         self.e.select_range(0, END)
 
-        self.update_clock()
+        self.updateClock()
 
         self.showTree(loop.do_a(''))
 
@@ -453,6 +463,29 @@ class App(Tk):
     def donothing(self, e=None):
         "For testing"
         print('donothing')
+
+    def showAlerts(self, e=None):
+        t = _('remaining alerts for today')
+        header = "{0:^7}\t{1:^7}\t{2:<8}{3:<26}".format(
+            _('alert'),
+            _('event'),
+            _('type'),
+            _('summary'))
+        divider = '-' * 50
+        if loop.alerts:
+            for alert in loop.alerts:
+                s = '%s\n%s\n%s' % (
+                    header, divider, "\n".join(
+                        ["{0:^7}\t{1:^7}\t{2:<8}{3:<26}".format(
+                            x[1]['alert_time'], x[1]['_event_time'],
+                            ", ".join(x[1]['_alert_action']),
+                            str(x[1]['summary'][:30])) for x in loop.alerts]))
+        else:
+            s = _("none")
+        # print(s)
+        self.messageWindow(t, s)
+        # MessageWindow(self, t, s)
+
 
     def agendaView(self, e=None):
         self.setView(self.vm_options[0][0])
@@ -588,13 +621,20 @@ class App(Tk):
         hsh = loop.uuid2hash[uuid]
         return(uuid, dt, hsh)
 
-    def update_clock(self):
-        # print('update_clock', loop.options)
+    def updateClock(self):
+        # print('updateClock', loop.options)
         self.now = get_current_time()
+        nxt = (60 - self.now.second) * 1000 - self.now.microsecond // 1000
+        self.after(nxt, self.updateClock)
+        nowfmt = "{0} {1}".format(
+            s2or3(self.now.strftime(loop.options['reprtimefmt']).lower()),
+            s2or3(self.now.strftime("%a %b %d %Z")))
+        nowfmt = leadingzero.sub("", nowfmt)
+        self.currentTime.set("{0}".format(nowfmt))
         today = self.now.date()
         newday = (today != self.today)
         if newday:
-            print('update_clock newday', newday)
+            print('updateClock newday', newday)
         self.today = today
         new, modified, deleted = get_changes(
             self.options, loop.file2lastmodified)
@@ -603,18 +643,159 @@ class App(Tk):
         if newday or new or modified or deleted:
             print('refreshing view')
             self.showView()
-
-        nxt = (60 - self.now.second) * 1000 - self.now.microsecond // 1000
-        nowfmt = "{0} {1}".format(
-            s2or3(self.now.strftime(loop.options['reprtimefmt']).lower()),
-            s2or3(self.now.strftime("%a %b %d %Z")))
-        nowfmt = leadingzero.sub("", nowfmt)
-
+        self.updateAlerts()
         print(self.now)
         # self.bell()
-        self.currentTime.set("{0}".format(nowfmt))
-        self.after(nxt, self.update_clock)
 
+    def updateAlerts(self):
+        # print('updateAlerts', len(loop.alerts), self.showPending)
+        if loop.alerts:
+            curr_minutes = datetime2minutes(self.now)
+            td = -1
+            while td < 0 and loop.alerts:
+                td = loop.alerts[0][0] - curr_minutes
+                if td < 0:
+                    loop.alerts.pop(0)
+            if td == 0:
+                if ('alert_wakecmd' in loop.options and
+                        loop.options['alert_wakecmd']):
+                        cmd = loop.options['alert_wakecmd']
+                        subprocess.call(cmd, shell=True)
+                while td == 0:
+                    hsh = loop.alerts[0][1]
+                    loop.alerts.pop(0)
+                    actions = hsh['_alert_action']
+                    if 's' in actions:
+                        if ('alert_soundcmd' in self.options and
+                                self.options['alert_soundcmd']):
+                            scmd = expand_template(
+                                self.options['alert_soundcmd'], hsh)
+                            subprocess.call(scmd, shell=True)
+                        else:
+                            self.messageWindow(
+                                "etm", _("""\
+A sound alert failed. The setting for 'alert_soundcmd' is missing from \
+your etm.cfg."""))
+                    if 'd' in actions:
+                        if ('alert_displaycmd' in self.options and
+                                self.options['alert_displaycmd']):
+                            dcmd = expand_template(
+                                self.options['alert_displaycmd'], hsh)
+                            subprocess.call(dcmd, shell=True)
+                        else:
+                            self.messageWindow(
+                                "etm", _("""\
+A display alert failed. The setting for 'alert_displaycmd' is missing \
+from your etm.cfg."""))
+                    if 'v' in actions:
+                        if ('alert_voicecmd' in self.options and
+                                self.options['alert_voicecmd']):
+                            vcmd = expand_template(
+                                self.options['alert_voicecmd'], hsh)
+                            subprocess.call(vcmd, shell=True)
+                        else:
+                            self.messageWindow(
+                                "etm", _("""\
+An email alert failed. The setting for 'alert_voicecmd' is missing from \
+your etm.cfg."""))
+                    if 'e' in actions:
+                        missing = []
+                        for field in [
+                                'smtp_from',
+                                'smtp_id',
+                                'smtp_pw',
+                                'smtp_server',
+                                'smtp_to']:
+                            if not self.options[field]:
+                                missing.append(field)
+                        if missing:
+                            self.messageWindow(
+                                "etm", _("""\
+An email alert failed. Settings for the following variables are missing \
+from your etm.cfg: %s.""" % ", ".join(["'%s'" % x for x in missing])))
+                        else:
+                            subject = hsh['summary']
+                            message = expand_template(
+                                self.options['email_template'], hsh)
+                            arguments = hsh['_alert_argument']
+                            recipients = [str(x).strip() for x in arguments[0]]
+                            if len(arguments) > 1:
+                                attachments = [str(x).strip()
+                                               for x in arguments[1]]
+                            else:
+                                attachments = []
+                            if subject and message and recipients:
+                                send_mail(
+                                    smtp_to=recipients,
+                                    subject=subject,
+                                    message=message,
+                                    files=attachments,
+                                    smtp_from=self.options['smtp_from'],
+                                    smtp_server=self.options['smtp_server'],
+                                    smtp_id=self.options['smtp_id'],
+                                    smtp_pw=self.options['smtp_pw'])
+                    if 'm' in actions:
+                        MessageWindow(
+                            self,
+                            title=expand_template('!summary!', hsh),
+                            prompt=expand_template(
+                                self.options['alert_template'], hsh))
+
+                    if 't' in actions:
+                        missing = []
+                        for field in [
+                                'sms_from',
+                                'sms_message',
+                                'sms_phone',
+                                'sms_pw',
+                                'sms_server',
+                                'sms_subject']:
+                            if not self.options[field]:
+                                missing.append(field)
+                        if missing:
+                            self.messageWindow(
+                                "etm", _("""\
+A text alert failed. Settings for the following variables are missing \
+from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
+                        else:
+                            message = expand_template(
+                                self.options['sms_message'], hsh)
+                            subject = expand_template(
+                                self.options['sms_subject'], hsh)
+                            arguments = hsh['_alert_argument']
+                            if arguments:
+                                sms_phone = ",".join([str(x).strip() for x in
+                                            arguments[0]])
+                            else:
+                                sms_phone = self.options['sms_phone']
+                            if message:
+                                send_text(
+                                    sms_phone=sms_phone,
+                                    subject=subject,
+                                    message=message,
+                                    sms_from=self.options['sms_from'],
+                                    sms_server=self.options['sms_server'],
+                                    sms_pw=self.options['sms_pw'])
+                    if 'p' in actions:
+                        arguments = hsh['_alert_argument']
+                        proc = str(arguments[0][0]).strip()
+                        cmd = expand_template(proc, hsh)
+                        subprocess.call(cmd, shell=True)
+
+                    if not loop.alerts:
+                        break
+                    td = loop.alerts[0][0] - curr_minutes
+
+        if loop.alerts:
+            self.pendingAlerts.set("{0}".format(len(loop.alerts)))
+            self.pending.configure(state="normal")
+            if not self.showPending:
+                self.pending.pack()
+        else:
+            self.pendingAlerts.set("")
+            self.pending.configure(state="disabled")
+            if self.showPending:
+                self.pending.pack_forget()
 
     def prev_history(self, event):
         """
@@ -641,18 +822,22 @@ class App(Tk):
     def messageWindow(self, title, prompt):
         win = Toplevel()
         win.title(title)
-        win.minsize(400, 400)
+        # win.minsize(444, 430)
+        win.minsize(444, 300)
         f = Frame(win)
-        t = Text(f, wrap="word", padx=2, pady=2, bd=2, relief="sunken", font=tkFont.Font(family="Lucida Sans Typewriter"), height=20, width=52, takefocus=False)
+        t = Text(f, wrap="word", padx=2, pady=2, bd=2, relief="sunken", font=tkFont.Font(family="Lucida Sans Typewriter"),
+            height=14,
+            width=52,
+            takefocus=False)
         t.insert("0.0", prompt)
         t.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0, pady=0)
         ysb = ttk.Scrollbar(f, orient='vertical', command=t.yview, width=8)
-        ysb.pack(side='right', fill=tkinter.Y, expand=1, padx=0, pady=0)
+        ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
         t.configure(state="disabled", yscroll=ysb.set)
         f.pack(padx=2, pady=2, fill=tkinter.BOTH, expand=1)
 
         b = Button(win, text=_('OK'), width=10, command=win.destroy, default='active')
-        b.pack(side='bottom', pady=0)
+        b.pack(side='bottom', fill=tkinter.NONE, expand=0, pady=0)
         win.bind('<Return>', (lambda e, b=b: b.invoke()))
         win.bind('<Escape>', (lambda e, b=b: b.invoke()))
         win.focus_set()
@@ -853,7 +1038,7 @@ if __name__ == "__main__":
     # For production:
     etmdir = ''
     # For testing override etmdir:
-    # etmdir = '/Users/dag/etm-tk/etm-sample'
+    etmdir = '/Users/dag/etm-tk/etm-sample'
     init_localization()
     (user_options, options, use_locale) = data.get_options(etmdir)
     loop = data.ETMCmd(options)
