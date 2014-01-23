@@ -388,12 +388,14 @@ class App(Tk):
         viewmenu.add_command(label=_("Report"), accelerator=l, underline=1, command=self.donothing)
         self.bind(c, self.donothing)  # r
 
+        # date calculator
         viewmenu.add_command(label=_("Date calculator"), underline=1, command=self.donothing)
 
-        viewmenu.add_command(label=_("Update check"), underline=1, command=self.donothing)
+        # changes
+        viewmenu.add_command(label=_("Update check"), underline=1, command=self.checkForUpdate)
 
-        # log
-        viewmenu.add_command(label=_("Change log"), underline=1, command=self.donothing)
+        # changes
+        viewmenu.add_command(label=_("Change log"), underline=1, command=self.showChanges)
 
         viewmenu.add_command(label="Data errors", underline=1, command=self.donothing)
 
@@ -660,9 +662,7 @@ class App(Tk):
                         str(x[1]['summary'][:26])) for x in loop.alerts]))
         else:
             s = _("none")
-        # print(s)
         self.messageWindow(t, s)
-        # MessageWindow(self, t, s)
 
 
     def agendaView(self, e=None):
@@ -896,6 +896,33 @@ parsing are supported.""")
     def about(self, event=None):
         res = loop.do_v("")
         self.messageWindow(title='etm', prompt=res)
+
+    def checkForUpdate(self, event=None):
+        res = checkForNewerVersion()[1]
+        self.messageWindow(title='etm', prompt=res)
+
+    def showChanges(self, event=None):
+        prompt = _("""\
+Enter an integer number of changes to display
+or 0 to display all changes.""")
+        depth = GetInteger(
+            parent=self,
+            title=_("Changes"),
+            prompt=prompt, options=[0], default=10).value
+        if depth is None:
+            return()
+        if depth == 0:
+            # all changes
+            numstr = ""
+        else:
+            numstr = "-l {0}".format(depth)
+
+        command = loop.options['hg_history'].format(
+            repo=loop.options['datadir'],
+            file="", numchanges=numstr, rev="{rev}", desc="{desc}")
+        p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True, universal_newlines=True).stdout.read()
+        self.messageWindow(title=_("Changes"), prompt=str(p))
+
 
     def goHome(self, event=None):
         if self.view == self.vm_options[1][0]:
@@ -1432,7 +1459,7 @@ if __name__ == "__main__":
     # For production:
     etmdir = ''
     # For testing override etmdir:
-    # etmdir = '/Users/dag/etm-tk/etm-sample'
+    etmdir = '/Users/dag/etm-tk/etm-sample'
     init_localization()
     (user_options, options, use_locale) = data.get_options(etmdir)
     loop = data.ETMCmd(options)

@@ -884,7 +884,6 @@ Error code: %s.""" % e.code
 
         if version < vstr:
             return(1, """\
-----------------------------------------
 A newer version of etm, %s, is available at \
 people.duke.edu/~dgraham/etmqt.""" % (vstr))
         else:
