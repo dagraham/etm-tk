@@ -12,7 +12,7 @@ import subprocess
 import platform
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, Menu, BooleanVar
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, Menu, BooleanVar, ACTIVE
     from tkinter import messagebox as tkMessageBox
     from tkinter import ttk
     from tkinter import font as tkFont
@@ -20,7 +20,7 @@ if platform.python_version() >= '3':
     # import tkFont
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, Menu, BooleanVar
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, Menu, BooleanVar, ACTIVE
     import tkMessageBox
     import ttk
     import tkFont
@@ -48,6 +48,10 @@ from etmTk.data import (
 import gettext
 _ = gettext.gettext
 
+if mac:
+    after = 100
+else:
+    after = 1
 
 class MessageWindow():
     def __init__(self, parent, title, prompt):
@@ -70,43 +74,80 @@ class MessageWindow():
         self.parent.focus_set()
         self.win.destroy()
 
+class Dialog(Toplevel):
 
-class DialogWindow():
-    def __init__(self, parent, title="", prompt="", options=[], default=None):
-        self.win = Toplevel(parent)
+    def __init__(self, parent, title=None, prompt=None, options=None, default=None):
+
+        Toplevel.__init__(self, parent)
+        self.transient(parent)
+
+        if title:
+            self.title(title)
+
         self.parent = parent
-        self.error_message = ""
-        self.value = default
-        self.default = default
+        self.prompt = prompt
         self.options = options
-        self.win.title(title)
-        Label(self.win, text=prompt, justify='left').pack(fill=tkinter.BOTH, expand=1, padx=10, pady=5)
-        self.entry = Entry(self.win)
-        if default is not None:
-            self.entry.insert(0, default)
-            self.entry.select_range(0, END)
-        self.entry.pack(padx=5, pady=5)
-        box = Frame(self.win)
-        o = Button(box, text="OK", width=10, default='active', command=self.ok)
-        o.pack(side=LEFT, padx=5, pady=5)
-        c = Button(box, text="Cancel", width=10, command=self.cancel)
-        c.pack(side=LEFT, padx=5, pady=5)
+        self.default = default
+        self.value = None
+
+        self.error_message = None
+
+        body = Frame(self)
+        self.initial_focus = self.body(body)
+        body.pack(padx=5, pady=5)
+
+        self.buttonbox()
+
+        self.grab_set()
+
+        if not self.initial_focus:
+            self.initial_focus = self
+
+        self.protocol("WM_DELETE_WINDOW", self.cancel)
+
+        self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
+                                  parent.winfo_rooty()+50))
+
+        self.initial_focus.focus_set()
+
+        self.wait_window(self)
+
+    # construction hooks
+
+    def body(self, master):
+        # create dialog body.  return widget that should have
+        # initial focus.  this method should be overridden
+
+        pass
+
+    def buttonbox(self):
+        # add standard button box. override if you don't want the
+        # standard buttons
+
+        box = Frame(self)
+
+        w = Button(box, text="Cancel", width=10, command=self.cancel)
+        w.pack(side=LEFT, padx=5, pady=5)
+        w = Button(box, text="OK", width=10, command=self.ok, default=ACTIVE)
+        w.pack(side=LEFT, padx=5, pady=5)
+
+        self.bind("<Return>", self.ok)
+        self.bind("<Escape>", self.cancel)
+
         box.pack()
-        self.win.bind('<Return>', (lambda e, o=o: o.invoke()))
-        self.win.bind('<Escape>', (lambda e, c=c: c.invoke()))
-        self.entry.focus_set()
-        # self.win.focus_set()
-        self.win.grab_set()
-        self.win.transient(parent)
-        self.win.wait_window(self.win)
+
+    # standard button semantics
 
     def ok(self, event=None):
+
         if not self.validate():
-            self.messageWindow('error', self.error_message)
-            self.parent.focus_set()
+            if self.error_message:
+                self.messageWindow('error', self.error_message)
+            self.initial_focus.focus_set() # put focus back
             return
 
-        self.parent.update_idletasks()
+        self.withdraw()
+        self.update_idletasks()
 
         self.apply()
 
@@ -116,32 +157,139 @@ class DialogWindow():
 
         # put focus back to the parent window
         self.parent.focus_set()
-        self.win.destroy()
+        self.destroy()
 
     #
     # command hooks
 
     def validate(self):
-        print('default validate - should be overridden')
-        self.error_message = ""
 
-        return 1  # override
+        return 1 # override
 
     def apply(self):
 
-        pass  # override
+        pass # override
 
     def messageWindow(self, title, prompt):
         MessageWindow(self.parent, title, prompt)
 
+# class Dialog(Toplevel):
+
+#     def __init__(self, parent, title=None, prompt=None, options=None, default=None):
+#         win = Toplevel()
+#         self.win = win
+#         if title:
+#             win.title(title)
+
+#         self.parent = parent
+
+#         self.prompt = prompt
+#         self.options = options
+#         self.default = default
+#         self.value = None
+#         self.error_message = None
+
+#         body = Frame(win)
+#         win.initial_focus = self.body(body)
+#         body.pack(padx=5, pady=5)
+
+#         self.buttonbox(win)
+#         win.focus_set()
+#         win.grab_set()
+
+#         if not win.initial_focus:
+#             win.initial_focus = win
+
+#         win.protocol("WM_DELETE_WINDOW", self.cancel)
+
+#         win.geometry("+%d+%d" % (parent.winfo_rootx() + 50,
+#                                   parent.winfo_rooty() + 50))
+
+#         win.initial_focus.focus_set()
+
+#         win.transient(parent)
+#         win.wait_window(win)
+
+#     # construction hooks
+
+#     def body(self, master):
+#         # create dialog body.  return widget that should have
+#         # initial focus.  this method should be overridden
+#         pass
+
+#     def buttonbox(self, master):
+#         # add standard button box. override if you don't want the
+#         # standard buttons
+#         box = Frame(master)
+
+#         w = Button(box, text="OK", width=10, command=self.ok, default=ACTIVE)
+#         w.pack(side=LEFT, padx=5, pady=5)
+#         w = Button(box, text="Cancel", width=10, command=self.cancel)
+#         w.pack(side=LEFT, padx=5, pady=5)
+
+#         master.bind("<Return>", self.ok)
+#         master.bind("<Escape>", self.cancel)
+
+#         box.pack()
+
+#     # standard button semantics
+
+#     def ok(self, event=None):
+#         if not self.validate():
+#             if self.error_message:
+#                 self.messageWindow('error', self.error_message)
+
+#             self.initial_focus.focus_set()  # put focus back
+#             return
+
+#         self.win.withdraw()
+#         self.win.update_idletasks()
+
+#         self.apply()
+
+#         self.cancel()
+
+#     def cancel(self, event=None):
+#         # put focus back to the parent window
+#         self.value = None
+#         self.parent.focus_set()
+#         self.win.destroy()
+
+#     # command hooks
+
+#     def validate(self):
+#         # set self.value here
+
+#         return 1  # override
+
+#     def apply(self):
+
+#         pass  # override
+
+    # def messageWindow(self, title, prompt):
+    #     MessageWindow(self.parent, title, prompt)
+
+
+class DialogWindow(Dialog):
+
+    # master will be a frame in Dialog
+    def body(self, master):
+        Label(master, text=self.prompt, justify='left').pack(fill=tkinter.BOTH, expand=1, padx=10, pady=5)
+        self.entry = Entry(master)
+        if self.default is not None:
+            self.entry.insert(0, self.default)
+            self.entry.select_range(0, END)
+        self.entry.pack(padx=5, pady=5)
+        return(self.entry)
+
 
 class OptionsDialog():
     def __init__(self, parent, title="", prompt="", options=[]):
+        print('OptionsDialog', parent, options)
         self.win = Toplevel(parent)
         self.parent = parent
         self.options = options
         self.value = options[0]
-        print('OptionsDialog', parent, options)
         self.win.title(title)
         Label(self.win, text=prompt, justify='left').pack(fill=tkinter.BOTH, expand=1, padx=10, pady=5)
         self.sv = StringVar(parent)
@@ -158,7 +306,7 @@ class OptionsDialog():
         self.win.bind('<Return>', (lambda e, o=o: o.invoke()))
         self.win.bind('<Escape>', (lambda e, c=c: c.invoke()))
         self.choice.focus_set()
-        # self.win.focus_set()
+        self.win.focus_set()
         self.win.grab_set()
         self.win.transient(parent)
         self.win.wait_window(self.win)
@@ -175,13 +323,13 @@ class OptionsDialog():
 
     def cancel(self, event=None):
         # put focus back to the parent window
-        if event is not None:
-            self.value = None
+        self.value = None
         self.parent.focus_set()
         self.win.destroy()
 
 
 class GetInteger(DialogWindow):
+
     def validate(self):
         # print('integer validate', self.options)
         minvalue = maxvalue = None
@@ -194,15 +342,17 @@ class GetInteger(DialogWindow):
         try:
             val = int(res)
             ok = (minvalue is None or val >= minvalue) and (maxvalue is None or val <= maxvalue)
-            print('ok', ok)
+            print('ok', ok, val)
         except:
             val = None
             ok = False
 
         if ok:
             self.value = val
+            print('self.value', val)
             return True
         else:
+            self.value = None
             msg = [_('an integer')]
             conj = ""
             if minvalue is not None:
@@ -216,6 +366,7 @@ class GetInteger(DialogWindow):
 
 
 class GetDateTime(DialogWindow):
+
     def validate(self):
         res = self.entry.get()
         ok = False
@@ -229,9 +380,9 @@ class GetDateTime(DialogWindow):
                 ok = True
             except:
                 val = None
-
         if ok:
             self.value = val
+            print('self.value', self.value)
             return True
         else:
             self.error_message = _('could not parse "{0}"').format(res)
@@ -251,40 +402,20 @@ class App(Tk):
         filemenu = Menu(menubar, tearoff=0)
 
         ## open file
-        l, c = self.platformShortcut('o')
-        filemenu.add_command(label=_("Open"), underline=0, accelerator=l, command=self.donothing)
-        self.bind(c, self.donothing)
 
-        # report
-        l, c = self.platformShortcut('r')
-        filemenu.add_command(label=_("Report"), accelerator=l, underline=1, command=self.donothing)
-        self.bind(c, self.donothing)
+        openmenu = Menu(filemenu, tearoff=0)
 
-        # log
-        l, c = self.platformShortcut('l')
-        filemenu.add_command(label=_("Change Log"), accelerator=l, underline=1, command=self.donothing)
-        self.bind(c, self.donothing)
+        openmenu.add_command(label=_("data file ..."), underline=0, command=self.donothing)
 
-        # preferences
-        filemenu.add_command(label=_("Preferences"), underline=1, command=self.donothing)
+        openmenu.add_command(label=_("configuration"), underline=0, command=self.donothing)
 
+        openmenu.add_command(label=_("auto completions"), underline=0, command=self.donothing)
 
+        openmenu.add_command(label=_("report specifications"), underline=0, command=self.donothing)
 
-        ## export
-        filemenu.add_command(label="Export ...", underline=1, command=self.donothing)
+        filemenu.add_cascade(label=_("Open"), menu=openmenu, underline=0)
 
-        filemenu.add_separator()
-        ## quit
-        l, c = self.platformShortcut('w')
-        filemenu.add_command(label="Quit", underline=0,
-                             accelerator=l, command=self.quit)
-        self.bind(c, self.quit)
-        menubar.add_cascade(label="File", underline=0, menu=filemenu)
-
-        l, c = self.platformShortcut('/')
-        self.bind(c, self.expand2Depth)
-
-        calendarmenu = Menu(menubar, tearoff=0)
+        calendarmenu = Menu(filemenu, tearoff=0)
         self.calendars = deepcopy(loop.options['calendars'])
 
         # print('calendars\n', self.calendars)
@@ -294,7 +425,63 @@ class App(Tk):
             self.calendarValues[i].set(self.calendars[i][1])
             self.calendarValues[i].trace_variable("w", self.updateCalendars)
             calendarmenu.add_checkbutton(label=self.calendars[i][0], onvalue=True, offvalue=False, variable=self.calendarValues[i])
-        menubar.add_cascade(label=_("View"), menu=calendarmenu)
+
+        filemenu.add_cascade(label=_("Set calendars"), menu=calendarmenu)
+
+        ## export
+        filemenu.add_command(label="Export ...", underline=1, command=self.donothing)
+
+        filemenu.add_separator()
+
+        ## quit
+        l, c = self.platformShortcut('w')
+        filemenu.add_command(label="Quit", underline=0,
+                             accelerator=l, command=self.quit)
+        self.bind(c, self.quit)  # w
+        menubar.add_cascade(label="File", underline=0, menu=filemenu)
+
+        # view menu
+        viewmenu = Menu(menubar, tearoff=0)
+
+        # go to date
+        l, c = self.platformShortcut('g')
+        viewmenu.add_command(
+            label=_("Go to date"), underline=1, accelerator=l,
+            command=self.goToDate)
+        # needed for os x to prevent dialog hanging
+        self.bind_all(c, lambda event: self.after(after, self.goToDate))
+
+        # expand to depth
+        l, c = self.platformShortcut('o')
+        viewmenu.add_command(
+            label=_("Outline depth"), underline=1, accelerator=l,
+            command=self.expand2Depth)
+        # needed for os x to prevent dialog hanging
+        self.bind_all(c, lambda event: self.after(after, self.expand2Depth))
+
+        l, c = self.platformShortcut('b')
+        viewmenu.add_command(label=_("Busy times"), underline=1, accelerator=l, command=self.donothing)
+        self.bind(c, self.donothing)  # b
+
+        l, c = self.platformShortcut('y')
+        viewmenu.add_command(label=_("Yearly calendar"), underline=1, accelerator=l, command=self.donothing)
+        self.bind(c, self.donothing)  # y
+
+        # report
+        l, c = self.platformShortcut('r')
+        viewmenu.add_command(label=_("Report"), accelerator=l, underline=1, command=self.donothing)
+        self.bind(c, self.donothing)  # r
+
+        viewmenu.add_command(label=_("Date calculator"), underline=1, command=self.donothing)
+
+        viewmenu.add_command(label=_("Update check"), underline=1, command=self.donothing)
+
+        # log
+        viewmenu.add_command(label=_("Change log"), underline=1, command=self.donothing)
+
+        viewmenu.add_command(label="Data errors", underline=1, command=self.donothing)
+
+        menubar.add_cascade(label="View", menu=viewmenu, underline=0)
 
         helpmenu = Menu(menubar, tearoff=0)
         helpmenu.add_command(label="About", command=self.about)
@@ -346,7 +533,7 @@ class App(Tk):
         self.tree.bind("<Return>", self.OnActivate)
         self.tree.bind('<Escape>', self.cleartext)
         self.tree.bind('<space>', self.goHome)
-        self.tree.bind('<j>', self.jumpToDate)
+        # self.tree.bind('<j>', self.jumpToDate)
 
         self.date2id = {}
         # padx = 2
@@ -363,16 +550,11 @@ class App(Tk):
                            [_('keywords'), 'k'],
                            [_('tags'), 't']]
 
-        self.view2cmd = {
-                'a': self.agendaView,
-                's': self.scheduleView,
-                'p': self.pathView,
-                'k': self.keywordView,
-                't': self.tagView
-                }
-        # for k in self.view2cmd:
-        #     l, c = self.platformShortcut(k)
-        #     self.bind(c, self.view2cmd[k])
+        self.view2cmd = {'a': self.agendaView,
+                         's': self.scheduleView,
+                         'p': self.pathView,
+                         'k': self.keywordView,
+                         't': self.tagView}
 
         self.vm_opts = [x[0] for x in self.vm_options]
         vm_keys = [x[1] for x in self.vm_options]
@@ -386,37 +568,28 @@ class App(Tk):
         self.vm.configure(width=menuwidth)
         for k in self.view2cmd:
             l, c = self.platformShortcut(k)
-            self.bind(c, self.view2cmd[k])
+            self.bind(c, self.view2cmd[k])  # a, s, p, k, t
             i = vm_keys.index(k)
             self.vm["menu"].entryconfig(i, accelerator=l)
 
         self.vm.pack(side="left")
 
         self.newValue = StringVar(self)
-        self.newLabel = _("make")
+        self.newLabel = _("add")
         self.newValue.set(self.newLabel)
         self.nm_options = [[_('item'), 'n'],
                            [_('timer'), 't'],
                            ]
         self.nm_opts = [x[0] for x in self.nm_options]
         self.nm = OptionMenu(ef, self.newValue, *self.nm_opts)
-        # self.nm["menu"].add_separator()
-
-        # l, c = self.platformShortcut('l')
-        # self.nm["menu"].add_command(label="ledger", underline=1, accelerator=l, command=self.newCommand)
-        # self.bind(c, self.donothing)
-        # l, c = self.platformShortcut('r')
-        # self.nm["menu"].add_command(label="report", underline=1, accelerator=l, command=self.newCommand)
-        # self.bind(c, self.donothing)
-        # self.nm.configure(width=menuwidth)
 
         l, c = self.platformShortcut('n')
         self.nm["menu"].entryconfig(0, accelerator=l, command=self.newItem)
-        self.bind(c, self.newItem)
+        self.bind(c, self.newItem)  # n
 
         l, c = self.platformShortcut('+')
         self.nm["menu"].entryconfig(1, accelerator=l, command=self.newTimer)
-        self.bind(c, self.newTimer)
+        self.bind(c, self.newTimer)  # +
 
         self.nm.pack(side="left")
 
@@ -428,12 +601,10 @@ class App(Tk):
                            [_('edit'), 'e'],
                            [_('finish'), 'f'],
                            ]
-        self.edit2cmd = {
-                'c': self.cloneItem,
-                'd': self.deleteItem,
-                'e': self.editItem,
-                'f': self.finishItem,
-                }
+        self.edit2cmd = {'c': self.cloneItem,
+                         'd': self.deleteItem,
+                         'e': self.editItem,
+                         'f': self.finishItem}
         self.em_opts = [x[0] for x in self.em_options]
         em_cmds = [x[1] for x in self.em_options]
         self.em = OptionMenu(ef, self.editValue, *self.em_opts, command=self.editCommand)
@@ -442,7 +613,7 @@ class App(Tk):
             k = em_cmds[i]
             l, c = self.platformShortcut(k)
             self.em["menu"].entryconfig(i, accelerator=l, command=self.edit2cmd[k])
-            self.bind(c, self.edit2cmd[k])
+            self.bind(c, self.edit2cmd[k])  # c, d, e, f
         self.em.pack(side="left")
 
         self.filterValue = StringVar(self)
@@ -954,15 +1125,22 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
         value = OptionsDialog(parent=self, title="which", prompt=prompt, options=options).value
         print('got integer result', value)
 
-    def jumpToDate(self, event=None):
-        if not self.dayview:
-            return()
+    def goToDate(self, event=None):
+        if event is not None:
+            print('goToDate got here')
+        event=None
         prompt = _("""\
 Return an empty string for the current date or a date to be parsed.
 Relative dates and fuzzy parsing are supported.""")
-        value = GetDateTime(parent=self, title='date', prompt=prompt).value
-        self.scrollToDate(value.date())
-        # return("break")
+        if self.view != self.vm_options[1][0]:
+            self.view = self.vm_options[1][0]
+            self.showView()
+        d = GetDateTime(parent=self, title=_('date'), prompt=prompt)
+        value = d.value
+        print('goToDate', value)
+        if value is not None:
+            self.scrollToDate(value.date())
+        return("break")
 
     def gettext(self, event=None):
         s = self.e.get()
@@ -1046,14 +1224,18 @@ Relative dates and fuzzy parsing are supported.""")
             self.messageWindow(title='etm', prompt=res)
             return(0)
 
-    def expand2Depth(self, e=None):
-        depth = GetInteger(
-            self, title="etm",
-            prompt=_("""\
+    def expand2Depth(self, event=None):
+        if event is not None:
+            print('expand2Depth got here')
+        event=None
+        prompt = _("""\
 Enter an integer depth to expand branches
-or 0 to expand all branches completely."""),
-            options=[0],
-            default=0).value
+or 0 to expand all branches completely.""")
+        print('expand2Depth', event, self, self.tree)
+        depth = GetInteger(
+            parent=self,
+            title=_("depth"), prompt=prompt, options=[0], default=0).value
+        print('depth', depth)
         if depth is None:
             return()
         if depth == 0:
@@ -1068,6 +1250,7 @@ or 0 to expand all branches completely."""),
                     self.tree.item(item, open=True)
             for item in self.depth2id[depth]:
                 self.tree.item(item, open=False)
+        # return('break')
 
     def scrollToDate(self, date):
         # only makes sense for dayview
@@ -1109,7 +1292,7 @@ or 0 to expand all branches completely."""),
             self.tree.delete(child)
 
     def addItems(self, parent, elements, tree, depth=0):
-        max_depth = 0
+        max_depth = 100
         for text in elements:
             self.count += 1
             # print('text', text)
