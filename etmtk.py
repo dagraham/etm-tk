@@ -13,18 +13,18 @@ import platform
 if platform.python_version() >= '3':
     import tkinter
     from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, Menu, BooleanVar, ACTIVE
-    from tkinter import messagebox as tkMessageBox
+    # from tkinter import messagebox as tkMessageBox
     from tkinter import ttk
     from tkinter import font as tkFont
-    from tkinter import simpledialog as tkSimpleDialog
+    # from tkinter import simpledialog as tkSimpleDialog
     # import tkFont
 else:
     import Tkinter as tkinter
     from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, Menu, BooleanVar, ACTIVE
-    import tkMessageBox
+    # import tkMessageBox
     import ttk
     import tkFont
-    import tkSimpleDialog
+    # import tkSimpleDialog
 
 tkversion = tkinter.TkVersion
 
@@ -48,10 +48,23 @@ from etmTk.data import (
 import gettext
 _ = gettext.gettext
 
+# used in hack to prevent dialog from hanging under os x
 if mac:
     after = 100
 else:
     after = 1
+
+from idlelib.WidgetRedirector import WidgetRedirector
+
+
+class ReadOnlyText(Text):
+
+    def __init__(self, *args, **kwargs):
+        Text.__init__(self, *args, **kwargs)
+        self.redirector = WidgetRedirector(self)
+        self.insert = self.redirector.register("insert", lambda *args, **kw: "break")
+        self.delete = self.redirector.register("delete", lambda *args, **kw: "break")
+
 
 class MessageWindow():
     def __init__(self, parent, title, prompt):
@@ -92,11 +105,13 @@ class Dialog(Toplevel):
 
         self.error_message = None
 
+        self.buttonbox()
+
         body = Frame(self)
         self.initial_focus = self.body(body)
-        body.pack(padx=5, pady=5)
+        body.pack(side="top", padx=5, pady=5)
 
-        self.buttonbox()
+        # self.buttonbox()
 
         self.grab_set()
 
@@ -105,8 +120,8 @@ class Dialog(Toplevel):
 
         self.protocol("WM_DELETE_WINDOW", self.cancel)
 
-        self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
-                                  parent.winfo_rooty()+50))
+        self.geometry("+%d+%d" % (parent.winfo_rootx() + 50,
+                                  parent.winfo_rooty() + 50))
 
         self.initial_focus.focus_set()
 
@@ -134,7 +149,7 @@ class Dialog(Toplevel):
         self.bind("<Return>", self.ok)
         self.bind("<Escape>", self.cancel)
 
-        box.pack()
+        box.pack(side='bottom')
 
     # standard button semantics
 
@@ -143,7 +158,7 @@ class Dialog(Toplevel):
         if not self.validate():
             if self.error_message:
                 self.messageWindow('error', self.error_message)
-            self.initial_focus.focus_set() # put focus back
+            self.initial_focus.focus_set()  # put focus back
             return
 
         self.withdraw()
@@ -173,113 +188,18 @@ class Dialog(Toplevel):
     def messageWindow(self, title, prompt):
         MessageWindow(self.parent, title, prompt)
 
-# class Dialog(Toplevel):
-
-#     def __init__(self, parent, title=None, prompt=None, options=None, default=None):
-#         win = Toplevel()
-#         self.win = win
-#         if title:
-#             win.title(title)
-
-#         self.parent = parent
-
-#         self.prompt = prompt
-#         self.options = options
-#         self.default = default
-#         self.value = None
-#         self.error_message = None
-
-#         body = Frame(win)
-#         win.initial_focus = self.body(body)
-#         body.pack(padx=5, pady=5)
-
-#         self.buttonbox(win)
-#         win.focus_set()
-#         win.grab_set()
-
-#         if not win.initial_focus:
-#             win.initial_focus = win
-
-#         win.protocol("WM_DELETE_WINDOW", self.cancel)
-
-#         win.geometry("+%d+%d" % (parent.winfo_rootx() + 50,
-#                                   parent.winfo_rooty() + 50))
-
-#         win.initial_focus.focus_set()
-
-#         win.transient(parent)
-#         win.wait_window(win)
-
-#     # construction hooks
-
-#     def body(self, master):
-#         # create dialog body.  return widget that should have
-#         # initial focus.  this method should be overridden
-#         pass
-
-#     def buttonbox(self, master):
-#         # add standard button box. override if you don't want the
-#         # standard buttons
-#         box = Frame(master)
-
-#         w = Button(box, text="OK", width=10, command=self.ok, default=ACTIVE)
-#         w.pack(side=LEFT, padx=5, pady=5)
-#         w = Button(box, text="Cancel", width=10, command=self.cancel)
-#         w.pack(side=LEFT, padx=5, pady=5)
-
-#         master.bind("<Return>", self.ok)
-#         master.bind("<Escape>", self.cancel)
-
-#         box.pack()
-
-#     # standard button semantics
-
-#     def ok(self, event=None):
-#         if not self.validate():
-#             if self.error_message:
-#                 self.messageWindow('error', self.error_message)
-
-#             self.initial_focus.focus_set()  # put focus back
-#             return
-
-#         self.win.withdraw()
-#         self.win.update_idletasks()
-
-#         self.apply()
-
-#         self.cancel()
-
-#     def cancel(self, event=None):
-#         # put focus back to the parent window
-#         self.value = None
-#         self.parent.focus_set()
-#         self.win.destroy()
-
-#     # command hooks
-
-#     def validate(self):
-#         # set self.value here
-
-#         return 1  # override
-
-#     def apply(self):
-
-#         pass  # override
-
-    # def messageWindow(self, title, prompt):
-    #     MessageWindow(self.parent, title, prompt)
-
 
 class DialogWindow(Dialog):
 
     # master will be a frame in Dialog
     def body(self, master):
-        Label(master, text=self.prompt, justify='left').pack(fill=tkinter.BOTH, expand=1, padx=10, pady=5)
         self.entry = Entry(master)
+        self.entry.pack(side="bottom", padx=5, pady=5)
+        Label(master, text=self.prompt, justify='left').pack(side="top", fill=tkinter.BOTH, expand=1, padx=10, pady=5)
         if self.default is not None:
             self.entry.insert(0, self.default)
             self.entry.select_range(0, END)
-        self.entry.pack(padx=5, pady=5)
+        # self.entry.pack(padx=5, pady=5)
         return(self.entry)
 
 
@@ -316,9 +236,7 @@ class OptionsDialog():
         print('set', self.value)
 
     def ok(self, event=None):
-
         self.parent.update_idletasks()
-
         self.cancel()
 
     def cancel(self, event=None):
@@ -338,18 +256,15 @@ class GetInteger(DialogWindow):
             if len(self.options) > 1:
                 maxvalue = self.options[1]
         res = self.entry.get()
-        print('checking', res)
         try:
             val = int(res)
             ok = (minvalue is None or val >= minvalue) and (maxvalue is None or val <= maxvalue)
-            print('ok', ok, val)
         except:
             val = None
             ok = False
 
         if ok:
             self.value = val
-            print('self.value', val)
             return True
         else:
             self.value = None
@@ -459,13 +374,14 @@ class App(Tk):
         # needed for os x to prevent dialog hanging
         self.bind_all(c, lambda event: self.after(after, self.expand2Depth))
 
+        # busy times
         l, c = self.platformShortcut('b')
-        viewmenu.add_command(label=_("Busy times"), underline=1, accelerator=l, command=self.donothing)
-        self.bind(c, self.donothing)  # b
+        viewmenu.add_command(label=_("Busy times"), underline=1, accelerator=l, command=self.showBusyTimes)
+        self.bind_all(c, lambda event: self.after(after, self.showBusyTimes))
 
         l, c = self.platformShortcut('y')
-        viewmenu.add_command(label=_("Yearly calendar"), underline=1, accelerator=l, command=self.donothing)
-        self.bind(c, self.donothing)  # y
+        viewmenu.add_command(label=_("Yearly calendar"), underline=1, accelerator=l, command=self.showCalendar)
+        self.bind_all(c, lambda event: self.after(after, self.showCalendar))
 
         # report
         l, c = self.platformShortcut('r')
@@ -523,7 +439,6 @@ class App(Tk):
                          # showhandle=True,
                          sashwidth=4, sashrelief='flat',
                          )
-        # pw.pack(fill="both", expand=1)
 
         self.tree = ttk.Treeview(pw, show='tree', columns=["#1"], selectmode='browse', padding=(3, 2, 3, 2))
         self.tree.column("#0", minwidth=200, width=300, stretch=1)
@@ -596,12 +511,12 @@ class App(Tk):
         self.editValue = StringVar(self)
         self.editLabel = _("edit")
         self.editValue.set(self.editLabel)
-        self.em_options = [[_('clone'), 'c'],
+        self.em_options = [[_('clone'), 'l'],
                            [_('delete'), 'd'],
                            [_('edit'), 'e'],
                            [_('finish'), 'f'],
                            ]
-        self.edit2cmd = {'c': self.cloneItem,
+        self.edit2cmd = {'l': self.cloneItem,
                          'd': self.deleteItem,
                          'e': self.editItem,
                          'f': self.finishItem}
@@ -639,7 +554,7 @@ class App(Tk):
 
         # ysb.grid(row=1, column=1, rowspan=2, sticky='ns')
 
-        self.l = Text(pw, wrap="word", bd=2, relief="sunken", padx=2, pady=2, font=tkFont.Font(family="Lucida Sans Typewriter"), height=6, width=50, state="disabled", takefocus=False)
+        self.l = ReadOnlyText(pw, wrap="word", bd=2, relief="sunken", padx=2, pady=2, font=tkFont.Font(family="Lucida Sans Typewriter"), height=6, width=50, takefocus=False)
 
         pw.add(self.l, padx=0, pady=0, stretch="never")
 
@@ -780,6 +695,189 @@ class App(Tk):
         self.mode = 'command'
         self.process_input(event=e, cmd=cmd)
 
+    def showBusyTimes(self, event=None, curr_day=None):
+        prompt = _("""\
+Busy times will be shown for the week containing the date you select.
+Return an empty string for the current week. Relative dates and fuzzy
+parsing are supported.""")
+        d = GetDateTime(parent=self, title=_('date'), prompt=prompt)
+        curr_day = d.value
+        if curr_day is None:
+            return()
+
+        if curr_day is None:
+            curr_day = self.today
+
+        yn, wn, dn = curr_day.isocalendar()
+        self.prev_week = curr_day - 7 * oneday
+        self.next_week = curr_day + 7 * oneday
+        self.curr_week = curr_day
+        if dn > 1:
+            days = dn - 1
+        else:
+            days = 0
+        self.week_beg = weekbeg = curr_day - days * oneday
+        weekend = curr_day + (6 - days) * oneday
+        weekdays = []
+
+        print('busytimes', curr_day)
+        # print(loop.busytimes)
+        # print('\nbusydays')
+        # print(loop.busydays)
+
+        day = weekbeg
+        busy_lst = []
+        occasion_lst = []
+        # matching = self.cal_regex is not None and self.default_regex is not None
+        while day <= weekend:
+            weekdays.append(fmt_weekday(day))
+            isokey = day.isocalendar()
+            # if isokey == iso_today:
+            #     self.today_col = col_num
+
+            if isokey in loop.occasions:
+                bt = []
+                for item in loop.occasions[isokey]:
+                    it = list(item)
+                    # if matching:
+                    #     if not self.cal_regex.match(item[-1]):
+                    #         continue
+                    #     mtch = (
+                    #         self.default_regex.match(it[-1]) is not None)
+                    # else:
+                    #     mtch = True
+                    # it.append(mtch)
+                    item = tuple(it)
+                    bt.append(item)
+                occasion_lst.append(bt)
+            else:
+                occasion_lst.append([])
+
+            if isokey in loop.busytimes:
+                bt = []
+                for item in loop.busytimes[isokey][1]:
+                    it = list(item)
+                    # if matching:
+                    #     if not self.cal_regex.match(item[-1]):
+                    #         continue
+                    #     mtch = (
+                    #         self.default_regex.match(it[-1]) is not None)
+                    # else:
+                    #     mtch = True
+                    # it.append(mtch)
+                    item = tuple(it)
+                    bt.append(item)
+                busy_lst.append(bt)
+            else:
+                busy_lst.append([])
+            day = day + oneday
+
+        ybeg = weekbeg.year
+        yend = weekend.year
+        mbeg = weekbeg.month
+        mend = weekend.month
+        if mbeg == mend:
+            header = "{0} - {1}".format(
+                fmt_dt(weekbeg, '%b %d'), fmt_dt(weekend, '%d, %Y'))
+        elif ybeg == yend:
+            header = "{0} - {1}".format(
+                fmt_dt(weekbeg, '%b %d'), fmt_dt(weekend, '%b %d, %Y'))
+        else:
+            header = "{0} - {1}".format(
+                fmt_dt(weekbeg, '%b %d, %Y'), fmt_dt(weekend, '%b %d, %Y'))
+        header = leadingzero.sub('', header)
+
+        lines = [_("Scheduled times for week {0}: {1}").format(wn, header)]
+        ampm = loop.options['ampm']
+        s1 = s2 = ''
+        for i in range(7):
+            times = []
+            for tup in busy_lst[i]:
+                t1 = max(7 * 60, tup[0])
+                t2 = min(23 * 60, max(420, tup[1]))
+                if t1 != t2:
+                    t1h, t1m = (t1 // 60, t1 % 60)
+                    t2h, t2m = (t2 // 60, t2 % 60)
+                    if ampm:
+                        if t1h == 12:
+                            s1 = 'pm'
+                        elif t1h > 12:
+                            t1h -= 12
+                            s1 = 'pm'
+                        else:
+                            s1 = 'am'
+                        if t2h == 12:
+                            s2 = 'pm'
+                        elif t2h > 12:
+                            t2h -= 12
+                            s2 = 'pm'
+                        else:
+                            s2 = 'am'
+
+                    T1 = "%d:%02d%s" % (t1h, t1m, s1)
+                    T2 = "%d:%02d%s" % (t2h, t2m, s2)
+
+                    times.append("%s-%s" % (T1, T2))
+            if times:
+                lines.append("   %s: %s" % (weekdays[i], "; ".join(times)))
+        s = "\n".join(lines)
+        self.messageWindow(title=_('busy times'), prompt=s)
+        # print(s)
+
+    def showCalendar(self, e=None):
+        cal_year = 0
+        options = loop.options
+        cal_pastcolor = '#FFCCCC'
+        cal_currentcolor = '#FFFFCC'
+        cal_futurecolor = '#99CCFF'
+
+        def showYear(x=0):
+            global cal_year
+            if x:
+                cal_year = cal_year + x
+            else:
+                cal_year = 0
+            cal = "\n".join(calyear(cal_year, options=options))
+            if cal_year > 0:
+                col = cal_futurecolor
+            elif cal_year < 0:
+                col = cal_pastcolor
+            else:
+                col = cal_currentcolor
+            t.configure(bg=col)
+            t.delete("0.0", END)
+            t.insert("0.0", cal)
+
+        win = Toplevel()
+        win.title(_("Calendar"))
+        f = Frame(win)
+        # pack the button first so that it doesn't disappear with resizing
+        b = Button(win, text=_('OK'), width=10, command=win.destroy, default='active')
+        b.pack(side='bottom', fill=tkinter.NONE, expand=0, pady=0)
+        win.bind('<Return>', (lambda e, b=b: b.invoke()))
+        win.bind('<Escape>', (lambda e, b=b: b.invoke()))
+
+        t = ReadOnlyText(f, wrap="word", padx=2, pady=2, bd=2, relief="sunken", font=tkFont.Font(family="Lucida Sans Typewriter"),
+            # height=14,
+            # width=52,
+            takefocus=False)
+        win.bind('<Left>', (lambda e: showYear(-1)))
+        win.bind('<Right>', (lambda e: showYear(1)))
+        win.bind('<space>', (lambda e: showYear()))
+        showYear()
+        t.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0, pady=0)
+        ysb = ttk.Scrollbar(f, orient='vertical', command=t.yview, width=8)
+        ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
+        # t.configure(state="disabled", yscroll=ysb.set)
+        t.configure(yscroll=ysb.set)
+        f.pack(padx=2, pady=2, fill=tkinter.BOTH, expand=1)
+        win.focus_set()
+        win.grab_set()
+        win.transient(self)
+        win.wait_window(win)
+
+
+
     def newCommand(self, e=None):
         newcommand = self.newValue.get()
         self.newValue.set(self.newLabel)
@@ -817,7 +915,7 @@ class App(Tk):
         item = self.tree.selection()[0]
         type_chr = self.tree.item(item)['text'][0]
         uuid, dt, hsh = self.getInstance(item)
-        self.l.configure(state="normal")
+        # self.l.configure(state="normal")
         self.l.delete("0.0", END)
         if uuid is not None:
             isRepeating = ('r' in hsh and dt)
@@ -854,7 +952,7 @@ class App(Tk):
             # self.em.configure(state="disabled")
             # self.nm["menu"].entryconfig(2, state='disabled')
         self.l.insert(INSERT, text)
-        self.l.configure(state="disabled")
+        # self.l.configure(state="disabled")
 
     def OnActivate(self, event):
         """
@@ -1090,9 +1188,15 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
         win = Toplevel()
         win.title(title)
         # win.minsize(444, 430)
-        win.minsize(450, 450)
+        # win.minsize(450, 450)
         f = Frame(win)
-        t = Text(f, wrap="word", padx=2, pady=2, bd=2, relief="sunken", font=tkFont.Font(family="Lucida Sans Typewriter"),
+        # pack the button first so that it doesn't disappear with resizing
+        b = Button(win, text=_('OK'), width=10, command=win.destroy, default='active')
+        b.pack(side='bottom', fill=tkinter.NONE, expand=0, pady=0)
+        win.bind('<Return>', (lambda e, b=b: b.invoke()))
+        win.bind('<Escape>', (lambda e, b=b: b.invoke()))
+
+        t = ReadOnlyText(f, wrap="word", padx=2, pady=2, bd=2, relief="sunken", font=tkFont.Font(family="Lucida Sans Typewriter"),
             height=14,
             width=52,
             takefocus=False)
@@ -1100,13 +1204,10 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
         t.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0, pady=0)
         ysb = ttk.Scrollbar(f, orient='vertical', command=t.yview, width=8)
         ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
-        t.configure(state="disabled", yscroll=ysb.set)
+        # t.configure(state="disabled", yscroll=ysb.set)
+        t.configure(yscroll=ysb.set)
         f.pack(padx=2, pady=2, fill=tkinter.BOTH, expand=1)
 
-        b = Button(win, text=_('OK'), width=10, command=win.destroy, default='active')
-        b.pack(side='bottom', fill=tkinter.NONE, expand=0, pady=0)
-        win.bind('<Return>', (lambda e, b=b: b.invoke()))
-        win.bind('<Escape>', (lambda e, b=b: b.invoke()))
         win.focus_set()
         win.grab_set()
         win.transient(self)
@@ -1126,9 +1227,6 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
         print('got integer result', value)
 
     def goToDate(self, event=None):
-        if event is not None:
-            print('goToDate got here')
-        event=None
         prompt = _("""\
 Return an empty string for the current date or a date to be parsed.
 Relative dates and fuzzy parsing are supported.""")
@@ -1137,7 +1235,6 @@ Relative dates and fuzzy parsing are supported.""")
             self.showView()
         d = GetDateTime(parent=self, title=_('date'), prompt=prompt)
         value = d.value
-        print('goToDate', value)
         if value is not None:
             self.scrollToDate(value.date())
         return("break")
@@ -1225,9 +1322,6 @@ Relative dates and fuzzy parsing are supported.""")
             return(0)
 
     def expand2Depth(self, event=None):
-        if event is not None:
-            print('expand2Depth got here')
-        event=None
         prompt = _("""\
 Enter an integer depth to expand branches
 or 0 to expand all branches completely.""")
@@ -1235,7 +1329,6 @@ or 0 to expand all branches completely.""")
         depth = GetInteger(
             parent=self,
             title=_("depth"), prompt=prompt, options=[0], default=0).value
-        print('depth', depth)
         if depth is None:
             return()
         if depth == 0:
@@ -1277,9 +1370,9 @@ or 0 to expand all branches completely.""")
         self.count2id = {}
         self.addItems(u'', tree[self.root], tree)
         loop.count2id = self.count2id
-        self.l.configure(state="normal")
+        # self.l.configure(state="normal")
         self.l.delete("0.0", END)
-        self.l.configure(state="disabled")
+        # self.l.configure(state="disabled")
         if event is None:
             # view selected from menu
             self.goHome()

@@ -4690,7 +4690,7 @@ class ETMCmd():
         if messages:
             for msg in messages:
                 term_print(msg)
-        self.rows, busytimes, busydays, self.alerts, self.dates, occasions = getViewData(
+        self.rows, self.busytimes, self.busydays, self.alerts, self.dates, self.occasions = getViewData(
             bef, file2uuids, uuid2hash, options=self.options)
         # print(self.dates)
         # self.prevnext = getPrevNext(self.dates)
