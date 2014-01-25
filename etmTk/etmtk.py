@@ -305,11 +305,11 @@ class GetDateTime(DialogWindow):
 
 
 class App(Tk):
+
     def __init__(self, path=None):
         Tk.__init__(self)
-        # print(tkFont.names())
         # minsize: width, height
-        self.minsize(450, 450)
+        self.minsize(430, 450)
 
         menubar = Menu(self)
 
@@ -443,11 +443,11 @@ class App(Tk):
                          )
 
         self.tree = ttk.Treeview(pw, show='tree', columns=["#1"], selectmode='browse', padding=(3, 2, 3, 2))
-        self.tree.column("#0", minwidth=200, width=300, stretch=1)
-        self.tree.column("#1", minwidth=80, width=140, stretch=0, anchor="center")
-        self.tree.bind("<<TreeviewSelect>>", self.OnSelect)
-        self.tree.bind("<Double-1>", self.OnDoubleClick)
-        self.tree.bind("<Return>", self.OnActivate)
+        self.tree.column('#0', minwidth=200, width=260, stretch=1)
+        self.tree.column('#1', minwidth=80, width=140, stretch=0, anchor='center')
+        self.tree.bind('<<TreeviewSelect>>', self.OnSelect)
+        self.tree.bind('<Double-1>', self.OnDoubleClick)
+        self.tree.bind('<Return>', self.OnActivate)
         self.tree.bind('<Escape>', self.cleartext)
         self.tree.bind('<space>', self.goHome)
         # self.tree.bind('<j>', self.jumpToDate)
@@ -533,21 +533,23 @@ class App(Tk):
             self.bind(c, self.edit2cmd[k])  # c, d, e, f
         self.em.pack(side="left")
 
+        self.pendingAlerts = StringVar(self)
+        self.pendingAlerts.set("")
+        self.pending = Button(ef, textvariable=self.pendingAlerts, command=self.showAlerts)
+        self.pending.pack(side="right")
+        self.showPending = True
+
         self.filterValue = StringVar(self)
         self.filterValue.set('')
         self.filterValue.trace_variable("w", self.showView)
-        self.e = Entry(ef, textvariable=self.filterValue, bd=2)
+        self.e = Entry(ef, width=8, textvariable=self.filterValue, bd=2)
         self.e.bind('<Return>', self.showView)
         self.e.bind('<Escape>', self.cleartext)
         self.e.bind('<Up>', self.prev_history)
         self.e.bind('<Down>', self.next_history)
         self.e.pack(side="left", fill=tkinter.BOTH, expand=1, padx=2)
 
-        self.pendingAlerts = StringVar(self)
-        self.pendingAlerts.set("")
-        self.pending = Button(ef, textvariable=self.pendingAlerts, command=self.showAlerts)
-        self.pending.pack(side="right")
-        self.showPending = True
+
 
         # self.b = Button(ef, text=_('?'), command=self.help, takefocus=False)
         # self.b.pack(side="right", expand=0)
@@ -556,7 +558,7 @@ class App(Tk):
 
         # ysb.grid(row=1, column=1, rowspan=2, sticky='ns')
 
-        self.l = ReadOnlyText(pw, wrap="word", bd=2, relief="sunken", padx=2, pady=2, font=tkFont.Font(family="Lucida Sans Typewriter"), height=6, width=50, takefocus=False)
+        self.l = ReadOnlyText(pw, wrap="word", bd=2, relief="sunken", padx=2, pady=2, font=tkFont.Font(family="Lucida Sans Typewriter"), height=6, width=46, takefocus=False)
 
         pw.add(self.l, padx=0, pady=0, stretch="never")
 
@@ -577,10 +579,6 @@ class App(Tk):
         self.currentTime = StringVar(self)
         currenttime = Label(self.sf, textvariable=self.currentTime, bd=1, relief="flat", anchor="e", padx=4, pady=0)
         currenttime.pack(side="right")
-
-        # self.pending = Button(self.sf, textvariable=self.pendingAlerts, command=self.showAlerts)
-        # self.pending.pack(side="right", padx=0)
-        # self.showPending = True
 
         self.sf.grid(row=2, column=0, sticky="ew", padx=8, pady=4)
 
@@ -834,7 +832,7 @@ parsing are supported.""")
         def showYear(x=0):
             global cal_year
             if x:
-                cal_year = cal_year + x
+                cal_year += x
             else:
                 cal_year = 0
             cal = "\n".join(calyear(cal_year, options=options))
@@ -875,8 +873,6 @@ parsing are supported.""")
         win.grab_set()
         win.transient(self)
         win.wait_window(win)
-
-
 
     def newCommand(self, e=None):
         newcommand = self.newValue.get()
@@ -1319,16 +1315,16 @@ Relative dates and fuzzy parsing are supported.""")
 
         elif self.mode == 'edit':
             print('edit', cmd)
-            res = loop._do_edit(cmd)
+            res = loop.cmd_do_edit(cmd)
 
         elif self.mode == 'delete':
             print('deleted', cmd)
-            loop._do_delete(cmd)
+            loop.cmd_do_delete(cmd)
             res = ''
 
         elif self.mode == 'finish':
             print('finish', cmd)
-            loop._do_finish(cmd)
+            loop.cmd_do_finish(cmd)
             res = ''
 
         elif self.mode == 'new_date':
@@ -1459,7 +1455,7 @@ if __name__ == "__main__":
     # For production:
     etmdir = ''
     # For testing override etmdir:
-    etmdir = '/Users/dag/etm-tk/etm-sample'
+    # etmdir = '/Users/dag/etm-tk/etm-sample'
     init_localization()
     (user_options, options, use_locale) = data.get_options(etmdir)
     loop = data.ETMCmd(options)
