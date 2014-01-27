@@ -74,7 +74,7 @@ def init_localization():
             logging.error("Could not load {0}. Using default messages.".format(filename))
             trans = gettext.NullTranslations()
     else:
-        logging.info("Could not find {0}. Using default messages.".format(filename))
+        logging.warn("Could not find {0}. Using default messages.".format(filename))
         trans = gettext.NullTranslations()
     trans.install()
 
@@ -1155,57 +1155,57 @@ ical_freq_hsh = {
 }
 
 amp_hsh = {
-    'r': 'f', # the starting value for an @r entry is frequency
-    'a': 't'       # the starting value for an @a enotry is *triggers*
+    'r': 'f',    # the starting value for an @r entry is frequency
+    'a': 't'     # the starting value for an @a enotry is *triggers*
 }
 
 item_keys = [
-    's', # start datetime
-    'e', # extent time spent
-    'x', # expense money spent
-    'z', # time zone
-    'a', # alert
-    'b', # begin
-    'c', # context
-    'f', # finish date
-    'g', # goto
-    'k', # keyword
-    'm', # memo
-    'u', # user
-    'j', # job
-    'p', # priority
-    'r', # repetition rule
-    '+', # include
-    '-', # exclude
-    'o', # overdue
-    't', # tags
-    'l', # location
-    'd', # description
-    'i', # id',
+    's',  # start datetime
+    'e',  # extent time spent
+    'x',  # expense money spent
+    'z',  # time zone
+    'a',  # alert
+    'b',  # begin
+    'c',  # context
+    'f',  # finish date
+    'g',  # goto
+    'k',  # keyword
+    'm',  # memo
+    'u',  # user
+    'j',  # job
+    'p',  # priority
+    'r',  # repetition rule
+    '+',  # include
+    '-',  # exclude
+    'o',  # overdue
+    't',  # tags
+    'l',  # location
+    'd',  # description
+    'i',  # id',
 ]
 
 amp_keys = {
     'r': [
-        u'f', # r frequency
-        u'i', # r interval
-        u'm', # r monthday
-        u'M', # r month
-        u'w', # r weekday
-        u'W', # r week
-        u'h', # r hour
-        u'n', # r minute
-        u't', # r total (dateutil COUNT) (c is context in j)
-        u'u', # r until
-        u's'], # r set position
+        u'f',   # r frequency
+        u'i',   # r interval
+        u'm',   # r monthday
+        u'M',   # r month
+        u'w',   # r weekday
+        u'W',   # r week
+        u'h',   # r hour
+        u'n',   # r minute
+        u't',   # r total (dateutil COUNT) (c is context in j)
+        u'u',   # r until
+        u's'],  # r set position
     'j': [
-        u'j', # j job summary
-        u'b', # j beginby
-        u'c', # j context
-        u'd', # j description
-        u'e', # e extent
-        u'f', # j finish
-        u'p', # j priority
-        u'q'], # j queue position
+        u'j',   # j job summary
+        u'b',   # j beginby
+        u'c',   # j context
+        u'd',   # j description
+        u'e',   # e extent
+        u'f',   # j finish
+        u'p',   # j priority
+        u'q'],  # j queue position
 }
 
 
@@ -3134,7 +3134,9 @@ def str2hsh(s, id=None, options={}):
         if 'f' in hsh:
             # this will be a list of done:due pairs
             # 20120201T1325;20120202T1400, ...
-            pairs = [x.strip() for x in hsh['f'].split(',')]
+            # logger.debug('hsh["f"]: {0}'.format(hsh['f']))
+            pairs = [x.strip() for x in hsh['f'].split(',') if x.strip()]
+            # logger.debug('pairs: {0}'.format(pairs))
             hsh['f'] = []
             for pair in pairs:
                 pair = pair.split(';')
@@ -3147,6 +3149,7 @@ def str2hsh(s, id=None, options={}):
                             pair[1], hsh['z'])).replace(tzinfo=None)
                 else:
                     due = done
+                # logger.debug("appending {0} to {1}".format(done, hsh['entry']))
                 hsh['f'].append((done, due))
         if 'j' in hsh:
             for i in range(len(hsh['j'])):
@@ -3693,6 +3696,7 @@ def getViewData(bef, file2uuids={}, uuid2hash={}, options={}, calendars=[]):
                             (u, typ, setSummary(hsh, done), '', done.strftime(rfmt))]
                         add2list(rows, item)
                         # add each relevant done date to index
+                        # logger.debug("appending {0} to {1}, {2}".format(done, hsh['entry'], hsh['f']))
                         add2Dates(datetimes, (done, f))
                 if next:
                     # add a next entry to folder view

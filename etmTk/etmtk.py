@@ -189,7 +189,6 @@ class Dialog(Toplevel):
     # standard button semantics
 
     def ok(self, event=None):
-        logger.debug("ok")
         if not self.validate():
             if self.error_message:
                 self.messageWindow('error', self.error_message)
@@ -735,6 +734,7 @@ Return an empty string for the current week. Relative dates and fuzzy
 parsing are supported.""")
         d = GetDateTime(parent=self, title=_('date'), prompt=prompt)
         curr_day = d.value
+        logger.debug('curr_day: {0}'.format(curr_day))
         if curr_day is None:
             return()
 
@@ -752,11 +752,6 @@ parsing are supported.""")
         self.week_beg = weekbeg = curr_day - days * oneday
         weekend = curr_day + (6 - days) * oneday
         weekdays = []
-
-        print('busytimes', curr_day)
-        # print(loop.busytimes)
-        # print('\nbusydays')
-        # print(loop.busydays)
 
         day = weekbeg
         busy_lst = []
@@ -1065,8 +1060,7 @@ or 0 to display all changes.""")
             loop.load_data()
             self.showView()
         self.updateAlerts()
-        logger.debug(self.now)
-        # self.bell()
+        logger.debug("next update in {0} milliseconds".format(nxt))
 
     def updateAlerts(self):
         # print('updateAlerts', len(loop.alerts), self.showPending)
@@ -1293,6 +1287,7 @@ Relative dates and fuzzy parsing are supported.""")
             self.showView()
         d = GetDateTime(parent=self, title=_('date'), prompt=prompt)
         value = d.value
+        logger.debug('value: {0}'.format(value))
         if value is not None:
             self.scrollToDate(value.date())
         return("break")
@@ -1499,7 +1494,7 @@ if __name__ == "__main__":
     logger.info('logging enabled')
     etmdir = ''
     # For testing override etmdir:
-    etmdir = '/Users/dag/etm-tk/etm-sample'
+    # etmdir = '/Users/dag/etm-tk/etm-sample'
     init_localization()
     (user_options, options, use_locale) = data.get_options(etmdir)
     loop = data.ETMCmd(options)

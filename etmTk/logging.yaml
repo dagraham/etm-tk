@@ -3,7 +3,7 @@ version: 1
 disable_existing_loggers: False
 formatters:
     simple:
-        format: "%(asctime)s - %(module)s - %(levelname)s - %(funcName)s\n\t%(message)s"
+        format: "\n%(asctime)s - %(levelname)s - %(module)s.%(funcName)s\n\t%(message)s"
 
 handlers:
     console:
