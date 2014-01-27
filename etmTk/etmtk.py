@@ -9,6 +9,41 @@ import re
 from copy import deepcopy
 import subprocess
 
+import yaml
+import logging
+import logging.config
+logger = logging.getLogger()
+
+
+# def myName():
+#     return sys._getframe(1).f_code.co_name
+
+
+# def callerName():
+#     return sys._getframe(2).f_code.co_name
+
+
+def setup_logging(
+    default_path='logging.yaml',
+    default_level=logging.INFO,
+    env_key='LOG_CFG'
+):
+    """
+    Setup logging configuration. Override root:level in
+    logging.yaml with default_level.
+    """
+    path = default_path
+    value = os.getenv(env_key, None)
+    if value:
+        path = value
+    if os.path.exists(path):
+        with open(path, 'rt') as f:
+            config = yaml.load(f.read())
+        config['root']['level'] = default_level
+        logging.config.dictConfig(config)
+    else:
+        logging.basicConfig(level=default_level)
+
 import platform
 if platform.python_version() >= '3':
     import tkinter
@@ -28,12 +63,12 @@ else:
 
 tkversion = tkinter.TkVersion
 
-import etmTk.data as data
-from etmTk.data import init_localization
+import data
+from data import init_localization
 
 from dateutil.parser import parse
 
-from etmTk.data import (
+from data import (
     fmt_weekday, fmt_dt, fmt_time, get_options, get_data,
     get_reps, getDoneAndTwo, getFiles, getPrevNext, getReportData,
     getViewData, group_regex, hsh2str, leadingzero, mail_report,
@@ -154,7 +189,7 @@ class Dialog(Toplevel):
     # standard button semantics
 
     def ok(self, event=None):
-
+        logger.debug("ok")
         if not self.validate():
             if self.error_message:
                 self.messageWindow('error', self.error_message)
@@ -205,7 +240,7 @@ class DialogWindow(Dialog):
 
 class OptionsDialog():
     def __init__(self, parent, title="", prompt="", options=[]):
-        print('OptionsDialog', parent, options)
+        logger.debug('OptionsDialog: {0}, {1}'.format(parent, options))
         self.win = Toplevel(parent)
         self.parent = parent
         self.options = options
@@ -214,7 +249,7 @@ class OptionsDialog():
         Label(self.win, text=prompt, justify='left').pack(fill=tkinter.BOTH, expand=1, padx=10, pady=5)
         self.sv = StringVar(parent)
         self.sv.set(options[0])
-        print('sv', self.sv.get())
+        logger.debug('sv: {0}'.format(self.sv.get()))
         self.choice = OptionMenu(self.win, self.sv, *options, command=self.setValue)
         self.choice.pack(padx=5, pady=5)
         box = Frame(self.win)
@@ -233,7 +268,7 @@ class OptionsDialog():
 
     def setValue(self, e=None):
         self.value = self.sv.get()
-        print('set', self.value)
+        logger.debug('set: {0}'.format(self.value))
 
     def ok(self, event=None):
         self.parent.update_idletasks()
@@ -297,7 +332,6 @@ class GetDateTime(DialogWindow):
                 val = None
         if ok:
             self.value = val
-            print('self.value', self.value)
             return True
         else:
             self.error_message = _('could not parse "{0}"').format(res)
@@ -559,6 +593,8 @@ class App(Tk):
         # ysb.grid(row=1, column=1, rowspan=2, sticky='ns')
 
         self.l = ReadOnlyText(pw, wrap="word", bd=2, relief="sunken", padx=2, pady=2, font=tkFont.Font(family="Lucida Sans Typewriter"), height=6, width=46, takefocus=False)
+        self.l.bind('<Escape>', self.cleartext)
+        self.l.bind('<space>', self.goHome)
 
         pw.add(self.l, padx=0, pady=0, stretch="never")
 
@@ -661,7 +697,6 @@ class App(Tk):
         else:
             s = _("none")
         self.messageWindow(t, s)
-
 
     def agendaView(self, e=None):
         self.setView(self.vm_options[0][0])
@@ -1030,7 +1065,7 @@ or 0 to display all changes.""")
             loop.load_data()
             self.showView()
         self.updateAlerts()
-        print(self.now)
+        logger.debug(self.now)
         # self.bell()
 
     def updateAlerts(self):
@@ -1270,8 +1305,9 @@ Relative dates and fuzzy parsing are supported.""")
             return('')
 
     def cleartext(self, event=None):
-        self.e.delete(0, END)
-        self.showView()
+        if self.e.get():
+            self.e.delete(0, END)
+            self.showView()
         return('break')
 
     def process_input(self, event=None, cmd=None):
@@ -1384,7 +1420,6 @@ or 0 to expand all branches completely.""")
         self.tree.focus(id)
         self.tree.selection_set(id)
         self.tree.yview(int(id) - 1)
-        # self.tree.see(id)
 
     def showTree(self, tree, event=None):
         self.date2id = {}
@@ -1447,15 +1482,24 @@ or 0 to expand all branches completely.""")
                 # print(self.count, oid, depth, col1, depth<=max_depth)
                 self.count2id[oid] = "{0}::{1}".format(uuid, dt)
                 if dt:
-                    d = parse(dt[:10]).date()
-                    if d not in self.date2id:
-                        self.date2id[d] = parent
+                    # print('trying to parse', dt)
+                    try:
+                        d = parse(dt[:10]).date()
+                        if d not in self.date2id:
+                            self.date2id[d] = parent
+                    except:
+                        print('could not parse', dt)
+                        print(text)
+
+
 
 if __name__ == "__main__":
     # For production:
+    setup_logging(default_level=logging.DEBUG)
+    logger.info('logging enabled')
     etmdir = ''
     # For testing override etmdir:
-    # etmdir = '/Users/dag/etm-tk/etm-sample'
+    etmdir = '/Users/dag/etm-tk/etm-sample'
     init_localization()
     (user_options, options, use_locale) = data.get_options(etmdir)
     loop = data.ETMCmd(options)

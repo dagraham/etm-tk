@@ -9,7 +9,11 @@ from copy import deepcopy
 from textwrap import wrap
 import platform
 import gettext
+
 import logging
+import logging.config
+logger = logging.getLogger()
+
 import subprocess
 
 if platform.python_version() >= '3':
@@ -62,15 +66,16 @@ def init_localization():
     # take first two characters of country code
     loc = locale.getlocale()
     filename = "language/messages_%s.mo" % locale.getlocale()[0][0:2]
-    print('localization', filename)
-
-    try:
-        logging.debug("Opening message file %s for locale %s", filename, loc[0])
-        trans = gettext.GNUTranslations(open(filename, "rb"))
-    except IOError:
-        logging.debug("Locale not found. Using default messages")
+    if os.path.isfile(filename):
+        try:
+            logging.debug("Opening message file %s for locale %s", filename, loc[0])
+            trans = gettext.GNUTranslations(open(filename, "rb"))
+        except IOError:
+            logging.error("Could not load {0}. Using default messages.".format(filename))
+            trans = gettext.NullTranslations()
+    else:
+        logging.info("Could not find {0}. Using default messages.".format(filename))
         trans = gettext.NullTranslations()
-
     trans.install()
 
 
@@ -89,8 +94,7 @@ def dt_to_str(dt, s):
         s = s.replace(key, val)
     return s2or3(dt.strftime(s))
 
-
-from etmTk.v import version
+from v import version
 
 last_version = version
 
@@ -115,7 +119,7 @@ try:
     from icalendar.prop import vDate, vDatetime
     has_icalendar = True
     import pytz
-except :
+except:
     has_icalendar = False
 
 from datetime import datetime, timedelta, time
@@ -611,7 +615,6 @@ def get_options(d=''):
     # global use_locale
     """
 
-
     :param etmdir:
     :type etmdir: string
     """
@@ -632,20 +635,19 @@ def get_options(d=''):
     etmdir = ''
     if d and os.path.isfile(os.path.join(d, "etm.cfg")):
         config = os.path.join(d, "etm.cfg")
-        datafile = os.path.join(d, ".etmdata.pkl")
+        datafile = os.path.join(d, ".etmtkdata.pkl")
         default_datadir = os.path.join(d, 'data')
         etmdir = d
     else:
         homedir = os.path.expanduser("~")
         etmdir = os.path.join(homedir, ".etm")
         config = os.path.join(etmdir, "etm.cfg")
-        datafile = os.path.join(etmdir, ".etmdata.pkl")
+        datafile = os.path.join(etmdir, ".etmtkdata.pkl")
         default_datadir = os.path.join(etmdir, 'data')
 
     locale_cfg = os.path.join(etmdir, 'locale.cfg')
-    print('looking for', locale_cfg)
     if os.path.isfile(locale_cfg):
-        print('using', locale_cfg)
+        logger.info('Using locale file: {0}'.format(locale_cfg))
         fo = codecs.open(locale_cfg, 'r', dfile_encoding)
         use_locale = yaml.load(fo)
         fo.close()
@@ -3688,7 +3690,7 @@ def getViewData(bef, file2uuids={}, uuid2hash={}, options={}, calendars=[]):
                             ('day', done.strftime(sortdatefmt),
                              tstr2SCI[typ][0], hsh['_p'], '', f),
                             (fmt_date(done),),
-                            (u, typ, setSummary(hsh, done), '', fmt_date(done))]
+                            (u, typ, setSummary(hsh, done), '', done.strftime(rfmt))]
                         add2list(rows, item)
                         # add each relevant done date to index
                         add2Dates(datetimes, (done, f))
