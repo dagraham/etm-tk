@@ -1,43 +1,27 @@
 from Tkinter import *
-from tkSimpleDialog import askstring
+# from tkSimpleDialog import askstring
 from tkFileDialog import asksaveasfilename
 import tkFont
-# if platform.python_version() >= '3':
-#     import tkinter
-#     from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar
-#     from tkinter import messagebox as tkMessageBox
-#     from tkinter import ttk
-#     from tkinter import font as tkFont
-#     from tkinter import simpledialog as tkSimpleDialog
-#     # import tkFont
-# else:
-#     import Tkinter as tkinter
-#     from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar
-#     import tkMessageBox
-#     import ttk
-#     import tkFont
-#     import tkSimpleDialog
-
 
 from tkMessageBox import askokcancel
+
 
 class ScrolledText(Frame):
 
     def __init__(self, parent=None, text='', file=None):
-        Frame.__init__(self, parent)
-        self.pack(expand=YES, fill=BOTH)
+        Frame.__init__(self, parent, bd=2, relief=RIDGE)
+        self.pack(expand=YES, padx=0, pady=0, fill=BOTH)
         self.makewidgets()
+        self.text = None
         self.text_value = StringVar(self)
         self.settext(text, file)
+        self.text.focus()
 
     def makewidgets(self):
         # sbar = Scrollbar(self)
-        text = Text(self, relief=SUNKEN, font=tkFont.Font(family="Lucida Sans Typewriter"), undo=True)
+        text = Text(self, bd=0, padx=3, pady=2, font=tkFont.Font(family="Lucida Sans Typewriter"), undo=True)
 
-        # sbar.config(command=text.yview)
-        # text.config(yscrollcommand=sbar.set)
-        # sbar.pack(side=RIGHT, fill=Y)
-        text.pack(side=LEFT, expand=YES, fill=BOTH)
+        text.pack(side=LEFT, padx=0, pady=0, expand=YES, fill=BOTH)
         self.text = text
 
     def settext(self, text='', file=None):
@@ -49,27 +33,27 @@ class ScrolledText(Frame):
         self.text.focus()
 
     def gettext(self):
-        return self.text.get('1.0', END+'-1c')
+        return self.text.get('1.0', END + '-1c')
 
 
 class SimpleEditor(ScrolledText):
 
     def __init__(self, parent=None, file=None):
         frm = Frame(parent)
-        frm.pack(fill=X)
+        frm.pack(fill=X, pady=2)
         btnwdth = 5
-        Button(frm, text='Save', width=btnwdth, command=self.onSave).pack(side=LEFT)
-        Button(frm, text='Repeat', width=btnwdth, command=self.onCut).pack(side=LEFT)
-        Button(frm, text='Review', width=btnwdth, command=self.onPaste).pack(side=LEFT)
-        Button(frm, text='Find', width=btnwdth, command=self.onFind).pack(side=LEFT)
+        Button(frm, text='Save', width=btnwdth, command=self.onSave).pack(side=LEFT, padx=2)
+        Button(frm, text='Repeat', width=btnwdth, command=self.onCut).pack(side=LEFT, padx=2)
+        Button(frm, text='Review', width=btnwdth, command=self.onPaste).pack(side=LEFT, padx=2)
+        Button(frm, text='Find', width=btnwdth, command=self.onFind).pack(side=LEFT, padx=2)
         self.find_text = StringVar(frm)
         # self.find_text.set('Find?')
         # self.find_text.trace('w', self.onFind)
         e = Entry(frm, textvariable=self.find_text)
-        e.pack(side=LEFT, fill=X, expand=1)
+        e.pack(side=LEFT, fill=X, expand=1, padx=2)
         e.bind("<Return>", self.onFind)
         e.bind("<Escape>", self.clearFind)
-        Button(frm, text='Quit', width=btnwdth, command=self.quit).pack(side=LEFT)
+        Button(frm, text='Quit', width=btnwdth, command=self.quit).pack(side=LEFT, padx=2)
         self.st = ScrolledText.__init__(self, parent, file=file)
 
     def onSave(self):

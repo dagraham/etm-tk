@@ -43,6 +43,8 @@ def setup_logging(
         logging.config.dictConfig(config)
     else:
         logging.basicConfig(level=default_level)
+    logger.info('logging enabled')
+
 
 import platform
 if platform.python_version() >= '3':
@@ -75,7 +77,7 @@ from data import (
     oneday, oneminute, parse_datetime, parse_dtstr, fmt_datetime,
     process_lines, relpath, rrulefmt, s2or3, send_mail, send_text,
     sfmt, str2hsh, timedelta2Str, tstr2SCI, fmt_period,
-    updateCurrentFiles, get_changes, checkForNewerVersion, getAgenda,
+    get_changes, checkForNewerVersion, getAgenda,
     date_calculator, datetime2minutes, calyear, export_ical_item,
     import_ical, export_ical, has_icalendar, expand_template, ensureMonthly,
     sys_platform, id2Type, get_current_time, mac)
@@ -94,6 +96,7 @@ from idlelib.WidgetRedirector import WidgetRedirector
 
 class ReadOnlyText(Text):
 
+    # noinspection PyShadowingNames
     def __init__(self, *args, **kwargs):
         Text.__init__(self, *args, **kwargs)
         self.redirector = WidgetRedirector(self)
@@ -102,6 +105,7 @@ class ReadOnlyText(Text):
 
 
 class MessageWindow():
+    # noinspection PyShadowingNames
     def __init__(self, parent, title, prompt):
         self.win = Toplevel(parent)
         self.parent = parent
@@ -124,7 +128,7 @@ class MessageWindow():
 
 class Dialog(Toplevel):
 
-    def __init__(self, parent, title=None, prompt=None, options=None, default=None):
+    def __init__(self, parent, title=None, prompt=None, opts=None, default=None):
 
         Toplevel.__init__(self, parent)
         self.transient(parent)
@@ -134,7 +138,7 @@ class Dialog(Toplevel):
 
         self.parent = parent
         self.prompt = prompt
-        self.options = options
+        self.options = opts
         self.default = default
         self.value = None
 
@@ -226,6 +230,7 @@ class Dialog(Toplevel):
 class DialogWindow(Dialog):
 
     # master will be a frame in Dialog
+    # noinspection PyAttributeOutsideInit
     def body(self, master):
         self.entry = Entry(master)
         self.entry.pack(side="bottom", padx=5, pady=5)
@@ -234,22 +239,24 @@ class DialogWindow(Dialog):
             self.entry.insert(0, self.default)
             self.entry.select_range(0, END)
         # self.entry.pack(padx=5, pady=5)
-        return(self.entry)
+        return self.entry
 
 
 class OptionsDialog():
-    def __init__(self, parent, title="", prompt="", options=[]):
-        logger.debug('OptionsDialog: {0}, {1}'.format(parent, options))
+    # noinspection PyShadowingNames
+    def __init__(self, parent, title="", prompt="", opts=None):
+        if not opts: opts = []
+        logger.debug('OptionsDialog: {0}, {1}'.format(parent, opts))
         self.win = Toplevel(parent)
         self.parent = parent
-        self.options = options
-        self.value = options[0]
+        self.options = opts
+        self.value = opts[0]
         self.win.title(title)
         Label(self.win, text=prompt, justify='left').pack(fill=tkinter.BOTH, expand=1, padx=10, pady=5)
         self.sv = StringVar(parent)
-        self.sv.set(options[0])
+        self.sv.set(opts[0])
         logger.debug('sv: {0}'.format(self.sv.get()))
-        self.choice = OptionMenu(self.win, self.sv, *options, command=self.setValue)
+        self.choice = OptionMenu(self.win, self.sv, *opts, command=self.setValue)
         self.choice.pack(padx=5, pady=5)
         box = Frame(self.win)
         o = Button(box, text="OK", width=10, default='active', command=self.ok)
@@ -374,7 +381,7 @@ class App(Tk):
             self.calendarValues[i].trace_variable("w", self.updateCalendars)
             calendarmenu.add_checkbutton(label=self.calendars[i][0], onvalue=True, offvalue=False, variable=self.calendarValues[i])
 
-        filemenu.add_cascade(label=_("Set calendars"), menu=calendarmenu)
+        filemenu.add_cascade(label=_("Calendars"), menu=calendarmenu)
 
         ## export
         filemenu.add_command(label="Export ...", underline=1, command=self.donothing)
@@ -457,6 +464,10 @@ class App(Tk):
         self.mode = 'command'   # or edit or delete
         self.item_hsh = {}
         self.depth2id = {}
+        self.prev_week = None
+        self.next_week = None
+        self.curr_week = None
+        self.week_beg = None
 
         self.title("etm tk")
         if sys_platform == 'Linux':
@@ -582,18 +593,12 @@ class App(Tk):
         self.e.bind('<Down>', self.next_history)
         self.e.pack(side="left", fill=tkinter.BOTH, expand=1, padx=2)
 
-
-
-        # self.b = Button(ef, text=_('?'), command=self.help, takefocus=False)
-        # self.b.pack(side="right", expand=0)
-
         pw.add(self.tree, padx=3, pady=0, stretch="first")
-
-        # ysb.grid(row=1, column=1, rowspan=2, sticky='ns')
 
         self.l = ReadOnlyText(pw, wrap="word", bd=2, relief="sunken", padx=2, pady=2, font=tkFont.Font(family="Lucida Sans Typewriter"), height=6, width=46, takefocus=False)
         self.l.bind('<Escape>', self.cleartext)
         self.l.bind('<space>', self.goHome)
+        self.l.bind('<Tab>', self.focus_next_window)
 
         pw.add(self.l, padx=0, pady=0, stretch="never")
 
@@ -619,22 +624,24 @@ class App(Tk):
 
         self.grid()
 
-        self.e.select_range(0, END)
+        # self.e.select_range(0, END)
 
+        # start clock
         self.updateClock()
 
         # show default view
         self.showView()
 
-    def platformShortcut(self, s):
+    @staticmethod
+    def platformShortcut(s):
         """
         Produce label, command pairs from s based on Command for OSX
         and Control otherwise.
         """
         if mac:
-            return("Cmd-{0}".format(s), "<Command-{0}>".format(s))
+            return "Cmd-{0}".format(s), "<Command-{0}>".format(s)
         else:
-            return("Ctrl-{0}".format(s), "<Control-{0}>".format(s))
+            return "Ctrl-{0}".format(s), "<Control-{0}>".format(s)
 
     def updateCalendars(self, *args):
         for i in range(len(loop.calendars)):
@@ -656,7 +663,7 @@ class App(Tk):
         self.destroy()
 
     def donothing(self, e=None):
-        "For testing"
+        """For testing"""
         print('donothing')
 
     def newItem(self, e=None):
@@ -727,30 +734,30 @@ class App(Tk):
         self.mode = 'command'
         self.process_input(event=e, cmd=cmd)
 
-    def showBusyTimes(self, event=None, curr_day=None):
+    def showBusyTimes(self, event=None, chosen_day=None):
         prompt = _("""\
 Busy times will be shown for the week containing the date you select.
 Return an empty string for the current week. Relative dates and fuzzy
 parsing are supported.""")
         d = GetDateTime(parent=self, title=_('date'), prompt=prompt)
-        curr_day = d.value
-        logger.debug('curr_day: {0}'.format(curr_day))
-        if curr_day is None:
+        chosen_day = d.value
+        logger.debug('chosen_day: {0}'.format(chosen_day))
+        if chosen_day is None:
             return()
 
-        if curr_day is None:
-            curr_day = self.today
+        if chosen_day is None:
+            chosen_day = self.today
 
-        yn, wn, dn = curr_day.isocalendar()
-        self.prev_week = curr_day - 7 * oneday
-        self.next_week = curr_day + 7 * oneday
-        self.curr_week = curr_day
+        yn, wn, dn = chosen_day.isocalendar()
+        self.prev_week = chosen_day - 7 * oneday
+        self.next_week = chosen_day + 7 * oneday
+        self.curr_week = chosen_day
         if dn > 1:
             days = dn - 1
         else:
             days = 0
-        self.week_beg = weekbeg = curr_day - days * oneday
-        weekend = curr_day + (6 - days) * oneday
+        self.week_beg = weekbeg = chosen_day - days * oneday
+        weekend = chosen_day + (6 - days) * oneday
         weekdays = []
 
         day = weekbeg
@@ -852,9 +859,10 @@ parsing are supported.""")
         self.messageWindow(title=_('busy times'), prompt=s)
         # print(s)
 
+    # noinspection PyShadowingNames
     def showCalendar(self, e=None):
         cal_year = 0
-        options = loop.options
+        opts = loop.options
         cal_pastcolor = '#FFCCCC'
         cal_currentcolor = '#FFFFCC'
         cal_futurecolor = '#99CCFF'
@@ -865,7 +873,7 @@ parsing are supported.""")
                 cal_year += x
             else:
                 cal_year = 0
-            cal = "\n".join(calyear(cal_year, options=options))
+            cal = "\n".join(calyear(cal_year, options=opts))
             if cal_year > 0:
                 col = cal_futurecolor
             elif cal_year < 0:
@@ -934,7 +942,7 @@ or 0 to display all changes.""")
         depth = GetInteger(
             parent=self,
             title=_("Changes"),
-            prompt=prompt, options=[0], default=10).value
+            prompt=prompt, opts=[0], default=10).value
         if depth is None:
             return()
         if depth == 0:
@@ -946,9 +954,13 @@ or 0 to display all changes.""")
         command = loop.options['hg_history'].format(
             repo=loop.options['datadir'],
             file="", numchanges=numstr, rev="{rev}", desc="{desc}")
+        logger.info('history command: {0}'.format(command))
         p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True, universal_newlines=True).stdout.read()
         self.messageWindow(title=_("Changes"), prompt=str(p))
 
+    def focus_next_window(self, event):
+        event.widget.tk_focusNext().focus()
+        return "break"
 
     def goHome(self, event=None):
         if self.view == self.vm_options[1][0]:
@@ -959,7 +971,7 @@ or 0 to display all changes.""")
             self.tree.focus(1)
             self.tree.selection_set(1)
             self.tree.yview(0)
-        return('break')
+        return 'break'
 
     def OnSelect(self, event=None):
         """
@@ -1018,7 +1030,7 @@ or 0 to display all changes.""")
             print(hsh)
         else:
             print("you pressed <Return> on", item)
-        return("break")
+        return "break"
 
     def OnDoubleClick(self, event):
         """
@@ -1030,15 +1042,15 @@ or 0 to display all changes.""")
             print("you double clicked on", item, uuid, dt, hsh['_summary'])
         else:
             print("you double clicked on", item)
-        return("break")
+        return "break"
 
     def getInstance(self, item):
         instance = self.count2id[item]
         if instance is None:
-            return(None, None, None)
+            return None, None, None
         uuid, dt = self.count2id[item].split("::")
         hsh = loop.uuid2hash[uuid]
-        return(uuid, dt, hsh)
+        return uuid, dt, hsh
 
     def updateClock(self):
         # print('updateClock', loop.options)
@@ -1060,6 +1072,7 @@ or 0 to display all changes.""")
             loop.load_data()
             self.showView()
         self.updateAlerts()
+
         logger.debug("next update in {0} milliseconds".format(nxt))
 
     def updateAlerts(self):
@@ -1090,7 +1103,7 @@ or 0 to display all changes.""")
                             self.messageWindow(
                                 "etm", _("""\
 A sound alert failed. The setting for 'alert_soundcmd' is missing from \
-your etm.cfg."""))
+your etmtk.cfg."""))
                     if 'd' in actions:
                         if ('alert_displaycmd' in self.options and
                                 self.options['alert_displaycmd']):
@@ -1101,7 +1114,7 @@ your etm.cfg."""))
                             self.messageWindow(
                                 "etm", _("""\
 A display alert failed. The setting for 'alert_displaycmd' is missing \
-from your etm.cfg."""))
+from your etmtk.cfg."""))
                     if 'v' in actions:
                         if ('alert_voicecmd' in self.options and
                                 self.options['alert_voicecmd']):
@@ -1112,7 +1125,7 @@ from your etm.cfg."""))
                             self.messageWindow(
                                 "etm", _("""\
 An email alert failed. The setting for 'alert_voicecmd' is missing from \
-your etm.cfg."""))
+your etmtk.cfg."""))
                     if 'e' in actions:
                         missing = []
                         for field in [
@@ -1127,7 +1140,7 @@ your etm.cfg."""))
                             self.messageWindow(
                                 "etm", _("""\
 An email alert failed. Settings for the following variables are missing \
-from your etm.cfg: %s.""" % ", ".join(["'%s'" % x for x in missing])))
+from your etmtk.cfg: %s.""" % ", ".join(["'%s'" % x for x in missing])))
                         else:
                             subject = hsh['summary']
                             message = expand_template(
@@ -1236,6 +1249,7 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
             self.e.insert(0, self.history[self.index])
         return 'break'
 
+    # noinspection PyShadowingNames
     def messageWindow(self, title, prompt):
         win = Toplevel()
         win.title(title)
@@ -1248,7 +1262,8 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
         win.bind('<Return>', (lambda e, b=b: b.invoke()))
         win.bind('<Escape>', (lambda e, b=b: b.invoke()))
 
-        t = ReadOnlyText(f, wrap="word", padx=2, pady=2, bd=2, relief="sunken", font=tkFont.Font(family="Lucida Sans Typewriter"),
+        t = ReadOnlyText(
+            f, wrap="word", padx=2, pady=2, bd=2, relief="sunken", font=tkFont.Font(family="Lucida Sans Typewriter"),
             height=14,
             width=52,
             takefocus=False)
@@ -1270,12 +1285,12 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
             _("You have selected instance"),
             "    {0}".format(instance),
             _("of a repeating item. What do you want to change?")])
-        options = [
+        opt_lst = [
             _("only the datetime of this instance"),
             _("this instance"),
             _("this and all subsequent instances"),
             _("all instances")]
-        value = OptionsDialog(parent=self, title="which", prompt=prompt, options=options).value
+        value = OptionsDialog(parent=self, title="which", prompt=prompt, opts=opt_lst).value
         print('got integer result', value)
 
     def goToDate(self, event=None):
@@ -1290,20 +1305,20 @@ Relative dates and fuzzy parsing are supported.""")
         logger.debug('value: {0}'.format(value))
         if value is not None:
             self.scrollToDate(value.date())
-        return("break")
+        return "break"
 
     def gettext(self, event=None):
         s = self.e.get()
         if s is not None:
-            return(s)
+            return s
         else:
-            return('')
+            return ''
 
     def cleartext(self, event=None):
         if self.e.get():
             self.e.delete(0, END)
             self.showView()
-        return('break')
+        return 'break'
 
     def process_input(self, event=None, cmd=None):
         """
@@ -1315,7 +1330,7 @@ Relative dates and fuzzy parsing are supported.""")
         #     cmd = self.e.get().strip()
 
         if not cmd:
-            return(True)
+            return True
 
         if self.mode == 'command':
             cmd = cmd.strip()
@@ -1360,7 +1375,7 @@ Relative dates and fuzzy parsing are supported.""")
 
         elif self.mode == 'new_date':
             print('date', cmd)
-            res = loop._new_date(cmd)
+            res = loop.new_date(cmd)
 
         if not res:
             res = _('command "{0}" returned no output').format(cmd)
@@ -1373,7 +1388,7 @@ Relative dates and fuzzy parsing are supported.""")
         else:
             # not a hash => not a tree
             self.messageWindow(title='etm', prompt=res)
-            return(0)
+            return 0
 
     def expand2Depth(self, event=None):
         prompt = _("""\
@@ -1382,7 +1397,7 @@ or 0 to expand all branches completely.""")
         print('expand2Depth', event, self, self.tree)
         depth = GetInteger(
             parent=self,
-            title=_("depth"), prompt=prompt, options=[0], default=0).value
+            title=_("depth"), prompt=prompt, opts=[0], default=0).value
         if depth is None:
             return()
         if depth == 0:
@@ -1406,15 +1421,15 @@ or 0 to expand all branches completely.""")
         active_date = loop.prevnext[date][1]
         if active_date not in self.date2id:
             return()
-        id = self.date2id[active_date]
-        self.scrollToId(id)
+        uid = self.date2id[active_date]
+        self.scrollToId(uid)
 
-    def scrollToId(self, id):
+    def scrollToId(self, uid):
         self.update_idletasks()
         self.tree.focus_set()
-        self.tree.focus(id)
-        self.tree.selection_set(id)
-        self.tree.yview(int(id) - 1)
+        self.tree.focus(uid)
+        self.tree.selection_set(uid)
+        self.tree.yview(int(uid) - 1)
 
     def showTree(self, tree, event=None):
         self.date2id = {}
@@ -1491,7 +1506,6 @@ or 0 to expand all branches completely.""")
 if __name__ == "__main__":
     # For production:
     setup_logging(default_level=logging.DEBUG)
-    logger.info('logging enabled')
     etmdir = ''
     # For testing override etmdir:
     # etmdir = '/Users/dag/etm-tk/etm-sample'

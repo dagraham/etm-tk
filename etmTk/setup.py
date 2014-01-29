@@ -41,4 +41,4 @@ setup(
         version = "0.1",
         description = "Advanced sample cx_Freeze script",
         options = dict(build_exe = buildOptions),
-        executables = executables)
+        executables = executables, requires=['icalendar', 'pytz'])
