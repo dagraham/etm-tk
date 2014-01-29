@@ -373,15 +373,19 @@ class App(Tk):
         calendarmenu = Menu(filemenu, tearoff=0)
         self.calendars = deepcopy(loop.options['calendars'])
 
-        # print('calendars\n', self.calendars)
+        logger.debug('Calendars: {0}'.format(self.calendars))
         self.calendarValues = []
         for i in range(len(self.calendars)):
+            logger.debug('Adding calendar: {0}'.format(self.calendars[i]))
             self.calendarValues.append(BooleanVar())
             self.calendarValues[i].set(self.calendars[i][1])
             self.calendarValues[i].trace_variable("w", self.updateCalendars)
             calendarmenu.add_checkbutton(label=self.calendars[i][0], onvalue=True, offvalue=False, variable=self.calendarValues[i])
 
-        filemenu.add_cascade(label=_("Calendars"), menu=calendarmenu)
+        if self.calendars:
+            filemenu.add_cascade(label=_("Calendars"), menu=calendarmenu)
+        else:
+            filemenu.add_cascade(label=_("Calendars"), menu=calendarmenu, state="disabled")
 
         ## export
         filemenu.add_command(label="Export ...", underline=1, command=self.donothing)
@@ -954,7 +958,7 @@ or 0 to display all changes.""")
         command = loop.options['hg_history'].format(
             repo=loop.options['datadir'],
             file="", numchanges=numstr, rev="{rev}", desc="{desc}")
-        logger.info('history command: {0}'.format(command))
+        logger.debug('history command: {0}'.format(command))
         p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True, universal_newlines=True).stdout.read()
         self.messageWindow(title=_("Changes"), prompt=str(p))
 
@@ -1511,7 +1515,7 @@ if __name__ == "__main__":
     # etmdir = '/Users/dag/etm-tk/etm-sample'
     init_localization()
     (user_options, options, use_locale) = data.get_options(etmdir)
-    loop = data.ETMCmd(options)
+    loop = data.ETMCmd(options=options)
     loop.tkversion = tkversion
     # app = App(path='/Users/dag/etm-tk')
     app = App()

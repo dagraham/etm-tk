@@ -674,7 +674,7 @@ def get_options(d=''):
 
     time_zone = get_localtz()[0]
 
-    # for adjusting vertical height in GUI tree views if positive
+    # for adjusting vertical height in <GUI> tree "views" {if positive}
     default_rowsize = 0
 
     if windoz:
@@ -780,9 +780,14 @@ def get_options(d=''):
         os.makedirs(etmdir)
 
     if os.path.isfile(config):
-        fo = codecs.open(config, 'r', dfile_encoding)
-        user_options = yaml.load(fo)
-        fo.close()
+        try:
+            fo = codecs.open(config, 'r', dfile_encoding)
+            user_options = yaml.load(fo)
+            fo.close()
+        except yaml.parser.ParserError:
+            logger.exception('Error loading {0}. Using default options'.format(config))
+            user_options = {}
+
     else:
         user_options = {'datadir': default_datadir}
         fo = codecs.open(config, 'w', dfile_encoding)
@@ -4588,6 +4593,7 @@ class ETMCmd():
     def __init__(self, options=None, parent=None):
         if not options: options = {}
         self.options = options
+        # logger.debug('options: {0}'.format(options))
         self.calendars = deepcopy(options['calendars'])
         self.cal_regex = None
         self.cmdDict = {
