@@ -4,8 +4,7 @@ disable_existing_loggers: False
 formatters:
     simple:
         format: "--- %(asctime)s - %(levelname)s - %(module)s.%(funcName)s\n    %(message)s"
-    error:
-        format: "--- %(asctime)s - %(levelname)s - %(module)s.%(funcName)s\n    %(message)s\n    %(exc_info)s"
+
 handlers:
     console:
         class: logging.StreamHandler
@@ -13,32 +12,21 @@ handlers:
         formatter: simple
         stream: ext://sys.stdout
 
-    info_file_handler:
+    file:
         class: logging.handlers.RotatingFileHandler
         level: INFO
         formatter: simple
-        filename: log_info.txt
-        # maxBytes: 10485760 # 10MB
-        # maxBytes: 10240 # 10KB
-        maxBytes: 10240 # 10KB
-        backupCount: 5
-        encoding: utf8
-
-    error_file_handler:
-        class: logging.handlers.RotatingFileHandler
-        level: ERROR
-        formatter: error
-        filename: log_error.txt
-        maxBytes: 10485760 # 10MB
+        filename: etmtk_log.txt
+        maxBytes: 1048576  # 1MB
         backupCount: 5
         encoding: utf8
 
 loggers:
     etmtk:
-        level: ERROR
         handlers: [console]
+        level: DEBUG
         propagate: no
 
 root:
     level: DEBUG
-    handlers: [console, info_file_handler, error_file_handler]
+    handlers: [console, file]

@@ -785,7 +785,7 @@ def get_options(d=''):
             user_options = yaml.load(fo)
             fo.close()
         except yaml.parser.ParserError:
-            logger.exception('Error loading {0}. Using default options'.format(config))
+            logger.exception('Exception loading {0}. Using default options.'.format(config))
             user_options = {}
 
     else:
@@ -1041,6 +1041,7 @@ tstr2SCI = {
 
 
 def fmt_period(td):
+    logger.debug(td)
     if td < oneminute * 0:
         return '0m'
     if td == oneminute * 0:
@@ -1056,6 +1057,7 @@ def fmt_period(td):
         until.append("%dh" % td_hours)
     if td_minutes:
         until.append("%dm" % td_minutes)
+    if not until: until = "0m"
     return "".join(until)
 
 
