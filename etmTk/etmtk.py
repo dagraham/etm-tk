@@ -22,20 +22,21 @@ logger = logging.getLogger()
 # def callerName():
 #     return sys._getframe(2).f_code.co_name
 
+import logging
 
 def setup_logging(
     default_path='logging.yaml',
     default_level=logging.INFO,
-    env_key='LOG_CFG'
+    # env_key='LOG_CFG'
 ):
     """
     Setup logging configuration. Override root:level in
     logging.yaml with default_level.
     """
     path = default_path
-    value = os.getenv(env_key, None)
-    if value:
-        path = value
+    # value = os.getenv(env_key, None)
+    # if value:
+    #     path = value
     if os.path.exists(path):
         with open(path, 'rt') as f:
             config = yaml.load(f.read())
@@ -43,7 +44,7 @@ def setup_logging(
         logging.config.dictConfig(config)
     else:
         logging.basicConfig(level=default_level)
-    logger.info('logging enabled')
+    logger.info('logging enabled at level {0}'.format(default_level))
 
 
 import platform
@@ -92,6 +93,88 @@ else:
     after = 1
 
 from idlelib.WidgetRedirector import WidgetRedirector
+
+from datetime import datetime, timedelta, time
+oneminute = timedelta(minutes=1)
+onehour = timedelta(hours=1)
+oneday = timedelta(days=1)
+oneweek = timedelta(weeks=1)
+
+stopped = _('stopped')
+paused = _('paused')
+running = _('running')
+
+class Timer():
+    def __init__(self):
+        """
+
+        :param parent:
+        :param options:
+        """
+        self.timer_delta = 0 * oneminute
+        self.timer_active = False
+        self.timer_status = stopped
+        self.timer_last = None
+        self.timer_time = None
+        self.timer_hsh = None
+
+
+    def timer_finish(self, create=True):
+        if self.timer_status == stopped:
+            return()
+        if self.timer_status == running:
+            self.timer_delta += datetime.now() - self.timer_last
+
+        self.timer_delta = max(self.timer_delta, oneminute)
+        self.timer_status = stopped
+        self.timer_last = None
+
+    def timer_start(self, hsh={}):
+        self.timer_hsh = hsh
+        text = hsh['_summary']
+        if len(text) > 10:
+            self.timer_summary = "{0}~".format(text[:9])
+        else:
+            self.timer_summary = text
+        self.timer_toggle(self.timer_hsh)
+
+    def timer_toggle(self, hsh={}):
+        if self.timer_status == stopped:
+            self.timer_delta = timedelta(seconds=0)
+            self.timer_last = datetime.now()
+            self.timer_status = running
+        elif self.timer_status == running:
+            self.timer_delta += datetime.now() - self.timer_last
+            self.timer_status = paused
+        elif self.timer_status == paused:
+            self.timer_status = running
+            self.timer_last = datetime.now()
+
+    def get_time(self):
+        m = 0
+        h = 0
+        if self.timer_status == paused:
+            seconds = self.timer_delta.seconds
+        elif self.timer_status == running:
+            seconds = (self.timer_delta + datetime.now() -
+                       self.timer_last).seconds
+        else:
+            seconds = 0
+            minutes = 0
+        if seconds > 0:
+            if seconds % (60 * 60) % 60 >= 30:
+                seconds += 60 - seconds % (60 * 60) % 60
+            h = seconds // (60 * 60)
+            m = seconds % (60 * 60) // 60
+            minutes = h * 60 + m
+        self.timer_time = '%d:%02d' % (h, m)
+        s = ""
+        if self.timer_status == running:
+            s = "+"
+        ret = "{0}  {1}{2}".format(self.timer_summary, self.timer_time, s)
+        logger.debug("timer: {0}; {1}; {2}".format(ret, self.timer_last, seconds))
+        return ret
+
 
 
 class ReadOnlyText(Text):
@@ -343,6 +426,24 @@ class GetDateTime(DialogWindow):
             self.error_message = _('could not parse "{0}"').format(res)
             return False
 
+class GetString(DialogWindow):
+
+    def validate(self):
+        notnull = False
+        if 'notnull' in self.options and self.options['notnull']:
+            notnull = True
+            # an entry is required
+        val = self.entry.get()
+        ok = False
+        if val.strip():
+            self.value = val
+            return True
+        elif notnull:
+            self.error_message = _('an entry is required')
+            return False
+        else:  # null and null is ok
+            self.value = None
+            return True
 
 class App(Tk):
 
@@ -350,6 +451,9 @@ class App(Tk):
         Tk.__init__(self)
         # minsize: width, height
         self.minsize(430, 450)
+        self.itemSelected = False
+        self.timerItem = None
+        self.actionTimer = Timer()
 
         menubar = Menu(self)
 
@@ -360,23 +464,40 @@ class App(Tk):
 
         openmenu = Menu(filemenu, tearoff=0)
 
-        openmenu.add_command(label=_("data file ..."), underline=0, command=self.donothing)
+        openmenu.add_command(label=_("Data files ..."),
+                             underline=0, command=self.donothing)
 
-        openmenu.add_command(label=_("configuration"), underline=0, command=self.donothing)
+        openmenu.add_command(label=_("Recently changed data files ..."),
+                             underline=0, command=self.donothing)
 
-        openmenu.add_command(label=_("auto completions"), underline=0, command=self.donothing)
+        openmenu.add_separator()
 
-        openmenu.add_command(label=_("report specifications"), underline=0, command=self.donothing)
+        l, c = self.platformShortcut('O')
+        openmenu.add_command(label=loop.options['config'], underline=0, command=self
+        .donothing, accelerator=l)
+        # self.bind_all(c, lambda event: self.after(after, self.donothing))
+
+        l, c = self.platformShortcut('C')
+        openmenu.add_command(label=loop.options['auto_completions'], underline=0,
+                             command=self.donothing, accelerator=l)
+
+        l, c = self.platformShortcut('R')
+        openmenu.add_command(label=loop.options['report_specifications'], underline=0, command=self.donothing, accelerator=l)
+
+        l, c = self.platformShortcut('S')
+        openmenu.add_command(label=loop.options['scratchfile'], underline=0, command=self
+        .donothing, accelerator=l)
+        # self.bind_all(c, lambda event: self.after(after, self.donothing))
 
         filemenu.add_cascade(label=_("Open"), menu=openmenu, underline=0)
 
         calendarmenu = Menu(filemenu, tearoff=0)
         self.calendars = deepcopy(loop.options['calendars'])
 
-        logger.debug('Calendars: {0}'.format(self.calendars))
+        logger.debug('Calendars: {0}'.format([x[:2] for x in self.calendars]))
         self.calendarValues = []
         for i in range(len(self.calendars)):
-            logger.debug('Adding calendar: {0}'.format(self.calendars[i]))
+            # logger.debug('Adding calendar: {0}'.format(self.calendars[i][:2]))
             self.calendarValues.append(BooleanVar())
             self.calendarValues[i].set(self.calendars[i][1])
             self.calendarValues[i].trace_variable("w", self.updateCalendars)
@@ -428,20 +549,24 @@ class App(Tk):
         self.bind_all(c, lambda event: self.after(after, self.showCalendar))
 
         # report
-        l, c = self.platformShortcut('r')
-        viewmenu.add_command(label=_("Report"), accelerator=l, underline=1, command=self.donothing)
-        self.bind(c, self.donothing)  # r
+        l, c = self.platformShortcut('m')
+        viewmenu.add_command(label=_("Make report"), accelerator=l, underline=1, command=self.donothing)
+        self.bind(c, self.donothing)  # m
 
         # date calculator
+        l, c = self.platformShortcut('c')
         viewmenu.add_command(label=_("Date calculator"), underline=1, command=self.donothing)
+        self.bind(c, self.donothing)  # c
 
         # changes
-        viewmenu.add_command(label=_("Update check"), underline=1, command=self.checkForUpdate)
+        viewmenu.add_command(label=_("Check for update"), underline=1, command=self
+        .checkForUpdate)
 
         # changes
-        viewmenu.add_command(label=_("Change log"), underline=1, command=self.showChanges)
+        viewmenu.add_command(label=_("Changes"), underline=1, command=self
+        .showChanges)
 
-        viewmenu.add_command(label="Data errors", underline=1, command=self.donothing)
+        viewmenu.add_command(label="Errors", underline=1, command=self.donothing)
 
         menubar.add_cascade(label="View", menu=viewmenu, underline=0)
 
@@ -561,15 +686,15 @@ class App(Tk):
         self.editValue = StringVar(self)
         self.editLabel = _("edit")
         self.editValue.set(self.editLabel)
-        self.em_options = [[_('clone'), 'l'],
-                           [_('delete'), 'd'],
+        self.em_options = [[_('delete'), 'd'],
                            [_('edit'), 'e'],
                            [_('finish'), 'f'],
+                           [_('reschedule'), 'r'],
                            ]
-        self.edit2cmd = {'l': self.cloneItem,
-                         'd': self.deleteItem,
+        self.edit2cmd = {'d': self.deleteItem,
                          'e': self.editItem,
-                         'f': self.finishItem}
+                         'f': self.finishItem,
+                         'r': self.rescheduleItem}
         self.em_opts = [x[0] for x in self.em_options]
         em_cmds = [x[1] for x in self.em_options]
         self.em = OptionMenu(ef, self.editValue, *self.em_opts, command=self.editCommand)
@@ -620,6 +745,11 @@ class App(Tk):
         nonDefCal = Label(self.sf, textvariable=self.nonDefaultCalendars, bd=1, relief="flat", anchor="center", padx=0, pady=0)
         nonDefCal.pack(side="left")
 
+        self.timerStatus = StringVar(self)
+        self.timerStatus.set("")
+        timer_status = Label(self.sf, textvariable=self.timerStatus, bd=1, relief="flat", anchor="center", padx=4, pady=0)
+        timer_status.pack(side="left", expand=1)
+
         self.currentTime = StringVar(self)
         currenttime = Label(self.sf, textvariable=self.currentTime, bd=1, relief="flat", anchor="e", padx=4, pady=0)
         currenttime.pack(side="right")
@@ -642,10 +772,14 @@ class App(Tk):
         Produce label, command pairs from s based on Command for OSX
         and Control otherwise.
         """
-        if mac:
-            return "Cmd-{0}".format(s), "<Command-{0}>".format(s)
+        if s.upper() == s and s.lower() != s:
+            shift = "Shift-"
         else:
-            return "Ctrl-{0}".format(s), "<Control-{0}>".format(s)
+            shift=""
+        if mac:
+            return "{0}Cmd-{1}".format(shift, s), "<{0}Command-{1}>".format(shift, s)
+        else:
+            return "{0}Ctrl-{1}".format(shift, s), "<{0}Control-{1}>".format(shift, s)
 
     def updateCalendars(self, *args):
         for i in range(len(loop.calendars)):
@@ -673,9 +807,6 @@ class App(Tk):
     def newItem(self, e=None):
         print('newItem')
 
-    def newTimer(self, e=None):
-        print('newTimer')
-
     def cloneItem(self, e=None):
         print('cloneItem')
 
@@ -686,7 +817,10 @@ class App(Tk):
         print('editItem')
 
     def finishItem(self, e=None):
-        print('finnishItem')
+        print('finishItem')
+
+    def rescheduleItem(self, e=None):
+        print('rescheduleItem')
 
     def showAlerts(self, e=None):
         t = _('remaining alerts for today')
@@ -1004,24 +1138,20 @@ or 0 to display all changes.""")
             else:
                 lines = "{0} {1}-{2}".format(_('lines'), l1, l2)
             filetext = "{0}, {1}".format(hsh['fileinfo'][0], lines)
-            # text = "=== {0} ===\n{1}\n\n=== {2} ===\n{3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
             text = "{1}\n\n{2}: {3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
-            for i in range(3):
+            for i in [0, 1, 3]: # everything except finish
                 self.em["menu"].entryconfig(i, state='normal')
             # self.em.configure(state="normal")
             if isUnfinished:
-                self.em["menu"].entryconfig(3, state='normal')
+                self.em["menu"].entryconfig(2, state='normal')
             else:
-                self.em["menu"].entryconfig(3, state='disabled')
-            # self.nm["menu"].entryconfig(2, state='normal')
+                self.em["menu"].entryconfig(2, state='disabled')
         else:
             text = ""
             for i in range(4):
                 self.em["menu"].entryconfig(i, state='disabled')
-            # self.em.configure(state="disabled")
-            # self.nm["menu"].entryconfig(2, state='disabled')
+        self.itemSelected = uuid
         self.l.insert(INSERT, text)
-        # self.l.configure(state="disabled")
 
     def OnActivate(self, event):
         """
@@ -1075,6 +1205,9 @@ or 0 to display all changes.""")
             print('refreshing view')
             loop.load_data()
             self.showView()
+        if self.actionTimer.timer_status != stopped:
+            self.timerStatus.set(self.actionTimer.get_time())
+
         self.updateAlerts()
 
         logger.debug("next update in {0} milliseconds".format(nxt))
@@ -1298,6 +1431,11 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
         print('got integer result', value)
 
     def goToDate(self, event=None):
+        """
+
+        :param event:
+        :return:
+        """
         prompt = _("""\
 Return an empty string for the current date or a date to be parsed.
 Relative dates and fuzzy parsing are supported.""")
@@ -1310,6 +1448,47 @@ Relative dates and fuzzy parsing are supported.""")
         if value is not None:
             self.scrollToDate(value.date())
         return "break"
+
+    def newTimer(self, event=None):
+        """
+
+        :param event:
+        :return:
+        """
+        if self.actionTimer.timer_status == 'stopped':
+            if self.itemSelected:
+                notnull = False
+                prompt = _("""\
+    Enter a summary for the new action timer or return an empty string
+    to create a timer based on the selected item.""")
+            else:
+                notnull = True
+                options = {'notnull': True}
+                prompt = _("""\
+    Enter a summary for the new action timer.""")
+            options = {'notnull': notnull}
+            d = GetString(parent=self, title=_('action timer'), prompt=prompt,
+                          opts=options)
+            value = d.value
+            logger.debug('value: {0}'.format(value))
+            if notnull and value is None:
+                return "break"
+            if value is None:
+                self.timerItem = self.itemSelected
+                # Based on item, 'entry' will be in hsh
+                hsh = loop.uuid2hash[self.itemSelected]
+            else:
+                # new, 'entry will not be in hsh
+                self.timerItem = None
+                hsh = {'_summary': value}
+            logger.debug('item: {0}'.format(hsh))
+            self.nm["menu"].entryconfig(1, state="disabled")
+            self.actionTimer.timer_start(hsh)
+        elif self.actionTimer.timer_status in [paused, running]:
+            self.actionTimer.timer_toggle()
+        self.timerStatus.set(self.actionTimer.get_time())
+        return "break"
+
 
     def gettext(self, event=None):
         s = self.e.get()
@@ -1512,7 +1691,7 @@ if __name__ == "__main__":
     setup_logging(default_level=logging.DEBUG)
     etmdir = ''
     # For testing override etmdir:
-    # etmdir = '/Users/dag/etm-tk/etm-sample'
+    etmdir = '/Users/dag/etm-tk/etm-sample'
     init_localization()
     (user_options, options, use_locale) = data.get_options(etmdir)
     loop = data.ETMCmd(options=options)
