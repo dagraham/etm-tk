@@ -12,6 +12,7 @@ import subprocess
 import yaml
 import logging
 import logging.config
+
 logger = logging.getLogger()
 
 
@@ -24,10 +25,11 @@ logger = logging.getLogger()
 
 import logging
 
+
 def setup_logging(
-    default_path='logging.yaml',
-    default_level=logging.INFO,
-    # env_key='LOG_CFG'
+        default_path='logging.yaml',
+        default_level=logging.INFO,
+        # env_key='LOG_CFG'
 ):
     """
     Setup logging configuration. Override root:level in
@@ -48,6 +50,7 @@ def setup_logging(
 
 
 import platform
+
 if platform.python_version() >= '3':
     import tkinter
     from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, Menu, BooleanVar, ACTIVE
@@ -84,6 +87,7 @@ from data import (
     sys_platform, id2Type, get_current_time, mac)
 
 import gettext
+
 _ = gettext.gettext
 
 # used in hack to prevent dialog from hanging under os x
@@ -95,6 +99,7 @@ else:
 from idlelib.WidgetRedirector import WidgetRedirector
 
 from datetime import datetime, timedelta, time
+
 oneminute = timedelta(minutes=1)
 onehour = timedelta(hours=1)
 oneday = timedelta(days=1)
@@ -103,6 +108,7 @@ oneweek = timedelta(weeks=1)
 stopped = _('stopped')
 paused = _('paused')
 running = _('running')
+
 
 class Timer():
     def __init__(self):
@@ -115,19 +121,8 @@ class Timer():
         self.timer_active = False
         self.timer_status = stopped
         self.timer_last = None
-        self.timer_time = None
         self.timer_hsh = None
 
-
-    def timer_finish(self, create=True):
-        if self.timer_status == stopped:
-            return()
-        if self.timer_status == running:
-            self.timer_delta += datetime.now() - self.timer_last
-
-        self.timer_delta = max(self.timer_delta, oneminute)
-        self.timer_status = stopped
-        self.timer_last = None
 
     def timer_start(self, hsh={}):
         self.timer_hsh = hsh
@@ -137,6 +132,16 @@ class Timer():
         else:
             self.timer_summary = text
         self.timer_toggle(self.timer_hsh)
+
+    def timer_finish(self, create=True):
+        if self.timer_status == stopped:
+            return ()
+        if self.timer_status == running:
+            self.timer_delta += datetime.now() - self.timer_last
+
+        self.timer_delta = max(self.timer_delta, oneminute)
+        self.timer_status = stopped
+        self.timer_last = None
 
     def timer_toggle(self, hsh={}):
         if self.timer_status == stopped:
@@ -151,34 +156,23 @@ class Timer():
             self.timer_last = datetime.now()
 
     def get_time(self):
-        m = 0
-        h = 0
         if self.timer_status == paused:
-            seconds = self.timer_delta.seconds
+            elapsed_time = self.timer_delta
         elif self.timer_status == running:
-            seconds = (self.timer_delta + datetime.now() -
-                       self.timer_last).seconds
+            elapsed_time = (self.timer_delta + datetime.now() -
+                       self.timer_last)
         else:
-            seconds = 0
-            minutes = 0
-        if seconds > 0:
-            if seconds % (60 * 60) % 60 >= 30:
-                seconds += 60 - seconds % (60 * 60) % 60
-            h = seconds // (60 * 60)
-            m = seconds % (60 * 60) // 60
-            minutes = h * 60 + m
-        self.timer_time = '%d:%02d' % (h, m)
+            elapsed_time = 0 * oneminute
         s = ""
         if self.timer_status == running:
             s = "+"
-        ret = "{0}  {1}{2}".format(self.timer_summary, self.timer_time, s)
-        logger.debug("timer: {0}; {1}; {2}".format(ret, self.timer_last, seconds))
+        # ret = "{0}  {1}{2}".format(self.timer_summary, self.timer_time, s)
+        ret = "{0}  {1}".format(self.timer_summary, fmt_period(elapsed_time))
+        logger.debug("timer: {0}; {1}; {2}".format(ret, self.timer_last, elapsed_time))
         return ret
 
 
-
 class ReadOnlyText(Text):
-
     # noinspection PyShadowingNames
     def __init__(self, *args, **kwargs):
         Text.__init__(self, *args, **kwargs)
@@ -194,7 +188,8 @@ class MessageWindow():
         self.parent = parent
         self.win.title(title)
         Label(self.win, text=prompt).pack(fill=tkinter.BOTH, expand=1, padx=10, pady=10)
-        b = Button(self.win, text=_('OK'), width=10, command=self.cancel, default='active')
+        b = Button(self.win, text=_('OK'), width=10, command=self.cancel,
+                   default='active')
         b.pack()
         self.win.bind('<Return>', (lambda e, b=b: b.invoke()))
         self.win.bind('<Escape>', (lambda e, b=b: b.invoke()))
@@ -209,8 +204,8 @@ class MessageWindow():
         self.parent.focus_set()
         self.win.destroy()
 
-class Dialog(Toplevel):
 
+class Dialog(Toplevel):
     def __init__(self, parent, title=None, prompt=None, opts=None, default=None):
 
         Toplevel.__init__(self, parent)
@@ -311,17 +306,18 @@ class Dialog(Toplevel):
 
 
 class DialogWindow(Dialog):
-
     # master will be a frame in Dialog
     # noinspection PyAttributeOutsideInit
     def body(self, master):
         self.entry = Entry(master)
         self.entry.pack(side="bottom", padx=5, pady=5)
-        Label(master, text=self.prompt, justify='left').pack(side="top", fill=tkinter.BOTH, expand=1, padx=10, pady=5)
+        Label(master, text=self.prompt, justify='left').pack(side="top",
+                                                             fill=tkinter.BOTH, expand=1,
+                                                             padx=10, pady=5)
         if self.default is not None:
             self.entry.insert(0, self.default)
             self.entry.select_range(0, END)
-        # self.entry.pack(padx=5, pady=5)
+            # self.entry.pack(padx=5, pady=5)
         return self.entry
 
 
@@ -335,7 +331,8 @@ class OptionsDialog():
         self.options = opts
         self.value = opts[0]
         self.win.title(title)
-        Label(self.win, text=prompt, justify='left').pack(fill=tkinter.BOTH, expand=1, padx=10, pady=5)
+        Label(self.win, text=prompt, justify='left').pack(fill=tkinter.BOTH, expand=1,
+                                                          padx=10, pady=5)
         self.sv = StringVar(parent)
         self.sv.set(opts[0])
         logger.debug('sv: {0}'.format(self.sv.get()))
@@ -371,7 +368,6 @@ class OptionsDialog():
 
 
 class GetInteger(DialogWindow):
-
     def validate(self):
         # print('integer validate', self.options)
         minvalue = maxvalue = None
@@ -382,7 +378,8 @@ class GetInteger(DialogWindow):
         res = self.entry.get()
         try:
             val = int(res)
-            ok = (minvalue is None or val >= minvalue) and (maxvalue is None or val <= maxvalue)
+            ok = (minvalue is None or val >= minvalue) and (
+                maxvalue is None or val <= maxvalue)
         except:
             val = None
             ok = False
@@ -405,7 +402,6 @@ class GetInteger(DialogWindow):
 
 
 class GetDateTime(DialogWindow):
-
     def validate(self):
         res = self.entry.get()
         ok = False
@@ -426,8 +422,8 @@ class GetDateTime(DialogWindow):
             self.error_message = _('could not parse "{0}"').format(res)
             return False
 
-class GetString(DialogWindow):
 
+class GetString(DialogWindow):
     def validate(self):
         notnull = False
         if 'notnull' in self.options and self.options['notnull']:
@@ -445,8 +441,8 @@ class GetString(DialogWindow):
             self.value = None
             return True
 
-class App(Tk):
 
+class App(Tk):
     def __init__(self, path=None):
         Tk.__init__(self)
         # minsize: width, height
@@ -482,7 +478,8 @@ class App(Tk):
                              command=self.donothing, accelerator=l)
 
         l, c = self.platformShortcut('R')
-        openmenu.add_command(label=loop.options['report_specifications'], underline=0, command=self.donothing, accelerator=l)
+        openmenu.add_command(label=loop.options['report_specifications'], underline=0,
+                             command=self.donothing, accelerator=l)
 
         l, c = self.platformShortcut('S')
         openmenu.add_command(label=loop.options['scratchfile'], underline=0, command=self
@@ -501,12 +498,14 @@ class App(Tk):
             self.calendarValues.append(BooleanVar())
             self.calendarValues[i].set(self.calendars[i][1])
             self.calendarValues[i].trace_variable("w", self.updateCalendars)
-            calendarmenu.add_checkbutton(label=self.calendars[i][0], onvalue=True, offvalue=False, variable=self.calendarValues[i])
+            calendarmenu.add_checkbutton(label=self.calendars[i][0], onvalue=True,
+                                         offvalue=False, variable=self.calendarValues[i])
 
         if self.calendars:
             filemenu.add_cascade(label=_("Calendars"), menu=calendarmenu)
         else:
-            filemenu.add_cascade(label=_("Calendars"), menu=calendarmenu, state="disabled")
+            filemenu.add_cascade(label=_("Calendars"), menu=calendarmenu,
+                                 state="disabled")
 
         ## export
         filemenu.add_command(label="Export ...", underline=1, command=self.donothing)
@@ -541,21 +540,25 @@ class App(Tk):
 
         # busy times
         l, c = self.platformShortcut('b')
-        viewmenu.add_command(label=_("Busy times"), underline=1, accelerator=l, command=self.showBusyTimes)
+        viewmenu.add_command(label=_("Busy times"), underline=1, accelerator=l,
+                             command=self.showBusyTimes)
         self.bind_all(c, lambda event: self.after(after, self.showBusyTimes))
 
         l, c = self.platformShortcut('y')
-        viewmenu.add_command(label=_("Yearly calendar"), underline=1, accelerator=l, command=self.showCalendar)
+        viewmenu.add_command(label=_("Yearly calendar"), underline=1, accelerator=l,
+                             command=self.showCalendar)
         self.bind_all(c, lambda event: self.after(after, self.showCalendar))
 
         # report
         l, c = self.platformShortcut('m')
-        viewmenu.add_command(label=_("Make report"), accelerator=l, underline=1, command=self.donothing)
+        viewmenu.add_command(label=_("Make report"), accelerator=l, underline=1,
+                             command=self.donothing)
         self.bind(c, self.donothing)  # m
 
         # date calculator
         l, c = self.platformShortcut('c')
-        viewmenu.add_command(label=_("Date calculator"), underline=1, command=self.donothing)
+        viewmenu.add_command(label=_("Date calculator"), underline=1,
+                             command=self.donothing)
         self.bind(c, self.donothing)  # c
 
         # changes
@@ -601,8 +604,8 @@ class App(Tk):
         self.title("etm tk")
         if sys_platform == 'Linux':
             self.wm_iconbitmap('@' + 'etmlogo-4.xbm')
-        # self.wm_iconbitmap('etmlogo-4.xbm')
-        # self.call('wm', 'iconbitmap', self._w, '/Users/dag/etm-tk/etmlogo_128x128x32.ico')
+            # self.wm_iconbitmap('etmlogo-4.xbm')
+            # self.call('wm', 'iconbitmap', self._w, '/Users/dag/etm-tk/etmlogo_128x128x32.ico')
             # self.iconbitmap(ICON_PATH)
 
         self.columnconfigure(0, minsize=300, weight=1)
@@ -613,9 +616,10 @@ class App(Tk):
         pw = PanedWindow(self, orient="vertical",
                          # showhandle=True,
                          sashwidth=4, sashrelief='flat',
-                         )
+        )
 
-        self.tree = ttk.Treeview(pw, show='tree', columns=["#1"], selectmode='browse', padding=(3, 2, 3, 2))
+        self.tree = ttk.Treeview(pw, show='tree', columns=["#1"], selectmode='browse',
+                                 padding=(3, 2, 3, 2))
         self.tree.column('#0', minwidth=200, width=260, stretch=1)
         self.tree.column('#1', minwidth=80, width=140, stretch=0, anchor='center')
         self.tree.bind('<<TreeviewSelect>>', self.OnSelect)
@@ -669,7 +673,7 @@ class App(Tk):
         self.newValue.set(self.newLabel)
         self.nm_options = [[_('item'), 'n'],
                            [_('timer'), 't'],
-                           ]
+        ]
         self.nm_opts = [x[0] for x in self.nm_options]
         self.nm = OptionMenu(ef, self.newValue, *self.nm_opts)
 
@@ -678,8 +682,8 @@ class App(Tk):
         self.bind(c, self.newItem)  # n
 
         l, c = self.platformShortcut('+')
-        self.nm["menu"].entryconfig(1, accelerator=l, command=self.newTimer)
-        self.bind(c, self.newTimer)  # +
+        self.nm["menu"].entryconfig(1, accelerator=l, command=self.startTimer)
+        self.bind(c, self.startTimer)  # +
 
         self.nm.pack(side="left")
 
@@ -690,7 +694,7 @@ class App(Tk):
                            [_('edit'), 'e'],
                            [_('finish'), 'f'],
                            [_('reschedule'), 'r'],
-                           ]
+        ]
         self.edit2cmd = {'d': self.deleteItem,
                          'e': self.editItem,
                          'f': self.finishItem,
@@ -708,7 +712,8 @@ class App(Tk):
 
         self.pendingAlerts = StringVar(self)
         self.pendingAlerts.set("")
-        self.pending = Button(ef, textvariable=self.pendingAlerts, command=self.showAlerts)
+        self.pending = Button(ef, textvariable=self.pendingAlerts,
+                              command=self.showAlerts)
         self.pending.pack(side="right")
         self.showPending = True
 
@@ -724,7 +729,9 @@ class App(Tk):
 
         pw.add(self.tree, padx=3, pady=0, stretch="first")
 
-        self.l = ReadOnlyText(pw, wrap="word", bd=2, relief="sunken", padx=2, pady=2, font=tkFont.Font(family="Lucida Sans Typewriter"), height=6, width=46, takefocus=False)
+        self.l = ReadOnlyText(pw, wrap="word", bd=2, relief="sunken", padx=2, pady=2,
+                              font=tkFont.Font(family="Lucida Sans Typewriter"), height=6,
+                              width=46, takefocus=False)
         self.l.bind('<Escape>', self.cleartext)
         self.l.bind('<space>', self.goHome)
         self.l.bind('<Tab>', self.focus_next_window)
@@ -737,21 +744,25 @@ class App(Tk):
         # self.pendingAlerts = StringVar(self)
         # self.pendingAlerts.set("")
 
-        showing = Label(self.sf, textvariable=self.currentView, bd=1, relief="flat", anchor="w", padx=0, pady=0)
+        showing = Label(self.sf, textvariable=self.currentView, bd=1, relief="flat",
+                        anchor="w", padx=0, pady=0)
         showing.pack(side="left")
 
         self.nonDefaultCalendars = StringVar(self)
         self.nonDefaultCalendars.set("")
-        nonDefCal = Label(self.sf, textvariable=self.nonDefaultCalendars, bd=1, relief="flat", anchor="center", padx=0, pady=0)
+        nonDefCal = Label(self.sf, textvariable=self.nonDefaultCalendars, bd=1,
+                          relief="flat", anchor="center", padx=0, pady=0)
         nonDefCal.pack(side="left")
 
         self.timerStatus = StringVar(self)
         self.timerStatus.set("")
-        timer_status = Label(self.sf, textvariable=self.timerStatus, bd=1, relief="flat", anchor="center", padx=4, pady=0)
+        timer_status = Label(self.sf, textvariable=self.timerStatus, bd=1, relief="flat",
+                             anchor="center", padx=4, pady=0)
         timer_status.pack(side="left", expand=1)
 
         self.currentTime = StringVar(self)
-        currenttime = Label(self.sf, textvariable=self.currentTime, bd=1, relief="flat", anchor="e", padx=4, pady=0)
+        currenttime = Label(self.sf, textvariable=self.currentTime, bd=1, relief="flat",
+                            anchor="e", padx=4, pady=0)
         currenttime.pack(side="right")
 
         self.sf.grid(row=2, column=0, sticky="ew", padx=8, pady=4)
@@ -775,7 +786,7 @@ class App(Tk):
         if s.upper() == s and s.lower() != s:
             shift = "Shift-"
         else:
-            shift=""
+            shift = ""
         if mac:
             return "{0}Cmd-{1}".format(shift, s), "<{0}Command-{1}>".format(shift, s)
         else:
@@ -793,7 +804,7 @@ class App(Tk):
             cal_pattern = ''
             loop.cal_regex = None
             self.nonDefaultCalendars.set("")
-        # print('updateCalendars', loop.calendars, cal_pattern, loop.cal_regex)
+            # print('updateCalendars', loop.calendars, cal_pattern, loop.cal_regex)
         self.showView()
 
 
@@ -881,7 +892,7 @@ parsing are supported.""")
         chosen_day = d.value
         logger.debug('chosen_day: {0}'.format(chosen_day))
         if chosen_day is None:
-            return()
+            return ()
 
         if chosen_day is None:
             chosen_day = self.today
@@ -1031,10 +1042,11 @@ parsing are supported.""")
         win.bind('<Return>', (lambda e, b=b: b.invoke()))
         win.bind('<Escape>', (lambda e, b=b: b.invoke()))
 
-        t = ReadOnlyText(f, wrap="word", padx=2, pady=2, bd=2, relief="sunken", font=tkFont.Font(family="Lucida Sans Typewriter"),
-            # height=14,
-            # width=52,
-            takefocus=False)
+        t = ReadOnlyText(f, wrap="word", padx=2, pady=2, bd=2, relief="sunken",
+                         font=tkFont.Font(family="Lucida Sans Typewriter"),
+                         # height=14,
+                         # width=52,
+                         takefocus=False)
         win.bind('<Left>', (lambda e: showYear(-1)))
         win.bind('<Right>', (lambda e: showYear(1)))
         win.bind('<space>', (lambda e: showYear()))
@@ -1082,7 +1094,7 @@ or 0 to display all changes.""")
             title=_("Changes"),
             prompt=prompt, opts=[0], default=10).value
         if depth is None:
-            return()
+            return ()
         if depth == 0:
             # all changes
             numstr = ""
@@ -1093,7 +1105,8 @@ or 0 to display all changes.""")
             repo=loop.options['datadir'],
             file="", numchanges=numstr, rev="{rev}", desc="{desc}")
         logger.debug('history command: {0}'.format(command))
-        p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True, universal_newlines=True).stdout.read()
+        p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
+                             universal_newlines=True).stdout.read()
         self.messageWindow(title=_("Changes"), prompt=str(p))
 
     def focus_next_window(self, event):
@@ -1138,10 +1151,11 @@ or 0 to display all changes.""")
             else:
                 lines = "{0} {1}-{2}".format(_('lines'), l1, l2)
             filetext = "{0}, {1}".format(hsh['fileinfo'][0], lines)
-            text = "{1}\n\n{2}: {3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
+            text = "{1}\n\n{2}: {3}".format(item, hsh['entry'].lstrip(), _("file"),
+                                            filetext)
             for i in [0, 1, 3]: # everything except finish
                 self.em["menu"].entryconfig(i, state='normal')
-            # self.em.configure(state="normal")
+                # self.em.configure(state="normal")
             if isUnfinished:
                 self.em["menu"].entryconfig(2, state='normal')
             else:
@@ -1224,8 +1238,8 @@ or 0 to display all changes.""")
             if td == 0:
                 if ('alert_wakecmd' in loop.options and
                         loop.options['alert_wakecmd']):
-                        cmd = loop.options['alert_wakecmd']
-                        subprocess.call(cmd, shell=True)
+                    cmd = loop.options['alert_wakecmd']
+                    subprocess.call(cmd, shell=True)
                 while td == 0:
                     hsh = loop.alerts[0][1]
                     loop.alerts.pop(0)
@@ -1266,11 +1280,11 @@ your etmtk.cfg."""))
                     if 'e' in actions:
                         missing = []
                         for field in [
-                                'smtp_from',
-                                'smtp_id',
-                                'smtp_pw',
-                                'smtp_server',
-                                'smtp_to']:
+                            'smtp_from',
+                            'smtp_id',
+                            'smtp_pw',
+                            'smtp_server',
+                            'smtp_to']:
                             if not self.options[field]:
                                 missing.append(field)
                         if missing:
@@ -1309,12 +1323,12 @@ from your etmtk.cfg: %s.""" % ", ".join(["'%s'" % x for x in missing])))
                     if 't' in actions:
                         missing = []
                         for field in [
-                                'sms_from',
-                                'sms_message',
-                                'sms_phone',
-                                'sms_pw',
-                                'sms_server',
-                                'sms_subject']:
+                            'sms_from',
+                            'sms_message',
+                            'sms_phone',
+                            'sms_pw',
+                            'sms_server',
+                            'sms_subject']:
                             if not self.options[field]:
                                 missing.append(field)
                         if missing:
@@ -1330,7 +1344,7 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
                             arguments = hsh['_alert_argument']
                             if arguments:
                                 sms_phone = ",".join([str(x).strip() for x in
-                                            arguments[0]])
+                                                      arguments[0]])
                             else:
                                 sms_phone = self.options['sms_phone']
                             if message:
@@ -1400,7 +1414,8 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
         win.bind('<Escape>', (lambda e, b=b: b.invoke()))
 
         t = ReadOnlyText(
-            f, wrap="word", padx=2, pady=2, bd=2, relief="sunken", font=tkFont.Font(family="Lucida Sans Typewriter"),
+            f, wrap="word", padx=2, pady=2, bd=2, relief="sunken",
+            font=tkFont.Font(family="Lucida Sans Typewriter"),
             height=14,
             width=52,
             takefocus=False)
@@ -1427,13 +1442,15 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
             _("this instance"),
             _("this and all subsequent instances"),
             _("all instances")]
-        value = OptionsDialog(parent=self, title="which", prompt=prompt, opts=opt_lst).value
+        value = OptionsDialog(parent=self, title="which", prompt=prompt,
+                              opts=opt_lst).value
         print('got integer result', value)
 
-    def goToDate(self, event=None):
+    def goToDate(self, e=None):
         """
 
-        :param event:
+
+        :param e:
         :return:
         """
         prompt = _("""\
@@ -1449,7 +1466,7 @@ Relative dates and fuzzy parsing are supported.""")
             self.scrollToDate(value.date())
         return "break"
 
-    def newTimer(self, event=None):
+    def startTimer(self, event=None):
         """
 
         :param event:
@@ -1489,6 +1506,12 @@ Relative dates and fuzzy parsing are supported.""")
         self.timerStatus.set(self.actionTimer.get_time())
         return "break"
 
+    def stopTimer(self, event=None):
+        if self.actionTimer.timer_status not in [running, paused]:
+            logger.info('stopping already stopped timer')
+            return "break"
+        self.timerStatus.set(self.actionTimer.get_time())
+
 
     def gettext(self, event=None):
         s = self.e.get()
@@ -1519,7 +1542,7 @@ Relative dates and fuzzy parsing are supported.""")
             cmd = cmd.strip()
             if cmd[0] == 'w':
                 self.editWhich()
-                return()
+                return ()
             elif cmd[0] in ['r', 't']:
                 # simple command history for report commands
                 if cmd in self.history:
@@ -1564,7 +1587,7 @@ Relative dates and fuzzy parsing are supported.""")
             res = _('command "{0}" returned no output').format(cmd)
             # MessageWindow(self, 'info', res)
             self.deleteItems()
-            return()
+            return ()
 
         if type(res) == dict:
             self.showTree(res, event=event)
@@ -1582,7 +1605,7 @@ or 0 to expand all branches completely.""")
             parent=self,
             title=_("depth"), prompt=prompt, opts=[0], default=0).value
         if depth is None:
-            return()
+            return ()
         if depth == 0:
             # expand all
             for k in self.depth2id:
@@ -1595,15 +1618,15 @@ or 0 to expand all branches completely.""")
                     self.tree.item(item, open=True)
             for item in self.depth2id[depth]:
                 self.tree.item(item, open=False)
-        # return('break')
+                # return('break')
 
     def scrollToDate(self, date):
         # only makes sense for dayview
         if self.view != self.vm_options[1][0] or date not in loop.prevnext:
-            return()
+            return ()
         active_date = loop.prevnext[date][1]
         if active_date not in self.date2id:
-            return()
+            return ()
         uid = self.date2id[active_date]
         self.scrollToId(uid)
 
@@ -1646,13 +1669,14 @@ or 0 to expand all branches completely.""")
                 # this is a branch
                 item = " " + text[1]  # this is the label of the parent
                 children = tree[text]  # this are the children tuples of item
-                oid = self.tree.insert(parent, 'end', iid=self.count, text=item, open=(depth <= max_depth))
+                oid = self.tree.insert(parent, 'end', iid=self.count, text=item,
+                                       open=(depth <= max_depth))
                 # oid = self.tree.insert(parent, 'end', text=item, open=True)
                 # print(self.count, oid, depth, item)
                 self.depth2id.setdefault(depth, set([])).add(oid)
                 # recurse to get children
                 self.count2id[oid] = None
-                self.addItems(oid, children, tree, depth=depth+1)
+                self.addItems(oid, children, tree, depth=depth + 1)
             else:
                 # this is a leaf
                 if len(text[1]) == 4:
@@ -1669,7 +1693,8 @@ or 0 to expand all branches completely.""")
                 else:
                     col2 = s2or3(col2)
 
-                oid = self.tree.insert(parent, 'end', iid=self.count, text=col1, open=(depth <= max_depth), value=[col2])
+                oid = self.tree.insert(parent, 'end', iid=self.count, text=col1,
+                                       open=(depth <= max_depth), value=[col2])
                 # oid = self.tree.insert(parent, 'end', text=col1, open=True, value=[col2])
                 # print(self.count, oid)
                 # print(self.count, oid, depth, col1, depth<=max_depth)
@@ -1683,7 +1708,6 @@ or 0 to expand all branches completely.""")
                     except:
                         print('could not parse', dt)
                         print(text)
-
 
 
 if __name__ == "__main__":
