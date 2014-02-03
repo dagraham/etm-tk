@@ -8,10 +8,13 @@ import os.path
 from copy import deepcopy
 from textwrap import wrap
 import platform
+
 import gettext
+_ = gettext.gettext
 
 import logging
 import logging.config
+
 logger = logging.getLogger()
 
 import subprocess
@@ -58,7 +61,6 @@ qt2dt = [
     ('h', '%I'),
     ('mm', '%M')]
 
-_ = gettext.gettext
 
 
 def init_localization():
@@ -95,6 +97,7 @@ def dt_to_str(dt, s):
         s = s.replace(key, val)
     return s2or3(dt.strftime(s))
 
+
 from v import version
 
 last_version = version
@@ -118,6 +121,7 @@ try:
     from icalendar import Calendar, Event, Todo, Journal
     from icalendar.caselessdict import CaselessDict
     from icalendar.prop import vDate, vDatetime
+
     has_icalendar = True
     import pytz
 except ImportError:
@@ -785,7 +789,8 @@ def get_options(d=''):
             user_options = yaml.load(fo)
             fo.close()
         except yaml.parser.ParserError:
-            logger.exception('Exception loading {0}. Using default options.'.format(config))
+            logger.exception(
+                'Exception loading {0}. Using default options.'.format(config))
             user_options = {}
 
     else:
@@ -824,8 +829,8 @@ def get_options(d=''):
                                        or not user_options[key]):
             options[key] = default_options[key]
             changed = True
-        # we'll get custom user settings from a separate file
-    #####################
+            # we'll get custom user settings from a separate file
+            #####################
     remove_keys = []
     for key in options:
         if key not in default_options:
@@ -1041,7 +1046,6 @@ tstr2SCI = {
 
 
 def fmt_period(td):
-    logger.debug(td)
     if td < oneminute * 0:
         return '0m'
     if td == oneminute * 0:
@@ -1228,22 +1232,34 @@ amp_keys = {
 }
 
 
-def makeTree(list_of_lists, view=None, cal_regex=None, sort=True, fltr=None):
+def makeTree(list_of_lists, view=None, calendars=None, sort=True, fltr=None):
     tree = {}
     lofl = []
     root = '_'
     empty = True
+    cal_regex = None
+    log_msg = []
     tree_rows = deepcopy(list_of_lists)
+    if calendars:
+        cal_pattern = r'^%s' % '|'.join([x[2] for x in calendars if x[1]])
+        cal_regex = re.compile(cal_pattern)
+        log_msg.append('cal_pattern: {0}'.format(cal_pattern))
     if fltr is not None:
-        # print('makeTree fltr', fltr)
         mtch = True
         if fltr[0] == '!':
             mtch = False
             fltr = fltr[1:]
         filter_regex = re.compile(r'{0}'.format(fltr), re.IGNORECASE)
+        log_msg.append('filter: {0} ({1})'.format(fltr, mtch))
     else:
         filter_regex = None
+    if log_msg:
+        logger.debug("; ".join(log_msg))
     for pc in tree_rows:
+        if cal_regex and not cal_regex.match(pc[0][-1]):
+            continue
+        if view and pc[0][0] != view:
+            continue
         if filter_regex is not None:
             m = filter_regex.search(pc[-1][2])
             # ok if (mtch and m) or (not mtch and not m):
@@ -1251,10 +1267,6 @@ def makeTree(list_of_lists, view=None, cal_regex=None, sort=True, fltr=None):
                 continue
         root_key = tuple(["", root])
         tree.setdefault(root_key, [])
-        if cal_regex and not cal_regex.match(pc[0][-1]):
-            continue
-        if view and pc[0][0] != view:
-            continue
         if sort:
             pc.pop(0)
         empty = False
@@ -1410,13 +1422,13 @@ def tree2Text(tree, indent=2, width1=54, width2=14, colors=0,
                 if number:
                     rmlft = width1 - indent * level - 2 - len(str(args[0]))
                     s = u"{0:s}{1:s}{2:s} [{3:s}] {4:<*s} {5:s}{6:s}".format(
-                         tab * level,
-                         s_c,
-                         unicode(t),
-                         args[0],
-                         rmlft,
-                         unicode(truncate(node[1][2], rmlft)),
-                         col2, e_c)
+                        tab * level,
+                        s_c,
+                        unicode(t),
+                        args[0],
+                        rmlft,
+                        unicode(truncate(node[1][2], rmlft)),
+                        col2, e_c)
                 else:
                     rmlft = width1 - indent * level
                     s = u"{0:s}{1:s}{2:s} {3:<*s} {4:s}{5:s}".format(
@@ -1440,9 +1452,12 @@ def tree2Text(tree, indent=2, width1=54, width2=14, colors=0,
     t2H(tree)
     return [x[indent:] for x in text_lst], args[0], args[1]
 
+
 lst = None
 rows = None
 row = None
+
+
 def tallyByGroup(list_of_tuples, max_level=0, indnt=3, options=None, export=False):
     """
 list_of_tuples should already be sorted and the last component
@@ -1740,7 +1755,7 @@ def parse_period(s, minutes=True):
         m = int_regex.match(s)
         if m:
             return td + int(m.group(1)) * unitperiod
-        # if we get here we should have a period string
+            # if we get here we should have a period string
     m = period_string_regex.match(s)
     if not m:
         logger.error("Invalid period string: '{0}'".format(s))
@@ -1797,7 +1812,7 @@ def hsh2str(hsh, options=None):
 For editing one or more, but not all, instances of an item. Needed:
 1. Add @+ datetime to orig and make copy sans all repeating info and
    with @s datetime.
-2. Add &r datetime - oneminute to each _r in orig and make copy with
+2. Add &r datetime - ONEMINUTE to each _r in orig and make copy with
    @s datetime
 3. Add &f datetime to selected job.
     """
@@ -1871,7 +1886,8 @@ For editing one or more, but not all, instances of an item. Needed:
                                 except Exception:
                                     v = h['e']
                                     logger.error(
-"error: could not parse h['e']: '{0}'".format(h['e']))
+                                        "error: could not parse h['e']: '{0}'".format(
+                                            h['e']))
                             else:
                                 v = lst2str(h[amp_key])
                             tmp.append('&%s %s' % (amp_key, v))
@@ -2853,8 +2869,8 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
     return tups
 
 
-def getAgenda(allrows, colors=2, days=4, indent=2, width1=54, width2=14, calendars=None,
-              mode='html', fltr=None):
+def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
+              width2=14, calendars=None, mode='html', fltr=None):
     if not calendars: calendars = []
     cal_regex = None
     if calendars:
@@ -2876,8 +2892,8 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54, width2=14, calenda
     day_count = 0
     last_day = ''
     for item in items:
-        if cal_regex and not cal_regex.match(item[0][-1]):
-            continue
+        # if cal_regex and not cal_regex.match(item[0][-1]):
+        #     continue
         if item[0][0] == 'day':
             if item[0][1] >= beg_fmt and day_count <= days + 1:
                 # process day items until we get to days+1 so that all items
@@ -2899,7 +2915,7 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54, width2=14, calenda
     tree = {}
     for l in [day, now, next_lst]:
         if l:
-            update = makeTree(l, fltr=fltr)
+            update = makeTree(l, calendars=calendars, fltr=fltr)
             for key in update.keys():
                 tree.setdefault(key, []).extend(update[key])
     return tree
@@ -3184,7 +3200,7 @@ def str2hsh(s, uid=None, options=None):
                             pair[1], hsh['z'])).replace(tzinfo=None)
                 else:
                     due = done
-                # logger.debug("appending {0} to {1}".format(done, hsh['entry']))
+                    # logger.debug("appending {0} to {1}".format(done, hsh['entry']))
                 hsh['f'].append((done, due))
         if 'j' in hsh:
             for i in range(len(hsh['j'])):
@@ -3220,7 +3236,7 @@ def str2hsh(s, uid=None, options=None):
             if hsh['r'] == 'l':
                 # list only with no '&' fields
                 hsh['r'] = {'f': 'l'}
-            # skip one time and handle with finished, begin and pastdue
+                # skip one time and handle with finished, begin and pastdue
         msg.extend(checkhsh(hsh))
         if msg:
             return hsh, msg
@@ -3247,7 +3263,7 @@ def str2hsh(s, uid=None, options=None):
                 f = StringIO()
                 traceback.print_exc(file=f)
                 msg.append("exception in get_rrule: '%s" % f.getvalue())
-            # generated, not stored
+                # generated, not stored
         hsh['i'] = unicode(uuid.uuid4())
     except:
         fio = StringIO()
@@ -3408,6 +3424,7 @@ def get_data(options=None, dirty=False, use_pickle=True):
     if not options: options = {}
     objects = None
     bad_datafiles = []
+    logger.debug(dirty)
     if use_pickle and os.path.isfile(options['datafile']):
         objects = load_data(options)
     if objects is None:
@@ -3678,20 +3695,13 @@ def setItemPeriod(hsh, start, end, short=False, options=None):
 
 # noinspection PyChainedComparisons
 @memoize
-def getViewData(bef, file2uuids=None, uuid2hash=None, options=None, calendars=None):
+def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
     """
-        TODO: put something informative here
+        Collect data on all items, apply filters later
     """
-    if not calendars: calendars = []
     if not options: options = {}
     if not file2uuids: file2uuids = {}
     if not uuid2hash: uuid2hash = {}
-    if not calendars:
-        calendars = options['calendars']
-    cal_regex = []
-    for lab, chck, relpth in calendars:
-        if chck:
-            cal_regex.append(re.compile(r'^%s' % relpth))
     today_datetime = datetime.now().replace(
         hour=0, minute=0, second=0, microsecond=0)
     today_date = datetime.now().date()
@@ -3704,11 +3714,16 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None, calendars=No
     occasions = {}  # isodate -> [(uuid, subject)]
     alerts = []  # today only [(start_minutes, alert_minutes, action, uuid, f)]
     for f in file2uuids:
+        # if cal_regex and not cal_regex.match(uuid2hash[uid]['fileinfo'][0]):
+        # if cal_regex and not cal_regex.match(uuid2hash[uid][f]):
+        #     # print('skipping')
+        #     continue
         folders = expandPath(f)
         for uid in file2uuids[f]:
             # this will give the items in file order!
             if uuid2hash[uid]['itemtype'] in ['=']:
                 continue
+            # print(uuid2hash[uid]['fileinfo'])
             hsh = {}
             for k, v in uuid2hash[uid].items():
                 hsh[k] = v
@@ -3898,8 +3913,8 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None, calendars=No
                 if hsh['itemtype'] == '#':
                     # don't include deleted items in any other views
                     continue
-                # make in basket and someday entries #
-            # sort numbers for now view --- we'll add the typ num to
+                    # make in basket and someday entries #
+                    # sort numbers for now view --- we'll add the typ num to
             if hsh['itemtype'] == '$':
                 cat = 'In Basket'
                 item = [
@@ -3978,7 +3993,8 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None, calendars=No
                 else:
                     st_fmt = fmt_time(st, options=options)
                 summary = setSummary(hsh, dtl)
-                tmpl_hsh = {'i': uid, 'summary': summary, 'start_date': fmt_date(dtl, True),
+                tmpl_hsh = {'i': uid, 'summary': summary,
+                            'start_date': fmt_date(dtl, True),
                             'start_time': fmt_time(dtl, True, options=options)}
                 if 't' in hsh:
                     tmpl_hsh['t'] = ', '.join(hsh['t'])
@@ -4146,8 +4162,8 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None, calendars=No
                              st.strftime(sorttimefmt), f),
                             (fmt_date(sd),),
                             (uid, typ, summary, '%s ~ %s' %
-                                              (st_fmt,
-                                               options['dayend_fmt']), etmdt)]
+                                                (st_fmt,
+                                                 options['dayend_fmt']), etmdt)]
                         add2list(items, item)
                         add_busytime(uid, sd, sm, day_end_minutes,
                                      evnt_summary, busytimes, busydays, f)
@@ -4203,7 +4219,7 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None, calendars=No
                         add_busytime(uid, sd, sm, em, evnt_summary, busytimes,
                                      busydays, f)
                         continue
-                    #--------------- other dated items ---------------#
+                        #--------------- other dated items ---------------#
                 if hsh['itemtype'] in ['+', '-', '%']:
                     if 'e' in hsh:
                         extstr = fmt_period(hsh['e'])
@@ -4597,6 +4613,7 @@ class ETMCmd():
         self.options = options
         # logger.debug('options: {0}'.format(options))
         self.calendars = deepcopy(options['calendars'])
+        # logger.debug('Calendars: {0}'.format(self.calendars))
         self.cal_regex = None
         self.cmdDict = {
             '?': self.do_help,
@@ -4725,7 +4742,7 @@ class ETMCmd():
                 return (makeTree(
                     self.rows,
                     view=view,
-                    cal_regex=self.cal_regex,
+                    calendars=self.calendars,
                     fltr=f))
             else:
                 return (getReportData(
@@ -4735,6 +4752,7 @@ class ETMCmd():
                     self.options,
                     calendars=self.calendars,
                     mode=self.output))
+
         except:
             s = str(_('Could not process "{0}".')).format(arg_str)
             p = str(_('Enter ? r or ? t for help.'))
@@ -4752,14 +4770,15 @@ class ETMCmd():
             days = 0
         week_beg = now - days * oneday
         bef = (week_beg + (7 * (weeks_after + 1)) * oneday)
-
         uuid2hash, file2uuids, self.file2lastmodified, bad_datafiles, messages = \
             get_data(options=self.options, use_pickle=True)
         if messages:
             for msg in messages:
                 term_print(msg)
-        self.rows, self.busytimes, self.busydays, self.alerts, self.dates, self.occasions = getViewData(
-            bef, file2uuids, uuid2hash, options=self.options)
+        (self.rows, self.busytimes, self.busydays, self.alerts, self.dates, self.occasions) = getViewData(
+            bef, file2uuids, uuid2hash, options=self.options,
+            # calendars=self.calendars
+        )
         # print(self.dates)
         # self.prevnext = getPrevNext(self.dates)
         # self.rows = rows
@@ -4767,7 +4786,7 @@ class ETMCmd():
         self.uuid2hash = uuid2hash
         self.currfile = ensureMonthly(self.options, now)
         if self.last_rep:
-            print('load_data calling mk_rep with ', self.last_rep)
+            logger.debug('load_data calling mk_rep with {0}'.format(self.last_rep))
             return self.mk_rep(self.last_rep)
 
     def edit_tmp(self):
@@ -5043,23 +5062,16 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         """
         Called by do_e to process the choice.
         """
-        print('do_edit', choice)
-        if not choice:
-            return False
-        try:
-            choice = int(choice)
-        except:
-            return False
-        if choice == 1:
-            # only the datetime of this instance
-            # get the new datetime, add it to @+ and remove this
-            # instance by adding it to @-
-            prompt = _("new date and time to replace {0}?").format(
-                self.item_hsh['_dt'].strftime(rfmt))
-            self.mode = 'new_date'
-            return prompt
+        # if choice == 1:
+        #     # only the datetime of this instance
+        #     # get the new datetime, add it to @+ and remove this
+        #     # instance by adding it to @-
+        #     prompt = _("new date and time to replace {0}?").format(
+        #         self.item_hsh['_dt'].strftime(rfmt))
+        #     self.mode = 'new_date'
+        #     return prompt
 
-        elif choice in [2, 3]:
+        if choice in [1, 2]:
             hsh_cpy = deepcopy(self.item_hsh)
             hsh_rev = deepcopy(self.item_hsh)
             hsh_cpy['i'] = uniqueId()
@@ -5071,7 +5083,7 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
                 gettz(hsh_cpy['z']))
             dtn = dt.replace(tzinfo=None)
 
-            if choice == 2:
+            if choice == 1:
                 # this instance
                 # remove this instance by adding it to @-
                 # open a non-repeating copy with this instance as @s
@@ -5092,7 +5104,7 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
                 self.mode = 'append'
                 # self.Dialog.run(text=edit_str)
 
-            elif choice == 3:
+            elif choice == 2:
                 # this and all subsequent instances
                 # add this instance - one minute as &u to each @r entry
                 # open a copy with with this instance as @s
@@ -5146,6 +5158,7 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         self.mode = 'command'
 
     def replace_item(self, new_item):
+        logger.debug(new_item)
         newlines = new_item.split('\n')
         f, begline, endline = self.item_hsh['fileinfo']
         fp = os.path.join(self.options['datadir'], f)
@@ -5687,36 +5700,6 @@ j        When the day view is displayed, select the
             return _('canceled')
             return None
         if choice < 0 or choice > 3:
-            return bad_response
-            return None
-        return choice
-
-    def edit_which(self, instance):
-        bad_response = _("An integer response between 0 and 4 is required.")
-        itemList = [
-            _("\nYou have selected instance"),
-            "    {0}".format(instance),
-            _("of a repeating item. What do you want to change?"),
-            "  1. {0}".format(_("only the datetime of this instance")),
-            "  2. {0}".format(_("this instance")),
-            "  3. {0}".format(_("this and all subsequent instances")),
-            "  4. {0}".format(_("all instances")),
-            "{0}".format(_('Choice [1-4] or 0 to cancel?'))]
-        print('edit_which', itemList)
-        question = "\n".join(map(str, itemList))
-        return question
-
-        print('posing', question)
-        res = self.parent.input_wid.text
-        # res = raw_input(_('Choice [1-4] or 0 to cancel? '))
-        try:
-            choice = int(res)
-        except:
-            choice = 0
-        if not choice:
-            return _('canceled')
-            return None
-        if choice < 0 or choice > 4:
             return bad_response
             return None
         return choice
