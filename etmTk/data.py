@@ -5219,23 +5219,11 @@ datetime, an empty string to use the current date and time or
 "n" to cancel.\
 """.format(hsh['_summary']))
 
-    def cmd_do_finish(self, rep):
+    def cmd_do_finish(self, dt):
         """
         Called by do_f to process the finish datetime and add it to the file.
         """
         hsh = self.item_hsh
-        if rep.lower() == 'n':
-            return _('canceled')
-        if not rep:
-            # use default
-            dt = datetime.now(tzlocal())
-        else:
-            dtstr = parse_datetime(rep, hsh['z'])
-            if dtstr:
-                dt = parse(dtstr)
-            else:
-                # term_print("could not parse '{0}'".format(rep))
-                return False
         done, due, following = getDoneAndTwo(hsh)
         if due:
             # undated tasks won't have a due date

@@ -334,9 +334,11 @@ class OptionsDialog():
         # self.sv.set(opts[0])
         self.sv.set(1)
         # logger.debug('sv: {0}'.format(self.sv.get()))
-        for i in range(len(self.options)):
+        for i in range(min(9, len(self.options))):
             txt = self.options[i]
             val = i + 1
+            # bind keyboard numbers 1-9 (at most) to options selection, i.e., press 1
+            # to select option 1, 2 to select 2, etc.
             self.win.bind(str(val), (lambda e, x=val: self.sv.set(x)))
             Radiobutton(self.win,
                 text="{0}: {1}".format(val, txt),
@@ -437,6 +439,7 @@ class GetDateTime(DialogWindow):
             self.value = val
             return True
         else:
+            self.value = False
             self.error_message = _('could not parse "{0}"').format(res)
             return False
 
@@ -899,7 +902,18 @@ class App(Tk):
 
 
     def finishItem(self, e=None):
-        logger.debug('finishItem')
+        prompt = _("""\
+Enter the completion date for the item or return an empty string to
+use the current date. Relative dates and fuzzy parsing are supported.""")
+        d = GetDateTime(parent=self, title=_('date'), prompt=prompt)
+        chosen_day = d.value
+        if chosen_day is None:
+            return ()
+        logger.debug('completion date: {0}'.format(chosen_day))
+        loop.item_hsh = self.itemSelected
+        loop.cmd_do_finish(chosen_day)
+        loop.load_data()
+        self.showView()
 
     def rescheduleItem(self, e=None):
         logger.debug('rescheduleItem')
@@ -968,11 +982,10 @@ parsing are supported.""")
         d = GetDateTime(parent=self, title=_('date'), prompt=prompt)
         chosen_day = d.value
         logger.debug('chosen_day: {0}'.format(chosen_day))
-        if chosen_day is None:
-            return ()
 
         if chosen_day is None:
-            chosen_day = self.today
+            return ()
+            # chosen_day = self.today
 
         yn, wn, dn = chosen_day.isocalendar()
         self.prev_week = chosen_day - 7 * ONEDAY
