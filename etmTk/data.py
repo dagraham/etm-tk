@@ -14,8 +14,30 @@ _ = gettext.gettext
 
 import logging
 import logging.config
-
 logger = logging.getLogger()
+
+def setup_logging(
+        default_path='logging.yaml',
+        default_level=logging.INFO,
+        # env_key='LOG_CFG'
+):
+    """
+    Setup logging configuration. Override root:level in
+    logging.yaml with default_level.
+    """
+    path = default_path
+    # value = os.getenv(env_key, None)
+    # if value:
+    #     path = value
+    if os.path.exists(path):
+        with open(path, 'rt') as f:
+            config = yaml.load(f.read())
+        config['root']['level'] = default_level
+        logging.config.dictConfig(config)
+    else:
+        logging.basicConfig(level=default_level)
+    logger.info('logging enabled at level {0}'.format(default_level))
+
 
 import subprocess
 
@@ -2291,9 +2313,9 @@ def get_reps(bef, hsh):
     else:
         tmp.extend(list(hsh['rrule'].between(start, bef, inc=True)))
         tmp.append(hsh['rrule'].after(bef, inc=False))
-    return (passed, [i.replace(
+    return passed, [i.replace(
         tzinfo=gettz(hsh['z'])).astimezone(tzlocal()).replace(tzinfo=None)
-                     for i in tmp if i])
+                     for i in tmp if i]
 
 
 def get_rrulestr(hsh, key_hsh=rrule_hsh):
@@ -4619,9 +4641,6 @@ class ETMCmd():
             '?': self.do_help,
             'a': self.do_a,
             'c': self.do_c,
-            'd': self.do_d,
-            'e': self.do_e,
-            'f': self.do_f,
             'h': self.do_h,
             'k': self.do_k,
             'l': self.do_l,
@@ -4686,7 +4705,7 @@ class ETMCmd():
         else:
             self.editcmd = ''
         self.tmpfile = os.path.join(self.options['etmdir'], '.temp.txt')
-        self.load_data()
+        self.loadData()
 
     def do_command(self, s):
         args = s.split(' ')
@@ -4759,7 +4778,7 @@ class ETMCmd():
             ret.extend([s, p])
         return '\n'.join(ret)
 
-    def load_data(self):
+    def loadData(self):
         self.count2id = {}
         now = datetime.now()
         year, wn, dn = now.isocalendar()
@@ -4770,6 +4789,7 @@ class ETMCmd():
             days = 0
         week_beg = now - days * oneday
         bef = (week_beg + (7 * (weeks_after + 1)) * oneday)
+        self.options['bef'] = bef
         uuid2hash, file2uuids, self.file2lastmodified, bad_datafiles, messages = \
             get_data(options=self.options, use_pickle=True)
         if messages:
@@ -4895,32 +4915,32 @@ Usage:
 If there is an item number INT among those displayed by the previous 'a' or 'r'  command then open a COPY of the item for editing. The edited copy will be saved as a new item.\
 """)
 
-    def do_d(self, arg_str):
-        hsh = self.get_itemhash(arg_str)
-        if not hsh:
-            return ()
-            # f, begline, endline = hsh['fileinfo']
-        # fp = os.path.join(self.options['datadir'], f)
-        # fo = codecs.open(fp, 'r', file_encoding)
-        # lines = fo.readlines()
-        # fo.close()
-        self.item_hsh = hsh
-        if 'r' in hsh:
-            # repeating
-            instance = fmt_datetime(hsh['_dt'], self.options)
-            prompt = "\n".join([
-                _("You have selected instance"),
-                "    {0}".format(instance),
-                _("of a repeating item. What do you want to delete?"),
-                "  1. {0}".format(_("this instance")),
-                "  2. {0}".format(_("this and all subsequent instances")),
-                "  3. {0}".format(_("all instances")),
-                "{0}".format(_('Choice [1-3] or 0 to cancel? '))])
-            self.mode = 'delete'
-            return prompt
-        else:
-            # not repeating
-            self.cmd_do_delete(4)
+    # def do_d(self, arg_str):
+    #     hsh = self.get_itemhash(arg_str)
+    #     if not hsh:
+    #         return ()
+    #         # f, begline, endline = hsh['fileinfo']
+    #     # fp = os.path.join(self.options['datadir'], f)
+    #     # fo = codecs.open(fp, 'r', file_encoding)
+    #     # lines = fo.readlines()
+    #     # fo.close()
+    #     self.item_hsh = hsh
+    #     if 'r' in hsh:
+    #         # repeating
+    #         instance = fmt_datetime(hsh['_dt'], self.options)
+    #         prompt = "\n".join([
+    #             _("You have selected instance"),
+    #             "    {0}".format(instance),
+    #             _("of a repeating item. What do you want to delete?"),
+    #             "  1. {0}".format(_("this instance")),
+    #             "  2. {0}".format(_("this and all subsequent instances")),
+    #             "  3. {0}".format(_("all instances")),
+    #             "{0}".format(_('Choice [1-3] or 0 to cancel? '))])
+    #         self.mode = 'delete'
+    #         return prompt
+    #     else:
+    #         # not repeating
+    #         self.cmd_do_delete(4)
 
     def cmd_do_delete(self, choice):
         if not choice:
@@ -5058,93 +5078,112 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         item = hsh2str(hsh, self.options)
         self.replace_item(item)
 
-    def cmd_do_edit(self, choice):
-        """
-        Called by do_e to process the choice.
-        """
-        # if choice == 1:
-        #     # only the datetime of this instance
-        #     # get the new datetime, add it to @+ and remove this
-        #     # instance by adding it to @-
-        #     prompt = _("new date and time to replace {0}?").format(
-        #         self.item_hsh['_dt'].strftime(rfmt))
-        #     self.mode = 'new_date'
-        #     return prompt
-
-        if choice in [1, 2]:
-            hsh_cpy = deepcopy(self.item_hsh)
-            hsh_rev = deepcopy(self.item_hsh)
-            hsh_cpy['i'] = uniqueId()
-            self.mode = 'append'
-
-            dt = parse(
-                hsh_cpy['_dt']).replace(
-                tzinfo=tzlocal()).astimezone(
-                gettz(hsh_cpy['z']))
-            dtn = dt.replace(tzinfo=None)
-
-            if choice == 1:
-                # this instance
-                # remove this instance by adding it to @-
-                # open a non-repeating copy with this instance as @s
-                if '+' in hsh_rev and dtn in hsh_rev['+']:
-                    hsh_rev['+'].remove(dtn)
-                    if not hsh_rev['+'] and hsh_rev['r'] == 'l':
-                        del hsh_rev['r']
-                        del hsh_rev['_r']
-                else:
-                    hsh_rev.setdefault('-', []).append(dt)
-                for k in ['_r', 'o', '+', '-']:
-                    if k in hsh_cpy:
-                        del hsh_cpy[k]
-                hsh_cpy['s'] = dt
-                rev_str = hsh2str(hsh_rev, self.options)
-                self.mode = 'changed instance'
-                edit_str = hsh2str(hsh_cpy, self.options)
-                self.mode = 'append'
-                # self.Dialog.run(text=edit_str)
-
-            elif choice == 2:
-                # this and all subsequent instances
-                # add this instance - one minute as &u to each @r entry
-                # open a copy with with this instance as @s
-                tmp = []
-                for h in hsh_rev['_r']:
-                    if 'f' in h and h['f'] != u'l':
-                        h['u'] = dt - oneminute
-                    tmp.append(h)
-                hsh_rev['_r'] = tmp
-                if u'+' in hsh:
-                    tmp_rev = []
-                    tmp_cpy = []
-                    for d in hsh_rev['+']:
-                        if d < dt:
-                            tmp_rev.append(d)
-                        else:
-                            tmp_cpy.append(d)
-                    hsh_rev['+'] = tmp_rev
-                    hsh_cpy['+'] = tmp_cpy
-                if u'-' in hsh:
-                    tmp_rev = []
-                    tmp_cpy = []
-                    for d in hsh_rev['-']:
-                        if d < dt:
-                            tmp_rev.append(d)
-                        else:
-                            tmp_cpy.append(d)
-                    hsh_rev['-'] = tmp_rev
-                    hsh_cpy['-'] = tmp_cpy
-                hsh_cpy['s'] = dt
-                rev_str = hsh2str(hsh_rev, self.options)
-                self.mode = "changed this and subsequent instances"
-                self.replace_item(rev_str)
-                edit_str = hsh2str(hsh_cpy, self.options)
-                self.mode = 'append'
-                # self.parent.Dialog.run(text=edit_str)
+    def cmd_do_reschedule(self, dt):
+        dtn = dt.replace(tzinfo=None)
+        hsh_rev = deepcopy(self.itm_hsh)
+        if 'r' in hsh_rev:
+            if '+' in hsh_rev and dtn in hsh_rev['+']:
+                hsh_rev['+'].remove(dtn)
+                if not hsh_rev['+'] and hsh_rev['r'] == 'l':
+                    del hsh_rev['r']
+                    del hsh_rev['_r']
+            else:
+                hsh_rev.setdefault('-', []).append(dt)
         else:
-            self.mode = 'replace'
-            item_str = self.item_hsh['entry']
-            # self.parent.Dialog.run(text=item_str)
+            hsh_rev['s'] = dtn
+
+    def addItem(self, hsh):
+        """
+
+        :param hsh: new item to be added
+        """
+        pass
+
+    def replaceItem(self, hsh):
+        """
+
+        :param hsh: replacement for existing item
+        """
+        pass
+
+    # todo: add (1) addItem(new_hsh) and (2) replaceItem(changed_hsh)
+
+    def cmd_do_edit(self, choice, hsh):
+        """
+        Called by etmtk.editItem
+        """
+        # if choice in [1, 2]:
+        #     hsh_cpy = deepcopy(self.item_hsh)
+        #     hsh_rev = deepcopy(self.item_hsh)
+        #     hsh_cpy['i'] = uniqueId()
+        #     self.mode = 'append'
+        #
+        #     dt = parse(
+        #         hsh_cpy['_dt']).replace(
+        #         tzinfo=tzlocal()).astimezone(
+        #         gettz(hsh_cpy['z']))
+        #     dtn = dt.replace(tzinfo=None)
+        #
+        #     if choice == 1:
+        #         # this instance
+        #         # remove this instance by adding it to @-
+        #         # open a non-repeating copy with this instance as @s
+        #         if '+' in hsh_rev and dtn in hsh_rev['+']:
+        #             hsh_rev['+'].remove(dtn)
+        #             if not hsh_rev['+'] and hsh_rev['r'] == 'l':
+        #                 del hsh_rev['r']
+        #                 del hsh_rev['_r']
+        #         else:
+        #             hsh_rev.setdefault('-', []).append(dt)
+        #         for k in ['_r', 'o', '+', '-']:
+        #             if k in hsh_cpy:
+        #                 del hsh_cpy[k]
+        #         hsh_cpy['s'] = dt
+        #         rev_str = hsh2str(hsh_rev, self.options)
+        #         self.mode = 'changed instance'
+        #         edit_str = hsh2str(hsh_cpy, self.options)
+        #         self.mode = 'append'
+        #
+        #     elif choice == 2:
+        #         # this and all subsequent instances
+        #         # add this instance - one minute as &u to each @r entry
+        #         # open a copy with with this instance as @s
+        #         tmp = []
+        #         for h in hsh_rev['_r']:
+        #             if 'f' in h and h['f'] != u'l':
+        #                 h['u'] = dt - oneminute
+        #             tmp.append(h)
+        #         hsh_rev['_r'] = tmp
+        #         if u'+' in hsh:
+        #             tmp_rev = []
+        #             tmp_cpy = []
+        #             for d in hsh_rev['+']:
+        #                 if d < dt:
+        #                     tmp_rev.append(d)
+        #                 else:
+        #                     tmp_cpy.append(d)
+        #             hsh_rev['+'] = tmp_rev
+        #             hsh_cpy['+'] = tmp_cpy
+        #         if u'-' in hsh:
+        #             tmp_rev = []
+        #             tmp_cpy = []
+        #             for d in hsh_rev['-']:
+        #                 if d < dt:
+        #                     tmp_rev.append(d)
+        #                 else:
+        #                     tmp_cpy.append(d)
+        #             hsh_rev['-'] = tmp_rev
+        #             hsh_cpy['-'] = tmp_cpy
+        #         hsh_cpy['s'] = dt
+        #         rev_str = hsh2str(hsh_rev, self.options)
+        #         self.mode = "changed this and subsequent instances"
+        #         self.replace_item(rev_str)
+        #         self.mode = 'append'
+        # else:
+        #     self.mode = 'replace'
+        #
+        #     # item_str = self.item_hsh['entry']
+        #     # self.parent.Dialog.run(text=item_str)
 
     def delete_item(self):
         f, begline, endline = self.item_hsh['fileinfo']
@@ -5154,7 +5193,7 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         fo.close()
         self.mode = 'deleted item'
         self.replace_lines(fp, lines, begline, endline, [])
-        self.load_data()
+        self.loadData()
         self.mode = 'command'
 
     def replace_item(self, new_item):
@@ -5167,7 +5206,7 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         fo.close()
         self.mode = _('changed all instances')
         self.replace_lines(fp, lines, begline, endline, newlines)
-        self.load_data()
+        self.loadData()
         self.mode = 'command'
 
     def append_item(self, new_hsh, new_item):
@@ -5180,7 +5219,7 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         itemstr = "\n".join(items)
         self.mode = _('added item')
         self.safe_save(self.currfile, itemstr)
-        self.load_data()
+        self.loadData()
         self.input_wid.text = ''
 
     @staticmethod
@@ -5193,31 +5232,31 @@ Usage:
 If there is an item number INT among those displayed by the previous 'a' or 'r' command then open it for editing. When a repeating item is selected, you will first be prompted to choose which of the instances should be changed.\
 """)
 
-    def do_f(self, arg_str):
-        hsh = self.get_itemhash(arg_str)
-        if not hsh:
-            return ()
-        if not (hsh['itemtype'] in [u'-', u'+', u'%'] and
-                    (u'_r' in hsh or u'f' not in hsh)):
-            if hsh['itemtype'] in [u'-', u'+', u'%']:
-                return _('already finished')
-            else:
-                return _('not a task')
-            return False
-            # f, begline, endline = hsh['fileinfo']
-        # fp = os.path.join(self.options['datadir'], f)
-        # fo = codecs.open(fp, 'r', file_encoding)
-        # lines = fo.readlines()
-        # fo.close()
-        # now = datetime.now(tzlocal())
-        self.mode = 'finish'
-        self.item_hsh = hsh
-        return _("""\
-Finishing "{0}".
-Enter a date and time (fuzzy parsed) to use as the completion
-datetime, an empty string to use the current date and time or
-"n" to cancel.\
-""".format(hsh['_summary']))
+#     def do_f(self, arg_str):
+#         hsh = self.get_itemhash(arg_str)
+#         if not hsh:
+#             return ()
+#         if not (hsh['itemtype'] in [u'-', u'+', u'%'] and
+#                     (u'_r' in hsh or u'f' not in hsh)):
+#             if hsh['itemtype'] in [u'-', u'+', u'%']:
+#                 return _('already finished')
+#             else:
+#                 return _('not a task')
+#             return False
+#             # f, begline, endline = hsh['fileinfo']
+#         # fp = os.path.join(self.options['datadir'], f)
+#         # fo = codecs.open(fp, 'r', file_encoding)
+#         # lines = fo.readlines()
+#         # fo.close()
+#         # now = datetime.now(tzlocal())
+#         self.mode = 'finish'
+#         self.item_hsh = hsh
+#         return _("""\
+# Finishing "{0}".
+# Enter a date and time (fuzzy parsed) to use as the completion
+# datetime, an empty string to use the current date and time or
+# "n" to cancel.\
+# """.format(hsh['_summary']))
 
     def cmd_do_finish(self, dt):
         """

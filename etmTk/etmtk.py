@@ -8,6 +8,7 @@ import sys
 import re
 from copy import deepcopy
 import subprocess
+from dateutil.tz import tzlocal
 
 import yaml
 
@@ -15,28 +16,28 @@ import logging
 import logging.config
 logger = logging.getLogger()
 
-def setup_logging(
-        default_path='logging.yaml',
-        default_level=logging.INFO,
-        # env_key='LOG_CFG'
-):
-    """
-    Setup logging configuration. Override root:level in
-    logging.yaml with default_level.
-    """
-    path = default_path
-    # value = os.getenv(env_key, None)
-    # if value:
-    #     path = value
-    if os.path.exists(path):
-        with open(path, 'rt') as f:
-            config = yaml.load(f.read())
-        config['root']['level'] = default_level
-        logging.config.dictConfig(config)
-    else:
-        logging.basicConfig(level=default_level)
-    logger.info('logging enabled at level {0}'.format(default_level))
-
+# def setup_logging(
+#         default_path='logging.yaml',
+#         default_level=logging.INFO,
+#         # env_key='LOG_CFG'
+# ):
+#     """
+#     Setup logging configuration. Override root:level in
+#     logging.yaml with default_level.
+#     """
+#     path = default_path
+#     # value = os.getenv(env_key, None)
+#     # if value:
+#     #     path = value
+#     if os.path.exists(path):
+#         with open(path, 'rt') as f:
+#             config = yaml.load(f.read())
+#         config['root']['level'] = default_level
+#         logging.config.dictConfig(config)
+#     else:
+#         logging.basicConfig(level=default_level)
+#     logger.info('logging enabled at level {0}'.format(default_level))
+#
 
 import platform
 
@@ -75,7 +76,7 @@ from data import (
     get_changes, checkForNewerVersion, getAgenda,
     date_calculator, datetime2minutes, calyear, export_ical_item,
     import_ical, export_ical, has_icalendar, expand_template, ensureMonthly,
-    sys_platform, id2Type, get_current_time, mac)
+    sys_platform, id2Type, get_current_time, mac, setup_logging)
 
 from editor import SimpleEditor
 
@@ -426,7 +427,7 @@ class GetDateTime(DialogWindow):
         res = self.entry.get()
         ok = False
         if not res.strip():
-            # today
+            # return the current time if ok is pressed with no entry
             val = get_current_time()
             ok = True
         else:
@@ -731,7 +732,9 @@ class App(Tk):
             k = em_cmds[i]
             l, c = self.platformShortcut(k)
             self.em["menu"].entryconfig(i, accelerator=l, command=self.edit2cmd[k])
-            self.bind(c, self.edit2cmd[k])  # c, d, e, f
+            # self.bind(c, self.edit2cmd[k])  # c, d, e, f
+            self.bind_all(c, lambda event, x=k: self.after(AFTER, self.edit2cmd[x]))
+
         self.em.pack(side="left")
 
         self.pendingAlerts = StringVar(self)
@@ -860,7 +863,7 @@ class App(Tk):
                 return
         loop.item_hsh = self.itemSelected
         loop.cmd_do_delete(indx)
-        loop.load_data()
+        loop.loadData()
         self.showView()
 
 
@@ -877,14 +880,88 @@ class App(Tk):
 
     def editItem(self, e=None):
         logger.debug('{0}: {1}'.format(self.itemSelected['_summary'], self.dtSelected))
-        indx = 3
+        choice = 3
         if 'r' in self.itemSelected:
-            indx, value = self.editWhich(self.dtSelected)
-            logger.debug("{0}: {1}".format(indx, value))
-            if not indx:
+            choice, value = self.editWhich(self.dtSelected)
+            logger.debug("{0}: {1}".format(choice, value))
+            if not choice:
                 return
             self.itemSelected['_dt'] = parse(self.dtSelected)
-        loop.item_hsh = self.itemSelected
+        if choice in [1, 2]:
+            hsh_cpy = deepcopy(self.itemSelected)
+            hsh_rev = deepcopy(self.itemSelected)
+            # we will be editing and adding hsh_cpy and replacing hsh_rev
+            hsh_cpy['i'] = uniqueId()
+            self.mode = 'append'
+            # remove the line number info to indicate that hsh_cpy is to be appended
+            hsh_cpy['fileinfo'][1] = hsh_cpy['fileinfo'][2] = 0
+
+            dt = parse(hsh_cpy['_dt']).replace(
+                tzinfo=tzlocal()).astimezone(gettz(hsh_cpy['z']))
+            dtn = dt.replace(tzinfo=None)
+
+            if choice == 1:
+                # this instance
+                # remove this instance by adding it to @-
+                # open a non-repeating copy with this instance as @s
+                if '+' in hsh_rev and dtn in hsh_rev['+']:
+                    hsh_rev['+'].remove(dtn)
+                    if not hsh_rev['+'] and hsh_rev['r'] == 'l':
+                        del hsh_rev['r']
+                        del hsh_rev['_r']
+                else:
+                    hsh_rev.setdefault('-', []).append(dt)
+                for k in ['_r', 'o', '+', '-']:
+                    if k in hsh_cpy:
+                        del hsh_cpy[k]
+                hsh_cpy['s'] = dt
+                rev_str = hsh2str(hsh_rev, loop.options)
+                self.mode = 'changed instance'
+                edit_str = hsh2str(hsh_cpy, loop.options)
+                self.mode = 'append'
+
+            elif choice == 2:
+                # this and all subsequent instances
+                # add this instance minus one minute as &u to each @r entry
+                # open a copy with with this instance as @s
+                tmp = []
+                for h in hsh_rev['_r']:
+                    if 'f' in h and h['f'] != u'l':
+                        h['u'] = dt - oneminute
+                    tmp.append(h)
+                hsh_rev['_r'] = tmp
+                if u'+' in hsh:
+                    tmp_rev = []
+                    tmp_cpy = []
+                    for d in hsh_rev['+']:
+                        if d < dt:
+                            tmp_rev.append(d)
+                        else:
+                            tmp_cpy.append(d)
+                    hsh_rev['+'] = tmp_rev
+                    hsh_cpy['+'] = tmp_cpy
+                if u'-' in hsh:
+                    tmp_rev = []
+                    tmp_cpy = []
+                    for d in hsh_rev['-']:
+                        if d < dt:
+                            tmp_rev.append(d)
+                        else:
+                            tmp_cpy.append(d)
+                    hsh_rev['-'] = tmp_rev
+                    hsh_cpy['-'] = tmp_cpy
+                hsh_cpy['s'] = dt
+                rev_str = hsh2str(hsh_rev, self.options)
+                edit_str = hsh2str(hsh_cpy, loop.options)
+            edit = SimpleEditor(parent=self, edit_str=edit_str)
+
+        else:
+            edit_str = hsh2str(self.itemSelected)
+
+
+
+
+        loop.cmd_do_edit(choice)
 
 
     def editWhich(self, instance="xyz"):
@@ -912,11 +989,25 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
         logger.debug('completion date: {0}'.format(chosen_day))
         loop.item_hsh = self.itemSelected
         loop.cmd_do_finish(chosen_day)
-        loop.load_data()
+        loop.loadData()
         self.showView()
 
-    def rescheduleItem(self, e=None):
-        logger.debug('rescheduleItem')
+
+    def rescheduleItem(self, e=None, instance="xyz"):
+        loop.item_hsh = self.itemSelected
+        logger.debug('item: {0}'.format(loop.item_hsh))
+        instance = self.dtSelected
+        logger.debug('instance {0}'.format(instance))
+        prompt = _("""\
+Enter the new date and time for the item or return an empty string to
+use the current time. Relative dates and fuzzy parsing are supported.""")
+        d = GetDateTime(parent=self, title=_('instance: {0}').format(instance), prompt=prompt)
+        chosen_day = d.value
+        if chosen_day is None:
+            return ()
+        logger.debug('new date time: {0}'.format(chosen_day))
+        loop.cmd_do_reschedule(chosen_day)
+
 
     def showAlerts(self, e=None):
         t = _('remaining alerts for today')
@@ -1311,7 +1402,7 @@ or 0 to display all changes.""")
             self.options, loop.file2lastmodified)
         if newday or new or modified or deleted:
             logger.debug('refreshing view: newday or changed')
-            loop.load_data()
+            loop.loadData()
             self.showView()
 
         if self.actionTimer.timer_status != STOPPED:
