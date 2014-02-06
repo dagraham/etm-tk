@@ -3,41 +3,14 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 #import the 'tkinter' module
-import os
-import sys
 import re
 from copy import deepcopy
 import subprocess
 from dateutil.tz import tzlocal
 
-import yaml
-
 import logging
 import logging.config
 logger = logging.getLogger()
-
-# def setup_logging(
-#         default_path='logging.yaml',
-#         default_level=logging.INFO,
-#         # env_key='LOG_CFG'
-# ):
-#     """
-#     Setup logging configuration. Override root:level in
-#     logging.yaml with default_level.
-#     """
-#     path = default_path
-#     # value = os.getenv(env_key, None)
-#     # if value:
-#     #     path = value
-#     if os.path.exists(path):
-#         with open(path, 'rt') as f:
-#             config = yaml.load(f.read())
-#         config['root']['level'] = default_level
-#         logging.config.dictConfig(config)
-#     else:
-#         logging.basicConfig(level=default_level)
-#     logger.info('logging enabled at level {0}'.format(default_level))
-#
 
 import platform
 
@@ -67,16 +40,7 @@ import data
 from dateutil.parser import parse
 
 from data import (
-    init_localization, fmt_weekday, fmt_dt, fmt_time, get_options, get_data,
-    get_reps, getDoneAndTwo, getFiles, getPrevNext, getReportData,
-    getViewData, group_regex, hsh2str, leadingzero, mail_report,
-    parse_datetime, parse_dtstr, fmt_datetime,
-    process_lines, relpath, rrulefmt, s2or3, send_mail, send_text,
-    sfmt, str2hsh, timedelta2Str, tstr2SCI, fmt_period,
-    get_changes, checkForNewerVersion, getAgenda,
-    date_calculator, datetime2minutes, calyear, export_ical_item,
-    import_ical, export_ical, has_icalendar, expand_template, ensureMonthly,
-    sys_platform, id2Type, get_current_time, mac, setup_logging, uniqueId, gettz, platformShortcut)
+    init_localization, fmt_weekday, fmt_dt, hsh2str, leadingzero, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, mac, setup_logging, uniqueId, gettz, platformShortcut, bgclr)
 
 from editor import SimpleEditor
 
@@ -92,7 +56,7 @@ else:
 
 from idlelib.WidgetRedirector import WidgetRedirector
 
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta
 
 ONEMINUTE = timedelta(minutes=1)
 ONEHOUR = timedelta(hours=1)
@@ -108,8 +72,6 @@ class Timer():
     def __init__(self):
         """
 
-        :param parent:
-        :param options:
         """
         self.timer_delta = 0 * ONEMINUTE
         self.timer_active = False
@@ -177,6 +139,7 @@ class ReadOnlyText(Text):
         self.redirector = WidgetRedirector(self)
         self.insert = self.redirector.register("insert", lambda *args, **kw: "break")
         self.delete = self.redirector.register("delete", lambda *args, **kw: "break")
+        self.configure(highlightthickness=0)
 
 
 class MessageWindow():
@@ -472,6 +435,7 @@ class App(Tk):
         self.timerItem = None
         self.actionTimer = Timer()
         self.loop = loop
+        self.configure(background=bgclr)
         menubar = Menu(self)
 
         # File menu
@@ -488,21 +452,17 @@ class App(Tk):
                              underline=0, command=self.donothing)
 
         l, c = platformShortcut('O')
-        filemenu.add_command(label=loop.options['config'], underline=0, command=self
-        .donothing, accelerator=l)
+        filemenu.add_command(label=loop.options['config'], underline=0, command=lambda e=None, x=loop.options['config']: self.editFile(file=x), accelerator=l)
         # self.bind_all(c, lambda event: self.after(after, self.donothing))
 
         l, c = platformShortcut('C')
-        filemenu.add_command(label=loop.options['auto_completions'], underline=0,
-                             command=self.donothing, accelerator=l)
+        filemenu.add_command(label=loop.options['auto_completions'], underline=0, command=lambda x=loop.options['auto_completions']: self.editFile(file=x), accelerator=l)
 
         l, c = platformShortcut('R')
-        filemenu.add_command(label=loop.options['report_specifications'], underline=0,
-                             command=self.donothing, accelerator=l)
+        filemenu.add_command(label=loop.options['report_specifications'], underline=0, command=lambda x=loop.options['report_specifications']: self.editFile(file=x), accelerator=l)
 
         l, c = platformShortcut('S')
-        filemenu.add_command(label=loop.options['scratchfile'], underline=0, command=self
-        .donothing, accelerator=l)
+        filemenu.add_command(label=loop.options['scratchfile'], underline=0, command=lambda e, x=loop.options['scratchfile']: self.editFile(file=x), accelerator=l)
 
         filemenu.add_separator()
 
@@ -634,15 +594,16 @@ class App(Tk):
         self.columnconfigure(0, minsize=300, weight=1)
         self.rowconfigure(1, weight=2)
 
-        ef = Frame(self)
+        toolbar = Frame(self)
 
-        pw = PanedWindow(self, orient="vertical",
+        panedwindow = PanedWindow(self, orient="vertical",
                          # showhandle=True,
-                         sashwidth=4, sashrelief='flat',
+                         sashwidth=6, sashrelief='flat',
         )
 
-        self.tree = ttk.Treeview(pw, show='tree', columns=["#1"], selectmode='browse',
-                                 padding=(3, 2, 3, 2))
+        self.tree = ttk.Treeview(panedwindow, show='tree', columns=["#1"], selectmode='browse',
+                                 # padding=(3, 2, 3, 2)
+        )
         self.tree.column('#0', minwidth=200, width=260, stretch=1)
         self.tree.column('#1', minwidth=80, width=140, stretch=0, anchor='center')
         self.tree.bind('<<TreeviewSelect>>', self.OnSelect)
@@ -657,7 +618,7 @@ class App(Tk):
 
         self.root = (u'', u'_')
 
-        ef.grid(row=0, column=0, sticky='ew', padx=3, pady=2)
+        toolbar.grid(row=0, column=0, sticky='ew', padx=3, pady=2)
 
         menuwidth = 8
 
@@ -681,7 +642,7 @@ class App(Tk):
         self.currentView = StringVar(self)
         self.currentView.set(self.view)
         self.viewValue.set(self.viewLabel)
-        self.vm = OptionMenu(ef, self.viewValue, *self.vm_opts, command=self.setView)
+        self.vm = OptionMenu(toolbar, self.viewValue, *self.vm_opts, command=self.setView)
         self.vm.configure(width=menuwidth)
         for k in self.view2cmd:
             l, c = platformShortcut(k)
@@ -690,6 +651,7 @@ class App(Tk):
             self.vm["menu"].entryconfig(i, accelerator=l)
 
         self.vm.pack(side="left")
+        self.vm.configure(width=menuwidth, background=bgclr)
 
         self.newValue = StringVar(self)
         self.newLabel = _("act")
@@ -698,7 +660,7 @@ class App(Tk):
                            [_('start timer'), 't'],
         ]
         self.nm_opts = [x[0] for x in self.nm_options]
-        self.nm = OptionMenu(ef, self.newValue, *self.nm_opts)
+        self.nm = OptionMenu(toolbar, self.newValue, *self.nm_opts)
 
         l, c = platformShortcut('n')
         self.nm["menu"].entryconfig(0, accelerator=l, command=self.newItem)
@@ -709,6 +671,7 @@ class App(Tk):
         self.bind(c, self.startTimer)  # +
 
         self.nm.pack(side="left")
+        self.nm.configure(width=menuwidth, background=bgclr)
 
         self.editValue = StringVar(self)
         self.editLabel = _("edit")
@@ -724,8 +687,7 @@ class App(Tk):
                          'r': self.rescheduleItem}
         self.em_opts = [x[0] for x in self.em_options]
         em_cmds = [x[1] for x in self.em_options]
-        self.em = OptionMenu(ef, self.editValue, *self.em_opts)
-        self.em.configure(width=menuwidth)
+        self.em = OptionMenu(toolbar, self.editValue, *self.em_opts)
         for i in range(len(em_cmds)):
             k = em_cmds[i]
             l, c = platformShortcut(k)
@@ -734,10 +696,11 @@ class App(Tk):
             self.bind_all(c, lambda event, x=k: self.after(AFTER, self.edit2cmd[x]))
 
         self.em.pack(side="left")
+        self.em.configure(width=menuwidth, background=bgclr)
 
         self.pendingAlerts = StringVar(self)
         self.pendingAlerts.set("")
-        self.pending = Button(ef, textvariable=self.pendingAlerts,
+        self.pending = Button(toolbar, textvariable=self.pendingAlerts,
                               command=self.showAlerts)
         self.pending.pack(side="right")
         self.showPending = True
@@ -745,52 +708,61 @@ class App(Tk):
         self.filterValue = StringVar(self)
         self.filterValue.set('')
         self.filterValue.trace_variable("w", self.showView)
-        self.e = Entry(ef, width=8, textvariable=self.filterValue, bd=2)
+        self.e = Entry(toolbar, width=8, textvariable=self.filterValue, bd=2)
         self.e.bind('<Return>', self.showView)
         self.e.bind('<Escape>', self.cleartext)
         self.e.bind('<Up>', self.prev_history)
         self.e.bind('<Down>', self.next_history)
         self.e.pack(side="left", fill=tkinter.BOTH, expand=1, padx=2)
+        self.e.configure(width=menuwidth, highlightthickness=0)
 
-        pw.add(self.tree, padx=3, pady=0, stretch="first")
+        panedwindow.add(self.tree, padx=3, pady=0, stretch="first")
 
-        self.l = ReadOnlyText(pw, wrap="word", bd=2, relief="sunken", padx=2, pady=2,
+        self.l = ReadOnlyText(panedwindow, wrap="word", padx=3, bd=2, relief="sunken",
                               font=tkFont.Font(family="Lucida Sans Typewriter"), height=6,
                               width=46, takefocus=False)
         self.l.bind('<Escape>', self.cleartext)
         self.l.bind('<space>', self.goHome)
         self.l.bind('<Tab>', self.focus_next_window)
 
-        pw.add(self.l, padx=0, pady=0, stretch="never")
+        panedwindow.add(self.l, padx=3, pady=0, stretch="never")
 
-        pw.grid(row=1, column=0, sticky="nsew", padx=2, pady=0)
+        panedwindow.grid(row=1, column=0, sticky="nsew", padx=0, pady=0)
+        panedwindow.configure(background=bgclr)
 
         self.sf = Frame(self)
+        toolbar.configure(background=bgclr)
         # self.pendingAlerts = StringVar(self)
         # self.pendingAlerts.set("")
 
         showing = Label(self.sf, textvariable=self.currentView, bd=1, relief="flat",
                         anchor="w", padx=0, pady=0)
         showing.pack(side="left")
+        showing.configure(width=menuwidth, background=bgclr,
+                          highlightthickness=0)
 
         self.nonDefaultCalendars = StringVar(self)
         self.nonDefaultCalendars.set("")
-        nonDefCal = Label(self.sf, textvariable=self.nonDefaultCalendars, bd=1,
+        nonDefCal = Label(self.sf, textvariable=self.nonDefaultCalendars, bd=0,
                           relief="flat", anchor="center", padx=0, pady=0)
         nonDefCal.pack(side="left")
+        nonDefCal.configure(background=bgclr)
 
         self.timerStatus = StringVar(self)
         self.timerStatus.set("")
-        timer_status = Label(self.sf, textvariable=self.timerStatus, bd=1, relief="flat",
+        timer_status = Label(self.sf, textvariable=self.timerStatus, bd=0, relief="flat",
                              anchor="center", padx=4, pady=0)
         timer_status.pack(side="left", expand=1)
+        timer_status.configure(background=bgclr, highlightthickness=0)
 
         self.currentTime = StringVar(self)
         currenttime = Label(self.sf, textvariable=self.currentTime, bd=1, relief="flat",
                             anchor="e", padx=4, pady=0)
         currenttime.pack(side="right")
+        currenttime.configure(background=bgclr)
 
         self.sf.grid(row=2, column=0, sticky="ew", padx=8, pady=4)
+        self.sf.configure(background=bgclr)
 
         self.grid()
 
@@ -802,21 +774,6 @@ class App(Tk):
         # show default view
         self.showView()
 
-    # @staticmethod
-    # def platformShortcut(s):
-    #     """
-    #     Produce label, command pairs from s based on Command for OSX
-    #     and Control otherwise.
-    #     """
-    #     if s.upper() == s and s.lower() != s:
-    #         shift = "Shift-"
-    #     else:
-    #         shift = ""
-    #     if mac:
-    #         return "{0}Cmd-{1}".format(shift, s), "<{0}Command-{1}>".format(shift, s)
-    #     else:
-    #         return "{0}Ctrl-{1}".format(shift, s), "<{0}Control-{1}>".format(shift, s)
-    #
     def updateCalendars(self, *args):
         for i in range(len(loop.calendars)):
             loop.calendars[i][1] = self.calendarValues[i].get()
@@ -889,6 +846,7 @@ class App(Tk):
     def editItem(self, e=None):
         logger.debug('{0}: {1}'.format(self.itemSelected['_summary'], self.dtSelected))
         choice = 3
+        title = "etm tk"
         if 'r' in self.itemSelected:
             choice, value = self.editWhich(self.dtSelected)
             logger.debug("{0}: {1}".format(choice, value))
@@ -896,6 +854,7 @@ class App(Tk):
                 return
             self.itemSelected['_dt'] = parse(self.dtSelected)
         if choice in [1, 2]:
+            title = _("new item")
             hsh_cpy = deepcopy(self.itemSelected)
             hsh_rev = deepcopy(self.itemSelected)
             # we will be editing and adding hsh_cpy and replacing hsh_rev
@@ -963,12 +922,18 @@ class App(Tk):
                 edit_str = hsh2str(hsh_cpy, loop.options)
 
             changed = SimpleEditor(parent=self, newhsh=hsh_cpy, rephsh=hsh_rev,
-                         options=loop.options).changed
+                         options=loop.options, title=title).changed
 
         else:
-
             changed = SimpleEditor(parent=self, newhsh=self.itemSelected,
-                         options=loop.options).changed
+                         options=loop.options, title=self.filetext).changed
+        if changed:
+            loop.loadData()
+            self.showView()
+
+    def editFile(self, e=None, file=None):
+        logger.debug('file: {0}'.format(file))
+        changed = SimpleEditor(parent=self, file=file, title=file, options=loop.options).changed
         if changed:
             loop.loadData()
             self.showView()
@@ -1338,9 +1303,9 @@ or 0 to display all changes.""")
                 lines = "{0} {1}".format(_('line'), l1)
             else:
                 lines = "{0} {1}-{2}".format(_('lines'), l1, l2)
-            filetext = "{0}, {1}".format(hsh['fileinfo'][0], lines)
-            text = "{1}\n\n{2}: {3}".format(item, hsh['entry'].lstrip(), _("file"),
-                                            filetext)
+            self.filetext = filetext = "{0}, {1}".format(hsh['fileinfo'][0],
+                                                      lines)
+            text = "{1}\n\n{2}: {3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
             for i in [0, 1, 3]: # everything except finish
                 self.em["menu"].entryconfig(i, state='normal')
                 # self.em.configure(state="normal")

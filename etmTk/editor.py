@@ -4,8 +4,9 @@ from copy import deepcopy
 
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, RIGHT, Text, PanedWindow, OptionMenu, StringVar, Menu, BooleanVar, ACTIVE, X, RIDGE, BOTH, SEL, SEL_FIRST, SEL_LAST
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Frame, LEFT, RIGHT, Text, PanedWindow, OptionMenu, StringVar, Menu, BooleanVar, ACTIVE, X, RIDGE, BOTH, SEL, SEL_FIRST, SEL_LAST, Button, FLAT
     from tkinter import ttk
+    # from ttk import Button, Style
     from tkinter import font as tkFont
     from tkinter import simpledialog as tkSimpleDialog
     from tkinter.simpledialog import askstring
@@ -14,8 +15,9 @@ if platform.python_version() >= '3':
     from tkinter.filedialog import askopenfilename
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, RIGHT, Text, PanedWindow, OptionMenu, StringVar, Menu, BooleanVar, ACTIVE, X, RIDGE, BOTH, SEL, SEL_FIRST, SEL_LAST
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Frame, LEFT, RIGHT, Text, PanedWindow, OptionMenu, StringVar, Menu, BooleanVar, ACTIVE, X, RIDGE, BOTH, SEL, SEL_FIRST, SEL_LAST, Button, FLAT
     import ttk
+    # from ttk import Button, Style
     import tkFont
     import tkSimpleDialog
     from tkSimpleDialog import askstring
@@ -41,7 +43,7 @@ SOMEREPS = _('Selected repetitions')
 ALLREPS = _('Repetitions')
 MESSAGES = _('Error messages')
 
-from data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, platformShortcut
+from data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, platformShortcut, bgclr
 
 
 from idlelib.WidgetRedirector import WidgetRedirector
@@ -57,7 +59,7 @@ class ReadOnlyText(Text):
 
 class SimpleEditor(Toplevel):
 
-    def __init__(self, parent=None, file=None, newhsh=None, rephsh=None, options=None):
+    def __init__(self, parent=None, file=None, newhsh=None, rephsh=None, options=None, title=None):
         """
         If file is given, set file mode and open file for editing.
         If newhsh is given we are editing an item that will be appended.
@@ -83,29 +85,36 @@ class SimpleEditor(Toplevel):
         self.changed = False
 
         self.file = file
+        self.title = title
         self.newhsh = newhsh
         self.rephsh = rephsh
         self.oldhsh = deepcopy(newhsh)
         if newhsh and 'fileinfo' in newhsh:
             self.fileinfo = self.newhsh['fileinfo']
-            logger.debug("newhsh: {0}".format(self.newhsh))
-            logger.debug("rephsh: {0}".format(self.rephsh))
+            # logger.debug("newhsh: {0}".format(self.newhsh))
+            # logger.debug("rephsh: {0}".format(self.rephsh))
         else:
             self.fileinfo = None
         self.value = ''
         self.options = options
         # self.text_value.trace_variable("w", self.setSaveStatus)
-        frame = Frame(self, bd=2, relief=RIDGE)
-        # frame.pack(side="top", expand=1, padx=0, pady=0, fill=X)
-        frame.pack(side="bottom", fill=X)
+        frame = Frame(self, bd=0, relief=FLAT)
+        frame.pack(side="bottom", fill=X, padx=4, pady=3)
+        frame.configure(background=bgclr)
+
+        # Style().configure('graybackground', background="bgclr")
 
         btnwdth = 5
         # ok will check if necessary and save
-        Button(frame, text=_("OK"), width=btnwdth, command=self.onSave).pack(side=RIGHT, padx=4)
+        l, c = platformShortcut('w')
+        self.bind(c, self.quit)
+        Button(frame, text=_("OK"), highlightbackground=bgclr, width=btnwdth, command=self .onSave).pack(side=RIGHT, padx=4)
+        # okbtn.configure(highlightbackground=0)
         # cancel will quit with a warning prompt if modified
-        Button(frame, text=_("Cancel"), width=btnwdth, command=self.quit).pack(side=RIGHT, padx=4)
-        # evaluate item intry
-        check = Button(frame, text=_("Check"), width=btnwdth, command=self.onCheck).pack(side=LEFT, padx=4)
+        Button(frame, text=_("Cancel"), highlightbackground=bgclr, width=btnwdth, command=self.quit).pack(side=RIGHT, padx=4); self.bind("<Escape>", self.quit)
+        # check will evaluate the item entry and, if repeating, show reps
+        inspect = Button(frame, text=_("Inspect"), highlightbackground=bgclr, width=btnwdth, command=self.onCheck)
+        inspect.pack(side=LEFT, padx=4)
 
         # Button(frame, text=_('Quit'), width=btnwdth, command=self.quit).pack(side=LEFT, padx=2)
         # l, c = platformShortcut('w')
@@ -124,17 +133,21 @@ class SimpleEditor(Toplevel):
         # e.bind("<Escape>", self.clearFind)
         # Button(frame, text=_('Find'), width=btnwdth, command=self.onFind).pack(side=RIGHT, padx=2)
 
-        text = Text(self, bd=0, padx=3, pady=2, font=tkFont.Font(family="Lucida Sans Typewriter"), undo=True, width=70)
+        text = Text(self, bd=2, relief="sunken", padx=3, pady=2, font=tkFont.Font(family="Lucida Sans Typewriter"), undo=True, width=70)
+        text.configure(highlightthickness=0)
 
-        text.pack(side="bottom", padx=0, pady=0, expand=1, fill=BOTH)
+        text.pack(side="bottom", padx=4, pady=4, expand=1, fill=BOTH)
         self.text = text
+        if title is not None:
+            self.wm_title(title)
 
         if file is not None:
             # we're editing a file
             self.mode = 'file'
             self.settext(file=file)
             self.setmodified(False)
-            check.configure(state="disabled")
+            inspect.configure(state="disabled")
+            logger.debug('file: {0}'.format(file))
         else:
             # we are editing an item
             # Button(frame, text=_('Check'), width=btnwdth, command=self.onCheck).pack(side=LEFT, padx=2)
@@ -153,7 +166,9 @@ class SimpleEditor(Toplevel):
                     # without line numbers we will be appending an item
                     self.mode = 'append'
                     self.setmodified(False)
-        # self.text.bind('<<Modified>>', self.updateSaveStatus)
+        # clear the undo buffer
+        self.text.edit_reset()
+        self.text.bind('<<Modified>>', self.updateSaveStatus)
 
         self.grab_set()
 
@@ -166,6 +181,7 @@ class SimpleEditor(Toplevel):
                                       parent.winfo_rooty() + 50))
 
         # self.initial_focus.focus_set()
+        self.configure(background=bgclr)
 
         self.wait_window(self)
 
@@ -188,17 +204,11 @@ class SimpleEditor(Toplevel):
     def checkmodified(self):
         return self.text.edit_modified()
 
-    # def updateSaveStatus(self, event=None):
-    #     if self.checkmodified():
-    #         self.needsCheck = True
-    #         logger.debug('normal: "{0}"'.format(self.value))
-    #         self.sb.configure(state='normal')
-    #         # update the return value so that when it is not null then modified
-    #         # is false and when modified is true then it is null
-    #         self.value = ""
-    #     else:
-    #         logger.debug('disabled: "{0}"'.format(self.value))
-    #         self.sb.configure(state='disabled')
+    def updateSaveStatus(self, event=None):
+        if self.checkmodified():
+            self.wm_title("{0} *".format(self.title))
+        else:
+            self.wm_title(self.title)
 
     def onSave(self):
         logger.debug('modified: {0}'.format(self.checkmodified()))
