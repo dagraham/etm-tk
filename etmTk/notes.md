@@ -109,11 +109,11 @@
 ## Editor
 
 - Toolbar
-    - Quit (prompt if modified)
-    - Save (check and save, prompting for file if necessary)
+    - Ok (check, if necessary, and save, prompting for file if necessary)
     - Check (str2hsh and back)
         - display messages if necessary
         - if repeating, show list of repetitions
+    - Cancel (prompt if modified)
 
 
 ### Logic

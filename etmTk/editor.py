@@ -1,4 +1,6 @@
+import os
 import platform, sys
+from copy import deepcopy
 
 if platform.python_version() >= '3':
     import tkinter
@@ -27,39 +29,20 @@ else:
 # askyesno ()
 # askretrycancel ()
 
-import logging
-import logging.config
-logger = logging.getLogger()
-from data import setup_logging
-
-
 import gettext
 _ = gettext.gettext
 
-from data import hsh2str, str2hsh, get_reps, checkhsh
+import logging
+import logging.config
+logger = logging.getLogger()
 
-# class MessageWindow():
-#     # noinspection PyShadowingNames
-#     def __init__(self, parent, title, prompt):
-#         self.win = Toplevel(parent)
-#         self.parent = parent
-#         self.win.title(title)
-#         Label(self.win, text=prompt).pack(fill=tkinter.BOTH, expand=1, padx=10, pady=10)
-#         b = Button(self.win, text=_('OK'), width=10, command=self.cancel,
-#                    default='active')
-#         b.pack()
-#         self.win.bind('<Return>', (lambda e, b=b: b.invoke()))
-#         self.win.bind('<Escape>', (lambda e, b=b: b.invoke()))
-#         self.win.focus_set()
-#         self.win.grab_set()
-#         self.win.transient(parent)
-#         self.win.wait_window(self.win)
-#         return
-#
-#     def cancel(self, event=None):
-#         # put focus back to the parent window
-#         self.parent.focus_set()
-#         self.win.destroy()
+
+SOMEREPS = _('Selected repetitions')
+ALLREPS = _('Repetitions')
+MESSAGES = _('Error messages')
+
+from data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, platformShortcut
+
 
 from idlelib.WidgetRedirector import WidgetRedirector
 
@@ -72,25 +55,119 @@ class ReadOnlyText(Text):
         self.delete = self.redirector.register("delete", lambda *args, **kw: "break")
 
 
-class ScrolledText(Frame):
+class SimpleEditor(Toplevel):
 
-    def __init__(self, parent=None, text='', file=None):
-        Frame.__init__(self, parent, bd=2, relief=RIDGE)
-        self.pack(expand=1, padx=0, pady=0, fill=BOTH)
-        self.text = None
-        self.makewidgets()
-        # self.text_value = StringVar(self)
+    def __init__(self, parent=None, file=None, newhsh=None, rephsh=None, options=None):
+        """
+        If file is given, set file mode and open file for editing.
+        If newhsh is given we are editing an item that will be appended.
+        If rephsh is given, we will be replacing the original item with this with the first save.
+        On the first save
+            1. select a file and append newhsh
+            2. replace using rephsh and set rephsh = None
+         If the item has fileinfo line numbers
+        then we will be replacing the item, else it is a copy that we will be
+        appending.
+
+        :param parent:
+        :param file: path to file to be edited
+        :param newhsh: hsh of the item to be edited
+        """
+        # self.frame = frame = Frame(parent)
+        Toplevel.__init__(self, parent)
+        self.minsize(400, 300)
+        self.geometry('440x400')
+        self.transient(parent)
+        self.parent = parent
+        self.loop = parent.loop
+        self.changed = False
+
+        self.file = file
+        self.newhsh = newhsh
+        self.rephsh = rephsh
+        self.oldhsh = deepcopy(newhsh)
+        if newhsh and 'fileinfo' in newhsh:
+            self.fileinfo = self.newhsh['fileinfo']
+            logger.debug("newhsh: {0}".format(self.newhsh))
+            logger.debug("rephsh: {0}".format(self.rephsh))
+        else:
+            self.fileinfo = None
+        self.value = ''
+        self.options = options
         # self.text_value.trace_variable("w", self.setSaveStatus)
-        self.settext(text, file)
-        self.text.focus()
+        frame = Frame(self, bd=2, relief=RIDGE)
+        # frame.pack(side="top", expand=1, padx=0, pady=0, fill=X)
+        frame.pack(side="bottom", fill=X)
 
-    def makewidgets(self):
-        # sbar = Scrollbar(self)
+        btnwdth = 5
+        # ok will check if necessary and save
+        Button(frame, text=_("OK"), width=btnwdth, command=self.onSave).pack(side=RIGHT, padx=4)
+        # cancel will quit with a warning prompt if modified
+        Button(frame, text=_("Cancel"), width=btnwdth, command=self.quit).pack(side=RIGHT, padx=4)
+        # evaluate item intry
+        check = Button(frame, text=_("Check"), width=btnwdth, command=self.onCheck).pack(side=LEFT, padx=4)
+
+        # Button(frame, text=_('Quit'), width=btnwdth, command=self.quit).pack(side=LEFT, padx=2)
+        # l, c = platformShortcut('w')
+        # self.bind(c, self.quit)
+        #
+        # self.sb = Button(frame, text=_('Save'), width=btnwdth, command=self.onSave)
+        # self.sb.pack(side=LEFT, padx=2)
+        # check = Button(frame, text=_('Check'), width=btnwdth, command=self.onCheck)
+        # check.pack(side=LEFT, padx=2)
+
+        # Button(frame, text='X', command=self.clearFind).pack(side=RIGHT, padx=2)
+        # self.find_text = StringVar(frame)
+        # e = Entry(frame, textvariable=self.find_text, width=20)
+        # e.pack(side=RIGHT, padx=2)
+        # e.bind("<Return>", self.onFind)
+        # e.bind("<Escape>", self.clearFind)
+        # Button(frame, text=_('Find'), width=btnwdth, command=self.onFind).pack(side=RIGHT, padx=2)
+
         text = Text(self, bd=0, padx=3, pady=2, font=tkFont.Font(family="Lucida Sans Typewriter"), undo=True, width=70)
 
-        text.pack(side=LEFT, padx=0, pady=0, expand=1, fill=BOTH)
+        text.pack(side="bottom", padx=0, pady=0, expand=1, fill=BOTH)
         self.text = text
-        self.text.bind('<<Modified>>', self.updateSaveStatus)
+
+        if file is not None:
+            # we're editing a file
+            self.mode = 'file'
+            self.settext(file=file)
+            self.setmodified(False)
+            check.configure(state="disabled")
+        else:
+            # we are editing an item
+            # Button(frame, text=_('Check'), width=btnwdth, command=self.onCheck).pack(side=LEFT, padx=2)
+            if newhsh is None:
+                # we will be appending a new item
+                self.mode = "new"
+                self.fileinfo = (ensureMonthly(options=self.options), 0, 0)
+                self.settext(text = '')
+                self.setmodified(False)
+            else:
+                self.settext(text=hsh2str(newhsh, self.options))
+                if rephsh is None:
+                    self.mode = 'replace'
+                    self.setmodified(False)
+                else:
+                    # without line numbers we will be appending an item
+                    self.mode = 'append'
+                    self.setmodified(False)
+        # self.text.bind('<<Modified>>', self.updateSaveStatus)
+
+        self.grab_set()
+
+        self.initial_focus = self.text
+        self.text.focus()
+        self.protocol("WM_DELETE_WINDOW", self.quit)
+
+        if parent:
+            self.geometry("+%d+%d" % (parent.winfo_rootx() + 50,
+                                      parent.winfo_rooty() + 50))
+
+        # self.initial_focus.focus_set()
+
+        self.wait_window(self)
 
     def settext(self, text='', file=None):
         if file:
@@ -98,8 +175,8 @@ class ScrolledText(Frame):
         self.text.delete('1.0', END)
         self.text.insert('1.0', text)
         self.text.mark_set(INSERT, '1.0')
-        # self.text.edit_modified(True)
         self.text.focus()
+        logger.debug("modified: {0}".format(self.checkmodified()))
 
     def gettext(self):
         return self.text.get('1.0', END + '-1c')
@@ -107,135 +184,141 @@ class ScrolledText(Frame):
     def setmodified(self, bool):
         if bool is not None:
             self.text.edit_modified(bool)
-            self.updateSaveStatus()
 
     def checkmodified(self):
         return self.text.edit_modified()
 
-    def updateSaveStatus(self, event=None):
-        # we will override this in SimpleEditor
-        pass
-
-
-class SimpleEditor(ScrolledText):
-
-    def __init__(self, parent=None, file=None, hsh=None):
-        """
-        If file is given, set file mode and open file for editing.
-        If hsh is given we are editing an item. If the item has fileinfo line numbers
-        then we will be replacing the item, else it is a copy that we will be
-        appending.
-
-        :param parent:
-        :param file: path to file to be edited
-        :param hsh: hsh of the item to be edited
-        """
-        self.frm = frm = Frame(parent)
-        self.parent = parent
-        self.file = file
-        self.hsh = hsh
-        self.ret_value = ''
-        self.options = loop.options
-        # self.text_value.trace_variable("w", self.setSaveStatus)
-        frm.pack(fill=X, pady=2)
-        btnwdth = 5
-        Button(frm, text=_('Quit'), width=btnwdth, command=self.quit).pack(side=LEFT, padx=2)
-        self.sb = Button(frm, text=_('Save'), width=btnwdth, command=self.onSave)
-        self.sb.pack(side=LEFT, padx=2)
-        Button(frm, text='X', command=self.clearFind).pack(side=RIGHT, padx=2)
-        self.find_text = StringVar(frm)
-        e = Entry(frm, textvariable=self.find_text, width=20)
-        e.pack(side=RIGHT, padx=2)
-        e.bind("<Return>", self.onFind)
-        e.bind("<Escape>", self.clearFind)
-        Button(frm, text=_('Find'), width=btnwdth, command=self.onFind).pack(side=RIGHT, padx=2)
-        if file is not None:
-            # we're editing a file
-            self.mode = 'file'
-            self.st = ScrolledText.__init__(self, parent, file=file)
-        else:
-            # we are editing an item
-            Button(frm, text=_('Check'), width=btnwdth, command=self.onCheck).pack(side=LEFT, padx=2)
-            if hsh is not None:
-                self.st = ScrolledText.__init__(self, parent, text=hsh2str((hsh)))
-                if hsh['fileinfo'][2]:
-                    # we have line numbers and are will be replacing an item
-                    self.setmodified(False)
-                else:
-                    # without line numbers we will be appending an item
-                    self.setmodified(True)
-            else:
-                # we will be appending a new item
-                self.mode = "newitem"
-                self.hsh = {}
-                self.st = ScrolledText.__init__(self, parent)
-                self.setmodified(False)
-
-    def updateSaveStatus(self, event=None):
-        if self.checkmodified():
-            logger.debug('normal: "{0}"'.format(self.ret_value))
-            self.sb.configure(state='normal')
-            # update the return value so that when it is not null then modified
-            # is false and when modified is true then it is null
-            self.ret_value = ""
-        else:
-            logger.debug('disabled: "{0}"'.format(self.ret_value))
-            self.sb.configure(state='disabled')
+    # def updateSaveStatus(self, event=None):
+    #     if self.checkmodified():
+    #         self.needsCheck = True
+    #         logger.debug('normal: "{0}"'.format(self.value))
+    #         self.sb.configure(state='normal')
+    #         # update the return value so that when it is not null then modified
+    #         # is false and when modified is true then it is null
+    #         self.value = ""
+    #     else:
+    #         logger.debug('disabled: "{0}"'.format(self.value))
+    #         self.sb.configure(state='disabled')
 
     def onSave(self):
-        # fixme: sometimes replacing lines, adding lines, overwriting file
-        if self.file is not None:
-            # handle saving the file here
+        logger.debug('modified: {0}'.format(self.checkmodified()))
+        if not self.checkmodified():
+            self.quit()
+        elif self.file is not None:
             alltext = self.gettext()
             open(self.file, 'w').write(alltext)
-        elif self.hsh is not None:
-            # we will be returning a string version of the edited item
-            ok, str = self.onCheck()
-            if ok and str:
-                self.settext(str)
-                # update the return value so that when it is not null then modified
-                # is false and when modified is true then it is null
-                self.ret_value = str
-                self.setmodified(False)
+            self.setmodified(False)
+            self.changed = True
+            self.quit()
+        else:
+            ok = self.onCheck(showreps=False)
+            if not ok:
+                return False
+            if self.mode == 'new':
+                if 's' in self.newhsh and self.newhsh['s']:
+                    dt = self.newhsh['s']
+                else:
+                    dt = None
+                initfile = ensureMonthly(self.options, date=dt)
+            elif self.mode in ['append', 'replace']:
+                # initfile = self.newhsh['fileinfo']
+                d = self.options['datadir']
+                f = self.fileinfo[0]
+                initfile = os.path.join(d, f)
+            if self.mode == 'replace':
+                filename = initfile
+                logger.debug('using file: "{0}"'.format(initfile))
+            else:
+                # get the filename
+                initdir, initfile = os.path.split(initfile)
+                logger.debug('initial dir and file: "{0}"; "{1}"'.format(initdir, initfile))
+                fileops = {'defaultextension': '.txt',
+                           'filetypes': [('text files', '.txt')],
+                           'initialdir': initdir,
+                           'initialfile': initfile,
+                           'title': 'etmtk data files',
+                           'parent': self}
+                filename = askopenfilename(**fileops)
+                if not (filename and os.path.isfile(filename)):
+                    return False
+            logger.debug('newhsh: {0}'.format(self.newhsh))
+            ok = True
+            if self.rephsh is not None:
+                if self.loop.replace_item(self.rephsh):
+                    logger.debug('revised: {0}'.format(self.rephsh))
+                    self.rephsh = None
+                else:
+                    ok = False
+            if self.mode == 'append':
+                if self.loop.append_item(self.newhsh, filename):
+                    self.update_idletasks()
+                    # self.newhsh = self.loop.uuid2hash[self.newhsh['i']]
+                    logger.debug('appended: {0}'.format(self.newhsh))
+                    self.mode = 'replace'
+                else:
+                    ok = False
+            elif self.mode == 'replace':
+                if self.loop.replace_item(self.newhsh):
+                    # self.newhsh = self.loop.uuid2hash[self.newhsh['i']]
+                    logger.debug('replaced: {0}'.format(self.newhsh))
+                else:
+                    ok = False
+            elif self.mode == 'new':
+                if self.loop.append_item(self.newhsh, filename):
+                    self.newhsh = self.loop.uuid2hash[self.newhsh['i']]
+                    logger.debug('created: {0}'.format(self.newhsh))
+                    self.mode = 'replace'
+                else:
+                    ok = False
+            logger.debug('ok: {0}'.format(ok))
+            # update the return value so that when it is not null then modified
+            # is false and when modified is true then it is null
+            self.setmodified(False)
+            self.changed = True
+            self.quit()
 
-            # # get filename
-            # options = {'defaultextension': '.txt',
-            #            'filetypes': [('text files', '.txt')],
-            #            'initialdir': '~/.etm/data',
-            #            'initialfile': "",
-            #            'title': 'etmtk data files'}
-            # # options['parent'] = self.frm
-            # filename = askopenfilename(**options)
-            # print(filename)
+    def onCheck(self, event=None, showreps=True):
+        logger.debug(('onCheck'))
+        if (self.newhsh and self.rephsh) or not self.newhsh:
+            self.mode = 'append'
 
-        # if filename:
-
-    def onCheck(self, event=None):
         text = self.gettext()
         msg = []
         reps = []
-        str = ''
+        error = False
         try:
             hsh, msg = str2hsh(text, options=self.options)
             logger.debug("hsh: {0}".format(hsh))
         except Exception as e:
-            print('bad', e)
+            logger.exception('could not process: {0}'.format(text))
+            error = True
         if msg:
-            messages = "messages:\n  {0}".format("\n  ".join(msg))
+            messages = "{0}".format("\n".join(msg))
             logger.debug(messages)
-            self.messageWindow('errors', messages)
+            self.messageWindow(MESSAGES, messages)
+        if error or msg:
+            self.newhsh = None
             return False, ''
+
+        # we have a good hsh
+        self.newhsh = hsh
+        self.newhsh['fileinfo'] = self.fileinfo
+        # update missing fields
         str = hsh2str(hsh, options=self.options)
         logger.debug("str: {0}".format(str))
-        self.settext(str)
-        if 'r' in hsh:
-            ok, reps =  get_reps(self.options['bef'], hsh)
-            repsfmt = [x.strftime("%x %X") for x in reps]
-            logger.debug("{0}: {1}".format(ok, repsfmt))
+        if str != text:
+            self.settext(str)
+        if 'r' in hsh and showreps:
+            showing_all, reps =  get_reps(self.options['bef'], hsh)
+            repsfmt = [x.strftime(rrulefmt) for x in reps]
+            logger.debug("{0}: {1}".format(showing_all, repsfmt))
 
-            repetitons = "repetitions:\n  {0}".format("\n  ".join(repsfmt))
-            self.messageWindow('repetitions', repetitons)
-        return True, str
+            repetitions = "{0}".format("\n".join(repsfmt))
+            if showing_all:
+                self.messageWindow(ALLREPS, repetitions)
+            else:
+                self.messageWindow(SOMEREPS, repetitions)
+        return True
 
     def clearFind(self, *args):
         self.find_text.set("")
@@ -258,13 +341,20 @@ class SimpleEditor(ScrolledText):
                 self.text.see(INSERT)
                 self.text.focus()
 
-    def quit(self):
+    def quit(self, e=None):
+        logger.debug(('quit'))
         if self.checkmodified():
-            ans = askokcancel('Verify exit', "Really quit?")
+            ans = askokcancel(
+                _('Quit'),
+                _("There are unsaved changes.\nDo you really want to quit?"),
+                parent=self)
         else:
             ans = True
         if ans:
-            Frame.quit(self)
+            if self.parent:
+                self.parent.focus_set()
+            self.destroy()
+        return False
 
     def messageWindow(self, title, prompt):
         win = Toplevel()
@@ -300,7 +390,9 @@ class SimpleEditor(ScrolledText):
 
 
 if __name__ == '__main__':
+    from data import setup_logging
     setup_logging(default_level=logging.DEBUG)
+
     etmdir = ''
     # For testing override etmdir:
     etmdir = '/Users/dag/etm-tk/etm-sample'
@@ -308,6 +400,6 @@ if __name__ == '__main__':
     (user_options, options, use_locale) = data.get_options(etmdir)
     loop = data.ETMCmd(options=options)
     try:
-        SimpleEditor(file=sys.argv[1]).mainloop()
+        SimpleEditor(file=sys.argv[1], options=options).mainloop()
     except IndexError:
-        SimpleEditor().mainloop()
+        SimpleEditor(options=options).mainloop()

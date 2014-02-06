@@ -76,7 +76,7 @@ from data import (
     get_changes, checkForNewerVersion, getAgenda,
     date_calculator, datetime2minutes, calyear, export_ical_item,
     import_ical, export_ical, has_icalendar, expand_template, ensureMonthly,
-    sys_platform, id2Type, get_current_time, mac, setup_logging)
+    sys_platform, id2Type, get_current_time, mac, setup_logging, uniqueId, gettz, platformShortcut)
 
 from editor import SimpleEditor
 
@@ -323,7 +323,6 @@ class OptionsDialog():
     # noinspection PyShadowingNames
     def __init__(self, parent, title="", prompt="", opts=None):
         if not opts: opts = []
-        # logger.debug('OptionsDialog: {0}, {1}'.format(parent, opts))
         self.win = Toplevel(parent)
         self.parent = parent
         self.options = opts
@@ -472,7 +471,7 @@ class App(Tk):
         self.uuidSelected = None
         self.timerItem = None
         self.actionTimer = Timer()
-
+        self.loop = loop
         menubar = Menu(self)
 
         # File menu
@@ -488,42 +487,41 @@ class App(Tk):
         filemenu.add_command(label=_("Data files ..."),
                              underline=0, command=self.donothing)
 
-        l, c = self.platformShortcut('O')
+        l, c = platformShortcut('O')
         filemenu.add_command(label=loop.options['config'], underline=0, command=self
         .donothing, accelerator=l)
         # self.bind_all(c, lambda event: self.after(after, self.donothing))
 
-        l, c = self.platformShortcut('C')
+        l, c = platformShortcut('C')
         filemenu.add_command(label=loop.options['auto_completions'], underline=0,
                              command=self.donothing, accelerator=l)
 
-        l, c = self.platformShortcut('R')
+        l, c = platformShortcut('R')
         filemenu.add_command(label=loop.options['report_specifications'], underline=0,
                              command=self.donothing, accelerator=l)
 
-        l, c = self.platformShortcut('S')
+        l, c = platformShortcut('S')
         filemenu.add_command(label=loop.options['scratchfile'], underline=0, command=self
         .donothing, accelerator=l)
 
         filemenu.add_separator()
 
         # report
-        l, c = self.platformShortcut('m')
+        l, c = platformShortcut('m')
         filemenu.add_command(label=_("Make report"), accelerator=l, underline=1,
                              command=self.donothing)
         self.bind(c, self.donothing)  # m
 
         ## export
-        l, c = self.platformShortcut('x')
+        l, c = platformShortcut('x')
         filemenu.add_command(label="Export ...", underline=1, command=self.donothing, accelerator=l)
         self.bind(c, self.donothing)  # x
 
         filemenu.add_separator()
 
         ## quit
-        l, c = self.platformShortcut('w')
-        filemenu.add_command(label="Quit", underline=0,
-                             accelerator=l, command=self.quit)
+        l, c = platformShortcut('w')
+        filemenu.add_command(label="Quit", underline=0, command=self.quit)
         self.bind(c, self.quit)  # w
         menubar.add_cascade(label="File", underline=0, menu=filemenu)
 
@@ -550,7 +548,7 @@ class App(Tk):
                                  state="disabled")
 
         # go to date
-        l, c = self.platformShortcut('g')
+        l, c = platformShortcut('g')
         viewmenu.add_command(
             label=_("Go to date"), underline=1, accelerator=l,
             command=self.goToDate)
@@ -558,7 +556,7 @@ class App(Tk):
         self.bind_all(c, lambda event: self.after(AFTER, self.goToDate))
 
         # expand to depth
-        l, c = self.platformShortcut('o')
+        l, c = platformShortcut('o')
         viewmenu.add_command(
             label=_("Set outline depth"), underline=1, accelerator=l,
             command=self.expand2Depth)
@@ -566,18 +564,18 @@ class App(Tk):
         self.bind_all(c, lambda event: self.after(AFTER, self.expand2Depth))
 
         # busy times
-        l, c = self.platformShortcut('b')
+        l, c = platformShortcut('b')
         viewmenu.add_command(label=_("Show busy times"), underline=1, accelerator=l,
                              command=self.showBusyTimes)
         self.bind_all(c, lambda event: self.after(AFTER, self.showBusyTimes))
 
-        l, c = self.platformShortcut('y')
+        l, c = platformShortcut('y')
         viewmenu.add_command(label=_("Show yearly calendar"), underline=1, accelerator=l,
                              command=self.showCalendar)
         self.bind_all(c, lambda event: self.after(AFTER, self.showCalendar))
 
         # date calculator
-        l, c = self.platformShortcut('c')
+        l, c = platformShortcut('c')
         viewmenu.add_command(label=_("Open date calculator"), underline=1,
                              command=self.donothing)
         self.bind(c, self.donothing)  # c
@@ -686,7 +684,7 @@ class App(Tk):
         self.vm = OptionMenu(ef, self.viewValue, *self.vm_opts, command=self.setView)
         self.vm.configure(width=menuwidth)
         for k in self.view2cmd:
-            l, c = self.platformShortcut(k)
+            l, c = platformShortcut(k)
             self.bind(c, self.view2cmd[k])  # a, s, p, k, t
             i = vm_keys.index(k)
             self.vm["menu"].entryconfig(i, accelerator=l)
@@ -702,11 +700,11 @@ class App(Tk):
         self.nm_opts = [x[0] for x in self.nm_options]
         self.nm = OptionMenu(ef, self.newValue, *self.nm_opts)
 
-        l, c = self.platformShortcut('n')
+        l, c = platformShortcut('n')
         self.nm["menu"].entryconfig(0, accelerator=l, command=self.newItem)
         self.bind(c, self.newItem)  # n
 
-        l, c = self.platformShortcut('+')
+        l, c = platformShortcut('+')
         self.nm["menu"].entryconfig(1, accelerator=l, command=self.startTimer)
         self.bind(c, self.startTimer)  # +
 
@@ -730,7 +728,7 @@ class App(Tk):
         self.em.configure(width=menuwidth)
         for i in range(len(em_cmds)):
             k = em_cmds[i]
-            l, c = self.platformShortcut(k)
+            l, c = platformShortcut(k)
             self.em["menu"].entryconfig(i, accelerator=l, command=self.edit2cmd[k])
             # self.bind(c, self.edit2cmd[k])  # c, d, e, f
             self.bind_all(c, lambda event, x=k: self.after(AFTER, self.edit2cmd[x]))
@@ -804,21 +802,21 @@ class App(Tk):
         # show default view
         self.showView()
 
-    @staticmethod
-    def platformShortcut(s):
-        """
-        Produce label, command pairs from s based on Command for OSX
-        and Control otherwise.
-        """
-        if s.upper() == s and s.lower() != s:
-            shift = "Shift-"
-        else:
-            shift = ""
-        if mac:
-            return "{0}Cmd-{1}".format(shift, s), "<{0}Command-{1}>".format(shift, s)
-        else:
-            return "{0}Ctrl-{1}".format(shift, s), "<{0}Control-{1}>".format(shift, s)
-
+    # @staticmethod
+    # def platformShortcut(s):
+    #     """
+    #     Produce label, command pairs from s based on Command for OSX
+    #     and Control otherwise.
+    #     """
+    #     if s.upper() == s and s.lower() != s:
+    #         shift = "Shift-"
+    #     else:
+    #         shift = ""
+    #     if mac:
+    #         return "{0}Cmd-{1}".format(shift, s), "<{0}Command-{1}>".format(shift, s)
+    #     else:
+    #         return "{0}Ctrl-{1}".format(shift, s), "<{0}Control-{1}>".format(shift, s)
+    #
     def updateCalendars(self, *args):
         for i in range(len(loop.calendars)):
             loop.calendars[i][1] = self.calendarValues[i].get()
@@ -836,7 +834,12 @@ class App(Tk):
 
 
     def quit(self, e=None):
-        self.destroy()
+        ans = askokcancel(
+            _('Quit'),
+            _("Do you really want to quit?"),
+            parent=self)
+        if ans:
+            self.destroy()
 
     def donothing(self, e=None):
         """For testing"""
@@ -844,6 +847,11 @@ class App(Tk):
 
     def newItem(self, e=None):
         logger.debug('newItem')
+        changed = SimpleEditor(parent=self, options=loop.options).changed
+        if changed:
+            logger.debug('changed, reloading data')
+            loop.loadData()
+            self.showView()
 
     def cloneItem(self, e=None):
         logger.debug('cloneItem')
@@ -894,9 +902,9 @@ class App(Tk):
             hsh_cpy['i'] = uniqueId()
             self.mode = 'append'
             # remove the line number info to indicate that hsh_cpy is to be appended
-            hsh_cpy['fileinfo'][1] = hsh_cpy['fileinfo'][2] = 0
+            # hsh_cpy['fileinfo'][1] = hsh_cpy['fileinfo'][2] = 0
 
-            dt = parse(hsh_cpy['_dt']).replace(
+            dt = hsh_cpy['_dt'].replace(
                 tzinfo=tzlocal()).astimezone(gettz(hsh_cpy['z']))
             dtn = dt.replace(tzinfo=None)
 
@@ -927,7 +935,7 @@ class App(Tk):
                 tmp = []
                 for h in hsh_rev['_r']:
                     if 'f' in h and h['f'] != u'l':
-                        h['u'] = dt - oneminute
+                        h['u'] = dt - ONEMINUTE
                     tmp.append(h)
                 hsh_rev['_r'] = tmp
                 if u'+' in hsh:
@@ -951,17 +959,19 @@ class App(Tk):
                     hsh_rev['-'] = tmp_rev
                     hsh_cpy['-'] = tmp_cpy
                 hsh_cpy['s'] = dt
-                rev_str = hsh2str(hsh_rev, self.options)
+                rev_str = hsh2str(hsh_rev, loop.options)
                 edit_str = hsh2str(hsh_cpy, loop.options)
-            edit = SimpleEditor(parent=self, edit_str=edit_str)
+
+            changed = SimpleEditor(parent=self, newhsh=hsh_cpy, rephsh=hsh_rev,
+                         options=loop.options).changed
 
         else:
-            edit_str = hsh2str(self.itemSelected)
 
-
-
-
-        loop.cmd_do_edit(choice)
+            changed = SimpleEditor(parent=self, newhsh=self.itemSelected,
+                         options=loop.options).changed
+        if changed:
+            loop.loadData()
+            self.showView()
 
 
     def editWhich(self, instance="xyz"):
@@ -1063,7 +1073,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.process_input(event=e, cmd=cmd)
         if self.rowSelected:
             # self.tree.see(max(0, self.rowSelected - 1))
-            self.tree.yview(max(0, self.rowSelected - 2))
+            # self.tree.yview(max(0, self.rowSelected - 2))
+            pass
 
     def showBusyTimes(self, event=None, chosen_day=None):
         prompt = _("""\
@@ -1250,7 +1261,7 @@ parsing are supported.""")
 
     def help(self, event=None):
         res = loop.help_help()
-        self.messageWindow(title='etm', prompt=res)
+        self.messageWindow(title='etm', prompt=res, modal=False)
 
     def about(self, event=None):
         res = loop.do_v("")
@@ -1350,6 +1361,7 @@ or 0 to display all changes.""")
 
         logger.debug(self.uuidSelected)
         self.l.insert(INSERT, text)
+        return "break"
 
     def OnActivate(self, event):
         """
@@ -1358,22 +1370,28 @@ or 0 to display all changes.""")
         item = self.tree.selection()[0]
         uuid, dt, hsh = self.getInstance(item)
         if uuid is not None:
-            print("you pressed <Return> on", item, uuid, dt, hsh['_summary'])
-            print(hsh)
-        else:
-            print("you pressed <Return> on", item)
+            self.editItem()
+            # print("you pressed <Return> on", item, uuid, dt, hsh['_summary'])
+            # print(hsh)
+        # else:
+        #     print("you pressed <Return> on", item)
         return "break"
 
     def OnDoubleClick(self, event):
         """
         Double click on tree row
         """
+        # print( self.tree.selection(), event.x, event.y)
+        # print(self.tree.identify('item',event.x,event.y))
+        self.update_idletasks()
+
         item = self.tree.identify('item', event.x, event.y)
         uuid, dt, hsh = self.getInstance(item)
         if uuid is not None:
-            print("you double clicked on", item, uuid, dt, hsh['_summary'])
-        else:
-            print("you double clicked on", item)
+            self.editItem()
+            # print("you double clicked on", item, uuid, dt, hsh['_summary'])
+        # else:
+        #     print("you double clicked on", item)
         return "break"
 
     def getInstance(self, item):
@@ -1608,7 +1626,7 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
         return 'break'
 
     # noinspection PyShadowingNames
-    def messageWindow(self, title, prompt):
+    def messageWindow(self, title, prompt, modal=True):
         win = Toplevel()
         win.title(title)
         # win.minsize(444, 430)
@@ -1635,9 +1653,10 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
         f.pack(padx=2, pady=2, fill=tkinter.BOTH, expand=1)
 
         win.focus_set()
-        win.grab_set()
-        win.transient(self)
-        win.wait_window(win)
+        if modal:
+            win.grab_set()
+            win.transient(self)
+            win.wait_window(win)
 
     def goToDate(self, e=None):
         """

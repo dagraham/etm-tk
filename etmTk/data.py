@@ -38,6 +38,7 @@ def setup_logging(
         logging.basicConfig(level=default_level)
     logger.info('logging enabled at level {0}'.format(default_level))
 
+# TODO: change type to inbox for items that can't be loaded so that they will be accessible for repair.
 
 import subprocess
 
@@ -82,6 +83,20 @@ qt2dt = [
     ('hh', '%H'),
     ('h', '%I'),
     ('mm', '%M')]
+
+def platformShortcut(s):
+    """
+    Produce label, command pairs from s based on Command for OSX
+    and Control otherwise.
+    """
+    if s.upper() == s and s.lower() != s:
+        shift = "Shift-"
+    else:
+        shift = ""
+    if mac:
+        return "{0}Cmd-{1}".format(shift, s), "<{0}Command-{1}>".format(shift, s)
+    else:
+        return "{0}Ctrl-{1}".format(shift, s), "<{0}Control-{1}>".format(shift, s)
 
 
 
@@ -1991,7 +2006,11 @@ def process_lines(lines, options=None):
 
 
 def getFiles(root):
-    # Expand patterns from semicolon-separated string to list
+    """
+    Return the common prefix and a list of full paths from root
+    :param root: directory
+    :return: common prefix of files and a list of full file paths
+    """
     includes = r'*.txt'
     excludes = r'.*'
     paths = [root]
@@ -2077,6 +2096,9 @@ def lines2Items(lines):
 def getFileItems(full_name, rel_name, append_newline=True):
     """
         Group the lines in file f into logical items and return them.
+    :param full_name: including datadir
+    :param rel_name: from datadir
+    :param append_newline: bool, default True
     """
     fo = codecs.open(full_name, 'r', file_encoding)
     lines = fo.readlines()
@@ -4599,7 +4621,13 @@ def import_ical(fname):
     return ilst
 
 
-def ensureMonthly(options, now=None):
+def ensureMonthly(options, date=None):
+    """
+
+    :param options:
+    :param date:
+    :return: filepath to current monthly file
+    """
     retval = None
     if ('monthly' in options and
             options['monthly']):
@@ -4608,10 +4636,10 @@ def ensureMonthly(options, now=None):
             options['monthly'])
         if not os.path.isdir(monthly):
             os.makedirs(monthly)
-        if now is None:
-            now = datetime.now().date()
-        yr = now.year
-        mn = now.month
+        if date is None:
+            date = datetime.now().date()
+        yr = date.year
+        mn = date.month
         curryear = os.path.join(monthly, "%s" % yr)
         if not os.path.isdir(curryear):
             os.makedirs(curryear)
@@ -5108,82 +5136,6 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
 
     # todo: add (1) addItem(new_hsh) and (2) replaceItem(changed_hsh)
 
-    def cmd_do_edit(self, choice, hsh):
-        """
-        Called by etmtk.editItem
-        """
-        # if choice in [1, 2]:
-        #     hsh_cpy = deepcopy(self.item_hsh)
-        #     hsh_rev = deepcopy(self.item_hsh)
-        #     hsh_cpy['i'] = uniqueId()
-        #     self.mode = 'append'
-        #
-        #     dt = parse(
-        #         hsh_cpy['_dt']).replace(
-        #         tzinfo=tzlocal()).astimezone(
-        #         gettz(hsh_cpy['z']))
-        #     dtn = dt.replace(tzinfo=None)
-        #
-        #     if choice == 1:
-        #         # this instance
-        #         # remove this instance by adding it to @-
-        #         # open a non-repeating copy with this instance as @s
-        #         if '+' in hsh_rev and dtn in hsh_rev['+']:
-        #             hsh_rev['+'].remove(dtn)
-        #             if not hsh_rev['+'] and hsh_rev['r'] == 'l':
-        #                 del hsh_rev['r']
-        #                 del hsh_rev['_r']
-        #         else:
-        #             hsh_rev.setdefault('-', []).append(dt)
-        #         for k in ['_r', 'o', '+', '-']:
-        #             if k in hsh_cpy:
-        #                 del hsh_cpy[k]
-        #         hsh_cpy['s'] = dt
-        #         rev_str = hsh2str(hsh_rev, self.options)
-        #         self.mode = 'changed instance'
-        #         edit_str = hsh2str(hsh_cpy, self.options)
-        #         self.mode = 'append'
-        #
-        #     elif choice == 2:
-        #         # this and all subsequent instances
-        #         # add this instance - one minute as &u to each @r entry
-        #         # open a copy with with this instance as @s
-        #         tmp = []
-        #         for h in hsh_rev['_r']:
-        #             if 'f' in h and h['f'] != u'l':
-        #                 h['u'] = dt - oneminute
-        #             tmp.append(h)
-        #         hsh_rev['_r'] = tmp
-        #         if u'+' in hsh:
-        #             tmp_rev = []
-        #             tmp_cpy = []
-        #             for d in hsh_rev['+']:
-        #                 if d < dt:
-        #                     tmp_rev.append(d)
-        #                 else:
-        #                     tmp_cpy.append(d)
-        #             hsh_rev['+'] = tmp_rev
-        #             hsh_cpy['+'] = tmp_cpy
-        #         if u'-' in hsh:
-        #             tmp_rev = []
-        #             tmp_cpy = []
-        #             for d in hsh_rev['-']:
-        #                 if d < dt:
-        #                     tmp_rev.append(d)
-        #                 else:
-        #                     tmp_cpy.append(d)
-        #             hsh_rev['-'] = tmp_rev
-        #             hsh_cpy['-'] = tmp_cpy
-        #         hsh_cpy['s'] = dt
-        #         rev_str = hsh2str(hsh_rev, self.options)
-        #         self.mode = "changed this and subsequent instances"
-        #         self.replace_item(rev_str)
-        #         self.mode = 'append'
-        # else:
-        #     self.mode = 'replace'
-        #
-        #     # item_str = self.item_hsh['entry']
-        #     # self.parent.Dialog.run(text=item_str)
 
     def delete_item(self):
         f, begline, endline = self.item_hsh['fileinfo']
@@ -5193,34 +5145,39 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         fo.close()
         self.mode = 'deleted item'
         self.replace_lines(fp, lines, begline, endline, [])
-        self.loadData()
-        self.mode = 'command'
+        # self.loadData()
 
-    def replace_item(self, new_item):
+    def replace_item(self, new_hsh):
+        logger.debug("new_hsh: {0}".format(new_hsh))
+        new_item = hsh2str(new_hsh, self.options)
         logger.debug(new_item)
         newlines = new_item.split('\n')
-        f, begline, endline = self.item_hsh['fileinfo']
+        f, begline, endline = new_hsh['fileinfo']
         fp = os.path.join(self.options['datadir'], f)
         fo = codecs.open(fp, 'r', file_encoding)
         lines = fo.readlines()
         fo.close()
         self.mode = _('changed all instances')
         self.replace_lines(fp, lines, begline, endline, newlines)
-        self.loadData()
-        self.mode = 'command'
+        # self.loadData()
+        return True
 
-    def append_item(self, new_hsh, new_item):
-        if 's' not in new_hsh:
-            new_hsh['s'] = None
-        self.currfile = ensureMonthly(self.options, new_hsh['s'])
-        old_items = getFileItems(self.currfile, self.options['datadir'], False)
+    # def append_item(self, new_hsh, new_item):
+    def append_item(self, new_hsh, file):
+        """
+
+        :param new_item: string
+        :param file: full path
+        """
+        new_item = hsh2str(new_hsh, self.options)
+        old_items = getFileItems(file, self.options['datadir'], False)
         items = [u'%s' % x[0].rstrip() for x in old_items if x[0].strip()]
         items.append(new_item)
         itemstr = "\n".join(items)
         self.mode = _('added item')
-        self.safe_save(self.currfile, itemstr)
-        self.loadData()
-        self.input_wid.text = ''
+        self.safe_save(file, itemstr)
+        # self.loadData()
+        return True
 
     @staticmethod
     def help_e():
