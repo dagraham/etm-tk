@@ -43,7 +43,8 @@ SOMEREPS = _('Selected repetitions')
 ALLREPS = _('Repetitions')
 MESSAGES = _('Error messages')
 
-from data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, platformShortcut, bgclr
+from data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, platformShortcut,\
+    bgclr, CMD
 
 
 from idlelib.WidgetRedirector import WidgetRedirector
@@ -105,11 +106,13 @@ class SimpleEditor(Toplevel):
         # Style().configure('graybackground', background="bgclr")
 
         btnwdth = 5
-        # ok will check if necessary and save
+
+        # ok will check, save and quit
+        Button(frame, text=_("OK"), highlightbackground=bgclr, width=btnwdth, command=self.onSave).pack(side=RIGHT, padx=4)
+
         l, c = platformShortcut('w')
-        self.bind(c, self.quit)
-        Button(frame, text=_("OK"), highlightbackground=bgclr, width=btnwdth, command=self .onSave).pack(side=RIGHT, padx=4)
-        # okbtn.configure(highlightbackground=0)
+        self.bind(c, self.onSave)
+
         # cancel will quit with a warning prompt if modified
         Button(frame, text=_("Cancel"), highlightbackground=bgclr, width=btnwdth, command=self.quit).pack(side=RIGHT, padx=4); self.bind("<Escape>", self.quit)
         # check will evaluate the item entry and, if repeating, show reps
@@ -140,12 +143,10 @@ class SimpleEditor(Toplevel):
         self.text = text
         if title is not None:
             self.wm_title(title)
-
         if file is not None:
             # we're editing a file
             self.mode = 'file'
             self.settext(file=file)
-            self.setmodified(False)
             inspect.configure(state="disabled")
             logger.debug('file: {0}'.format(file))
         else:
@@ -156,18 +157,17 @@ class SimpleEditor(Toplevel):
                 self.mode = "new"
                 self.fileinfo = (ensureMonthly(options=self.options), 0, 0)
                 self.settext(text = '')
-                self.setmodified(False)
             else:
                 self.settext(text=hsh2str(newhsh, self.options))
                 if rephsh is None:
                     self.mode = 'replace'
-                    self.setmodified(False)
                 else:
                     # without line numbers we will be appending an item
                     self.mode = 'append'
-                    self.setmodified(False)
+
         # clear the undo buffer
         self.text.edit_reset()
+        self.setmodified(False)
         self.text.bind('<<Modified>>', self.updateSaveStatus)
 
         self.grab_set()
@@ -181,6 +181,7 @@ class SimpleEditor(Toplevel):
                                       parent.winfo_rooty() + 50))
 
         # self.initial_focus.focus_set()
+
         self.configure(background=bgclr)
 
         self.wait_window(self)
@@ -210,8 +211,9 @@ class SimpleEditor(Toplevel):
         else:
             self.wm_title(self.title)
 
-    def onSave(self):
+    def onSave(self, e=None):
         logger.debug('modified: {0}'.format(self.checkmodified()))
+        e = None
         if not self.checkmodified():
             self.quit()
         elif self.file is not None:
@@ -286,6 +288,7 @@ class SimpleEditor(Toplevel):
             self.setmodified(False)
             self.changed = True
             self.quit()
+            return "break"
 
     def onCheck(self, event=None, showreps=True):
         logger.debug(('onCheck'))
@@ -363,8 +366,9 @@ class SimpleEditor(Toplevel):
         if ans:
             if self.parent:
                 self.parent.focus_set()
+                self.parent.tree.focus()
             self.destroy()
-        return False
+        return "break"
 
     def messageWindow(self, title, prompt):
         win = Toplevel()

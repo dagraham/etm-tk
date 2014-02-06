@@ -452,7 +452,7 @@ class App(Tk):
                              underline=0, command=self.donothing)
 
         l, c = platformShortcut('O')
-        filemenu.add_command(label=loop.options['config'], underline=0, command=lambda e=None, x=loop.options['config']: self.editFile(file=x), accelerator=l)
+        filemenu.add_command(label=loop.options['config'], underline=0, command=lambda x=loop.options['config']: self.editFile(file=x), accelerator=l)
         # self.bind_all(c, lambda event: self.after(after, self.donothing))
 
         l, c = platformShortcut('C')
@@ -462,7 +462,7 @@ class App(Tk):
         filemenu.add_command(label=loop.options['report_specifications'], underline=0, command=lambda x=loop.options['report_specifications']: self.editFile(file=x), accelerator=l)
 
         l, c = platformShortcut('S')
-        filemenu.add_command(label=loop.options['scratchfile'], underline=0, command=lambda e, x=loop.options['scratchfile']: self.editFile(file=x), accelerator=l)
+        filemenu.add_command(label=loop.options['scratchfile'], underline=0, command=lambda x=loop.options['scratchfile']: self.editFile(file=x), accelerator=l)
 
         filemenu.add_separator()
 
@@ -851,6 +851,7 @@ class App(Tk):
             choice, value = self.editWhich(self.dtSelected)
             logger.debug("{0}: {1}".format(choice, value))
             if not choice:
+                self.tree.focus_set()
                 return
             self.itemSelected['_dt'] = parse(self.dtSelected)
         if choice in [1, 2]:
@@ -930,6 +931,8 @@ class App(Tk):
         if changed:
             loop.loadData()
             self.showView()
+        else:
+            self.tree.focus_set()
 
     def editFile(self, e=None, file=None):
         logger.debug('file: {0}'.format(file))
@@ -1022,7 +1025,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.setView(self.vm_options[4][0])
 
     def setView(self, view):
-        self.rowSelected = None
+        # self.rowSelected = None
         self.view = view
         self.showView()
 
@@ -1037,9 +1040,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.mode = 'command'
         self.process_input(event=e, cmd=cmd)
         if self.rowSelected:
-            # self.tree.see(max(0, self.rowSelected - 1))
-            # self.tree.yview(max(0, self.rowSelected - 2))
-            pass
+            # self.tree.see(max(0, self.rowSelected))
+            self.tree.yview(max(0, self.rowSelected - 1))
 
     def showBusyTimes(self, event=None, chosen_day=None):
         prompt = _("""\

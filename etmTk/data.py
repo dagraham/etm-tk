@@ -148,10 +148,14 @@ if sys_platform in ('Windows', 'Microsoft'):
     windoz = True
 else:
     windoz = False
+
 if sys.platform == 'darwin':
     mac = True
+    CMD = "Command"
 else:
     mac = False
+    CMD = "Control"
+
 
 import traceback
 
