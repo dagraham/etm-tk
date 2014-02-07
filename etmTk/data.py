@@ -5148,22 +5148,19 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         logger.debug(('replacement: {0}'.format(hsh_rev)))
         self.replace_item(hsh_rev)
 
-    def addItem(self, hsh):
-        """
-
-        :param hsh: new item to be added
-        """
-        pass
-
-    def replaceItem(self, hsh):
-        """
-
-        :param hsh: replacement for existing item
-        """
-        pass
-
-    # todo: add (1) addItem(new_hsh) and (2) replaceItem(changed_hsh)
-
+    # def addItem(self, hsh):
+    #     """
+    #
+    #     :param hsh: new item to be added
+    #     """
+    #     pass
+    #
+    # def replaceItem(self, hsh):
+    #     """
+    #
+    #     :param hsh: replacement for existing item
+    #     """
+    #     pass
 
     def delete_item(self):
         f, begline, endline = self.item_hsh['fileinfo']

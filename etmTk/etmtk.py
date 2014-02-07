@@ -665,10 +665,10 @@ class App(Tk):
         self.vm.configure(width=menuwidth, background=bgclr)
 
         self.newValue = StringVar(self)
-        self.newLabel = _("act")
+        self.newLabel = _("make")
         self.newValue.set(self.newLabel)
-        self.nm_options = [[_('create item'), 'n'],
-                           [_('start timer'), 't'],
+        self.nm_options = [[_('item'), 'n'],
+                           [_('timer'), '+'],
         ]
         self.nm_opts = [x[0] for x in self.nm_options]
         self.nm = OptionMenu(toolbar, self.newValue, *self.nm_opts)
@@ -1329,6 +1329,7 @@ or 0 to display all changes.""")
         # self.l.configure(state="normal")
         self.l.delete("0.0", END)
         if uuid is not None:
+            self.em.configure(state="normal")
             isRepeating = ('r' in hsh and dt)
             if isRepeating:
                 item = "{0} {1}".format(_('selected'), dt)
@@ -1359,17 +1360,21 @@ or 0 to display all changes.""")
             self.itemSelected = hsh
             self.dtSelected = dt
         else:
+            self.em.configure(state="disabled")
             text = ""
             for i in range(4):
                 self.em["menu"].entryconfig(i, state='disabled')
             self.itemSelected = None
             self.uuidSelected = None
             self.dtSelected = None
-        self.topSelected = int(self.tree.identify_row(1))
+        r = self.tree.identify_row(1)
+        logger.debug("top row: '{0}' {1}".format(r, type(r)))
+        if r:
+            self.topSelected = int(r)
+        else:
+            self.topSelected = 1
 
-        logger.debug("top: {3}; row: '{0}'; uuid: '{1}'; instance: '{2}'".format(self.rowSelected, self.uuidSelected, self.dtSelected, self.tree.identify_row(
-            1)))
-        self.l.insert(INSERT, text)
+        logger.debug("top: {3}; row: '{0}'; uuid: '{1}'; instance: '{2}'".format(self.rowSelected, self.uuidSelected, self.dtSelected,  self.topSelected)); self.l.insert(INSERT, text)
         return "break"
 
     def OnActivate(self, event):
