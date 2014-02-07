@@ -2,6 +2,15 @@
 
 123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|
 
+# TODO: don't trigger alerts for finished tasks
+
+# TODO: history -> open file dialog, changes for all if none selected.
+
+# TODO: main help: menu and toolbar optiions, main key bindings
+
+# TODO: edit help:
+
+
 ## Menus
 
 - Menu

@@ -40,7 +40,7 @@ import data
 from dateutil.parser import parse
 
 from data import (
-    init_localization, fmt_weekday, fmt_dt, hsh2str, leadingzero, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, mac, setup_logging, uniqueId, gettz, platformShortcut, bgclr)
+    init_localization, fmt_weekday, fmt_dt, hsh2str, leadingzero, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, mac, setup_logging, uniqueId, gettz, platformShortcut, bgclr, rrulefmt)
 
 from editor import SimpleEditor
 
@@ -66,6 +66,12 @@ ONEWEEK = timedelta(weeks=1)
 STOPPED = _('stopped')
 PAUSED = _('paused')
 RUNNING = _('running')
+
+AGENDA = _('agenda')
+SCHEDULE = _('schedule')
+PATHS = _('paths')
+KEYWORDS = _('keywords')
+TAGS = _('tags')
 
 
 class Timer():
@@ -554,8 +560,13 @@ class App(Tk):
 
         helpmenu = Menu(menubar, tearoff=0)
         helpmenu.add_command(label="About", command=self.about)
-        helpmenu.add_command(label="Help Index", command=self.donothing)
+        # helpmenu.add_command(label="Help Index", command=self.donothing)
+
+        # accelerator doesn't seem to work in the help menu
+        l, c = platformShortcut('?')
         helpmenu.add_command(label="Help", command=self.help)
+        self.bind(c, self.help)
+
         menubar.add_cascade(label="Help", menu=helpmenu)
 
         self.config(menu=menubar)
@@ -622,11 +633,11 @@ class App(Tk):
 
         menuwidth = 8
 
-        self.vm_options = [[_('agenda'), 'a'],
-                           [_('schedule'), 's'],
-                           [_('paths'), 'p'],
-                           [_('keywords'), 'k'],
-                           [_('tags'), 't']]
+        self.vm_options = [[AGENDA, 'a'],
+                           [SCHEDULE, 's'],
+                           [PATHS, 'p'],
+                           [KEYWORDS, 'k'],
+                           [TAGS, 't']]
 
         self.view2cmd = {'a': self.agendaView,
                          's': self.scheduleView,
@@ -698,17 +709,18 @@ class App(Tk):
         self.em.pack(side="left")
         self.em.configure(width=menuwidth, background=bgclr)
 
-        self.pendingAlerts = StringVar(self)
-        self.pendingAlerts.set("")
-        self.pending = Button(toolbar, textvariable=self.pendingAlerts,
-                              command=self.showAlerts)
-        self.pending.pack(side="right")
-        self.showPending = True
+        self.helpBtn = Button(toolbar, bd=0, text="?", command=self.help)
+        self.helpBtn.pack(side="right")
+        self.helpBtn.configure(highlightbackground=bgclr, highlightthickness=0)
 
         self.filterValue = StringVar(self)
         self.filterValue.set('')
-        self.filterValue.trace_variable("w", self.showView)
-        self.e = Entry(toolbar, width=8, textvariable=self.filterValue, bd=2)
+        self.filterValue.trace_variable("w", self.filterView)
+        self.e = Entry(toolbar, width=8, textvariable=self.filterValue,
+                       # relief="raised",
+                       # highlightcolor=bgclr,
+                       # bd=4
+                      )
         self.e.bind('<Return>', self.showView)
         self.e.bind('<Escape>', self.cleartext)
         self.e.bind('<Up>', self.prev_history)
@@ -754,6 +766,13 @@ class App(Tk):
                              anchor="center", padx=4, pady=0)
         timer_status.pack(side="left", expand=1)
         timer_status.configure(background=bgclr, highlightthickness=0)
+
+        self.pendingAlerts = IntVar(self)
+        self.pendingAlerts.set(0)
+        self.pending = Button(self.sf, bd=0, width=1, textvariable=self.pendingAlerts, command=self.showAlerts)
+        self.pending.pack(side="right")
+        self.pending.configure(highlightbackground=bgclr, highlightthickness=0)
+        self.showPending = True
 
         self.currentTime = StringVar(self)
         currenttime = Label(self.sf, textvariable=self.currentTime, bd=1, relief="flat",
@@ -829,7 +848,7 @@ class App(Tk):
         loop.item_hsh = self.itemSelected
         loop.cmd_do_delete(indx)
         loop.loadData()
-        self.showView()
+        self.showView(row=self.topSelected)
 
 
     def deleteWhich(self, instance="xyz"):
@@ -930,7 +949,7 @@ class App(Tk):
                          options=loop.options, title=self.filetext).changed
         if changed:
             loop.loadData()
-            self.showView()
+            self.showView(row=self.topSelected)
         else:
             self.tree.focus_set()
 
@@ -968,23 +987,32 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
         loop.item_hsh = self.itemSelected
         loop.cmd_do_finish(chosen_day)
         loop.loadData()
-        self.showView()
+        self.showView(row=self.topSelected)
 
 
-    def rescheduleItem(self, e=None, instance="xyz"):
-        loop.item_hsh = self.itemSelected
-        logger.debug('item: {0}'.format(loop.item_hsh))
-        instance = self.dtSelected
-        logger.debug('instance {0}'.format(instance))
+    def rescheduleItem(self, e=None):
+        loop.item_hsh = item_hsh = self.itemSelected
+        if self.dtSelected:
+            loop.old_dt = old_dt = parse(self.dtSelected)
+            title = _('rescheduling {0}').format(old_dt.strftime(
+                rrulefmt))
+        else:
+            loop.old_dt = None
+            title = _('scheduling an undated item')
+        logger.debug('dtSelected: {0}'.format(self.dtSelected))
         prompt = _("""\
 Enter the new date and time for the item or return an empty string to
 use the current time. Relative dates and fuzzy parsing are supported.""")
-        d = GetDateTime(parent=self, title=_('instance: {0}').format(instance), prompt=prompt)
-        chosen_day = d.value
-        if chosen_day is None:
-            return ()
-        logger.debug('new date time: {0}'.format(chosen_day))
-        loop.cmd_do_reschedule(chosen_day)
+        dt = GetDateTime(parent=self, title=title,
+                         prompt=prompt)
+        new_dt = dt.value
+        if new_dt is None:
+            return
+        new_dtn = new_dt.astimezone(gettz(self.itemSelected['z'])).replace(tzinfo=None)
+        logger.debug('rescheduled from {0} to {1}'.format(self.dtSelected, new_dtn))
+        loop.cmd_do_reschedule(new_dtn)
+        loop.loadData()
+        self.showView(row=self.topSelected)
 
 
     def showAlerts(self, e=None):
@@ -1010,27 +1038,37 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
 
     def agendaView(self, e=None):
-        self.setView(self.vm_options[0][0])
+        self.setView(AGENDA)
 
     def scheduleView(self, e=None):
-        self.setView(self.vm_options[1][0])
+        self.setView(SCHEDULE)
 
     def pathView(self, e=None):
-        self.setView(self.vm_options[2][0])
+        self.setView(PATHS)
 
     def keywordView(self, e=None):
-        self.setView(self.vm_options[3][0])
+        self.setView(KEYWORDS)
 
     def tagView(self, e=None):
-        self.setView(self.vm_options[4][0])
+        self.setView(TAGS)
 
-    def setView(self, view):
-        # self.rowSelected = None
+    def setView(self, view, row=None):
+        self.rowSelected = None
+        logger.debug("view: {0}".format(view))
         self.view = view
-        self.showView()
+        self.showView(row=row)
 
-    def showView(self, e=None, *args):
-        # print('showView', self.view, e, args)
+    def filterView(self, *args, e=None):
+        self.depth2id = {}
+        fltr = self.filterValue.get()
+        cmd = "{0} {1}".format(
+            self.vm_options[self.vm_opts.index(self.view)][1], fltr)
+        self.mode = 'command'
+        self.process_input(event=e, cmd=cmd)
+        self.e.focus_set()
+
+
+    def showView(self, *args, e=None, row=None):
         self.depth2id = {}
         self.currentView.set(self.view)
         self.viewValue.set(self.viewLabel)
@@ -1039,9 +1077,12 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             self.vm_options[self.vm_opts.index(self.view)][1], fltr)
         self.mode = 'command'
         self.process_input(event=e, cmd=cmd)
-        if self.rowSelected:
+        if row:
+            logger.debug("row: {0}".format(row))
             # self.tree.see(max(0, self.rowSelected))
-            self.tree.yview(max(0, self.rowSelected - 1))
+            self.tree.yview(max(0, row - 1))
+        # else:
+        #     self.goHome()
 
     def showBusyTimes(self, event=None, chosen_day=None):
         prompt = _("""\
@@ -1267,7 +1308,7 @@ or 0 to display all changes.""")
         return "break"
 
     def goHome(self, event=None):
-        if self.view == self.vm_options[1][0]:
+        if self.view == SCHEDULE:
             today = get_current_time().date()
             self.scrollToDate(today)
         else:
@@ -1283,7 +1324,6 @@ or 0 to display all changes.""")
         """
         item = self.tree.selection()[0]
         self.rowSelected = int(item)
-        logger.debug("item: {0}".format(item))
         type_chr = self.tree.item(item)['text'][0]
         uuid, dt, hsh = self.getInstance(item)
         # self.l.configure(state="normal")
@@ -1325,8 +1365,10 @@ or 0 to display all changes.""")
             self.itemSelected = None
             self.uuidSelected = None
             self.dtSelected = None
+        self.topSelected = int(self.tree.identify_row(1))
 
-        logger.debug(self.uuidSelected)
+        logger.debug("top: {3}; row: '{0}'; uuid: '{1}'; instance: '{2}'".format(self.rowSelected, self.uuidSelected, self.dtSelected, self.tree.identify_row(
+            1)))
         self.l.insert(INSERT, text)
         return "break"
 
@@ -1367,6 +1409,7 @@ or 0 to display all changes.""")
             return None, None, None
         uuid, dt = self.count2id[item].split("::")
         hsh = loop.uuid2hash[uuid]
+        logger.debug('item: {0}; uuid: {1}, dt: {2}'.format(item, uuid, dt))
         return uuid, dt, hsh
 
     def updateClock(self):
@@ -1824,8 +1867,9 @@ or 0 to expand all branches completely.""")
                 # return('break')
 
     def scrollToDate(self, date):
-        # only makes sense for dayview
-        if self.view != self.vm_options[1][0] or date not in loop.prevnext:
+        # only makes sense for schedule
+        logger.debug("SCHEDULE: {0}; date: {1}".format(self.view == SCHEDULE, date))
+        if self.view != SCHEDULE or date not in loop.prevnext:
             return ()
         active_date = loop.prevnext[date][1]
         if active_date not in self.date2id:

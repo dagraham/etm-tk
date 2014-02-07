@@ -1286,18 +1286,16 @@ def makeTree(list_of_lists, view=None, calendars=None, sort=True, fltr=None):
     if calendars:
         cal_pattern = r'^%s' % '|'.join([x[2] for x in calendars if x[1]])
         cal_regex = re.compile(cal_pattern)
-        log_msg.append('cal_pattern: {0}'.format(cal_pattern))
+        logger.debug('cal_pattern: {0}'.format(cal_pattern))
     if fltr is not None:
         mtch = True
         if fltr[0] == '!':
             mtch = False
             fltr = fltr[1:]
         filter_regex = re.compile(r'{0}'.format(fltr), re.IGNORECASE)
-        log_msg.append('filter: {0} ({1})'.format(fltr, mtch))
+        logger.debug('filter: {0} ({1})'.format(fltr, mtch))
     else:
         filter_regex = None
-    if log_msg:
-        logger.debug("; ".join(log_msg))
     for pc in tree_rows:
         if cal_regex and not cal_regex.match(pc[0][-1]):
             continue
@@ -1860,9 +1858,9 @@ For editing one or more, but not all, instances of an item. Needed:
 3. Add &f datetime to selected job.
     """
     if not options: options = {}
-    if u'_summary' not in hsh:
-        hsh[u'_summary'] = ''
-    if u'_group_summary' in hsh:
+    if '_summary' not in hsh:
+        hsh['_summary'] = ''
+    if '_group_summary' in hsh:
         sl = ["%s %s" % (hsh['itemtype'], hsh['_group_summary'])]
         if 'i' in hsh:
             # fix the item index
@@ -2162,6 +2160,7 @@ def items2Hashes(list_of_items, options=None):
                 messages.append("   %s" % line)
             for m in msg:
                 messages.append('      <font color="red">%s</font>' % m)
+
             continue
         tmp_hsh = {}
         tmp_hsh.update(defaults)
@@ -2198,7 +2197,10 @@ def items2Hashes(list_of_items, options=None):
             hsh["_tooltip"] = ''
 
         itemtype = hsh['itemtype']
-        if itemtype == '#':
+        if itemtype == '$':
+            # inbasket item
+            hashes.append(hsh)
+        elif itemtype == '#':
             # deleted item
             # yield this so that hidden entries are in file2uuids
             hashes.append(hsh)
@@ -2928,8 +2930,10 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
         cal_regex = re.compile(cal_pattern)
     items = deepcopy(allrows)
     day = []
+    inbasket = []
     now = []
     next_lst = []
+    someday = []
     if colors and mode == 'html':
         bb = "<b>"
         eb = "</b>"
@@ -2942,6 +2946,7 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
     day_count = 0
     last_day = ''
     for item in items:
+
         # if cal_regex and not cal_regex.match(item[0][-1]):
         #     continue
         if item[0][0] == 'day':
@@ -2953,21 +2958,30 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
                     day_count += 1
                 if day_count <= days:
                     day.append(item)
+        elif item[0][0] == 'inbasket':
+            item.insert(1, "%sIn Basket%s" % (bb, eb))
+            inbasket.append(item)
         elif item[0][0] == 'now':
             item.insert(1, "%sNow%s" % (bb, eb))
             now.append(item)
         elif item[0][0] == 'next_lst':
             item.insert(1, "%sNext%s" % (bb, eb))
             next_lst.append(item)
+        elif item[0][0] == 'someday':
+            item.insert(1, "%sSomeday%s" % (bb, eb))
+            someday.append(item)
     output = []
     count = 0
     count2id = None
     tree = {}
-    for l in [day, now, next_lst]:
+    nv = 0
+    for l in [day, inbasket, now, next_lst, someday]:
         if l:
+            nv += 1
             update = makeTree(l, calendars=calendars, fltr=fltr)
             for key in update.keys():
                 tree.setdefault(key, []).extend(update[key])
+    logger.debug("called makeTree for {0} views".format(nv))
     return tree
 
 
@@ -3702,6 +3716,9 @@ def add_occasion(uid, sd, evnt_summary, occasions, f):
 
 
 def setSummary(hsh, dt):
+    if not dt:
+        return hsh['_summary']
+    # logger.debug("dt: {0}".format(dt))
     mtch = anniversary_regex.search(hsh['_summary'])
     retval = hsh['_summary']
     if mtch:
@@ -3966,19 +3983,17 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
                     # make in basket and someday entries #
                     # sort numbers for now view --- we'll add the typ num to
             if hsh['itemtype'] == '$':
-                cat = 'In Basket'
                 item = [
-                    ('due', (0, cat), tstr2SCI['ib'][0], 0,
-                     hsh['_summary'], f), (cat,),
-                    (uid, 'ib', hsh['_summary'], '')]
+                    ('inbasket', (0, tstr2SCI['ib'][0]), dt,
+                     hsh['_summary'], f),
+                    (uid, 'ib', setSummary(hsh, dt), sdt, etmdt)]
                 add2list(items, item)
                 continue
             if hsh['itemtype'] == '?':
-                cat = 'Someday maybe'
                 item = [
-                    ('due', (2, cat), tstr2SCI['so'][0], 0,
-                     hsh['_summary'], f), (cat,),
-                    (uid, 'so', hsh['_summary'], '')]
+                    ('someday', 2, (tstr2SCI['so'][0]), dt,
+                     hsh['_summary'], f),
+                    (uid, 'so', setSummary(hsh, dt), sdt, etmdt)]
                 add2list(items, item)
                 continue
                 #--------- make entry for due view ----------#
@@ -5046,85 +5061,92 @@ Usage:
 If there is an item number INT among those displayed by the previous 'a' or 'r' command then delete that item, first prompting for confirmation. When a repeating item is selected, you will first be prompted to choose which of the repeated instances should be deleted. \
 """)
 
-    def do_e(self, arg_str, item=''):
-        args = arg_str.split(' ')
-        hsh = self.get_itemhash(args[0])
-        print('do_e args', len(args), args, hsh)
-        if not hsh:
-            return ()
-        if item:
-            self.mode = _('finished task')
-            # item_str = item
-        else:
-            print('setting mode ...')
-            self.mode = 'edit'
-            self.item_hsh = hsh
-            print('mode', self.mode, self.item_hsh)
-            if 'r' in hsh:
-                # repeating
-                instance = fmt_datetime(hsh['_dt'], self.options)
-                prompt = "\n".join([
-                    _("You have selected instance"),
-                    "    {0}".format(instance),
-                    _("of a repeating item. What do you want to change?"),
-                    "  1. {0}".format(_("only the datetime of this instance")),
-                    "  2. {0}".format(_("this instance")),
-                    "  3. {0}".format(_("this and all subsequent instances")),
-                    "  4. {0}".format(_("all instances")),
-                    "{0}".format(_('Choice [1-4] or 0 to cancel?'))])
-                print('returning', prompt)
-                return prompt
-            else:
-                print('do_e calling _do_edit(4)')
-                self.cmd_do_edit(4)
+    # def do_e(self, arg_str, item=''):
+    #     args = arg_str.split(' ')
+    #     hsh = self.get_itemhash(args[0])
+    #     print('do_e args', len(args), args, hsh)
+    #     if not hsh:
+    #         return ()
+    #     if item:
+    #         self.mode = _('finished task')
+    #         # item_str = item
+    #     else:
+    #         print('setting mode ...')
+    #         self.mode = 'edit'
+    #         self.item_hsh = hsh
+    #         print('mode', self.mode, self.item_hsh)
+    #         if 'r' in hsh:
+    #             # repeating
+    #             instance = fmt_datetime(hsh['_dt'], self.options)
+    #             prompt = "\n".join([
+    #                 _("You have selected instance"),
+    #                 "    {0}".format(instance),
+    #                 _("of a repeating item. What do you want to change?"),
+    #                 "  1. {0}".format(_("only the datetime of this instance")),
+    #                 "  2. {0}".format(_("this instance")),
+    #                 "  3. {0}".format(_("this and all subsequent instances")),
+    #                 "  4. {0}".format(_("all instances")),
+    #                 "{0}".format(_('Choice [1-4] or 0 to cancel?'))])
+    #             print('returning', prompt)
+    #             return prompt
+    #         else:
+    #             print('do_e calling _do_edit(4)')
+    #             self.cmd_do_edit(4)
 
-    def new_date(self, arg):
-        """
-        Called by _do_edit to get the new datetime.
-        """
-        print('new_date', arg)
-        # no more input is needed
-        self.mode = 'command'
-        hsh = self.item_hsh
-        if not arg:
-            return False
-        try:
-            dtstr = parse_datetime(arg)
-            print('got dtstr', dtstr)
-            dt = parse(dtstr).replace(tzinfo=tzlocal())
-            print(type(dt), dt)
-            print(parse(dtstr).replace(tzinfo=tzlocal()).astimezone(gettz(hsh['z'])))
-            new_dt = parse(dtstr).replace(tzinfo=tzlocal()).astimezone(gettz(hsh['z']))
-        except Exception as e:
-            return _("Could not parse"), "{0}".format(arg)
-            return e
-            return False
-        print('new_dt', new_dt)
-        old_dt = parse(
-            hsh['_dt']).replace(
-            tzinfo=tzlocal()).astimezone(
-            gettz(hsh['z']))
-        print('old_dt', old_dt)
-        hsh.setdefault('+', []).append(
-            new_dt.strftime(sfmt))
-        hsh.setdefault('-', []).append(
-            old_dt.strftime(sfmt))
-        item = hsh2str(hsh, self.options)
-        self.replace_item(item)
+    # def new_date(self, arg):
+    #     """
+    #     Called by _do_edit to get the new datetime.
+    #     """
+    #     print('new_date', arg)
+    #     # no more input is needed
+    #     self.mode = 'command'
+    #     hsh = self.item_hsh
+    #     if not arg:
+    #         return False
+    #     try:
+    #         dtstr = parse_datetime(arg)
+    #         print('got dtstr', dtstr)
+    #         dt = parse(dtstr).replace(tzinfo=tzlocal())
+    #         print(type(dt), dt)
+    #         print(parse(dtstr).replace(tzinfo=tzlocal()).astimezone(gettz(hsh['z'])))
+    #         new_dt = parse(dtstr).replace(tzinfo=tzlocal()).astimezone(gettz(hsh['z']))
+    #     except Exception as e:
+    #         return _("Could not parse"), "{0}".format(arg)
+    #     print('new_dt', new_dt)
+    #     old_dt = parse(
+    #         hsh['_dt']).replace(
+    #         tzinfo=tzlocal()).astimezone(
+    #         gettz(hsh['z']))
+    #     print('old_dt', old_dt)
+    #     hsh.setdefault('+', []).append(
+    #         new_dt.strftime(sfmt))
+    #     hsh.setdefault('-', []).append(
+    #         old_dt.strftime(sfmt))
+    #     item = hsh2str(hsh, self.options)
+    #     self.replace_item(item)
 
-    def cmd_do_reschedule(self, dt):
-        dtn = dt.replace(tzinfo=None)
-        hsh_rev = deepcopy(self.itm_hsh)
-        if 'r' in hsh_rev:
-            if '+' in hsh_rev and dtn in hsh_rev['+']:
-                hsh_rev['+'].remove(dtn)
-                if not hsh_rev['+'] and hsh_rev['r'] == 'l':
-                    del hsh_rev['r']
-                    del hsh_rev['_r']
-            else:
-                hsh_rev.setdefault('-', []).append(dt)
-        else:
-            hsh_rev['s'] = dtn
+    def cmd_do_reschedule(self, new_dtn):
+        # new_dtn = new_dt.astimezone(gettz(self.item_hsh['z'])).replace(tzinfo=None)
+        hsh_rev = deepcopy(self.item_hsh)
+        if self.old_dt:
+            # old_dtn = self.old_dt.astimezone(gettz(self.item_hsh['z'])).replace(tzinfo=None)
+            old_dtn = self.old_dt
+            if 'r' in hsh_rev:
+                mode = 'append'
+                if '+' in hsh_rev and old_dtn in hsh_rev['+']:
+                    hsh_rev['+'].remove(old_dtn)
+                    if not hsh_rev['+'] and hsh_rev['r'] == 'l':
+                        del hsh_rev['r']
+                        del hsh_rev['_r']
+                else:
+                    hsh_rev.setdefault('-', []).append(old_dtn)
+                hsh_rev.setdefault('+', []).append(new_dtn)
+            else: # dated but not repeating
+                hsh_rev['s'] = new_dtn
+        else: # either undated or not repeating
+            hsh_rev['s'] = new_dtn
+        logger.debug(('replacement: {0}'.format(hsh_rev)))
+        self.replace_item(hsh_rev)
 
     def addItem(self, hsh):
         """
@@ -5259,8 +5281,8 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
             if not ddn:
                 ddn = dtz
             hsh.setdefault('f', []).append((dtz, ddn))
-        item = hsh2str(hsh, self.options)
-        self.replace_item(item)
+        # item = hsh2str(hsh, self.options)
+        self.replace_item(hsh)
 
     @staticmethod
     def help_f():
