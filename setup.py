@@ -1,6 +1,7 @@
 # from distutils.core import setup
 from setuptools import setup
 from v import version
+import glob
 
 import sys
 if sys.version_info >= (3, 2):
@@ -43,10 +44,18 @@ setup(
         'Topic :: Office/Business :: News/Diary',
         'Topic :: Office/Business :: Scheduling'],
     packages=['etmTk'],
-    scripts=['etmtk'],
+    scripts=['etm'],
     install_requires=REQUIRES,
     extras_require={"icalendar": EXTRAS},
-    package_data={'.': ['version.txt', 'CHANGES']},
+    package_data={'etmTk': ['version.txt', 'CHANGES']},
+    data_files=[
+        ('share/doc/etmtk', ['etmTk/version.txt', 'etmTk/CHANGES']),
+        ('share/man/man1', ['etmTk/etmtk.1']),
+        ('share/pixmaps', ['etmTk/etmtk.xpm']),
+        ('share/applications', ['etmTk/applications/etmtk.desktop']),
+        ('share/doc/etmtk/help', glob.glob('etmTk/help/*.html')),
+        ('share/doc/etmtk/help/images', glob.glob('etmTk/help/images/*.png')),
+    ]
 )
 
 # import sys

@@ -1,0 +1,162 @@
+NAME
+    etm - manage events and tasks using simple text files
+SYNOPSIS
+    etm  [path] [acmnsv?l]
+DESCRIPTION
+    With no arguments, etm will use settings from the
+    configuration file ~/.etm/etm.cfg and open the GUI.
+
+    If the first argument is the path to a directory
+    which contains a file named etm.cfg, then settings
+    from that file will be used instead.
+
+    If the first argument, other than the optional path,
+    is either "a", "c", "m", "n", "s", "?" or "l" (lower case
+    L), then the remaining arguments will be executed by
+    etm without opening the GUI.
+
+    Editing requires that edit_cmd is specified in etm.cfg. If hg_commit
+    is also specified then changes will automatically be committed.
+
+OPTIONS
+  a   ARGS      display an action report using the remaining arguments as
+                the report specification.
+  c   ARGS      display a custom report using the remaining arguments as
+                the report specification.
+  m   INT       display a report using the remaining argument, which must
+                be a positive integer, to display a report using the
+                corresponding entry from 'report_specifications' (specified
+                in etm.cfg). Use ? m to display the numbered list of entries
+                from this file.
+  n   ARGS      create a new item using the remaining arguments as the
+                item specification. If ARGS is not given, then use edit_cmd
+                to create the new item.
+  s             display the next few days from the day view
+                combined with any items in the now and next
+                views. This command uses no further arguments.
+  v             display the etm version and system information.
+  ?             display this command line help information or,
+                if followed by a, c, m or s, then display help
+                information about the specified command.
+  l             begin an interactive shell loop in which commands can
+                be adjusted and run again without reloading the
+                data files.
+  ADDITIONAL SHELL LOOP COMMANDS
+  C   INT       if there is an item number INT among those displayed by
+                the previous 'c' or 's' command then open the editor with
+                a COPY of that item for editing. The edited copy will be
+                saved as a new item.
+  d   INT       if there is an item number INT among those displayed by
+                the previous 'c' or 's' command then delete that item,
+                first prompting for confirmation.
+  e   INT       if there is an item number INT among those displayed by
+                the previous 'c' or 's' command then open that ITEM for
+                editing.
+  E   INT       if there is an item number INT among those displayed
+                by the previous 'c' or 's' command then open the FILE
+                containing that item for editing.
+  f   INT       if there is an item number INT among those displayed by
+                the previous 'c' or 's' command and that item is an
+                unfinished task, then first prompt for a completion date
+                and time and then mark the task finished.
+  h   ARGS      if 'hg_command' is specified in etm.cfg, then execute
+                that command with ARGS.
+  i   INT       if there is an item number INT among those displayed by
+                the previous 'c' or 's' command then display the details
+                of that item.
+  o             open etm.cfg for editing.
+  r             open 'report_specifications' (specified in etm.cfg) for
+                editing.
+  S   INT       if there is an item number INT among those displayed by
+                the previous 'c' or 's' command then change the date and
+                time of that item.
+  t             toggle the display of item numbers in 'c' and 's' reports.
+  ?   ARGS      if ARGS = 'help' then display shell loop help information
+                or, if ARGS = X, then display details for command X.
+
+EXAMPLES
+    COMMAND LINE
+Group items by year, month and day together
+
+    etm_qt c ddd, MMM d yyyy
+
+Output:
+
+    Fri, Apr 1 2011
+      items for April 1
+    Sat, Apr 2 2011
+      items for April 2
+    ...
+    DATA FILES
+Data items begin with a data type character and continue on one or more lines either until the end of the file is reached or another line is found that begins with a type character. Data type characters and the associated data types:
+
+\%~   Action: a record of time and/or money spent.
+\%*   Event: happens on a particular date and time.
+\%^   Occasion: happens on a particular date, e.g., a  holiday,
+      anniversary or birthday.
+\%!   Note: a record of some useful information.
+\%\-   Task: something that needs to be done.
+\%%   Delegated task: a task assigned to someone else.
+\%+   Task group: a group of related tasks, some of which may be
+      prerequisites for others.
+\%$   Inbasket: quick entry to be edited later when time permits.
+\%?   Someday maybe: remember but don't show in the common views.
+\%#   Hidden: remember but hide from all etm views except folder view.
+\%=   Defaults: set default options for subsequent entries in the
+      same data file.
+
+The beginning data type character for each item is followed by the item summary and then, perhaps, by one or more '@key value' option pairs. Examples:
+
+* A sales meeting (an event) a week from today from 9:00am until 10:00am with a 5 minute early warning alert:
+
+    \%* sales meeting @s +7 9a @e 1h @a 5
+
+* Prepare a report (a task) for the meeting beginning 3 days early:
+
+    \%\- prepare report @s +7 @b 3
+
+* A 35 minute period (an action) spent working on the report yesterday:
+
+    \%~ report preparation @s \-1 @e 35
+
+* Get a haircut (a task) on the 24th of the current month and then [r]epeatedly at (d)aily [i]ntervals of 14 days and, [o]n completion, (r)estart from the completion date:
+
+    \%\- get haircut @s 24 @r d &i 14 @o r
+
+* Do the jobs in the following task group in 'q' order to finish the dog house project:
+
+    \%+ dog house
+          @j pickup lumber and paint &q 1
+          @j cut pieces &q 2
+          @j assemble &q 3
+          @j paint &q 4
+
+* Payday (an occassion) on the last week day of each month. The '&s' part of the entry extracts the last date which is both a weekday and falls within the last three days of the month.):
+
+    \%^ payday @s 1/1 @r m &w (MO, TU, WE, TH, FR) &m (\-1, \-2, \-3) &s \-1
+
+* Take a prescribed medication daily (a reminder) for the next three days at 10am, 2pm, 6pm and 10pm and trigger the default alert zero minutes before each event:
+
+    \%* take Rx @s +0 @r d &h 10, 14, 18, 22 &u +4 @a 0
+
+* Presidential election day (an occassion) every four years on the first Tuesday after a Monday in November:
+
+    \%^ Presidential Election Day @s 2012-11-06
+          @r y &i 4 &M 11 &m range(2,9) &w TU
+
+* Join the etm discussion group (a task). Because of the @g (goto) link, pressing Ctrl-G when the details of this item are displayed in the gui would open the link using the system default application:
+
+    \%\- join the etm discussion group
+             @g http://groups.google.com/group/eventandtaskmanager/topics
+SEE ALSO
+Extensive documentation can be found in the folder:
+
+    http://people.duke.edu/~dgraham/etmqt/help/
+BUGS
+Please report bugs to the etm discussion group:
+
+    http://groups.google.com/forum/#!forum/eventandtaskmanager
+AUTHOR
+   Daniel A Graham <daniel.graham@duke.edu>
+COPYRIGHT
+   Copyright (c) 2009-2013 [Daniel Graham]. All rights reserved.

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=etmtk
+Comment=Manage events and tasks using simple text files
+Exec=etm
+Icon=etmtk
+Categories=Office;Application;Calendar;Tk;
+Keywords=Calendar;Time;Note;etm;etmtk;Task;Event;Alarm;
