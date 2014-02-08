@@ -2033,7 +2033,10 @@ or 0 to expand all branches completely.""")
                         print(text)
 
 
-if __name__ == "__main__":
+loop = None
+
+def main():
+    global loop
     # For production:
     setup_logging(default_level=logging.DEBUG)
     # setup_logging(default_level=logging.INFO)
@@ -2047,3 +2050,6 @@ if __name__ == "__main__":
     # app = App(path='/Users/dag/etm-tk')
     app = App()
     app.mainloop()
+
+if __name__ == "__main__":
+    main()
