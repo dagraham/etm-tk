@@ -494,7 +494,7 @@ class App(Tk):
         #                      underline=0, command=self.donothing)
 
         filemenu.add_command(label=_("Data files ..."),
-                             underline=0, command=self.donothing)
+                             underline=0, command=self.editData)
 
         l, c = platformShortcut('O')
         filemenu.add_command(label=loop.options['config'], underline=0, command=lambda x=loop.options['config']: self.editFile(file=x), accelerator=l)
@@ -993,11 +993,25 @@ class App(Tk):
             self.tree.focus_set()
 
     def editFile(self, e=None, file=None):
+        relfile = os.path.relpath(file, self.options['datadir'])
         logger.debug('file: {0}'.format(file))
-        changed = SimpleEditor(parent=self, newhsh=None, rephsh=None,  file=file, options=loop.options, title=file).changed
+        changed = SimpleEditor(parent=self, newhsh=None, rephsh=None,  file=file, options=loop.options, title=relfile).changed
         if changed:
             loop.loadData()
             self.showView()
+
+    def editData(self, e=None):
+        initdir = self.options['datadir']
+        fileops = {'defaultextension': '.txt',
+                   'filetypes': [('text files', '.txt')],
+                   'initialdir': initdir,
+                   'initialfile': "",
+                   'title': 'etmtk data files',
+                   'parent': self}
+        filename = askopenfilename(**fileops)
+        if not (filename and os.path.isfile(filename)):
+            return False
+        self.editFile(e, file=filename)
 
 
     def editWhich(self, instance="xyz"):
@@ -1072,7 +1086,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
                         str(x[1]['summary'][:26])) for x in loop.alerts]))
         else:
             s = _("none")
-        self.textWindow(t, s)
+        self.textWindow(self, t, s)
 
 
 
@@ -1308,15 +1322,15 @@ parsing are supported.""")
 
     def help(self, event=None):
         res = loop.help_help()
-        self.textWindow(self, title='etm', prompt=res)
+        self.textWindow(parent=self, title='etm', prompt=res)
 
     def about(self, event=None):
         res = loop.do_v("")
-        self.textWindow(title='etm', prompt=res)
+        self.textWindow(parent=self, title='etm', prompt=res)
 
     def checkForUpdate(self, event=None):
         res = checkForNewerVersion()[1]
-        self.textWindow(title='etm', prompt=res)
+        self.textWindow(parent=self, title='etm', prompt=res)
 
     def showChanges(self, event=None):
         if self.itemSelected:
@@ -1355,7 +1369,7 @@ or 0 to display all changes.""").format(title)
         logger.debug('history command: {0}'.format(command))
         p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
                              universal_newlines=True).stdout.read()
-        self.textWindow(title=title, prompt=str(p))
+        self.textWindow(parent=self, title=title, prompt=str(p))
 
     def focus_next_window(self, event):
         event.widget.tk_focusNext().focus()
@@ -1543,7 +1557,7 @@ or 0 to display all changes.""").format(title)
                                 self.options['alert_soundcmd'], hsh)
                             subprocess.call(scmd, shell=True)
                         else:
-                            self.textWindow(
+                            self.textWindow(self,
                                 "etm", _("""\
 A sound alert failed. The setting for 'alert_soundcmd' is missing from \
 your etmtk.cfg."""))
@@ -1554,7 +1568,7 @@ your etmtk.cfg."""))
                                 self.options['alert_displaycmd'], hsh)
                             subprocess.call(dcmd, shell=True)
                         else:
-                            self.textWindow(
+                            self.textWindow(self,
                                 "etm", _("""\
 A display alert failed. The setting for 'alert_displaycmd' is missing \
 from your etmtk.cfg."""))
@@ -1565,7 +1579,7 @@ from your etmtk.cfg."""))
                                 self.options['alert_voicecmd'], hsh)
                             subprocess.call(vcmd, shell=True)
                         else:
-                            self.textWindow(
+                            self.textWindow(self,
                                 "etm", _("""\
 An email alert failed. The setting for 'alert_voicecmd' is missing from \
 your etmtk.cfg."""))
@@ -1580,7 +1594,7 @@ your etmtk.cfg."""))
                             if not self.options[field]:
                                 missing.append(field)
                         if missing:
-                            self.textWindow(
+                            self.textWindow(self,
                                 "etm", _("""\
 An email alert failed. Settings for the following variables are missing \
 from your etmtk.cfg: %s.""" % ", ".join(["'%s'" % x for x in missing])))
@@ -1624,7 +1638,7 @@ from your etmtk.cfg: %s.""" % ", ".join(["'%s'" % x for x in missing])))
                             if not self.options[field]:
                                 missing.append(field)
                         if missing:
-                            self.textWindow(
+                            self.textWindow(self,
                                 "etm", _("""\
 A text alert failed. Settings for the following variables are missing \
 from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
@@ -1899,7 +1913,7 @@ Relative dates and fuzzy parsing are supported.""")
             self.showTree(res, event=event)
         else:
             # not a hash => not a tree
-            self.textWindow(title='etm', prompt=res)
+            self.textWindow(self, title='etm', prompt=res)
             return 0
 
     def expand2Depth(self, event=None):

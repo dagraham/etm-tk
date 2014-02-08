@@ -182,7 +182,8 @@ class SimpleEditor(Toplevel):
         self.setmodified(False)
         self.text.bind('<<Modified>>', self.updateSaveStatus)
         self.grab_set()
-        self.initial_focus().focus_set = self.text
+        # if self.parent:
+        #     self.initial_focus().focus_set = self.parent
         self.text.focus_set()
         self.protocol("WM_DELETE_WINDOW", self.quit)
         if parent:
