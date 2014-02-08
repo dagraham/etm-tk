@@ -3,10 +3,12 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 #import the 'tkinter' module
+import os
 import re
 from copy import deepcopy
 import subprocess
 from dateutil.tz import tzlocal
+import codecs
 
 import logging
 import logging.config
@@ -21,6 +23,7 @@ if platform.python_version() >= '3':
     from tkinter import ttk
     from tkinter import font as tkFont
     from tkinter.messagebox import askokcancel
+    from tkinter.filedialog import askopenfilename
     # from tkinter import simpledialog as tkSimpleDialog
     # import tkFont
 else:
@@ -30,6 +33,7 @@ else:
     import ttk
     import tkFont
     from tkMessageBox import askokcancel
+    from tkFileDialog import askopenfilename
     # import tkSimpleDialog
 
 tkversion = tkinter.TkVersion
@@ -286,6 +290,41 @@ class DialogWindow(Dialog):
             self.entry.select_range(0, END)
             # self.entry.pack(padx=5, pady=5)
         return self.entry
+
+class TextDialog(Dialog):
+
+    def body(self, master):
+        self.text = ReadOnlyText(
+            master, wrap="word", padx=2, pady=2, bd=2, relief="sunken",
+            font=tkFont.Font(family="Lucida Sans Typewriter"),
+            height=14,
+            width=52,
+            takefocus=False)
+        self.text.insert("1.1", self.prompt)
+        self.text.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0,
+                       pady=0)
+        ysb = ttk.Scrollbar(master, orient='vertical', command=self.text
+                            .yview,
+                            width=8)
+        ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
+        # t.configure(state="disabled", yscroll=ysb.set)
+        self.text.configure(yscroll=ysb.set)
+
+    def buttonbox(self):
+        # add standard button box. override if you don't want the
+        # standard buttons
+
+        box = Frame(self)
+
+        w = Button(box, text="OK", width=10, command=self.cancel,
+                   default=ACTIVE)
+        w.pack(side=LEFT, padx=5, pady=5)
+
+        self.bind("<Return>", self.ok)
+        self.bind("<Escape>", self.ok)
+
+        box.pack(side='bottom')
+
 
 
 class OptionsDialog():
@@ -955,7 +994,7 @@ class App(Tk):
 
     def editFile(self, e=None, file=None):
         logger.debug('file: {0}'.format(file))
-        changed = SimpleEditor(parent=self, file=file, title=file, options=loop.options).changed
+        changed = SimpleEditor(parent=self, newhsh=None, rephsh=None,  file=file, options=loop.options, title=file).changed
         if changed:
             loop.loadData()
             self.showView()
@@ -1033,7 +1072,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
                         str(x[1]['summary'][:26])) for x in loop.alerts]))
         else:
             s = _("none")
-        self.messageWindow(t, s)
+        self.textWindow(t, s)
 
 
 
@@ -1205,7 +1244,7 @@ parsing are supported.""")
             if times:
                 lines.append("   %s: %s" % (weekdays[i], "; ".join(times)))
         s = "\n".join(lines)
-        self.messageWindow(title=_('busy times'), prompt=s)
+        self.textWindow(parent=self, title=_('busy times'), prompt=s)
         # print(s)
 
     # noinspection PyShadowingNames
@@ -1269,20 +1308,34 @@ parsing are supported.""")
 
     def help(self, event=None):
         res = loop.help_help()
-        self.messageWindow(title='etm', prompt=res, modal=False)
+        self.textWindow(self, title='etm', prompt=res)
 
     def about(self, event=None):
         res = loop.do_v("")
-        self.messageWindow(title='etm', prompt=res)
+        self.textWindow(title='etm', prompt=res)
 
     def checkForUpdate(self, event=None):
         res = checkForNewerVersion()[1]
-        self.messageWindow(title='etm', prompt=res)
+        self.textWindow(title='etm', prompt=res)
 
     def showChanges(self, event=None):
+        if self.itemSelected:
+            f = self.itemSelected['fileinfo'][0]
+            fn = os.path.join(self.options['datadir'], f)
+            title = _("Showing changes for {0}.").format(f)
+
+        else:
+            fn = ""
+            title = _("Showing changes for all files.")
+
         prompt = _("""\
+{0}
+
+If an item is selected, changes will be shown for the file containing
+the item. Otherwise, changes will be shown for all files.
+
 Enter an integer number of changes to display
-or 0 to display all changes.""")
+or 0 to display all changes.""").format(title)
         depth = GetInteger(
             parent=self,
             title=_("Changes"),
@@ -1295,13 +1348,14 @@ or 0 to display all changes.""")
         else:
             numstr = "-l {0}".format(depth)
 
+
         command = loop.options['hg_history'].format(
             repo=loop.options['datadir'],
-            file="", numchanges=numstr, rev="{rev}", desc="{desc}")
+            file=fn, numchanges=numstr, rev="{rev}", desc="{desc}")
         logger.debug('history command: {0}'.format(command))
         p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
                              universal_newlines=True).stdout.read()
-        self.messageWindow(title=_("Changes"), prompt=str(p))
+        self.textWindow(title=title, prompt=str(p))
 
     def focus_next_window(self, event):
         event.widget.tk_focusNext().focus()
@@ -1489,7 +1543,7 @@ or 0 to display all changes.""")
                                 self.options['alert_soundcmd'], hsh)
                             subprocess.call(scmd, shell=True)
                         else:
-                            self.messageWindow(
+                            self.textWindow(
                                 "etm", _("""\
 A sound alert failed. The setting for 'alert_soundcmd' is missing from \
 your etmtk.cfg."""))
@@ -1500,7 +1554,7 @@ your etmtk.cfg."""))
                                 self.options['alert_displaycmd'], hsh)
                             subprocess.call(dcmd, shell=True)
                         else:
-                            self.messageWindow(
+                            self.textWindow(
                                 "etm", _("""\
 A display alert failed. The setting for 'alert_displaycmd' is missing \
 from your etmtk.cfg."""))
@@ -1511,7 +1565,7 @@ from your etmtk.cfg."""))
                                 self.options['alert_voicecmd'], hsh)
                             subprocess.call(vcmd, shell=True)
                         else:
-                            self.messageWindow(
+                            self.textWindow(
                                 "etm", _("""\
 An email alert failed. The setting for 'alert_voicecmd' is missing from \
 your etmtk.cfg."""))
@@ -1526,7 +1580,7 @@ your etmtk.cfg."""))
                             if not self.options[field]:
                                 missing.append(field)
                         if missing:
-                            self.messageWindow(
+                            self.textWindow(
                                 "etm", _("""\
 An email alert failed. Settings for the following variables are missing \
 from your etmtk.cfg: %s.""" % ", ".join(["'%s'" % x for x in missing])))
@@ -1570,7 +1624,7 @@ from your etmtk.cfg: %s.""" % ", ".join(["'%s'" % x for x in missing])))
                             if not self.options[field]:
                                 missing.append(field)
                         if missing:
-                            self.messageWindow(
+                            self.textWindow(
                                 "etm", _("""\
 A text alert failed. Settings for the following variables are missing \
 from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
@@ -1640,38 +1694,41 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
             self.e.insert(0, self.history[self.index])
         return 'break'
 
+    def textWindow(self, parent, title=None, prompt=None):
+        d = TextDialog(parent, title=title, prompt=prompt)
+
     # noinspection PyShadowingNames
-    def messageWindow(self, title, prompt, modal=True):
-        win = Toplevel()
-        win.title(title)
-        # win.minsize(444, 430)
-        # win.minsize(450, 450)
-        f = Frame(win)
-        # pack the button first so that it doesn't disappear with resizing
-        b = Button(win, text=_('OK'), width=10, command=win.destroy, default='active')
-        b.pack(side='bottom', fill=tkinter.NONE, expand=0, pady=0)
-        win.bind('<Return>', (lambda e, b=b: b.invoke()))
-        win.bind('<Escape>', (lambda e, b=b: b.invoke()))
-
-        t = ReadOnlyText(
-            f, wrap="word", padx=2, pady=2, bd=2, relief="sunken",
-            font=tkFont.Font(family="Lucida Sans Typewriter"),
-            height=14,
-            width=52,
-            takefocus=False)
-        t.insert("0.0", prompt)
-        t.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0, pady=0)
-        ysb = ttk.Scrollbar(f, orient='vertical', command=t.yview, width=8)
-        ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
-        # t.configure(state="disabled", yscroll=ysb.set)
-        t.configure(yscroll=ysb.set)
-        f.pack(padx=2, pady=2, fill=tkinter.BOTH, expand=1)
-
-        win.focus_set()
-        if modal:
-            win.grab_set()
-            win.transient(self)
-            win.wait_window(win)
+    # def textWindow(self, title, prompt, modal=True):
+    #     win = Toplevel()
+    #     win.title(title)
+    #     # win.minsize(444, 430)
+    #     # win.minsize(450, 450)
+    #     f = Frame(win)
+    #     # pack the button first so that it doesn't disappear with resizing
+    #     b = Button(win, text=_('OK'), width=10, command=win.destroy, default='active')
+    #     b.pack(side='bottom', fill=tkinter.NONE, expand=0, pady=0)
+    #     win.bind('<Return>', (lambda e, b=b: b.invoke()))
+    #     win.bind('<Escape>', (lambda e, b=b: b.invoke()))
+    #
+    #     t = ReadOnlyText(
+    #         f, wrap="word", padx=2, pady=2, bd=2, relief="sunken",
+    #         font=tkFont.Font(family="Lucida Sans Typewriter"),
+    #         height=14,
+    #         width=52,
+    #         takefocus=False)
+    #     t.insert("0.0", prompt)
+    #     t.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0, pady=0)
+    #     ysb = ttk.Scrollbar(f, orient='vertical', command=t.yview, width=8)
+    #     ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
+    #     # t.configure(state="disabled", yscroll=ysb.set)
+    #     t.configure(yscroll=ysb.set)
+    #     f.pack(padx=2, pady=2, fill=tkinter.BOTH, expand=1)
+    #
+    #     win.focus_set()
+    #     if modal:
+    #         win.grab_set()
+    #         win.transient(self)
+    #         win.wait_window(win)
 
     def goToDate(self, e=None):
         """
@@ -1842,7 +1899,7 @@ Relative dates and fuzzy parsing are supported.""")
             self.showTree(res, event=event)
         else:
             # not a hash => not a tree
-            self.messageWindow(title='etm', prompt=res)
+            self.textWindow(title='etm', prompt=res)
             return 0
 
     def expand2Depth(self, event=None):

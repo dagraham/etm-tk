@@ -1,5 +1,7 @@
 import os
 import platform, sys
+import codecs
+
 from copy import deepcopy
 
 if platform.python_version() >= '3':
@@ -146,9 +148,14 @@ class SimpleEditor(Toplevel):
         if file is not None:
             # we're editing a file
             self.mode = 'file'
-            self.settext(file=file)
             inspect.configure(state="disabled")
             logger.debug('file: {0}'.format(file))
+            with codecs.open(file, 'r',
+                             self.options['encoding']['file']) as f:
+                text = f.read()
+            logger.debug('file text: {0}'.format(type(text)))
+            # text = "This is a test"
+            # self.settext(text="{0}".format(text))
         else:
             # we are editing an item
             # Button(frame, text=_('Check'), width=btnwdth, command=self.onCheck).pack(side=LEFT, padx=2)
@@ -156,41 +163,37 @@ class SimpleEditor(Toplevel):
                 # we will be appending a new item
                 self.mode = "new"
                 self.fileinfo = (ensureMonthly(options=self.options), 0, 0)
-                self.settext(text = '')
+                # self.settext(text='')
+                text = ''
             else:
-                self.settext(text=hsh2str(newhsh, self.options))
+                # self.settext(text=hsh2str(newhsh, self.options))
+                text = hsh2str(newhsh, self.options)
                 if rephsh is None:
                     self.mode = 'replace'
                 else:
                     # without line numbers we will be appending an item
                     self.mode = 'append'
+            logger.debug('item text: {0}'.format(type(text)))
+
+        self.settext(text)
 
         # clear the undo buffer
         self.text.edit_reset()
         self.setmodified(False)
         self.text.bind('<<Modified>>', self.updateSaveStatus)
-
         self.grab_set()
-
-        self.initial_focus = self.text
-        self.text.focus()
+        self.initial_focus().focus_set = self.text
+        self.text.focus_set()
         self.protocol("WM_DELETE_WINDOW", self.quit)
-
         if parent:
             self.geometry("+%d+%d" % (parent.winfo_rootx() + 50,
                                       parent.winfo_rooty() + 50))
-
-        # self.initial_focus.focus_set()
-
         self.configure(background=bgclr)
-
         self.wait_window(self)
 
-    def settext(self, text='', file=None):
-        if file:
-            text = open(file, 'r').read()
+    def settext(self, text=''):
         self.text.delete('1.0', END)
-        self.text.insert('1.0', text)
+        self.text.insert(INSERT, text)
         self.text.mark_set(INSERT, '1.0')
         self.text.focus()
         logger.debug("modified: {0}".format(self.checkmodified()))
@@ -218,7 +221,9 @@ class SimpleEditor(Toplevel):
             self.quit()
         elif self.file is not None:
             alltext = self.gettext()
-            open(self.file, 'w').write(alltext)
+            with codecs.open(self.file, 'w',
+                             self.options['encoding']['file']) as f:
+                f.write(alltext)
             self.setmodified(False)
             self.changed = True
             self.quit()
