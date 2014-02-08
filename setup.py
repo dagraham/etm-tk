@@ -50,6 +50,7 @@ setup(
     package_data={'etmTk': ['version.txt', 'CHANGES']},
     data_files=[
         ('share/doc/etmtk', ['etmTk/version.txt', 'etmTk/CHANGES']),
+        # TODO: fix man, icon, desktop, docs
         # ('share/man/man1', ['etmTk/etmtk.1']),
         # ('share/pixmaps', ['etmTk/etmtk.xpm']),
         # ('share/applications', ['etmTk/applications/etmtk.desktop']),
@@ -57,23 +58,3 @@ setup(
         # ('share/doc/etmtk/help/images', glob.glob('etmTk/help/images/*.png')),
     ]
 )
-
-# import sys
-# from cx_Freeze import setup, Executable
-#
-# executables = [
-#         Executable("advanced_1.py"),
-#         Executable("advanced_2.py")
-# ]
-#
-# buildOptions = dict(
-#         compressed = True,
-#         includes = ["testfreeze_1", "testfreeze_2"],
-#         path = sys.path + ["modules"])
-#
-# setup(
-#         name = "advanced_cx_Freeze_sample",
-#         version = "0.1",
-#         description = "Advanced sample cx_Freeze script",
-#         options = dict(build_exe = buildOptions),
-#         executables = executables, requires=['icalendar', 'pytz'])

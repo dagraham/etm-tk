@@ -170,7 +170,11 @@ cd $home
 echo
 echo -n "Create etm.app?"
 if asksure; then
-    cxfreeze3 -OO etm --target-dir ~/etm-tk/releases/etmtk-${tag}
+    sudo rm -fR releases/*
+    cxfreeze3 -OO etm --target-dir releases/etmtk-${tag}
+    cd releases
+    tar czf etmtk-${tag}-OSX-freeze.tar.gz etmtk-${tag}/
+    cd $home
 else
     echo "Skipping etm.app creation."
 fi
