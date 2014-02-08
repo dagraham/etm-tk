@@ -10,4 +10,5 @@ from etmTk import view
 # 5: logging.CRITICAL
 
 # default = 3
-view.main()
+# for production, call this without an argument
+view.main(1)

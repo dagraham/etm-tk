@@ -45,7 +45,7 @@ SOMEREPS = _('Selected repetitions')
 ALLREPS = _('Repetitions')
 MESSAGES = _('Error messages')
 
-from data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, platformShortcut,\
+from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, platformShortcut,\
     bgclr, CMD
 
 

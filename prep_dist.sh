@@ -53,6 +53,7 @@ if asksure; then
 Edit etmQt/v.py to change the major and minor numbers."
     hg tag $tag -f
     echo "version = \"$tag\"" > /Users/dag/etm-tk/etmTk/v.py
+    echo "version = \"$tag [$versioninfo]\"" > etmTk/version.py
 else
     tag=$major.$minor.$patch
     change="retaining version $vinfo."
@@ -62,11 +63,9 @@ fi
 # write correct info to v.txt and version.txt
 # echo $tag > /Users/dag/etm-qt/v.txt
 echo $tag > etmTk/v.txt
-# echo $tag [$versioninfo] > /Users/dag/etm-qt/version.txt
-echo $tag [$versioninfo] > version.txt
 
 # cp /Users/dag/etm-qt/version.txt /Users/dag/etm-qt/etmQt/version.txt
-cp version.txt ./etmTk/version.txt
+#cp version.txt ./etmTk/version.txt
 # echo "RECENT CHANGES" > /Users/dag/etm-qt/CHANGES
 echo "RECENT CHANGES" > CHANGES
 hg log --template '{rev} {date|shortdate} [{tags}]\n\t{desc|fill68|tabindent}\n' -r tip:-30 >> /Users/dag/etm-qt/CHANGES
@@ -122,7 +121,7 @@ sudo rm -fR /Users/dag/etm-tk/build/*
 sudo rm -fR /Users/dag/etm-tk/dist/*
 echo ""
 echo "Creating python sdist for $tag"
-python3 -O etmTk/setup.py sdist --formats=gztar,zip
+python3 -O setup.py sdist --formats=gztar,zip
 echo ""
 
 cd $home/dist
@@ -146,9 +145,9 @@ if asksure; then
     echo "changing to etmtk-${tag} and running setup.py"
     cd "$home/dist/etmtk-${tag}"
     pwd
-    echo "installing etmtk for python 2" && sudo python2 etmTk/setup.py install
+    echo "installing etmtk for python 2" && sudo python2 setup.py install
     pwd
-    echo "installing etmtk for python 3" && sudo python3 etmTk/setup.py install
+    echo "installing etmtk for python 3" && sudo python3 setup.py install
     echo "Finished system install of etmtk-${tag}"
     cd $home
 else
@@ -171,7 +170,7 @@ cd $home
 echo
 echo -n "Create etm.app?"
 if asksure; then
-    cxfreeze3 -OO etmTk/etmtk --target-dir ~/etm-tk/releases/etmtk-${tag}
+    cxfreeze3 -OO etm --target-dir ~/etm-tk/releases/etmtk-${tag}
 else
     echo "Skipping etm.app creation."
 fi

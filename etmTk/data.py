@@ -137,7 +137,8 @@ def dt_to_str(dt, s):
     return s2or3(dt.strftime(s))
 
 
-from v import version
+from etmTk.v import version
+from etmTk.version import version as fullversion
 
 last_version = version
 
@@ -5608,11 +5609,11 @@ Options include:
     def do_v(self, arg_str):
         d = {
             'copyright': '2009-%s' % datetime.today().strftime("%Y"),
-            'home': 'www.duke.edu/~dgraham/etmqt',
+            'home': 'www.duke.edu/~dgraham/etmtk',
             'dev': 'daniel.graham@duke.edu',
             'group': "groups.google.com/group/eventandtaskmanager",
             'gpl': 'www.gnu.org/licenses/gpl.html',
-            'etm_tk': version,
+            'etmversion': fullversion,
             'platform': platform.system(),
             'python': platform.python_version(),
             'dateutil': dateutil_version,
@@ -5620,7 +5621,8 @@ Options include:
         }
         # print(d)
         return _("""\
-Event and Task Manager Tk {0[etm_tk]}
+Event and Task Manager
+version: {0[etmversion]}
 
 This application provides a format for using plain text files to store events, tasks and other items and a Tk based GUI for creating and modifying items as well as viewing them.
 

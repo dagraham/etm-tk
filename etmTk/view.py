@@ -38,15 +38,15 @@ else:
 
 tkversion = tkinter.TkVersion
 
-import data
+import etmTk.data as data
 # from data import init_localization
 
 from dateutil.parser import parse
 
-from data import (
+from etmTk.data import (
     init_localization, fmt_weekday, fmt_dt, hsh2str, leadingzero, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, mac, setup_logging, uniqueId, gettz, platformShortcut, bgclr, rrulefmt)
 
-from editor import SimpleEditor
+from etmTk.edit import SimpleEditor
 
 import gettext
 
@@ -1111,7 +1111,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.view = view
         self.showView(row=row)
 
-    def filterView(self, *args, e=None):
+    def filterView(self, e=None):
         self.depth2id = {}
         fltr = self.filterValue.get()
         cmd = "{0} {1}".format(
@@ -1121,7 +1121,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.e.focus_set()
 
 
-    def showView(self, *args, e=None, row=None):
+    def showView(self, e=None, row=None):
         self.depth2id = {}
         self.currentView.set(self.view)
         self.viewValue.set(self.viewLabel)
@@ -2035,10 +2035,22 @@ or 0 to expand all branches completely.""")
 
 loop = None
 
-def main():
+log_levels = {
+    1: logging.DEBUG,
+    2: logging.INFO,
+    3: logging.WARN,
+    4: logging.ERROR,
+    5: logging.CRITICAL
+}
+
+def main(level=3):  # debug, info, warn, error, critical
     global loop
-    # For production:
-    setup_logging(default_level=logging.DEBUG)
+    if level in log_levels:
+        loglevel = log_levels[level]
+    else:
+        loglevel = log_levels[3]
+
+    setup_logging(default_level=loglevel)
     # setup_logging(default_level=logging.INFO)
     etmdir = ''
     # For testing override etmdir:

@@ -1,6 +1,6 @@
 # from distutils.core import setup
 from setuptools import setup
-from v import version
+from etmTk.v import version
 import glob
 
 import sys
@@ -50,11 +50,11 @@ setup(
     package_data={'etmTk': ['version.txt', 'CHANGES']},
     data_files=[
         ('share/doc/etmtk', ['etmTk/version.txt', 'etmTk/CHANGES']),
-        ('share/man/man1', ['etmTk/etmtk.1']),
-        ('share/pixmaps', ['etmTk/etmtk.xpm']),
-        ('share/applications', ['etmTk/applications/etmtk.desktop']),
-        ('share/doc/etmtk/help', glob.glob('etmTk/help/*.html')),
-        ('share/doc/etmtk/help/images', glob.glob('etmTk/help/images/*.png')),
+        # ('share/man/man1', ['etmTk/etmtk.1']),
+        # ('share/pixmaps', ['etmTk/etmtk.xpm']),
+        # ('share/applications', ['etmTk/applications/etmtk.desktop']),
+        # ('share/doc/etmtk/help', glob.glob('etmTk/help/*.html')),
+        # ('share/doc/etmtk/help/images', glob.glob('etmTk/help/images/*.png')),
     ]
 )
 
