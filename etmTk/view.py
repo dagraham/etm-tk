@@ -2043,7 +2043,7 @@ log_levels = {
     5: logging.CRITICAL
 }
 
-def main(level=3):  # debug, info, warn, error, critical
+def main(level=3, dir=None):  # debug, info, warn, error, critical
     global loop
     if level in log_levels:
         loglevel = log_levels[level]
@@ -2054,7 +2054,8 @@ def main(level=3):  # debug, info, warn, error, critical
     # setup_logging(default_level=logging.INFO)
     etmdir = ''
     # For testing override etmdir:
-    etmdir = '/Users/dag/etm-tk/etm-sample'
+    if dir is not None:
+        etmdir = dir
     init_localization()
     (user_options, options, use_locale) = data.get_options(etmdir)
     loop = data.ETMCmd(options=options)

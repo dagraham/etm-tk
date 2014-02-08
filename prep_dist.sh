@@ -175,6 +175,7 @@ if asksure; then
     cd releases
     tar czf etmtk-${tag}-OSX-freeze.tar.gz etmtk-${tag}/
     cd $home
+    sudo rm -fR releases/etmtk-${tag}
 else
     echo "Skipping etm.app creation."
 fi

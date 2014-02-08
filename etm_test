@@ -11,4 +11,4 @@ from etmTk import view
 
 # default = 3
 # for production, call this without an argument
-view.main(1)
+view.main(1, dir='/Users/dag/etm-tk/etm-sample')
