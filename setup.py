@@ -47,7 +47,7 @@ setup(
     scripts=['etm'],
     install_requires=REQUIRES,
     extras_require={"icalendar": EXTRAS},
-    package_data={'etmTk': ['version.txt', 'CHANGES']},
+    package_data={'etmTk': ['version.txt', 'CHANGES', 'logging.yaml']},
     data_files=[
         ('share/doc/etmtk', ['etmTk/version.txt', 'etmTk/CHANGES']),
         # TODO: fix man, icon, desktop, docs

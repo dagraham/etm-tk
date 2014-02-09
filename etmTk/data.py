@@ -17,7 +17,7 @@ import logging.config
 logger = logging.getLogger()
 
 def setup_logging(
-        default_path='logging.yaml',
+        default_path='etmTk/logging.yaml',
         default_level=logging.INFO,
         # env_key='LOG_CFG'
 ):
@@ -549,23 +549,26 @@ def send_mail(smtp_to, subject, message, files=None, smtp_from=None, smtp_server
     """
     if not files: files = []
     import smtplib
-    from email.MIMEMultipart import MIMEMultipart
-    from email.MIMEBase import MIMEBase
-    from email.MIMEText import MIMEText
-    from email.Utils import COMMASPACE, formatdate
-    from email import Encoders
-
+    if windoz:
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.base import MIMEBase
+        from email.mime.text import MIMEText
+        from email.utils import COMMASPACE, formatdate
+        from email import encoders
+    else:
+        from email.MIMEMultipart import MIMEMultipart
+        from email.MIMEBase import MIMEBase
+        from email.MIMEText import MIMEText
+        from email.Utils import COMMASPACE, formatdate
+        from email import Encoders
     assert type(smtp_to) == list
     assert type(files) == list
-
     msg = MIMEMultipart()
     msg['From'] = smtp_from
     msg['To'] = COMMASPACE.join(smtp_to)
     msg['Date'] = formatdate(localtime=True)
     msg['Subject'] = subject
-
     msg.attach(MIMEText(message))
-
     for f in files:
         part = MIMEBase('application', "octet-stream")
         part.set_payload(open(f, "rb").read())
@@ -574,7 +577,6 @@ def send_mail(smtp_to, subject, message, files=None, smtp_from=None, smtp_server
             'Content-Disposition',
             'attachment; filename="%s"' % os.path.basename(f))
         msg.attach(part)
-
     smtp = smtplib.SMTP_SSL(smtp_server)
     smtp.login(smtp_id, smtp_pw)
     smtp.sendmail(smtp_from, smtp_to, msg.as_string())
@@ -5023,8 +5025,8 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
                         del hsh_rev['_r']
                 else:
                     hsh_rev.setdefault('-', []).append(dt)
-                newstr = hsh2str(hsh_rev, self.options)
-                self.replace_item(newstr)
+                # newstr = hsh2str(hsh_rev, self.options)
+                self.replace_item(hsh_rev)
 
             elif choice == 2:
                 # delete this and all subsequent instances by adding
@@ -5049,8 +5051,8 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
                             tmp_rev.append(d)
                     hsh_rev['-'] = tmp_rev
                 hsh_rev['s'] = dt
-                rev_str = hsh2str(hsh_rev, self.options)
-                self.replace_item(rev_str)
+                # rev_str = hsh2str(hsh_rev, self.options)
+                self.replace_item(hsh_rev)
 
         else:
             self.delete_item()

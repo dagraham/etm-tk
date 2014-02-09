@@ -197,7 +197,7 @@ class Dialog(Toplevel):
 
         body = Frame(self)
         self.initial_focus = self.body(body)
-        body.pack(side="top", padx=5, pady=5)
+        body.pack(side="top", fill=tkinter.BOTH, padx=5, pady=5, expand=1)
 
         # self.buttonbox()
 
@@ -309,6 +309,7 @@ class TextDialog(Dialog):
         ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
         # t.configure(state="disabled", yscroll=ysb.set)
         self.text.configure(yscroll=ysb.set)
+        return self.text
 
     def buttonbox(self):
         # add standard button box. override if you don't want the
@@ -810,7 +811,8 @@ class App(Tk):
         self.pendingAlerts.set(0)
         self.pending = Button(self.sf, bd=0, width=1, textvariable=self.pendingAlerts, command=self.showAlerts)
         self.pending.pack(side="right")
-        self.pending.configure(highlightbackground=bgclr, highlightthickness=0)
+        self.pending.configure(highlightbackground=bgclr,
+                               highlightthickness=0, state="disabled")
         self.showPending = True
 
         self.currentTime = StringVar(self)
@@ -830,6 +832,7 @@ class App(Tk):
         self.updateClock()
 
         # show default view
+        self.updateAlerts()
         self.showView()
 
     def updateCalendars(self, *args):
@@ -866,6 +869,7 @@ class App(Tk):
         if changed:
             logger.debug('changed, reloading data')
             loop.loadData()
+            self.updateAlerts()
             self.showView()
 
     def cloneItem(self, e=None):
@@ -887,6 +891,7 @@ class App(Tk):
         loop.item_hsh = self.itemSelected
         loop.cmd_do_delete(indx)
         loop.loadData()
+        self.updateAlerts()
         self.showView(row=self.topSelected)
 
 
@@ -988,6 +993,7 @@ class App(Tk):
                          options=loop.options, title=self.filetext).changed
         if changed:
             loop.loadData()
+            self.updateAlerts()
             self.showView(row=self.topSelected)
         else:
             self.tree.focus_set()
@@ -997,7 +1003,9 @@ class App(Tk):
         logger.debug('file: {0}'.format(file))
         changed = SimpleEditor(parent=self, newhsh=None, rephsh=None,  file=file, options=loop.options, title=relfile).changed
         if changed:
+            logger.debug("changed - calling loadData and updateAlerts")
             loop.loadData()
+            self.updateAlerts()
             self.showView()
 
     def editData(self, e=None):
@@ -1040,6 +1048,7 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
         loop.item_hsh = self.itemSelected
         loop.cmd_do_finish(chosen_day)
         loop.loadData()
+        self.updateAlerts()
         self.showView(row=self.topSelected)
 
 
@@ -1065,6 +1074,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         logger.debug('rescheduled from {0} to {1}'.format(self.dtSelected, new_dtn))
         loop.cmd_do_reschedule(new_dtn)
         loop.loadData()
+        self.updateAlerts()
         self.showView(row=self.topSelected)
 
 
@@ -1088,8 +1098,6 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             s = _("none")
         self.textWindow(self, t, s)
 
-
-
     def agendaView(self, e=None):
         self.setView(AGENDA)
 
@@ -1111,7 +1119,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.view = view
         self.showView(row=row)
 
-    def filterView(self, e=None):
+    def filterView(self, e, *args):
         self.depth2id = {}
         fltr = self.filterValue.get()
         cmd = "{0} {1}".format(
@@ -1506,6 +1514,8 @@ or 0 to display all changes.""").format(title)
             loop.loadData()
             self.showView()
 
+        self.updateAlerts()
+
         if self.actionTimer.timer_status != STOPPED:
             self.timerStatus.set(self.actionTimer.get_time())
             if self.actionTimer.timer_minutes >= 1:
@@ -1527,18 +1537,18 @@ or 0 to display all changes.""").format(title)
                             logger.debug('running: {0}'.format(tcmd))
                             subprocess.call(tcmd, shell=True)
 
-
-        self.updateAlerts()
-
         logger.debug("next update in {0} milliseconds".format(nxt))
 
     def updateAlerts(self):
-        # print('updateAlerts', len(loop.alerts), self.showPending)
+        self.update_idletasks()
+        logger.debug('updateAlerts 1: {0}'.format(len(loop.alerts)))
         if loop.alerts:
             curr_minutes = datetime2minutes(self.now)
             td = -1
             while td < 0 and loop.alerts:
                 td = loop.alerts[0][0] - curr_minutes
+                logger.debug('curr_minutes: {0}; td: {1}'.format(
+                    curr_minutes, td))
                 if td < 0:
                     loop.alerts.pop(0)
             if td == 0:
@@ -1671,18 +1681,12 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
                         break
                     td = loop.alerts[0][0] - curr_minutes
 
-        if loop.alerts:
-            self.pendingAlerts.set("{0}".format(len(loop.alerts)))
+        logger.debug('updateAlerts 2: {0}'.format(len(loop.alerts)))
+        self.pendingAlerts.set(len(loop.alerts))
+        if len(loop.alerts) > 0:
             self.pending.configure(state="normal")
-            if not self.showPending:
-                self.pending.pack(side="right")
-                self.showPending = True
         else:
-            self.pendingAlerts.set("")
             self.pending.configure(state="disabled")
-            if self.showPending:
-                self.pending.pack_forget()
-                self.showPending = False
 
     # FIXME: is this needed?
     def prev_history(self, event):
