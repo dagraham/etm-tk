@@ -173,7 +173,7 @@ if asksure; then
     sudo rm -fR releases/*
     cxfreeze3 -OO etm --target-dir releases/etmtk-${tag}
     cd releases
-    tar czf etmtk-${tag}-OSX-freeze.tar.gz etmtk-${tag}/
+    tar czf etmtk-${tag}-freeze-OSX.tar.gz etmtk-${tag}/
     cd $home
     sudo rm -fR releases/etmtk-${tag}
 else

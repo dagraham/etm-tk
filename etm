@@ -10,11 +10,5 @@ from etmTk import view
 # 5: logging.CRITICAL
 
 # default = 3
-    if level in log_levels:
-        loglevel = log_levels[level]
-    else:
-        loglevel = log_levels[3]
-
-    setup_logging(default_level=loglevel)
 
 view.main()
