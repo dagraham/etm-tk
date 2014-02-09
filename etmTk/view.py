@@ -636,11 +636,22 @@ class App(Tk):
         self.rowSelected = None
 
         self.title("etm tk")
-        if sys_platform == 'Linux':
-            self.wm_iconbitmap('@' + 'etmlogo-4.xbm')
-            # self.wm_iconbitmap('etmlogo-4.xbm')
-            # self.call('wm', 'iconbitmap', self._w, '/Users/dag/etm-tk/etmlogo_128x128x32.ico')
-            # self.iconbitmap(ICON_PATH)
+        # self.wm_iconbitmap(bitmap='etmlogo.gif')
+        # self.wm_iconbitmap('etmlogo-4.xbm')
+        self.call('wm', 'iconbitmap', self._w, '/Users/dag/etm-tk/etmTk/etmlogo.gif')
+
+        # if sys_platform == 'Linux':
+        #     logger.debug('using linux icon')
+        #     self.wm_iconbitmap('@' + 'etmlogo.gif')
+        #     # self.wm_iconbitmap('etmlogo-4.xbm')
+        #     # self.call('wm', 'iconbitmap', self._w, '/Users/dag/etm-tk/etmlogo_128x128x32.ico')
+        #     # self.iconbitmap(ICON_PATH)
+        # elif sys_platform == 'Darwin':
+        #     logger.debug('using darwin icon')
+        #     self.wm_iconbitmap('etmlogo.icns')
+        # else:
+        #     logger.debug('using windows icon')
+        #     self.wm_iconbitmap('etmlogo.ico')
 
         self.columnconfigure(0, minsize=300, weight=1)
         self.rowconfigure(1, weight=2)
@@ -2053,9 +2064,7 @@ def main(level=3, dir=None):  # debug, info, warn, error, critical
         loglevel = log_levels[level]
     else:
         loglevel = log_levels[3]
-
     setup_logging(default_level=loglevel)
-    # setup_logging(default_level=logging.INFO)
     etmdir = ''
     # For testing override etmdir:
     if dir is not None:

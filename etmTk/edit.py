@@ -409,19 +409,5 @@ class SimpleEditor(Toplevel):
         win.transient(self)
         win.wait_window(win)
 
-
-
 if __name__ == '__main__':
-    from data import setup_logging
-    setup_logging(default_level=logging.DEBUG)
-
-    etmdir = ''
-    # For testing override etmdir:
-    etmdir = '/Users/dag/etm-tk/etm-sample'
-    import data
-    (user_options, options, use_locale) = data.get_options(etmdir)
-    loop = data.ETMCmd(options=options)
-    try:
-        SimpleEditor(file=sys.argv[1], options=options).mainloop()
-    except IndexError:
-        SimpleEditor(options=options).mainloop()
+    print('edit.py should only be imported. Run etmtk.py instead.')

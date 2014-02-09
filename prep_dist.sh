@@ -1,5 +1,6 @@
 #!/bin/bash
-tag=$1
+yes=$1
+#tag=$1
 home=`pwd`
 # etm's version numbering now uses the `major.minor.patch` format where each of the three components is an integer:
 
@@ -30,13 +31,15 @@ echo # just a final linefeed, optics...
 
 return $retval
 }
-
+logfile="prep_dist.txt"
 # get the current major.minor.patch tag
 vinfo=`cat etmTk/v.py | head -1 | sed 's/\"//g' | sed 's/^.*= *//g'`
 now=`date`
 status=`hg status`
 version=`hg tip --template '{rev}'`
 versioninfo=`hg tip --template '{rev}: {date|isodate}'`
+echo "Started: $now" > $logfile
+#echo "Current version: $vinfo ($versioninfo)" >> $logfile
 
 echo "The current version number is $vinfo ($versioninfo)."
 echo -n "Do you want to increment the patch number?"
@@ -54,40 +57,34 @@ Edit etmQt/v.py to change the major and minor numbers."
     hg tag $tag -f
     echo "version = \"$tag\"" > /Users/dag/etm-tk/etmTk/v.py
     echo "version = \"$tag [$versioninfo]\"" > etmTk/version.py
+    echo "Updated to $tag [$versioninfo]" >> $logfile
 else
     tag=$major.$minor.$patch
     change="retaining version $vinfo."
+    echo "Kept $tag [$versioninfo]" >> $logfile
     # hg tag $tag -f
 fi
 
-# write correct info to v.txt and version.txt
-# echo $tag > /Users/dag/etm-qt/v.txt
 echo $tag > etmTk/v.txt
 
-# cp /Users/dag/etm-qt/version.txt /Users/dag/etm-qt/etmQt/version.txt
-#cp version.txt ./etmTk/version.txt
 # echo "RECENT CHANGES" > /Users/dag/etm-qt/CHANGES
 echo "RECENT CHANGES" > CHANGES
 hg log --template '{rev} {date|shortdate} [{tags}]\n\t{desc|fill68|tabindent}\n' -r tip:-30 >> /Users/dag/etm-qt/CHANGES
 cp CHANGES ./etmTk/CHANGES
 
 echo "Creating $tag from tip: $version - $change"
-echo -n  "Continue?"
-if asksure; then
-    echo "### processing $tag ###"
-    echo "Edit etmTk/v.py to change the major and minor numbers."
-else
-    echo "Cancelled"
-    exit
-fi
+echo "Edit etmTk/v.py to change the major and minor numbers."
+echo
 
 # make sure the man file, docs and ui files are current
 #$home/mk_docs.sh
 # update the sample files
 # cp /Users/dag/etm-qt/etm-sample/data/shared/sample_datafile.txt.orig /Users/dag/etm-qt/etm-sample/data/shared/sample_datafile.txt
+echo "Updating etm-sample"
 cp $home/etm-sample/data/shared/sample_datafile.txt.orig $home/etm-sample/data/shared/sample_datafile.txt
 # cd /Users/dag/etm-qt/etmQt/language
-cd $home/etmTk/language
+
+#cd $home/etmTk/language
 # translations
 #for file in etm_*_*.ts; do
 #    # make etm_xx_XX.qm file from etm_xx_XX.ts
@@ -150,6 +147,7 @@ if asksure; then
     echo "installing etmtk for python 3" && sudo python3 setup.py install
     echo "Finished system install of etmtk-${tag}"
     cd $home
+    echo "Doing system installation" >> $logfile
 else
     echo "Skipping system wide installaton"
 fi
@@ -168,16 +166,19 @@ cd $home
 # pyinstaller  --runtime-hook rthook_pyqt4.py --clean -w --noupx etm_qt
 
 echo
-echo -n "Create etm.app?"
+echo -n "Create os x package?"
 if asksure; then
     sudo rm -fR releases/*
-    cxfreeze3 -OO etm --target-dir releases/etmtk-${tag}
+    cxfreeze3 -OO etm --icon=etmTk/etmlogo.icns --target-dir releases/etmtk-${tag}-freeze-OSX
     cd releases
-    tar czf etmtk-${tag}-freeze-OSX.tar.gz etmtk-${tag}/
+    tar czf etmtk-${tag}-freeze-OSX.tar.gz etmtk-${tag}-freeze-OSX
+    zip -r etmtk-${tag}-freeze-OSX.zip etmtk-${tag}-freeze-OSX
     cd $home
-    sudo rm -fR releases/etmtk-${tag}
+#    sudo rm -fR releases/etmtk-${tag}
+    echo "Creating os x package" >> $logfile
 else
     echo "Skipping etm.app creation."
 fi
-
-date
+now=`date`
+echo "Finished: $now"
+echo "Finished: $now" >> $logfile

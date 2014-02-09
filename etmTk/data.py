@@ -165,11 +165,13 @@ try:
     from icalendar import Calendar, Event, Todo, Journal
     from icalendar.caselessdict import CaselessDict
     from icalendar.prop import vDate, vDatetime
-
     has_icalendar = True
     import pytz
 except ImportError:
-    logger.warning('Could not import icalendar and/or pytz')
+    if has_icalendar:
+        logger.info('Could not import pytz')
+    else:
+        logger.info('Could not import icalendar and/or pytz')
     has_icalendar = False
 
 from datetime import datetime, timedelta, time

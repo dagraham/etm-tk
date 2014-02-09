@@ -11,17 +11,44 @@ else:
     REQUIRES = ["python>=2.7,<3.0", "python-dateutil>=1.5", "PyYaml>=3.10", "icalendar>=3.5"]
     EXTRAS = ["icalendar>=3.5", "pytz"]
 
+APP = ['etm']
+
+# FIXME: for py2app and cxfreeze - not yet usable
+PY2APPOPTS = {'py2app':
+                  {'argv_emulation': True,
+                   'site_packages': False,
+                   'arch': 'i386',
+                   'iconfile': 'etmTk/etmlogo.icns',
+                   #if you want to add some ico
+                   'plist': {
+                       'CFBundleName': 'etm',
+                       'CFBundleShortVersionString': version,
+                       # must be in X.X.X format
+                       'CFBundleVersion': version,
+                   }
+                  },
+              'build': {'build_exe': 'releases/etmtk-{0}'.format(version)},
+              'build_exe': {'icon': 'etmTk/etmlogo.icns', 'optimize': '2',
+                            'compressed': 1},
+              'build_mac': {'iconfile': 'etmTk/etmlogo.icns',
+                            'bundle_name': 'etm'},
+              'Executable': {'targetDir': 'releases/etmtk-{0}'.format(version)}
+            }
+
 setup(
+    app=APP,
     name='etmtk',
     version=version,
     zip_safe=False,
-    url='http://people.duke.edu/~dgraham/etmqt',
+    url='http://people.duke.edu/~dgraham/etmtk',
     description='event and task manager',
     long_description='manage events and tasks using simple text files',
     platforms='Any',
     license='License :: OSI Approved :: GNU General Public License (GPL)',
     author='Daniel A Graham',
     author_email='daniel.graham@duke.edu',
+    options={'py2app': PY2APPOPTS},
+    setup_requires=['py2app'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
@@ -47,9 +74,11 @@ setup(
     scripts=['etm'],
     install_requires=REQUIRES,
     extras_require={"icalendar": EXTRAS},
-    package_data={'etmTk': ['version.txt', 'CHANGES', 'logging.yaml']},
-    data_files=[
+    package_data={'etmTk': ['etmlogo.*', 'version.txt', 'CHANGES', 'logging'
+                                                               '.yaml']},
+    data_files=['etm',
         ('share/doc/etmtk', ['etmTk/version.txt', 'etmTk/CHANGES']),
+        ('share/icons/etmtk', glob.glob('etmTk/etmlogo.*')),
         # TODO: fix man, icon, desktop, docs
         # ('share/man/man1', ['etmTk/etmtk.1']),
         # ('share/pixmaps', ['etmTk/etmtk.xpm']),
