@@ -47,7 +47,7 @@ setup(
     license='License :: OSI Approved :: GNU General Public License (GPL)',
     author='Daniel A Graham',
     author_email='daniel.graham@duke.edu',
-    options=OPTIONS,
+    # options=OPTIONS,
     setup_requires=['py2app'],
     classifiers=[
         'Development Status :: 4 - Beta',

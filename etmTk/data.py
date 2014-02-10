@@ -1669,6 +1669,7 @@ def group_sort(row_lst):
 
 def dump_data(options, uuid2hashes, file2uuids, file2lastmodified,
               bad_datafiles, messages):
+    logger.debug("last_version: {0}".format(last_version))
     ouf = open(options['datafile'], "wb")
     pickle.dump(uuid2hashes, ouf)
     pickle.dump(file2uuids, ouf)
@@ -1681,6 +1682,7 @@ def dump_data(options, uuid2hashes, file2uuids, file2lastmodified,
 
 def load_data(options):
     global last_version
+    # logger.debug("options: {0}".format(options))
     if 'datafile' in options and os.path.isfile(options['datafile']):
         messages = []
         try:
@@ -1693,8 +1695,9 @@ def load_data(options):
             last_version = pickle.load(inf)
             inf.close()
             if version != last_version:
-                logger.info("version change: {0} to {1}".format(last_version, version))
+                logger.info("version change: {0} to {1}. Removing '{2}'".format(last_version, version, options['datafile']))
                 os.remove(options['datafile'])
+                last_version = version
             else:
                 return (uuid2hashes, file2uuids, file2lastmodified,
                         bad_datafiles, messages)
@@ -4871,6 +4874,7 @@ class ETMCmd():
         return '\n'.join(ret)
 
     def loadData(self):
+        # logger.debug("options: {0}".format(self.options))
         self.count2id = {}
         now = datetime.now()
         year, wn, dn = now.isocalendar()
@@ -4898,7 +4902,7 @@ class ETMCmd():
         self.uuid2hash = uuid2hash
         self.currfile = ensureMonthly(self.options, now)
         if self.last_rep:
-            logger.debug('load_data calling mk_rep with {0}'.format(self.last_rep))
+            logger.debug('calling mk_rep with {0}'.format(self.last_rep))
             return self.mk_rep(self.last_rep)
 
     def edit_tmp(self):
