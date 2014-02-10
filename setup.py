@@ -74,11 +74,9 @@ setup(
     scripts=['etm'],
     install_requires=REQUIRES,
     extras_require={"icalendar": EXTRAS},
-    package_data={'etmTk': ['etmlogo.*', 'version.txt', 'CHANGES', 'logging'
-                                                               '.yaml']},
+    package_data={'etmTk': ['etmlogo.*', 'version.txt', 'CHANGES']},
     data_files=['etm',
-        ('share/doc/etmtk', ['etmTk/version.txt', 'etmTk/CHANGES',
-                             'etmTk/logging.yaml']),
+        ('share/doc/etmtk', ['etmTk/version.txt', 'etmTk/CHANGES']),
         ('share/icons/etmtk', glob.glob('etmTk/etmlogo.*')),
         # TODO: fix man, icon, desktop, docs
         # ('share/man/man1', ['etmTk/etmtk.1']),
