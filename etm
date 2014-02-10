@@ -1,14 +1,68 @@
 #!/usr/bin/env python3
+import os
+import sys
+
+lib_path = os.path.relpath('etmTk/')
+sys.path.append(lib_path)
 
 from etmTk import view
+from etmTk.data import setup_logging
 
-# arguments for view.main:
-# 1: logging.DEBUG,
-# 2: logging.INFO,
-# 3: logging.WARN,
-# 4: logging.ERROR,
-# 5: logging.CRITICAL
 
 # default = 3
 
-view.main()
+# '1': logging.DEBUG,
+# '2': logging.INFO,
+# '3': logging.WARN,
+# '4': logging.ERROR,
+# '5': logging.CRITICAL
+
+log_levels = [str(x) for x in range(1,6)]
+
+if __name__ == "__main__":
+    etmdir = ''
+    loglevel = '3'
+    argstr = " ".join(sys.argv)
+    etm = sys.argv[0]
+    msg = []
+    while len(sys.argv) > 1:
+        if os.path.isdir(sys.argv[1]):
+            temp = sys.argv.pop(1)
+            path = os.path.join(temp, 'etm.cfg')
+            if os.path.isfile(path):
+                etmdir = temp
+                print('using etmdir: "{0}"'.format(etmdir))
+            else:
+                msg.append('"{0}" does not exist'.format(path))
+        elif sys.argv[1] in log_levels:
+            loglevel = sys.argv.pop(1)
+            print('using log level: "{0}"'.format(loglevel))
+        else:
+            msg.append('"{0}" is not an acceptable log level'.format(sys.argv[
+                1]))
+            sys.argv.pop(1)
+            # break
+    if len(msg) > 0:
+        for m in msg:
+            print(m)
+        print("""
+Usage:
+
+    etm [path[[level]] | [leve[path]}
+
+With no arguments, etm will use settings from the configuration file
+~/.etm/etmtk.cfg and open the GUI at logging level 3 (warn).
+
+If either of the first two arguments is the path to a directory which
+contains a file named etm.cfg, then settings from that file will be used
+instead.
+
+If either of the first two arguments is an integer between 1 and 5 then
+that number will be used as the logging level.
+    """)
+        sys.exit()
+
+    setup_logging(level=loglevel)
+
+    view.main(dir=etmdir)
+

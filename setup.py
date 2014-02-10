@@ -14,7 +14,7 @@ else:
 APP = ['etm']
 
 # FIXME: for py2app and cxfreeze - not yet usable
-PY2APPOPTS = {'py2app':
+OPTIONS = {'py2app':
                   {'argv_emulation': True,
                    'site_packages': False,
                    'arch': 'i386',
@@ -47,7 +47,7 @@ setup(
     license='License :: OSI Approved :: GNU General Public License (GPL)',
     author='Daniel A Graham',
     author_email='daniel.graham@duke.edu',
-    options={'py2app': PY2APPOPTS},
+    options=OPTIONS,
     setup_requires=['py2app'],
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -77,7 +77,8 @@ setup(
     package_data={'etmTk': ['etmlogo.*', 'version.txt', 'CHANGES', 'logging'
                                                                '.yaml']},
     data_files=['etm',
-        ('share/doc/etmtk', ['etmTk/version.txt', 'etmTk/CHANGES']),
+        ('share/doc/etmtk', ['etmTk/version.txt', 'etmTk/CHANGES',
+                             'etmTk/logging.yaml']),
         ('share/icons/etmtk', glob.glob('etmTk/etmlogo.*')),
         # TODO: fix man, icon, desktop, docs
         # ('share/man/man1', ['etmTk/etmtk.1']),

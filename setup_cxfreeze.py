@@ -14,6 +14,7 @@
 import sys
 from cx_Freeze import setup, Executable
 from etmTk.v import version
+import glob
 
 import platform
 if platform.python_version() >= '3':
@@ -55,7 +56,6 @@ OPTIONS = {
 setup(name='etm',
     version=version,
     executables=EXECUTABLES,
-    options=OPTIONS,
     url='http://people.duke.edu/~dgraham/etmtk',
     description='event and task manager',
     long_description='manage events and tasks using simple text files',
@@ -63,4 +63,7 @@ setup(name='etm',
     license='License :: OSI Approved :: GNU General Public License (GPL)',
     author='Daniel A Graham',
     author_email='daniel.graham@duke.edu',
-      )
+    options=OPTIONS,
+    package_data={'etmTk': ['etmlogo.*', 'version.txt', 'CHANGES', 'logging'
+                                                               '.yaml']},
+)

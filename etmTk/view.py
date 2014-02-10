@@ -177,10 +177,14 @@ class MessageWindow():
 
 
 class Dialog(Toplevel):
-    def __init__(self, parent, title=None, prompt=None, opts=None, default=None):
+    def __init__(self, parent, title=None, prompt=None, opts=None, default=None, modal=True):
 
         Toplevel.__init__(self, parent)
-        self.transient(parent)
+        if modal:
+            logger.debug('modal')
+            self.transient(parent)
+        else:
+            logger.debug('non modal')
 
         if title:
             self.title(title)
@@ -201,10 +205,11 @@ class Dialog(Toplevel):
 
         # self.buttonbox()
 
-        self.grab_set()
+        if modal:
+            self.grab_set()
 
-        if not self.initial_focus:
-            self.initial_focus = self
+            if not self.initial_focus:
+                self.initial_focus = self
 
         self.protocol("WM_DELETE_WINDOW", self.cancel)
 
@@ -213,7 +218,8 @@ class Dialog(Toplevel):
 
         self.initial_focus.focus_set()
 
-        self.wait_window(self)
+        if modal:
+            self.wait_window(self)
 
     # construction hooks
 
@@ -256,9 +262,8 @@ class Dialog(Toplevel):
         self.cancel()
 
     def cancel(self, event=None):
-
-        # put focus back to the parent window
-        self.parent.focus_set()
+        # return the focus to the tree view in the main window
+        self.parent.tree.focus_set()
         self.destroy()
 
     #
@@ -713,7 +718,7 @@ class App(Tk):
             self.vm["menu"].entryconfig(i, accelerator=l)
 
         self.vm.pack(side="left")
-        self.vm.configure(width=menuwidth, background=bgclr)
+        self.vm.configure(width=menuwidth, background=bgclr, takefocus=False)
 
         self.newValue = StringVar(self)
         self.newLabel = _("make")
@@ -733,7 +738,7 @@ class App(Tk):
         self.bind(c, self.startTimer)  # +
 
         self.nm.pack(side="left")
-        self.nm.configure(width=menuwidth, background=bgclr)
+        self.nm.configure(width=menuwidth, background=bgclr, takefocus=False)
 
         self.editValue = StringVar(self)
         self.editLabel = _("edit")
@@ -758,9 +763,9 @@ class App(Tk):
             self.bind_all(c, lambda event, x=k: self.after(AFTER, self.edit2cmd[x]))
 
         self.em.pack(side="left")
-        self.em.configure(width=menuwidth, background=bgclr)
+        self.em.configure(width=menuwidth, background=bgclr, takefocus=False)
 
-        self.helpBtn = Button(toolbar, bd=0, text="?", command=self.help)
+        self.helpBtn = Button(toolbar, bd=0, text="?", takefocus=False, command=self.help)
         self.helpBtn.pack(side="right")
         self.helpBtn.configure(highlightbackground=bgclr, highlightthickness=0)
 
@@ -820,7 +825,7 @@ class App(Tk):
 
         self.pendingAlerts = IntVar(self)
         self.pendingAlerts.set(0)
-        self.pending = Button(self.sf, bd=0, width=1, textvariable=self.pendingAlerts, command=self.showAlerts)
+        self.pending = Button(self.sf, bd=0, width=1, takefocus=False, textvariable=self.pendingAlerts, command=self.showAlerts)
         self.pending.pack(side="right")
         self.pending.configure(highlightbackground=bgclr,
                                highlightthickness=0, state="disabled")
@@ -1164,6 +1169,12 @@ parsing are supported.""")
         d = GetDateTime(parent=self, title=_('date'), prompt=prompt)
         chosen_day = d.value
         logger.debug('chosen_day: {0}'.format(chosen_day))
+        cal_regex = None
+        # logger.debug('options: {0}'.format(loop.options))
+        if loop.options['calendars']:
+            cal_pattern = r'^%s' % '|'.join([x[2] for x in self.options['calendars'] if x[1]])
+            cal_regex = re.compile(cal_pattern)
+            logger.debug('cal_pattern: {0}'.format(cal_pattern))
 
         if chosen_day is None:
             return ()
@@ -1195,6 +1206,8 @@ parsing are supported.""")
                 bt = []
                 for item in loop.occasions[isokey]:
                     it = list(item)
+                    if cal_regex and not cal_regex.match(it[-1]):
+                        continue
                     # if matching:
                     #     if not self.cal_regex.match(item[-1]):
                     #         continue
@@ -1213,6 +1226,8 @@ parsing are supported.""")
                 bt = []
                 for item in loop.busytimes[isokey][1]:
                     it = list(item)
+                    if cal_regex and not cal_regex.match(it[-1]):
+                        continue
                     # if matching:
                     #     if not self.cal_regex.match(item[-1]):
                     #         continue
@@ -1341,11 +1356,11 @@ parsing are supported.""")
 
     def help(self, event=None):
         res = loop.help_help()
-        self.textWindow(parent=self, title='etm', prompt=res)
+        self.textWindow(parent=self, title='etm', prompt=res, modal=False)
 
     def about(self, event=None):
         res = loop.do_v("")
-        self.textWindow(parent=self, title='etm', prompt=res)
+        self.textWindow(parent=self, title='etm', prompt=res, modal=False)
 
     def checkForUpdate(self, event=None):
         res = checkForNewerVersion()[1]
@@ -1723,8 +1738,8 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
             self.e.insert(0, self.history[self.index])
         return 'break'
 
-    def textWindow(self, parent, title=None, prompt=None):
-        d = TextDialog(parent, title=title, prompt=prompt)
+    def textWindow(self, parent, title=None, prompt=None, modal=True):
+        d = TextDialog(parent, title=title, prompt=prompt, modal=modal)
 
     # noinspection PyShadowingNames
     # def textWindow(self, title, prompt, modal=True):
@@ -2051,20 +2066,15 @@ or 0 to expand all branches completely.""")
 loop = None
 
 log_levels = {
-    1: logging.DEBUG,
-    2: logging.INFO,
-    3: logging.WARN,
-    4: logging.ERROR,
-    5: logging.CRITICAL
+    '1': logging.DEBUG,
+    '2': logging.INFO,
+    '3': logging.WARN,
+    '4': logging.ERROR,
+    '5': logging.CRITICAL
 }
 
-def main(level=3, dir=None):  # debug, info, warn, error, critical
+def main(dir=None):  # debug, info, warn, error, critical
     global loop
-    if level in log_levels:
-        loglevel = log_levels[level]
-    else:
-        loglevel = log_levels[3]
-    setup_logging(default_level=loglevel)
     etmdir = ''
     # For testing override etmdir:
     if dir is not None:
@@ -2078,4 +2088,5 @@ def main(level=3, dir=None):  # debug, info, warn, error, critical
     app.mainloop()
 
 if __name__ == "__main__":
+    setup_logging('3')
     main()

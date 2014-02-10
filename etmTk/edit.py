@@ -47,8 +47,7 @@ SOMEREPS = _('Selected repetitions')
 ALLREPS = _('Repetitions')
 MESSAGES = _('Error messages')
 
-from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, platformShortcut,\
-    bgclr, CMD
+from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, platformShortcut, bgclr, CMD
 
 
 from idlelib.WidgetRedirector import WidgetRedirector
@@ -410,4 +409,4 @@ class SimpleEditor(Toplevel):
         win.wait_window(win)
 
 if __name__ == '__main__':
-    print('edit.py should only be imported. Run etmtk.py instead.')
+    print('edit.py should only be imported. Run etm or view.py instead.')

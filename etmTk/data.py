@@ -16,27 +16,62 @@ import logging
 import logging.config
 logger = logging.getLogger()
 
-def setup_logging(
-        default_path='etmTk/logging.yaml',
-        default_level=logging.INFO,
-        # env_key='LOG_CFG'
-):
+def setup_logging(level='3'):
     """
     Setup logging configuration. Override root:level in
     logging.yaml with default_level.
     """
-    path = default_path
-    # value = os.getenv(env_key, None)
-    # if value:
-    #     path = value
-    if os.path.exists(path):
-        with open(path, 'rt') as f:
-            config = yaml.load(f.read())
-        config['root']['level'] = default_level
-        logging.config.dictConfig(config)
+    log_levels = {
+        '1': logging.DEBUG,
+        '2': logging.INFO,
+        '3': logging.WARN,
+        '4': logging.ERROR,
+        '5': logging.CRITICAL
+    }
+
+    if level in log_levels:
+        loglevel = log_levels[level]
     else:
-        logging.basicConfig(level=default_level)
-    logger.info('logging enabled at level {0}'.format(default_level))
+        loglevel = log_levels['3']
+
+    config = {'disable_existing_loggers': False,
+              'formatters': {'simple': {
+                  'format': '--- %(asctime)s - %(levelname)s - %(module)s.%(funcName)s\n    %(message)s'}},
+              'handlers': {'console': {'class': 'logging.StreamHandler',
+                                       'formatter': 'simple',
+                                       'level': loglevel,
+                                       'stream': 'ext://sys.stdout'},
+                           'file': {'backupCount': 5,
+                                    'class': 'logging.handlers.RotatingFileHandler',
+                                    'encoding': 'utf8',
+                                    'filename': 'etmtk_log.txt',
+                                    'formatter': 'simple',
+                                    'level': 'INFO',
+                                    'maxBytes': 1048576}},
+              'loggers': {'etmtk': {'handlers': ['console'],
+                                    'level': 'DEBUG',
+                                    'propagate': False}},
+              'root': {'handlers': ['console', 'file'], 'level': 'DEBUG'},
+              'version': 1}
+
+    #
+    # default_path='etmTk/logging.yaml',
+    #     default_level=logging.INFO,
+    #     # env_key='LOG_CFG'
+    #
+    # path = default_path
+    # # value = os.getenv(env_key, None)
+    # # if value:
+    # #     path = value
+    # if os.path.exists(path):
+    #     with open(path, 'rt') as f:
+    #         config = yaml.load(f.read())
+    #     config['root']['level'] = default_level
+    #     logging.config.dictConfig(config)
+    # else:
+    #     logging.basicConfig(level=default_level)
+    logging.config.dictConfig(config)
+    logger.info('logging enabled at level {0}'.format(loglevel))
 
 # TODO: change type to inbox for items that can't be loaded so that they will be accessible for repair.
 
@@ -5630,8 +5665,6 @@ version: {0[etmversion]}
 
 This application provides a format for using plain text files to store events, tasks and other items and a Tk based GUI for creating and modifying items as well as viewing them.
 
-Copyright {0[copyright]} {0[dev]}. All rights reserved. This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
-
 System Information:
   Python:    {0[python]}
   Dateutil:  {0[dateutil]}
@@ -5646,7 +5679,9 @@ ETM Information:
   GPL License:
     {0[gpl]}
   Discussion:
-    {0[group]}\
+    {0[group]}
+
+Copyright {0[copyright]} {0[dev]}. All rights reserved. This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.\
 """.format(d))
 
     @staticmethod
