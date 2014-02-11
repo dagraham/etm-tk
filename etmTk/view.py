@@ -25,7 +25,6 @@ if platform.python_version() >= '3':
     from tkinter.messagebox import askokcancel
     from tkinter.filedialog import askopenfilename
     # from tkinter import simpledialog as tkSimpleDialog
-    # import tkFont
 else:
     import Tkinter as tkinter
     from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W
@@ -287,8 +286,10 @@ class DialogWindow(Dialog):
     def body(self, master):
         self.entry = Entry(master)
         self.entry.pack(side="bottom", padx=5, pady=5)
-        Label(master, text=self.prompt, justify='left').pack(side="top",
-                                                             fill=tkinter.BOTH, expand=1,
+        Label(master,
+              text=self.prompt, justify='left').pack(side="top",
+                                                             fill=tkinter.BOTH,
+                                                             expand=1,
                                                              padx=10, pady=5)
         if self.default is not None:
             self.entry.insert(0, self.default)
@@ -340,7 +341,6 @@ class OptionsDialog():
         self.win = Toplevel(parent)
         self.parent = parent
         self.options = opts
-        self.value = opts[0]
         self.win.title(title)
         Label(self.win, text=prompt, justify='left').pack(fill=tkinter.BOTH, expand=1, padx=10, pady=5)
         # self.sv = StringVar(parent)
@@ -348,19 +348,21 @@ class OptionsDialog():
         # self.sv.set(opts[0])
         self.sv.set(1)
         # logger.debug('sv: {0}'.format(self.sv.get()))
-        for i in range(min(9, len(self.options))):
-            txt = self.options[i]
-            val = i + 1
-            # bind keyboard numbers 1-9 (at most) to options selection, i.e., press 1
-            # to select option 1, 2 to select 2, etc.
-            self.win.bind(str(val), (lambda e, x=val: self.sv.set(x)))
-            Radiobutton(self.win,
-                text="{0}: {1}".format(val, txt),
-                padx=20,
-                indicatoron=True,
-                variable=self.sv,
-                command=self.getValue,
-                value=val).pack(padx=10, anchor=W)
+        if self.options:
+            self.value = opts[0]
+            for i in range(min(9, len(self.options))):
+                txt = self.options[i]
+                val = i + 1
+                # bind keyboard numbers 1-9 (at most) to options selection, i.e., press 1
+                # to select option 1, 2 to select 2, etc.
+                self.win.bind(str(val), (lambda e, x=val: self.sv.set(x)))
+                Radiobutton(self.win,
+                    text="{0}: {1}".format(val, txt),
+                    padx=20,
+                    indicatoron=True,
+                    variable=self.sv,
+                    command=self.getValue,
+                    value=val).pack(padx=10, anchor=W)
         box = Frame(self.win)
         c = Button(box, text="Cancel", width=10, command=self.cancel)
         c.pack(side=LEFT, padx=5, pady=5)
@@ -378,14 +380,22 @@ class OptionsDialog():
 
     def getValue(self, e=None):
         v = self.sv.get()
-        logger.debug(v)
-        if v-1 in range(len(self.options)):
-            o = self.options[v-1]
-            logger.debug('OptionsDialog returning {0}: {1}'.format(v, o))
-            return v, o
-            # return o, v
-        else:
-            return 0, None
+        logger.debug("sv: {0}".format(v))
+        if self.options:
+            if v-1 in range(len(self.options)):
+                o = self.options[v-1]
+                logger.debug(
+                    'OptionsDialog returning {0}: {1}'.format(v, o))
+                return v, o
+                # return o, v
+            else:
+                logger.debug(
+                    'OptionsDialog returning {0}: {1}'.format(v,  None))
+                return 0, None
+        else: # askokcancel type dialog
+            logger.debug(
+                'OptionsDialog returning {0}: {1}'.format(v, None))
+            return v, None
 
     def ok(self, event=None):
         self.parent.update_idletasks()
@@ -743,15 +753,19 @@ class App(Tk):
         self.editValue = StringVar(self)
         self.editLabel = _("edit")
         self.editValue.set(self.editLabel)
-        self.em_options = [[_('delete'), 'd'],
-                           [_('edit'), 'e'],
-                           [_('finish'), 'f'],
-                           [_('reschedule'), 'r'],
+        self.em_options = [
+                            [_('clone'), 'c'],
+                            [_('delete'), 'd'],
+                            [_('edit'), 'e'],
+                            [_('finish'), 'f'],
+                            [_('reschedule'), 'r'],
         ]
-        self.edit2cmd = {'d': self.deleteItem,
-                         'e': self.editItem,
-                         'f': self.finishItem,
-                         'r': self.rescheduleItem}
+        self.edit2cmd = {
+            'c': self.cloneItem,
+            'd': self.deleteItem,
+            'e': self.editItem,
+            'f': self.finishItem,
+            'r': self.rescheduleItem}
         self.em_opts = [x[0] for x in self.em_options]
         em_cmds = [x[1] for x in self.em_options]
         self.em = OptionMenu(toolbar, self.editValue, *self.em_opts)
@@ -851,6 +865,11 @@ class App(Tk):
         self.updateAlerts()
         self.showView()
 
+    def confirm(self, parent=None, title="", prompt="", instance="xyz"):
+        ok, value = OptionsDialog(parent=self, title=_("confirm").format(instance), prompt=prompt).getValue()
+        return ok
+
+
     def updateCalendars(self, *args):
         for i in range(len(loop.calendars)):
             loop.calendars[i][1] = self.calendarValues[i].get()
@@ -868,9 +887,13 @@ class App(Tk):
 
 
     def quit(self, e=None):
-        ans = askokcancel(
-            _('Quit'),
-            _("Do you really want to quit?"),
+        # ans = askokcancel(
+        #     _('Quit'),
+        #     _("Do you really want to quit?"),
+        #     parent=self)
+        ans = self.confirm(
+            title=_('Quit'),
+            prompt=_("Do you really want to quit?"),
             parent=self)
         if ans:
             self.destroy()
@@ -888,20 +911,101 @@ class App(Tk):
             self.updateAlerts()
             self.showView()
 
+    def which(self, act, instance="xyz"):
+        prompt = "\n".join([
+            _("You have selected an instance of a repeating"),
+            _("item. What do you want to {0}?").format(act)])
+        opt_lst = [
+            _("this instance"),
+            _("this and all subsequent instances"),
+            _("all instances")]
+        indx, value = OptionsDialog(parent=self, title=_("instance: {0}").format(instance), prompt=prompt, opts=opt_lst).getValue()
+        return indx, value
+
     def cloneItem(self, e=None):
-        logger.debug('cloneItem')
+        """
+        newhsh = selected, rephsh = None
+        """
+        if 'r' in self.itemSelected:
+            choice, value = self.which(_('clone'), self.dtSelected)
+            logger.debug("{0}: {1}".format(choice, value))
+            if not choice:
+                return
+            self.itemSelected['_dt'] = parse(self.dtSelected)
+        else:
+            # ans = DialogWindow(self, title=_('confirm'),
+            #                    prompt=_("Clone this item?"))
+            # ans = askokcancel('confirm', "Clone this item?", parent=self.tree, icon="question")
+            ans = self.confirm(
+                parent=self.tree,
+                title=_('Confirm'),
+                prompt=_("Copy this item?"))
+            if not ans:
+                return
+            choice = 3
+        hsh_cpy = deepcopy(self.itemSelected)
+        hsh_cpy['fileinfo'] = None
+        # hsh_cpy['i'] = uniqueId()
+        title = _("new item")
+        self.mode = 'new'
+        if choice in [1, 2]:
+            # we need to modify the copy according to the choice
+            dt = hsh_cpy['_dt'].replace(
+                tzinfo=tzlocal()).astimezone(gettz(hsh_cpy['z']))
+            # dtn = dt.replace(tzinfo=None)
+
+            if choice == 1:
+                # this instance
+                for k in ['_r', 'o', '+', '-']:
+                    if k in hsh_cpy:
+                        del hsh_cpy[k]
+                hsh_cpy['s'] = dt
+                # edit_str = hsh2str(hsh_cpy, loop.options)
+
+            elif choice == 2:
+                # this and all subsequent instances
+                tmp = []
+                if u'+' in hsh:
+                    tmp_cpy = []
+                    for d in hsh_cpy['+']:
+                        if d >= dt:
+                            tmp_cpy.append(d)
+                    hsh_cpy['+'] = tmp_cpy
+                if u'-' in hsh_cpy:
+                    tmp_cpy = []
+                    for d in hsh_rev['-']:
+                        if d >= dt:
+                            tmp_cpy.append(d)
+                    hsh_cpy['-'] = tmp_cpy
+                hsh_cpy['s'] = dt
+                # edit_str = hsh2str(hsh_cpy, loop.options)
+
+        changed = SimpleEditor(parent=self, newhsh=hsh_cpy, rephsh=None,
+                         options=loop.options, title=title).changed
+
+        if changed:
+            loop.loadData()
+            self.updateAlerts()
+            self.showView(row=self.topSelected)
+        else:
+            self.tree.focus_set()
+
 
     def deleteItem(self, e=None):
         logger.debug('{0}: {1}'.format(self.itemSelected['_summary'], self.dtSelected))
         indx = 3
         if 'r' in self.itemSelected:
-            indx, value = self.deleteWhich(self.dtSelected)
+            indx, value = self.which(_('delete'), self.dtSelected)
             logger.debug("{0}: {1}".format(indx, value))
             if not indx:
                 return
             self.itemSelected['_dt'] = parse(self.dtSelected)
         else:
-            ans = askokcancel('Verify deletion', "Delete this item?", parent=self.tree)
+            # ans = askokcancel('Verify deletion', "Delete this item?", parent=self.tree)
+            ans = self.confirm(
+                title=_('Confirm'),
+                prompt=_("Delete this item?"),
+                parent=self.tree)
             if not ans:
                 return
         loop.item_hsh = self.itemSelected
@@ -911,37 +1015,26 @@ class App(Tk):
         self.showView(row=self.topSelected)
 
 
-    def deleteWhich(self, instance="xyz"):
-        prompt = "\n".join([
-            _("You have selected an instance of a repeating"),
-            _("item. What do you want to delete?")])
-        opt_lst = [
-            _("this instance"),
-            _("this and all subsequent instances"),
-            _("all instances")]
-        indx, value = OptionsDialog(parent=self, title=_("instance: {0}").format(instance), prompt=prompt, opts=opt_lst).getValue()
-        return indx, value
-
     def editItem(self, e=None):
         logger.debug('{0}: {1}'.format(self.itemSelected['_summary'], self.dtSelected))
         choice = 3
         title = "etm tk"
         if 'r' in self.itemSelected:
-            choice, value = self.editWhich(self.dtSelected)
+            choice, value = self.which(_('edit'), self.dtSelected)
             logger.debug("{0}: {1}".format(choice, value))
             if not choice:
                 self.tree.focus_set()
                 return
             self.itemSelected['_dt'] = parse(self.dtSelected)
+        hsh_rev = hsh_cpy = None
+        self.mode = 2  # replace
         if choice in [1, 2]:
+            self.mode = 3  # new and replace - both newhsh and rephsh
             title = _("new item")
             hsh_cpy = deepcopy(self.itemSelected)
             hsh_rev = deepcopy(self.itemSelected)
             # we will be editing and adding hsh_cpy and replacing hsh_rev
-            hsh_cpy['i'] = uniqueId()
-            self.mode = 'append'
-            # remove the line number info to indicate that hsh_cpy is to be appended
-            # hsh_cpy['fileinfo'][1] = hsh_cpy['fileinfo'][2] = 0
+            # hsh_cpy['i'] = uniqueId()
 
             dt = hsh_cpy['_dt'].replace(
                 tzinfo=tzlocal()).astimezone(gettz(hsh_cpy['z']))
@@ -949,8 +1042,6 @@ class App(Tk):
 
             if choice == 1:
                 # this instance
-                # remove this instance by adding it to @-
-                # open a non-repeating copy with this instance as @s
                 if '+' in hsh_rev and dtn in hsh_rev['+']:
                     hsh_rev['+'].remove(dtn)
                     if not hsh_rev['+'] and hsh_rev['r'] == 'l':
@@ -962,22 +1053,16 @@ class App(Tk):
                     if k in hsh_cpy:
                         del hsh_cpy[k]
                 hsh_cpy['s'] = dt
-                rev_str = hsh2str(hsh_rev, loop.options)
-                self.mode = 'changed instance'
-                edit_str = hsh2str(hsh_cpy, loop.options)
-                self.mode = 'append'
 
             elif choice == 2:
                 # this and all subsequent instances
-                # add this instance minus one minute as &u to each @r entry
-                # open a copy with with this instance as @s
                 tmp = []
                 for h in hsh_rev['_r']:
                     if 'f' in h and h['f'] != u'l':
                         h['u'] = dt - ONEMINUTE
                     tmp.append(h)
                 hsh_rev['_r'] = tmp
-                if u'+' in hsh:
+                if u'+' in hsh_rev:
                     tmp_rev = []
                     tmp_cpy = []
                     for d in hsh_rev['+']:
@@ -987,7 +1072,7 @@ class App(Tk):
                             tmp_cpy.append(d)
                     hsh_rev['+'] = tmp_rev
                     hsh_cpy['+'] = tmp_cpy
-                if u'-' in hsh:
+                if u'-' in hsh_rev:
                     tmp_rev = []
                     tmp_cpy = []
                     for d in hsh_rev['-']:
@@ -998,15 +1083,14 @@ class App(Tk):
                     hsh_rev['-'] = tmp_rev
                     hsh_cpy['-'] = tmp_cpy
                 hsh_cpy['s'] = dt
-                rev_str = hsh2str(hsh_rev, loop.options)
-                edit_str = hsh2str(hsh_cpy, loop.options)
+        else: # replace
+            self.mode = 2
+            hsh_rev = deepcopy(self.itemSelected)
 
-            changed = SimpleEditor(parent=self, newhsh=hsh_cpy, rephsh=hsh_rev,
-                         options=loop.options, title=title).changed
+        logger.debug("mode: {0}; newhsh: {1}; rephsh: {2}".format( self.mode, hsh_cpy is not None, hsh_rev is not None))
+        changed = SimpleEditor(parent=self, newhsh=hsh_cpy, rephsh=hsh_rev,
+                     options=loop.options, title=title).changed
 
-        else:
-            changed = SimpleEditor(parent=self, newhsh=self.itemSelected,
-                         options=loop.options, title=self.filetext).changed
         if changed:
             loop.loadData()
             self.updateAlerts()
@@ -1037,20 +1121,18 @@ class App(Tk):
             return False
         self.editFile(e, file=filename)
 
-
-    def editWhich(self, instance="xyz"):
-        prompt = "\n".join([
-            _("You have selected an instance of a repeating"),
-            _("item. What do you want to change?")])
-        opt_lst = [
-            # _("only the datetime of this instance"),
-            _("this instance"),
-            _("this and all subsequent instances"),
-            _("all instances")]
-        indx, value = OptionsDialog(parent=self, title=_("instance: {0}").format(instance), prompt=prompt, opts=opt_lst).getValue()
-        # logger.debug(value)
-        return indx, value
-
+    # def editWhich(self, instance="xyz"):
+    #     prompt = "\n".join([
+    #         _("You have selected an instance of a repeating"),
+    #         _("item. What do you want to change?")])
+    #     opt_lst = [
+    #         # _("only the datetime of this instance"),
+    #         _("this instance"),
+    #         _("this and all subsequent instances"),
+    #         _("all instances")]
+    #     indx, value = OptionsDialog(parent=self, title=_("instance: {0}").format(instance), prompt=prompt, opts=opt_lst).getValue()
+    #     # logger.debug(value)
+    #     return indx, value
 
     def finishItem(self, e=None):
         prompt = _("""\
@@ -1451,20 +1533,22 @@ or 0 to display all changes.""").format(title)
             self.filetext = filetext = "{0}, {1}".format(hsh['fileinfo'][0],
                                                       lines)
             text = "{1}\n\n{2}: {3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
-            for i in [0, 1, 3]: # everything except finish
+            # self.nm["menu"].entryconfig(2, state='normal')
+            for i in [0, 1, 2, 4]: # everything except finish
                 self.em["menu"].entryconfig(i, state='normal')
                 # self.em.configure(state="normal")
             if isUnfinished:
-                self.em["menu"].entryconfig(2, state='normal')
+                self.em["menu"].entryconfig(3, state='normal')
             else:
-                self.em["menu"].entryconfig(2, state='disabled')
+                self.em["menu"].entryconfig(3, state='disabled')
             self.uuidSelected = uuid
             self.itemSelected = hsh
             self.dtSelected = dt
         else:
             self.em.configure(state="disabled")
             text = ""
-            for i in range(4):
+            # self.nm["menu"].entryconfig(2, state='disabled')
+            for i in range(5):
                 self.em["menu"].entryconfig(i, state='disabled')
             self.itemSelected = None
             self.uuidSelected = None

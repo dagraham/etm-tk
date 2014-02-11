@@ -89,24 +89,18 @@ class SimpleEditor(Toplevel):
         self.changed = False
 
         self.file = file
+        self.initfile = None
+        self.fileinfo = None
+        self.repinfo = None
         self.title = title
         self.newhsh = newhsh
         self.rephsh = rephsh
-        self.oldhsh = deepcopy(newhsh)
-        if newhsh and 'fileinfo' in newhsh:
-            self.fileinfo = self.newhsh['fileinfo']
-            # logger.debug("newhsh: {0}".format(self.newhsh))
-            # logger.debug("rephsh: {0}".format(self.rephsh))
-        else:
-            self.fileinfo = None
         self.value = ''
         self.options = options
         # self.text_value.trace_variable("w", self.setSaveStatus)
         frame = Frame(self, bd=0, relief=FLAT)
         frame.pack(side="bottom", fill=X, padx=4, pady=3)
         frame.configure(background=bgclr)
-
-        # Style().configure('graybackground', background="bgclr")
 
         btnwdth = 5
 
@@ -121,23 +115,6 @@ class SimpleEditor(Toplevel):
         # check will evaluate the item entry and, if repeating, show reps
         inspect = Button(frame, text=_("Inspect"), highlightbackground=bgclr, width=btnwdth, command=self.onCheck)
         inspect.pack(side=LEFT, padx=4)
-
-        # Button(frame, text=_('Quit'), width=btnwdth, command=self.quit).pack(side=LEFT, padx=2)
-        # l, c = platformShortcut('w')
-        # self.bind(c, self.quit)
-        #
-        # self.sb = Button(frame, text=_('Save'), width=btnwdth, command=self.onSave)
-        # self.sb.pack(side=LEFT, padx=2)
-        # check = Button(frame, text=_('Check'), width=btnwdth, command=self.onCheck)
-        # check.pack(side=LEFT, padx=2)
-
-        # Button(frame, text='X', command=self.clearFind).pack(side=RIGHT, padx=2)
-        # self.find_text = StringVar(frame)
-        # e = Entry(frame, textvariable=self.find_text, width=20)
-        # e.pack(side=RIGHT, padx=2)
-        # e.bind("<Return>", self.onFind)
-        # e.bind("<Escape>", self.clearFind)
-        # Button(frame, text=_('Find'), width=btnwdth, command=self.onFind).pack(side=RIGHT, padx=2)
 
         text = Text(self, bd=2, relief="sunken", padx=3, pady=2, font=tkFont.Font(family="Lucida Sans Typewriter"), undo=True, width=70)
         text.configure(highlightthickness=0)
@@ -154,27 +131,60 @@ class SimpleEditor(Toplevel):
             with codecs.open(file, 'r',
                              self.options['encoding']['file']) as f:
                 text = f.read()
-            logger.debug('file text: {0}'.format(type(text)))
-            # text = "This is a test"
-            # self.settext(text="{0}".format(text))
         else:
-            # we are editing an item
-            # Button(frame, text=_('Check'), width=btnwdth, command=self.onCheck).pack(side=LEFT, padx=2)
-            if newhsh is None:
-                # we will be appending a new item
-                self.mode = "new"
-                self.fileinfo = (ensureMonthly(options=self.options), 0, 0)
-                # self.settext(text='')
+            # we are creating a new item and/or replacing an item
+            # mode:
+            #   1: new
+            #   2: replace
+            #   3: new and replace
+            initfile = None
+            logger.debug("newhsh: {0}".format(self.newhsh))
+            logger.debug("rephsh: {0}".format(self.rephsh))
+            if newhsh is None and rephsh is None:
+                # we are creating a new item from scratch
+                self.mode = 1
+                self.edithsh = self.newhsh
+                initfile = ensureMonthly(options=self.options)
                 text = ''
-            else:
-                # self.settext(text=hsh2str(newhsh, self.options))
-                text = hsh2str(newhsh, self.options)
-                if rephsh is None:
-                    self.mode = 'replace'
+            elif rephsh is None:  # newhsh
+                # we are creating a new item as a copy
+                self.mode = 1
+                self.edithsh = self.newhsh
+                if ('fileinfo' in newhsh and newhsh['fileinfo']):
+                    initfile = newhsh['fileinfo'][0]
                 else:
-                    # without line numbers we will be appending an item
-                    self.mode = 'append'
-            logger.debug('item text: {0}'.format(type(text)))
+                    initfile = ensureMonthly(options=self.options)
+                text = hsh2str(self.edithsh, self.options)
+            elif newhsh is None: # rephsh
+                # we are editing and replacing an item - no file prompt
+                self.mode = 2
+                # self.repinfo = rephsh['fileinfo']
+                self.edithsh = self.rephsh
+                text = hsh2str(self.edithsh, self.options)
+            else:  # neither is None
+                # we are changing some instances of a repeating item
+                # we will be writing but not editing rephsh using its fileinfo
+                # we will be editing and saving newhsh using self.initfile
+                # edit and save new, replace rep
+                self.mode = 3
+                self.edithsh = self.newhsh
+                # self.repinfo = rephsh['fileinfo']
+                if 'fileinfo' in newhsh and newhsh['fileinfo'][0]:
+                    initfile = self.newhsh['fileinfo'][0]
+                else:
+                    initfile = ensureMonthly(options=self.options)
+                text = hsh2str(self.edithsh, self.options)
+
+            if initfile:
+                self.initfile = os.path.join(self.options['datadir'], initfile)
+                logger.debug('using initfile: "{0}"'.format(self.initfile))
+
+            # Logic:
+            #   mode 1: edit text using self.initfile with dialog to save
+            #   mode 2: edit text and replace item using fileinfo
+            #   mode 3: both of the above
+
+            logger.debug('mode: {0}; initfile: {1}; edit: {2}'.format(self.mode,  self.initfile,  self.edithsh))
 
         self.settext(text)
 
@@ -222,6 +232,7 @@ class SimpleEditor(Toplevel):
         if not self.checkmodified():
             self.quit()
         elif self.file is not None:
+            # we are editing a file
             alltext = self.gettext()
             with codecs.open(self.file, 'w',
                              self.options['encoding']['file']) as f:
@@ -230,65 +241,52 @@ class SimpleEditor(Toplevel):
             self.changed = True
             self.quit()
         else:
+            # we are editing an item
             ok = self.onCheck(showreps=False)
             if not ok:
                 return False
-            if self.mode == 'new':
-                if 's' in self.newhsh and self.newhsh['s']:
-                    dt = self.newhsh['s']
+            if self.mode in [1, 3]:  # new
+                if 's' in self.edithsh and self.edithsh['s']:
+                    dt = self.edithsh['s']
                 else:
                     dt = None
-                initfile = ensureMonthly(self.options, date=dt)
-            elif self.mode in ['append', 'replace']:
-                # initfile = self.newhsh['fileinfo']
-                d = self.options['datadir']
-                f = self.fileinfo[0]
-                initfile = os.path.join(d, f)
-            if self.mode == 'replace':
-                filename = initfile
-                logger.debug('using file: "{0}"'.format(initfile))
-            else:
-                # get the filename
-                initdir, initfile = os.path.split(initfile)
-                logger.debug('initial dir and file: "{0}"; "{1}"'.format(initdir, initfile))
+            if self.mode in [1, 3]:
+                # we need a filename for the new item
+                dir, file = os.path.split(self.initfile)
+                logger.debug('initial dir and file: "{0}"; "{1}"'.format(dir, file))
                 fileops = {'defaultextension': '.txt',
                            'filetypes': [('text files', '.txt')],
-                           'initialdir': initdir,
-                           'initialfile': initfile,
+                           'initialdir': dir,
+                           'initialfile': file,
                            'title': 'etmtk data files',
                            'parent': self}
                 filename = askopenfilename(**fileops)
                 if not (filename and os.path.isfile(filename)):
                     return False
-            logger.debug('newhsh: {0}'.format(self.newhsh))
+            logger.debug('edithsh: {0}'.format(self.edithsh))
             ok = True
-            if self.rephsh is not None:
-                if self.loop.replace_item(self.rephsh):
-                    logger.debug('revised: {0}'.format(self.rephsh))
-                    self.rephsh = None
-                else:
-                    ok = False
-            if self.mode == 'append':
-                if self.loop.append_item(self.newhsh, filename):
+            if self.mode == 1:
+                if self.loop.append_item(self.edithsh, filename):
                     self.update_idletasks()
-                    # self.newhsh = self.loop.uuid2hash[self.newhsh['i']]
-                    logger.debug('appended: {0}'.format(self.newhsh))
-                    self.mode = 'replace'
+                    logger.debug('added: {0}'.format(self.edithsh))
                 else:
                     ok = False
-            elif self.mode == 'replace':
-                if self.loop.replace_item(self.newhsh):
-                    # self.newhsh = self.loop.uuid2hash[self.newhsh['i']]
-                    logger.debug('replaced: {0}'.format(self.newhsh))
+            elif self.mode == 2:
+                if self.loop.replace_item(self.edithsh):
+                    logger.debug('replaced: {0}'.format(self.edithsh))
                 else:
                     ok = False
-            elif self.mode == 'new':
-                if self.loop.append_item(self.newhsh, filename):
-                    self.newhsh = self.loop.uuid2hash[self.newhsh['i']]
-                    logger.debug('created: {0}'.format(self.newhsh))
-                    self.mode = 'replace'
+            else:  # self.mode == 3
+                if self.loop.append_item(self.edithsh, filename):
+                    self.update_idletasks()
+                    logger.debug('added: {0}'.format(self.edithsh))
                 else:
                     ok = False
+                if self.loop.replace_item(self.rephsh):
+                    logger.debug('replaced: {0}'.format(self.rephsh))
+                else:
+                    ok = False
+
             logger.debug('ok: {0}'.format(ok))
             # update the return value so that when it is not null then modified
             # is false and when modified is true then it is null
@@ -298,11 +296,8 @@ class SimpleEditor(Toplevel):
             return "break"
 
     def onCheck(self, event=None, showreps=True):
-        logger.debug(('onCheck'))
-        if (self.newhsh and self.rephsh) or not self.newhsh:
-            self.mode = 'append'
-
         text = self.gettext()
+        logger.debug("text: {0}".format(text))
         msg = []
         reps = []
         error = False
@@ -314,15 +309,20 @@ class SimpleEditor(Toplevel):
             error = True
         if msg:
             messages = "{0}".format("\n".join(msg))
-            logger.debug(messages)
+            logger.debug("messages: {0}".format(messages))
             self.messageWindow(MESSAGES, messages)
         if error or msg:
             self.newhsh = None
             return False, ''
 
         # we have a good hsh
-        self.newhsh = hsh
-        self.newhsh['fileinfo'] = self.fileinfo
+        if self.edithsh and 'fileinfo' in self.edithsh:
+            fileinfo = self.edithsh['fileinfo']
+            self.edithsh = hsh
+            self.edithsh['fileinfo'] = fileinfo
+        else:
+            # we have a new item without fileinfo
+            self.edithsh = hsh
         # update missing fields
         str = hsh2str(hsh, options=self.options)
         logger.debug("str: {0}".format(str))
@@ -338,6 +338,7 @@ class SimpleEditor(Toplevel):
                 self.messageWindow(ALLREPS, repetitions)
             else:
                 self.messageWindow(SOMEREPS, repetitions)
+        logger.debug(('onCheck: Ok'))
         return True
 
     def clearFind(self, *args):

@@ -130,7 +130,7 @@
 
 We are calling an instance of editor with this init:
 
-    - __init__(self, parent=None, file=None, item=None)
+    - __init__(self, parent=None, newhsh=None, rephsh=None)
 
 - if editing a configuration or data file, specify a filename for file
 

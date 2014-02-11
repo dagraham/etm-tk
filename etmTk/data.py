@@ -4781,7 +4781,6 @@ class ETMCmd():
         self.number = True
         self.count2id = {}
         self.last_rep = ""
-        self.mode = ''
         self.item_hsh = {}
         self.output = 'text'
         self.tkversion = ''
@@ -4939,10 +4938,10 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
         lines = item.split('\n')
         return lines, new_hsh
 
-    def commit(self, file):
+    def commit(self, file, mode=""):
         if 'hg_commit' in self.options and self.options['hg_commit']:
             # hack to avoid unicode in .format() for python 2
-            mesg = u"{0}: {1}".format(self.mode, file)
+            mesg = u"{0}: {1}".format(mode, file)
             if python_version == 2 and type(mesg) == unicode:
                 cmd = self.options['hg_commit'].format(
                     repo=self.options['datadir'], mesg="XXX")
@@ -4950,11 +4949,12 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
             else:
                 cmd = self.options['hg_commit'].format(
                     repo=self.options['datadir'], mesg="{0}: {1}".format(
-                        self.mode, file))
+                        mode, file))
+            logger.debug("hg commit: {0}".format(mesg))
             os.system(cmd)
             return True
 
-    def safe_save(self, file, s):
+    def safe_save(self, file, s, mode=""):
         """
             Try writing the s to tmpfile and then, if it succeeds,
             copy tmpfile to file.
@@ -4967,7 +4967,8 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
             return 'error writing to file - aborted'
             return False
         shutil.copy2(self.tmpfile, file)
-        return self.commit(file)
+        logger.debug("calling commit with mode: '{0}'".format(mode))
+        return self.commit(file, mode)
 
     def get_itemhash(self, arg_str):
         try:
@@ -5011,40 +5012,12 @@ Usage:
 If there is an item number INT among those displayed by the previous 'a' or 'r'  command then open a COPY of the item for editing. The edited copy will be saved as a new item.\
 """)
 
-    # def do_d(self, arg_str):
-    #     hsh = self.get_itemhash(arg_str)
-    #     if not hsh:
-    #         return ()
-    #         # f, begline, endline = hsh['fileinfo']
-    #     # fp = os.path.join(self.options['datadir'], f)
-    #     # fo = codecs.open(fp, 'r', file_encoding)
-    #     # lines = fo.readlines()
-    #     # fo.close()
-    #     self.item_hsh = hsh
-    #     if 'r' in hsh:
-    #         # repeating
-    #         instance = fmt_datetime(hsh['_dt'], self.options)
-    #         prompt = "\n".join([
-    #             _("You have selected instance"),
-    #             "    {0}".format(instance),
-    #             _("of a repeating item. What do you want to delete?"),
-    #             "  1. {0}".format(_("this instance")),
-    #             "  2. {0}".format(_("this and all subsequent instances")),
-    #             "  3. {0}".format(_("all instances")),
-    #             "{0}".format(_('Choice [1-3] or 0 to cancel? '))])
-    #         self.mode = 'delete'
-    #         return prompt
-    #     else:
-    #         # not repeating
-    #         self.cmd_do_delete(4)
-
     def cmd_do_delete(self, choice):
         if not choice:
             return False
         try:
             choice = int(choice)
         except:
-            print('returning')
             return False
 
         if choice in [1, 2]:
@@ -5108,70 +5081,6 @@ Usage:
 If there is an item number INT among those displayed by the previous 'a' or 'r' command then delete that item, first prompting for confirmation. When a repeating item is selected, you will first be prompted to choose which of the repeated instances should be deleted. \
 """)
 
-    # def do_e(self, arg_str, item=''):
-    #     args = arg_str.split(' ')
-    #     hsh = self.get_itemhash(args[0])
-    #     print('do_e args', len(args), args, hsh)
-    #     if not hsh:
-    #         return ()
-    #     if item:
-    #         self.mode = _('finished task')
-    #         # item_str = item
-    #     else:
-    #         print('setting mode ...')
-    #         self.mode = 'edit'
-    #         self.item_hsh = hsh
-    #         print('mode', self.mode, self.item_hsh)
-    #         if 'r' in hsh:
-    #             # repeating
-    #             instance = fmt_datetime(hsh['_dt'], self.options)
-    #             prompt = "\n".join([
-    #                 _("You have selected instance"),
-    #                 "    {0}".format(instance),
-    #                 _("of a repeating item. What do you want to change?"),
-    #                 "  1. {0}".format(_("only the datetime of this instance")),
-    #                 "  2. {0}".format(_("this instance")),
-    #                 "  3. {0}".format(_("this and all subsequent instances")),
-    #                 "  4. {0}".format(_("all instances")),
-    #                 "{0}".format(_('Choice [1-4] or 0 to cancel?'))])
-    #             print('returning', prompt)
-    #             return prompt
-    #         else:
-    #             print('do_e calling _do_edit(4)')
-    #             self.cmd_do_edit(4)
-
-    # def new_date(self, arg):
-    #     """
-    #     Called by _do_edit to get the new datetime.
-    #     """
-    #     print('new_date', arg)
-    #     # no more input is needed
-    #     self.mode = 'command'
-    #     hsh = self.item_hsh
-    #     if not arg:
-    #         return False
-    #     try:
-    #         dtstr = parse_datetime(arg)
-    #         print('got dtstr', dtstr)
-    #         dt = parse(dtstr).replace(tzinfo=tzlocal())
-    #         print(type(dt), dt)
-    #         print(parse(dtstr).replace(tzinfo=tzlocal()).astimezone(gettz(hsh['z'])))
-    #         new_dt = parse(dtstr).replace(tzinfo=tzlocal()).astimezone(gettz(hsh['z']))
-    #     except Exception as e:
-    #         return _("Could not parse"), "{0}".format(arg)
-    #     print('new_dt', new_dt)
-    #     old_dt = parse(
-    #         hsh['_dt']).replace(
-    #         tzinfo=tzlocal()).astimezone(
-    #         gettz(hsh['z']))
-    #     print('old_dt', old_dt)
-    #     hsh.setdefault('+', []).append(
-    #         new_dt.strftime(sfmt))
-    #     hsh.setdefault('-', []).append(
-    #         old_dt.strftime(sfmt))
-    #     item = hsh2str(hsh, self.options)
-    #     self.replace_item(item)
-
     def cmd_do_reschedule(self, new_dtn):
         # new_dtn = new_dt.astimezone(gettz(self.item_hsh['z'])).replace(tzinfo=None)
         hsh_rev = deepcopy(self.item_hsh)
@@ -5215,7 +5124,6 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         fo = codecs.open(fp, 'r', file_encoding)
         lines = fo.readlines()
         fo.close()
-        self.mode = 'deleted item'
         self.replace_lines(fp, lines, begline, endline, [])
         # self.loadData()
 
@@ -5229,12 +5137,10 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         fo = codecs.open(fp, 'r', file_encoding)
         lines = fo.readlines()
         fo.close()
-        self.mode = _('changed all instances')
         self.replace_lines(fp, lines, begline, endline, newlines)
         # self.loadData()
         return True
 
-    # def append_item(self, new_hsh, new_item):
     def append_item(self, new_hsh, file):
         """
 
@@ -5246,8 +5152,8 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         items = [u'%s' % x[0].rstrip() for x in old_items if x[0].strip()]
         items.append(new_item)
         itemstr = "\n".join(items)
-        self.mode = _('added item')
-        self.safe_save(file, itemstr)
+        mode = _("added item")
+        self.safe_save(file, itemstr, mode=mode)
         # self.loadData()
         return True
 
@@ -5260,32 +5166,6 @@ Usage:
 
 If there is an item number INT among those displayed by the previous 'a' or 'r' command then open it for editing. When a repeating item is selected, you will first be prompted to choose which of the instances should be changed.\
 """)
-
-#     def do_f(self, arg_str):
-#         hsh = self.get_itemhash(arg_str)
-#         if not hsh:
-#             return ()
-#         if not (hsh['itemtype'] in [u'-', u'+', u'%'] and
-#                     (u'_r' in hsh or u'f' not in hsh)):
-#             if hsh['itemtype'] in [u'-', u'+', u'%']:
-#                 return _('already finished')
-#             else:
-#                 return _('not a task')
-#             return False
-#             # f, begline, endline = hsh['fileinfo']
-#         # fp = os.path.join(self.options['datadir'], f)
-#         # fo = codecs.open(fp, 'r', file_encoding)
-#         # lines = fo.readlines()
-#         # fo.close()
-#         # now = datetime.now(tzlocal())
-#         self.mode = 'finish'
-#         self.item_hsh = hsh
-#         return _("""\
-# Finishing "{0}".
-# Enter a date and time (fuzzy parsed) to use as the completion
-# datetime, an empty string to use the current date and time or
-# "n" to cancel.\
-# """.format(hsh['_summary']))
 
     def cmd_do_finish(self, dt):
         """
@@ -5416,9 +5296,6 @@ where N is the number of a report specification from the file {0}:\n """.format(
             if 's' not in new_hsh:
                 new_hsh['s'] = None
             self.append_item(new_hsh, new_item)
-        else:  # empty arg_str, open dialog
-            self.mode = 'append'
-            # self.parent.Dialog.run(text=itemstr)
 
     @staticmethod
     def help_n():
@@ -5580,37 +5457,6 @@ Show items grouped and sorted by tag, optionally limited to those containing a c
 """)
 
 
-        # def do_s(self, arg_str):
-        #     if not arg_str:
-        #         return _("an integer item number is required")
-        #     try:
-        #         num = int(arg_str)
-        #         hsh = self.get_itemhash(num)
-        #     except:
-        #         return _('"{0}" must be an item number.').format(arg_str)
-        #     # f, begline, endline = hsh['fileinfo']
-        #     # fp = os.path.join(self.options['datadir'], f)
-        #     # fo = codecs.open(fp, 'r', file_encoding)
-        #     # lines = fo.readlines()
-        #     # fo.close()
-        #     print('got here')
-        #     if 'r' in hsh or 's' in hsh:
-        #         prompt = _("new date and time to replace {0}? ").format(hsh['_dt'].replace(tzinfo=None).strftime(rfmt))
-        #     else:
-        #         prompt = _("New datetime? ")
-        #     self.mode = 'new_date'
-        #     self.item_hsh = hsh
-        #     return(prompt)
-
-    #     def help_s(self):
-    #         return _("""\
-    # Usage:
-
-    #     s INT
-
-    # Ff there is an item number INT among those displayed by the previous'a' or 'r'  command, then change the starting date and time for that item.\
-    # """)
-
     def do_l(self, arg):
         """time and expense ledger specification:"""
         if not arg:
@@ -5662,10 +5508,9 @@ Options include:
             'dateutil': dateutil_version,
             'tkversion': self.tkversion
         }
-        # print(d)
         return _("""\
 Event and Task Manager
-version: {0[etmversion]}
+etmtk {0[etmversion]}
 
 This application provides a format for using plain text files to store events, tasks and other items and a Tk based GUI for creating and modifying items as well as viewing them.
 
@@ -5728,39 +5573,6 @@ j        When the day view is displayed, select the
 """))
 
 
-        # a        Display the current agenda.
-        # k [REGX] Display items grouped by KEYWORD.
-        # p [REGX] Display items grouped by file PATH.
-        # s [REGX] Display SCHEDULED items grouped by date.
-        # t [REGX] Display items grouped by TAG.
-
-
-    # When available as an option, REGX limits the display to items with summaries matching the case-insensitive, regular expression REGX. Prepend an !, i.e., use !REGX instead of REGX, to display items with summaries NOT matching REGX.
-
-    # noinspection PyMethodMayBeStatic
-    def delete_which(self, instance):
-        bad_response = _("An integer response between 0 and 3 is required.")
-        itemList = [
-            _("\nYou have selected instance"),
-            "    {0}".format(instance),
-            _("of a repeating item. What do you want to delete?"),
-            "  1. {0}".format(_("this instance")),
-            "  2. {0}".format(_("this and all subsequent instances")),
-            "  3. {0}".format(_("all instances")),
-            "{0}".format(_('Choice [1-3] or 0 to cancel? '))]
-        return "\n".join(map(str, itemList))
-        try:
-            choice = int(res)
-        except:
-            choice = 0
-        if not choice:
-            return _('canceled')
-            return None
-        if choice < 0 or choice > 3:
-            return bad_response
-            return None
-        return choice
-
     def replace_lines(self, fp, oldlines, begline, endline, newlines):
         lines = oldlines
         del lines[begline - 1:endline]
@@ -5769,15 +5581,13 @@ j        When the day view is displayed, select the
             lines.insert(begline - 1, x)
         itemstr = "\n".join([unicode(u'%s') % x.rstrip() for x in lines
                              if x.strip()])
-        self.safe_save(fp, itemstr)
+        if newlines:
+            mode = _("replaced item")
+        else:
+            mode = _("removed item")
+        logger.debug("calling safe_save with: {0}; mode: {1}".format(itemstr, mode))
+        self.safe_save(fp, itemstr, mode=mode)
         return True
 
-    def append_lines(self, fp, lines, newlines):
-        lines.extend(newlines)
-        itemstr = "\n".join([unicode(u'%s') % x.rstrip() for x in lines
-                             if x.strip()])
-        self.safe_save(fp, itemstr)
-
-
 if __name__ == "__main__":
-    print('data.py should only be imported. Run etmtk.py instead.')
+    print('data.py should only be imported. Run etm instead.')
