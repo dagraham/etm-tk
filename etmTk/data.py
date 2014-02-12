@@ -121,7 +121,7 @@ qt2dt = [
     ('h', '%I'),
     ('mm', '%M')]
 
-def platformShortcut(s):
+def commandShortcut(s):
     """
     Produce label, command pairs from s based on Command for OSX
     and Control otherwise.
@@ -135,6 +135,21 @@ def platformShortcut(s):
     else:
         return "{0}Ctrl-{1}".format(shift, s), "<{0}Control-{1}>".format(shift, s)
 
+def optionShortcut(s):
+    """
+    Produce label, command pairs from s based on Command for OSX
+    and Control otherwise.
+    """
+    if s.upper() == s and s.lower() != s:
+        shift = "Shift-"
+    else:
+        shift = ""
+    if mac:
+        return "{0}Alt-{1}".format(shift, s), "<{0}Option-{1}>".format(shift,
+                                                                       s)
+    else:
+        return "{0}Alt-{1}".format(shift, s), "<{0}Alt-{1}>".format(shift,
+                                                                       s)
 
 
 def init_localization():

@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
 import os
 import platform, sys
 import codecs
@@ -47,7 +50,7 @@ SOMEREPS = _('Selected repetitions')
 ALLREPS = _('Repetitions')
 MESSAGES = _('Error messages')
 
-from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, platformShortcut, bgclr, CMD
+from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, optionShortcut, bgclr, CMD, unicode
 
 
 from idlelib.WidgetRedirector import WidgetRedirector
@@ -65,19 +68,15 @@ class SimpleEditor(Toplevel):
 
     def __init__(self, parent=None, file=None, newhsh=None, rephsh=None, options=None, title=None):
         """
-        If file is given, set file mode and open file for editing.
-        If newhsh is given we are editing an item that will be appended.
-        If rephsh is given, we will be replacing the original item with this with the first save.
-        On the first save
-            1. select a file and append newhsh
-            2. replace using rephsh and set rephsh = None
-         If the item has fileinfo line numbers
-        then we will be replacing the item, else it is a copy that we will be
-        appending.
+        If file is given, open file for editing.
+        Otherwise, we are creating a new item and/or replacing an item
+        mode:
+          1: new: edit newhsh, replace none
+          2: replace: edit and replace rephsh
+          3: new and replace: edit newhsh, replace rephsh
 
         :param parent:
         :param file: path to file to be edited
-        :param newhsh: hsh of the item to be edited
         """
         # self.frame = frame = Frame(parent)
         Toplevel.__init__(self, parent)
@@ -107,7 +106,7 @@ class SimpleEditor(Toplevel):
         # ok will check, save and quit
         Button(frame, text=_("OK"), highlightbackground=bgclr, width=btnwdth, command=self.onSave).pack(side=RIGHT, padx=4)
 
-        l, c = platformShortcut('w')
+        l, c = commandShortcut('w')
         self.bind(c, self.onSave)
 
         # cancel will quit with a warning prompt if modified
@@ -140,6 +139,7 @@ class SimpleEditor(Toplevel):
             initfile = None
             logger.debug("newhsh: {0}".format(self.newhsh))
             logger.debug("rephsh: {0}".format(self.rephsh))
+            # set the mode
             if newhsh is None and rephsh is None:
                 # we are creating a new item from scratch
                 self.mode = 1
@@ -156,7 +156,7 @@ class SimpleEditor(Toplevel):
                     initfile = ensureMonthly(options=self.options)
                 text = hsh2str(self.edithsh, self.options)
             elif newhsh is None: # rephsh
-                # we are editing and replacing an item - no file prompt
+                # we are editing and replacing rephsh - no file prompt
                 self.mode = 2
                 # self.repinfo = rephsh['fileinfo']
                 self.edithsh = self.rephsh
@@ -165,7 +165,6 @@ class SimpleEditor(Toplevel):
                 # we are changing some instances of a repeating item
                 # we will be writing but not editing rephsh using its fileinfo
                 # we will be editing and saving newhsh using self.initfile
-                # edit and save new, replace rep
                 self.mode = 3
                 self.edithsh = self.newhsh
                 # self.repinfo = rephsh['fileinfo']
@@ -177,15 +176,9 @@ class SimpleEditor(Toplevel):
 
             if initfile:
                 self.initfile = os.path.join(self.options['datadir'], initfile)
-                logger.debug('using initfile: "{0}"'.format(self.initfile))
-
-            # Logic:
-            #   mode 1: edit text using self.initfile with dialog to save
-            #   mode 2: edit text and replace item using fileinfo
-            #   mode 3: both of the above
 
             logger.debug('mode: {0}; initfile: {1}; edit: {2}'.format(self.mode,  self.initfile,  self.edithsh))
-
+        # logger.debug("setting text {0}:\n{1}".format(type(text), text))
         self.settext(text)
 
         # clear the undo buffer

@@ -3,6 +3,7 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 #import the 'tkinter' module
+from idlelib.EditorWindow import get_accelerator
 import os
 import re
 from copy import deepcopy
@@ -43,7 +44,7 @@ import etmTk.data as data
 from dateutil.parser import parse
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, hsh2str, leadingzero, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, mac, setup_logging, uniqueId, gettz, platformShortcut, bgclr, rrulefmt)
+    init_localization, fmt_weekday, fmt_dt, hsh2str, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, bgclr, rrulefmt)
 
 from etmTk.edit import SimpleEditor
 
@@ -333,7 +334,6 @@ class TextDialog(Dialog):
         box.pack(side='bottom')
 
 
-
 class OptionsDialog():
     # noinspection PyShadowingNames
     def __init__(self, parent, title="", prompt="", opts=None):
@@ -498,6 +498,7 @@ class App(Tk):
         self.loop = loop
         self.configure(background=bgclr)
         menubar = Menu(self)
+        logger.debug('AFTER: {0}'.format(AFTER))
 
         # File menu
         filemenu = Menu(menubar, tearoff=0)
@@ -509,40 +510,56 @@ class App(Tk):
         # filemenu.add_command(label=_("Recently changed ..."),
         #                      underline=0, command=self.donothing)
 
-        filemenu.add_command(label=_("Data files ..."),
+        l, c = optionShortcut('f')
+        filemenu.add_command(label=_("Data files ..."), accelerator=l,
                              underline=0, command=self.editData)
+        self.bind_all(c, self.editData)
 
-        l, c = platformShortcut('O')
-        filemenu.add_command(label=loop.options['config'], underline=0, command=lambda x=loop.options['config']: self.editFile(file=x), accelerator=l)
-        # self.bind_all(c, lambda event: self.after(after, self.donothing))
+        filemenu.add_separator()
 
-        l, c = platformShortcut('C')
-        filemenu.add_command(label=loop.options['auto_completions'], underline=0, command=lambda x=loop.options['auto_completions']: self.editFile(file=x), accelerator=l)
+        l, c = optionShortcut('o')
+        file = loop.options['config']
+        label = relpath(file, loop.options['etmdir'])
+        filemenu.add_command(label=label, underline=0, command=lambda x=file: self.editFile(file=x), accelerator=l)
+        self.bind_all(c, lambda e, x=file:  self.editFile(file=x))
 
-        l, c = platformShortcut('R')
-        filemenu.add_command(label=loop.options['report_specifications'], underline=0, command=lambda x=loop.options['report_specifications']: self.editFile(file=x), accelerator=l)
+        l, c = optionShortcut('c')
+        file = loop.options['auto_completions']
+        label = relpath(file, loop.options['etmdir'])
+        filemenu.add_command(label=label, underline=0, command=lambda x=file: self.editFile(file=x), accelerator=l)
+        self.bind_all(c, lambda e, x=file:  self.editFile(file=x))
 
-        l, c = platformShortcut('S')
-        filemenu.add_command(label=loop.options['scratchfile'], underline=0, command=lambda x=loop.options['scratchfile']: self.editFile(file=x), accelerator=l)
+        l, c = optionShortcut('r')
+        file = loop.options['report_specifications']
+        label = relpath(file, loop.options['etmdir'])
+        filemenu.add_command(label=label, underline=0, command=lambda x=file: self.editFile(e=None, file=x), accelerator=l)
+        self.bind_all(c, lambda e, x=file:  self.editFile(file=x))
+
+        l, c = optionShortcut('s')
+        file = loop.options['scratchfile']
+        label = relpath(file, loop.options['etmdir'])
+        filemenu.add_command(label=label, underline=0, command=lambda x=file: self.editFile(file=x), accelerator=l)
+        self.bind_all(c, lambda e, x=file: self.editFile(file=x))
 
         filemenu.add_separator()
 
         # report
-        l, c = platformShortcut('m')
+        l, c = optionShortcut('m')
         filemenu.add_command(label=_("Make report"), accelerator=l, underline=1,
                              command=self.donothing)
         self.bind(c, self.donothing)  # m
 
         ## export
-        l, c = platformShortcut('x')
-        filemenu.add_command(label="Export ...", underline=1, command=self.donothing, accelerator=l)
-        self.bind(c, self.donothing)  # x
+        l, c = optionShortcut('e')
+        filemenu.add_command(label="Export iCal", underline=1, command=self.donothing, accelerator=l)
+        self.bind(c, self.donothing)
 
         filemenu.add_separator()
 
         ## quit
-        l, c = platformShortcut('w')
-        filemenu.add_command(label="Quit", underline=0, command=self.quit)
+        l, c = commandShortcut('w')
+        filemenu.add_command(label="Quit", underline=0, accelerator=l,
+        command=self.quit)
         self.bind(c, self.quit)  # w
         menubar.add_cascade(label="File", underline=0, menu=filemenu)
 
@@ -568,16 +585,10 @@ class App(Tk):
             viewmenu.add_cascade(label=_("Choose active calendars"), menu=calendarmenu,
                                  state="disabled")
 
-        # go to date
-        l, c = platformShortcut('g')
-        viewmenu.add_command(
-            label=_("Go to date"), underline=1, accelerator=l,
-            command=self.goToDate)
-        # needed for os x to prevent dialog hanging
-        self.bind_all(c, lambda event: self.after(AFTER, self.goToDate))
+        viewmenu.add_separator()
 
         # expand to depth
-        l, c = platformShortcut('o')
+        l, c = commandShortcut('o')
         viewmenu.add_command(
             label=_("Set outline depth"), underline=1, accelerator=l,
             command=self.expand2Depth)
@@ -585,31 +596,44 @@ class App(Tk):
         self.bind_all(c, lambda event: self.after(AFTER, self.expand2Depth))
 
         # busy times
-        l, c = platformShortcut('b')
+        l, c = commandShortcut('b')
         viewmenu.add_command(label=_("Show busy times"), underline=1, accelerator=l,
                              command=self.showBusyTimes)
         self.bind_all(c, lambda event: self.after(AFTER, self.showBusyTimes))
 
-        l, c = platformShortcut('y')
+        l, c = commandShortcut('y')
         viewmenu.add_command(label=_("Show yearly calendar"), underline=1, accelerator=l,
                              command=self.showCalendar)
         self.bind_all(c, lambda event: self.after(AFTER, self.showCalendar))
 
+        viewmenu.add_separator()
+
+        # go to date
+        l, c = commandShortcut('g')
+        viewmenu.add_command(
+            label=_("Go to date"), underline=1, accelerator=l,
+            command=self.goToDate)
+        # needed for os x to prevent dialog hanging
+        self.bind_all(c, lambda event: self.after(AFTER, self.goToDate))
+
         # date calculator
-        l, c = platformShortcut('c')
+        l, c = commandShortcut('c')
         viewmenu.add_command(label=_("Open date calculator"), underline=1,
                              command=self.donothing)
         self.bind(c, self.donothing)  # c
 
+        viewmenu.add_separator()
+
+        # changes
+        l, c = commandShortcut('l')
+        viewmenu.add_command(label=_("Show change log"), underline=1,  accelerator=l, command=self.showChanges)
+        self.bind_all(c, lambda event: self.after(AFTER, self.showChanges))
+
+        viewmenu.add_command(label="Show error log", underline=1, command=self.donothing)
+
         # check for updates
         viewmenu.add_command(label=_("Check for update"), underline=1, command=self
         .checkForUpdate)
-
-        # changes
-        viewmenu.add_command(label=_("Show change log"), underline=1, command=self
-        .showChanges)
-
-        viewmenu.add_command(label="Show error log", underline=1, command=self.donothing)
 
         menubar.add_cascade(label="View", menu=viewmenu, underline=0)
 
@@ -618,7 +642,7 @@ class App(Tk):
         # helpmenu.add_command(label="Help Index", command=self.donothing)
 
         # accelerator doesn't seem to work in the help menu
-        l, c = platformShortcut('?')
+        l, c = commandShortcut('?')
         helpmenu.add_command(label="Help", command=self.help)
         self.bind(c, self.help)
 
@@ -722,7 +746,7 @@ class App(Tk):
         self.vm = OptionMenu(toolbar, self.viewValue, *self.vm_opts, command=self.setView)
         self.vm.configure(width=menuwidth)
         for k in self.view2cmd:
-            l, c = platformShortcut(k)
+            l, c = commandShortcut(k)
             self.bind(c, self.view2cmd[k])  # a, s, p, k, t
             i = vm_keys.index(k)
             self.vm["menu"].entryconfig(i, accelerator=l)
@@ -739,11 +763,11 @@ class App(Tk):
         self.nm_opts = [x[0] for x in self.nm_options]
         self.nm = OptionMenu(toolbar, self.newValue, *self.nm_opts)
 
-        l, c = platformShortcut('n')
+        l, c = commandShortcut('n')
         self.nm["menu"].entryconfig(0, accelerator=l, command=self.newItem)
         self.bind(c, self.newItem)  # n
 
-        l, c = platformShortcut('+')
+        l, c = commandShortcut('+')
         self.nm["menu"].entryconfig(1, accelerator=l, command=self.startTimer)
         self.bind(c, self.startTimer)  # +
 
@@ -771,7 +795,7 @@ class App(Tk):
         self.em = OptionMenu(toolbar, self.editValue, *self.em_opts)
         for i in range(len(em_cmds)):
             k = em_cmds[i]
-            l, c = platformShortcut(k)
+            l, c = commandShortcut(k)
             self.em["menu"].entryconfig(i, accelerator=l, command=self.edit2cmd[k])
             # self.bind(c, self.edit2cmd[k])  # c, d, e, f
             self.bind_all(c, lambda event, x=k: self.after(AFTER, self.edit2cmd[x]))
@@ -1099,9 +1123,12 @@ class App(Tk):
             self.tree.focus_set()
 
     def editFile(self, e=None, file=None):
-        relfile = os.path.relpath(file, self.options['datadir'])
+        if e is not None:
+            logger.debug('event: {0}'.format(e))
+            e = None
+        relfile = relpath(file, self.options['etmdir'])
         logger.debug('file: {0}'.format(file))
-        changed = SimpleEditor(parent=self, newhsh=None, rephsh=None,  file=file, options=loop.options, title=relfile).changed
+        changed = SimpleEditor(parent=self, file=file, options=loop.options, title=relfile).changed
         if changed:
             logger.debug("changed - calling loadData and updateAlerts")
             loop.loadData()
@@ -1121,20 +1148,9 @@ class App(Tk):
             return False
         self.editFile(e, file=filename)
 
-    # def editWhich(self, instance="xyz"):
-    #     prompt = "\n".join([
-    #         _("You have selected an instance of a repeating"),
-    #         _("item. What do you want to change?")])
-    #     opt_lst = [
-    #         # _("only the datetime of this instance"),
-    #         _("this instance"),
-    #         _("this and all subsequent instances"),
-    #         _("all instances")]
-    #     indx, value = OptionsDialog(parent=self, title=_("instance: {0}").format(instance), prompt=prompt, opts=opt_lst).getValue()
-    #     # logger.debug(value)
-    #     return indx, value
-
     def finishItem(self, e=None):
+        if not (self.itemSelected and self.itemSelected['itemtype'] in ['-', '+', '%']):
+            return
         prompt = _("""\
 Enter the completion date for the item or return an empty string to
 use the current date. Relative dates and fuzzy parsing are supported.""")
@@ -1290,14 +1306,6 @@ parsing are supported.""")
                     it = list(item)
                     if cal_regex and not cal_regex.match(it[-1]):
                         continue
-                    # if matching:
-                    #     if not self.cal_regex.match(item[-1]):
-                    #         continue
-                    #     mtch = (
-                    #         self.default_regex.match(it[-1]) is not None)
-                    # else:
-                    #     mtch = True
-                    # it.append(mtch)
                     item = tuple(it)
                     bt.append(item)
                 occasion_lst.append(bt)
@@ -1310,14 +1318,6 @@ parsing are supported.""")
                     it = list(item)
                     if cal_regex and not cal_regex.match(it[-1]):
                         continue
-                    # if matching:
-                    #     if not self.cal_regex.match(item[-1]):
-                    #         continue
-                    #     mtch = (
-                    #         self.default_regex.match(it[-1]) is not None)
-                    # else:
-                    #     mtch = True
-                    # it.append(mtch)
                     item = tuple(it)
                     bt.append(item)
                 busy_lst.append(bt)
@@ -1375,7 +1375,6 @@ parsing are supported.""")
                 lines.append("   %s: %s" % (weekdays[i], "; ".join(times)))
         s = "\n".join(lines)
         self.textWindow(parent=self, title=_('busy times'), prompt=s)
-        # print(s)
 
     # noinspection PyShadowingNames
     def showCalendar(self, e=None):
@@ -1451,7 +1450,7 @@ parsing are supported.""")
     def showChanges(self, event=None):
         if self.itemSelected:
             f = self.itemSelected['fileinfo'][0]
-            fn = os.path.join(self.options['datadir'], f)
+            fn = " -f {0}".format(os.path.join(self.options['datadir'], f))
             title = _("Showing changes for {0}.").format(f)
 
         else:
@@ -1479,9 +1478,10 @@ or 0 to display all changes.""").format(title)
             numstr = "-l {0}".format(depth)
 
 
+
         command = loop.options['hg_history'].format(
             repo=loop.options['datadir'],
-            file=fn, numchanges=numstr, rev="{rev}", desc="{desc}")
+            numchanges=numstr, rev="{rev}", desc="{desc}") + fn
         logger.debug('history command: {0}'.format(command))
         p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
                              universal_newlines=True).stdout.read()
@@ -1544,6 +1544,7 @@ or 0 to display all changes.""").format(title)
             self.uuidSelected = uuid
             self.itemSelected = hsh
             self.dtSelected = dt
+            logger.debug(('selected: {0}'.format(hsh)))
         else:
             self.em.configure(state="disabled")
             text = ""
@@ -1571,27 +1572,18 @@ or 0 to display all changes.""").format(title)
         uuid, dt, hsh = self.getInstance(item)
         if uuid is not None:
             self.editItem()
-            # print("you pressed <Return> on", item, uuid, dt, hsh['_summary'])
-            # print(hsh)
-        # else:
-        #     print("you pressed <Return> on", item)
         return "break"
 
     def OnDoubleClick(self, event):
         """
         Double click on tree row
         """
-        # print( self.tree.selection(), event.x, event.y)
-        # print(self.tree.identify('item',event.x,event.y))
         self.update_idletasks()
 
         item = self.tree.identify('item', event.x, event.y)
         uuid, dt, hsh = self.getInstance(item)
         if uuid is not None:
             self.editItem()
-            # print("you double clicked on", item, uuid, dt, hsh['_summary'])
-        # else:
-        #     print("you double clicked on", item)
         return "break"
 
     def getInstance(self, item):
@@ -1825,38 +1817,6 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
     def textWindow(self, parent, title=None, prompt=None, modal=True):
         d = TextDialog(parent, title=title, prompt=prompt, modal=modal)
 
-    # noinspection PyShadowingNames
-    # def textWindow(self, title, prompt, modal=True):
-    #     win = Toplevel()
-    #     win.title(title)
-    #     # win.minsize(444, 430)
-    #     # win.minsize(450, 450)
-    #     f = Frame(win)
-    #     # pack the button first so that it doesn't disappear with resizing
-    #     b = Button(win, text=_('OK'), width=10, command=win.destroy, default='active')
-    #     b.pack(side='bottom', fill=tkinter.NONE, expand=0, pady=0)
-    #     win.bind('<Return>', (lambda e, b=b: b.invoke()))
-    #     win.bind('<Escape>', (lambda e, b=b: b.invoke()))
-    #
-    #     t = ReadOnlyText(
-    #         f, wrap="word", padx=2, pady=2, bd=2, relief="sunken",
-    #         font=tkFont.Font(family="Lucida Sans Typewriter"),
-    #         height=14,
-    #         width=52,
-    #         takefocus=False)
-    #     t.insert("0.0", prompt)
-    #     t.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0, pady=0)
-    #     ysb = ttk.Scrollbar(f, orient='vertical', command=t.yview, width=8)
-    #     ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
-    #     # t.configure(state="disabled", yscroll=ysb.set)
-    #     t.configure(yscroll=ysb.set)
-    #     f.pack(padx=2, pady=2, fill=tkinter.BOTH, expand=1)
-    #
-    #     win.focus_set()
-    #     if modal:
-    #         win.grab_set()
-    #         win.transient(self)
-    #         win.wait_window(win)
 
     def goToDate(self, e=None):
         """
