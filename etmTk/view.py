@@ -6,6 +6,7 @@ from __future__ import (absolute_import, division, print_function,
 from idlelib.EditorWindow import get_accelerator
 import os
 import re
+import uuid
 from copy import deepcopy
 import subprocess
 from dateutil.tz import tzlocal
@@ -44,7 +45,8 @@ import etmTk.data as data
 from dateutil.parser import parse
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, hsh2str, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, bgclr, rrulefmt)
+    init_localization, fmt_weekday, fmt_dt, hsh2str, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, bgclr, rrulefmt,
+    makeTree, tree2Text)
 
 from etmTk.edit import SimpleEditor
 
@@ -76,6 +78,86 @@ SCHEDULE = _('schedule')
 PATHS = _('paths')
 KEYWORDS = _('keywords')
 TAGS = _('tags')
+
+SEP = "----"
+
+def sanitize_id(id):
+    return id.strip().replace(" ", "")
+
+(_ADD, _DELETE, _INSERT) = range(3)
+(_ROOT, _DEPTH, _WIDTH) = range(3)
+
+class Node:
+
+    def __init__(self, name, identifier=None, expanded=True):
+        self.__identifier = (str(uuid.uuid1()) if identifier is None else
+                sanitize_id(str(identifier)))
+        self.name = name
+        self.expanded = expanded
+        self.__bpointer = None
+        self.__fpointer = []
+
+    @property
+    def identifier(self):
+        return self.__identifier
+
+    @property
+    def fpointer(self):
+        return self.__fpointer
+
+    def update_fpointer(self, identifier, mode=_ADD):
+        if mode is _ADD:
+            self.__fpointer.append(sanitize_id(identifier))
+        elif mode is _DELETE:
+            self.__fpointer.remove(sanitize_id(identifier))
+        elif mode is _INSERT:
+            self.__fpointer = [sanitize_id(identifier)]
+
+class Tree:
+
+    def __init__(self):
+        self.nodes = []
+        self.lst = []
+
+    def get_index(self, position):
+        for index, node in enumerate(self.nodes):
+            if node.identifier == position:
+                break
+        return index
+
+    def create_node(self, name, identifier=None, parent=None):
+        logger.debug("name: {0}, identifier: {1}; parent: {2}".format(name, identifier, parent))
+
+        node = Node(name, identifier)
+        self.nodes.append(node)
+        self.__update_fpointer(parent, node.identifier, _ADD)
+        node.bpointer = parent
+        return node
+
+    def show(self, position, level=_ROOT):
+        queue = self[position].fpointer
+        if level == _ROOT:
+            self.lst = []
+            # print("{0} [{1}]".format(self[position].name,
+            #                          self[position].identifier))
+        else:
+            s = "{0}{1}".format("    "*(level), self[position].name)
+            logger.debug('appending: "{0}"'.format(s))
+            self.lst.append(s)
+        if self[position].expanded:
+            level += 1
+            for element in queue:
+                self.show(element, level)  # recursive call
+        return "\n".join(self.lst)
+
+    def __update_fpointer(self, position, identifier, mode):
+        if position is None:
+            return
+        else:
+            self[position].update_fpointer(identifier, mode)
+
+    def __getitem__(self, key):
+        return self.nodes[self.get_index(key)]
 
 
 class Timer():
@@ -497,11 +579,20 @@ class App(Tk):
         self.actionTimer = Timer()
         self.loop = loop
         self.configure(background=bgclr)
+        self.menu_lst = []
+        self.menutree = Tree()
+        root = "_"
+        # create the root node for the menu tree
+        self.menutree.create_node(root, root)
+        # branch: (parent, child)
+        # leaf: (parent, (option, [accelerator])
         menubar = Menu(self)
         logger.debug('AFTER: {0}'.format(AFTER))
 
         # File menu
         filemenu = Menu(menubar, tearoff=0)
+        path = _("File")
+        self.add2menu(root, (path, ))
 
         ## open file
 
@@ -511,65 +602,87 @@ class App(Tk):
         #                      underline=0, command=self.donothing)
 
         l, c = optionShortcut('f')
-        filemenu.add_command(label=_("Data files ..."), accelerator=l,
+        label = _("Open data file")
+        filemenu.add_command(label=label, accelerator=l,
                              underline=0, command=self.editData)
         self.bind_all(c, self.editData)
+        self.add2menu(path, (label, l))
 
         filemenu.add_separator()
+        self.add2menu(path, (SEP, ))
 
-        l, c = optionShortcut('o')
+
+        l, c = optionShortcut('p')
         file = loop.options['config']
-        label = relpath(file, loop.options['etmdir'])
+        # label = relpath(file, loop.options['etmdir'])
+        label = _("Preferences")
         filemenu.add_command(label=label, underline=0, command=lambda x=file: self.editFile(file=x), accelerator=l)
         self.bind_all(c, lambda e, x=file:  self.editFile(file=x))
+        self.add2menu(path, (label, l))
 
         l, c = optionShortcut('c')
         file = loop.options['auto_completions']
-        label = relpath(file, loop.options['etmdir'])
+        # label = relpath(file, loop.options['etmdir'])
+        label = _("Auto completions")
         filemenu.add_command(label=label, underline=0, command=lambda x=file: self.editFile(file=x), accelerator=l)
         self.bind_all(c, lambda e, x=file:  self.editFile(file=x))
+        self.add2menu(path, (label, l))
 
         l, c = optionShortcut('r')
         file = loop.options['report_specifications']
-        label = relpath(file, loop.options['etmdir'])
+        # label = relpath(file, loop.options['etmdir'])
+        label = _("Report specifications")
         filemenu.add_command(label=label, underline=0, command=lambda x=file: self.editFile(e=None, file=x), accelerator=l)
         self.bind_all(c, lambda e, x=file:  self.editFile(file=x))
+        self.add2menu(path, (label, l))
 
         l, c = optionShortcut('s')
-        file = loop.options['scratchfile']
-        label = relpath(file, loop.options['etmdir'])
+        file = loop.options['scratchpad']
+        # label = relpath(file, loop.options['etmdir'])
+        label = _("Scratchpad")
         filemenu.add_command(label=label, underline=0, command=lambda x=file: self.editFile(file=x), accelerator=l)
         self.bind_all(c, lambda e, x=file: self.editFile(file=x))
+        self.add2menu(path, (label, l))
 
         filemenu.add_separator()
-
-        # report
-        l, c = optionShortcut('m')
-        filemenu.add_command(label=_("Make report"), accelerator=l, underline=1,
-                             command=self.donothing)
-        self.bind(c, self.donothing)  # m
+        self.add2menu(path, (SEP, ))
 
         ## export
         l, c = optionShortcut('e')
-        filemenu.add_command(label="Export iCal", underline=1, command=self.donothing, accelerator=l)
+        label = _("Export to iCal")
+        filemenu.add_command(label=label, underline=1, command=self.donothing, accelerator=l)
         self.bind(c, self.donothing)
+        self.add2menu(path, (label, l))
 
         filemenu.add_separator()
+        self.add2menu(path, (SEP, ))
 
         ## quit
-        l, c = commandShortcut('w')
-        filemenu.add_command(label="Quit", underline=0, accelerator=l,
+        # l, c = commandShortcut('q')
+        label = _("Quit")
+        filemenu.add_command(label=label, underline=0,
         command=self.quit)
-        self.bind(c, self.quit)  # w
-        menubar.add_cascade(label="File", underline=0, menu=filemenu)
+        # self.bind(c, self.quit)  # w
+        self.add2menu(path, (label, ))
+
+        menubar.add_cascade(label=path, underline=0, menu=filemenu)
+
+        # treetext = tree2Text(tree)
+        # logger.debug('menu_tree:\n{0}'.format(self.tree.show(root)))
+        # self.tree.show(root)
+        # tree = make_tree(self.menu_lst)
+        # logger.debug('tree:\n{0}'.format(tree))
 
         # view menu
+        path = _("View")
+        self.add2menu(root, (path, ))
         viewmenu = Menu(menubar, tearoff=0)
 
         calendarmenu = Menu(viewmenu, tearoff=0)
         self.calendars = deepcopy(loop.options['calendars'])
+        label = _("Calendars")
 
-        logger.debug('Calendars: {0}'.format([x[:2] for x in self.calendars]))
+        logger.debug('{0}: {1}'.format(label, [x[:2] for x in self.calendars]))
         self.calendarValues = []
         for i in range(len(self.calendars)):
             # logger.debug('Adding calendar: {0}'.format(self.calendars[i][:2]))
@@ -578,73 +691,114 @@ class App(Tk):
             self.calendarValues[i].trace_variable("w", self.updateCalendars)
             calendarmenu.add_checkbutton(label=self.calendars[i][0], onvalue=True,
                                          offvalue=False, variable=self.calendarValues[i])
-
-        if self.calendars:
-            viewmenu.add_cascade(label=_("Choose active calendars"), menu=calendarmenu)
-        else:
-            viewmenu.add_cascade(label=_("Choose active calendars"), menu=calendarmenu,
-                                 state="disabled")
-
-        viewmenu.add_separator()
-
-        # expand to depth
-        l, c = commandShortcut('o')
-        viewmenu.add_command(
-            label=_("Set outline depth"), underline=1, accelerator=l,
-            command=self.expand2Depth)
-        # needed for os x to prevent dialog hanging
-        self.bind_all(c, lambda event: self.after(AFTER, self.expand2Depth))
-
-        # busy times
-        l, c = commandShortcut('b')
-        viewmenu.add_command(label=_("Show busy times"), underline=1, accelerator=l,
-                             command=self.showBusyTimes)
-        self.bind_all(c, lambda event: self.after(AFTER, self.showBusyTimes))
-
-        l, c = commandShortcut('y')
-        viewmenu.add_command(label=_("Show yearly calendar"), underline=1, accelerator=l,
-                             command=self.showCalendar)
-        self.bind_all(c, lambda event: self.after(AFTER, self.showCalendar))
-
-        viewmenu.add_separator()
+        self.add2menu(path, (label, ))
 
         # go to date
         l, c = commandShortcut('g')
+        label=_("Date")
         viewmenu.add_command(
-            label=_("Go to date"), underline=1, accelerator=l,
+            label=label, underline=1, accelerator=l,
             command=self.goToDate)
         # needed for os x to prevent dialog hanging
         self.bind_all(c, lambda event: self.after(AFTER, self.goToDate))
+        self.add2menu(path, (label, l))
+
+        # expand to depth
+        l, c = commandShortcut('o')
+        label=_("Outline depth")
+        viewmenu.add_command(
+            label=label, underline=1, accelerator=l,
+            command=self.expand2Depth)
+        # needed for os x to prevent dialog hanging
+        self.bind_all(c, lambda event: self.after(AFTER, self.expand2Depth))
+        self.add2menu(path, (label, l))
+
+        label=_("Active calendars")
+        if self.calendars:
+            viewmenu.add_cascade(label=label,
+                                 menu=calendarmenu)
+        else:
+            viewmenu.add_cascade(label=label,
+                                 menu=calendarmenu,
+                                 state="disabled")
+        self.add2menu(path, (label, l))
+
+        viewmenu.add_separator()
+        self.add2menu(path, (SEP, ))
+
+
+        # busy times
+        l, c = commandShortcut('b')
+        label = _("Busy periods")
+        viewmenu.add_command(label=label, underline=1,
+                             accelerator=l,
+                             command=self.showBusyTimes)
+        self.bind_all(c, lambda event: self.after(AFTER, self.showBusyTimes))
+        self.add2menu(path, (label, l))
+
+        # report
+        l, c = optionShortcut('r')
+        label=_("Report")
+        viewmenu.add_command(label=label, accelerator=l,
+                             underline=1,
+                             command=self.donothing)
+        self.bind(c, self.donothing)
+        self.add2menu(path, (label, l))
+
+        viewmenu.add_separator()
+        self.add2menu(path, (SEP, ))
+
+        l, c = commandShortcut('y')
+        label=_("Yearly calendar")
+        viewmenu.add_command(label=label, underline=1, accelerator=l,
+                             command=self.showCalendar)
+        self.bind_all(c, lambda event: self.after(AFTER, self.showCalendar))
+        self.add2menu(path, (label, l))
 
         # date calculator
         l, c = commandShortcut('c')
-        viewmenu.add_command(label=_("Open date calculator"), underline=1,
+        label=_("Date calculator")
+        viewmenu.add_command(label=label, underline=1,
                              command=self.donothing)
         self.bind(c, self.donothing)  # c
+        self.add2menu(path, (label, l))
 
         viewmenu.add_separator()
+        self.add2menu(path, (SEP, ))
 
         # changes
         l, c = commandShortcut('l')
-        viewmenu.add_command(label=_("Show change log"), underline=1,  accelerator=l, command=self.showChanges)
+        label = _("Change log")
+        viewmenu.add_command(label=label, underline=1,  accelerator=l, command=self
+                             .showChanges)
         self.bind_all(c, lambda event: self.after(AFTER, self.showChanges))
+        self.add2menu(path, (label, l))
 
-        viewmenu.add_command(label="Show error log", underline=1, command=self.donothing)
+        label = _("Error log")
+        viewmenu.add_command(label=label, underline=1, command=self.donothing)
+        self.add2menu(path, (label, l))
 
         # check for updates
-        viewmenu.add_command(label=_("Check for update"), underline=1, command=self
+        label = _("Check for update")
+        viewmenu.add_command(label=label, underline=1, command=self
         .checkForUpdate)
+        self.add2menu(path, (label, l))
 
-        menubar.add_cascade(label="View", menu=viewmenu, underline=0)
+        menubar.add_cascade(label=path, menu=viewmenu, underline=0)
+
+        logger.debug('menu_tree:\n{0}'.format(self.menutree.show(root)))
 
         helpmenu = Menu(menubar, tearoff=0)
-        helpmenu.add_command(label="About", command=self.about)
+        helpmenu.add_command(label="About", accelerator="F2", command=self\
+            .about)
+        self.bind_all("<F2>", self.about)
         # helpmenu.add_command(label="Help Index", command=self.donothing)
 
         # accelerator doesn't seem to work in the help menu
-        l, c = commandShortcut('?')
-        helpmenu.add_command(label="Help", command=self.help)
-        self.bind(c, self.help)
+        # l, c = commandShortcut('?')
+        helpmenu.add_command(label="Help", accelerator="F1", command=self.help)
+        # self.bind(c, self.help)
+        self.bind_all("<F1>", self.help)
 
         menubar.add_cascade(label="Help", menu=helpmenu)
 
@@ -798,7 +952,7 @@ class App(Tk):
             l, c = commandShortcut(k)
             self.em["menu"].entryconfig(i, accelerator=l, command=self.edit2cmd[k])
             # self.bind(c, self.edit2cmd[k])  # c, d, e, f
-            self.bind_all(c, lambda event, x=k: self.after(AFTER, self.edit2cmd[x]))
+            self.bind_class(c, lambda event, x=k: self.after(AFTER, self.edit2cmd[x]))
 
         self.em.pack(side="left")
         self.em.configure(width=menuwidth, background=bgclr, takefocus=False)
@@ -888,6 +1042,19 @@ class App(Tk):
         # show default view
         self.updateAlerts()
         self.showView()
+
+    def add2menu(self, parent, child):
+        if child == (SEP, ) or len(child) == 2:
+            id = uuid.uuid1()
+        else:
+            id = child[0]
+        if len(child) == 2:
+            leaf = "{0:<30} {1}".format(child[0], child[1])
+        else:
+            leaf = child[0]
+        logger.debug('create_node: {0}, {1}, parent = {2}'.format(leaf, id,  parent))
+        self.menutree.create_node(leaf, id, parent=parent)
+
 
     def confirm(self, parent=None, title="", prompt="", instance="xyz"):
         ok, value = OptionsDialog(parent=self, title=_("confirm").format(instance), prompt=prompt).getValue()
@@ -1436,7 +1603,7 @@ parsing are supported.""")
         print('newCommand', newcommand)
 
     def help(self, event=None):
-        res = loop.help_help()
+        res = self.menutree.show("_")
         self.textWindow(parent=self, title='etm', prompt=res, modal=False)
 
     def about(self, event=None):

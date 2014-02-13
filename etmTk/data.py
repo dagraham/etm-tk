@@ -949,7 +949,7 @@ def get_options(d=''):
      options['rfmt']) = get_fmts(options)
     options['config'] = config
     options['datafile'] = datafile
-    options['scratchfile'] = os.path.join(options['datadir'], ".scratch")
+    options['scratchpad'] = os.path.join(options['etmdir'], "scratchpad")
 
     if options['action_minutes'] not in [1, 6, 12, 15, 30, 60]:
         print(
@@ -1372,6 +1372,7 @@ def makeTree(list_of_lists, view=None, calendars=None, sort=True, fltr=None):
         key = tuple([root, pc[0]])
         if key not in tree[root_key]:
             tree[root_key].append(key)
+        # logger.debug('key: {0}'.format(key))
         lofl.append(pc)
         for i in range(len(pc) - 1):
             if pc[:i]:
@@ -1379,6 +1380,7 @@ def makeTree(list_of_lists, view=None, calendars=None, sort=True, fltr=None):
             else:
                 parent_key = tuple([root, pc[i]])
             child_key = tuple([":".join(pc[:i + 1]), pc[i + 1]])
+            # logger.debug('parent: {0}; child: {1}'.format(parent_key, child_key))
             if pc[:i + 1] not in lofl:
                 lofl.append(pc[:i + 1])
             tree.setdefault(parent_key, [])

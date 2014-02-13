@@ -50,7 +50,7 @@ SOMEREPS = _('Selected repetitions')
 ALLREPS = _('Repetitions')
 MESSAGES = _('Error messages')
 
-from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, optionShortcut, bgclr, CMD, unicode
+from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, optionShortcut, bgclr, CMD, relpath
 
 
 from idlelib.WidgetRedirector import WidgetRedirector
@@ -110,10 +110,22 @@ class SimpleEditor(Toplevel):
         self.bind(c, self.onSave)
 
         # cancel will quit with a warning prompt if modified
-        Button(frame, text=_("Cancel"), highlightbackground=bgclr, width=btnwdth, command=self.quit).pack(side=RIGHT, padx=4); self.bind("<Escape>", self.quit)
+        Button(frame, text=_("Cancel"), highlightbackground=bgclr, width=btnwdth, command=self.quit).pack(side=RIGHT, padx=4)
+        self.bind("<Escape>", self.quit)
         # check will evaluate the item entry and, if repeating, show reps
         inspect = Button(frame, text=_("Inspect"), highlightbackground=bgclr, width=btnwdth, command=self.onCheck)
         inspect.pack(side=LEFT, padx=4)
+
+
+        # find
+        Button(frame, text='<', command=self.clearFind, highlightbackground=bgclr, padx=8).pack(side=LEFT,
+                                                                                                         padx=0)
+        self.find_text = StringVar(frame)
+        e = Entry(frame, textvariable=self.find_text, width=10, highlightbackground=bgclr)
+        e.pack(side=LEFT, padx=0, expand=1, fill=X)
+        e.bind("<Return>", self.onFind)
+        e.bind("<Escape>", self.clearFind)
+        Button(frame, text='>', command=self.onFind, highlightbackground=bgclr,  padx=8).pack(side=LEFT, padx=0)
 
         text = Text(self, bd=2, relief="sunken", padx=3, pady=2, font=tkFont.Font(family="Lucida Sans Typewriter"), undo=True, width=70)
         text.configure(highlightthickness=0)
@@ -245,7 +257,9 @@ class SimpleEditor(Toplevel):
                     dt = None
             if self.mode in [1, 3]:
                 # we need a filename for the new item
-                dir, file = os.path.split(self.initfile)
+                # make datadir the root
+                dir = self.options['datadir']
+                file = relpath(self.initfile, dir)
                 logger.debug('initial dir and file: "{0}"; "{1}"'.format(dir, file))
                 fileops = {'defaultextension': '.txt',
                            'filetypes': [('text files', '.txt')],

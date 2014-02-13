@@ -13,25 +13,36 @@
 
 ## Menus
 
+Save Cmd F (find), Cmd C (copy), Cmd V (paste), Cmd G (search forward),
+Shift Cmd G (search backwards)
+
 - Menu
     - File
-        - Open
-            - Configuration file
-            - Auto completions
-            - Report specification
-            - Data files ...
-        - Calendars ...
-        - Export
+        - Open data file            Alt F
+        - ====
+        - Preferences               Alt P
+        - Auto completions          Alt C
+        - Report specification      Alt R
+        - Scratchpad                Alt S
+        - ====
+        - Export ical               Alt E
+        - ====
+        - Quit                      Cmd W
+
     - View
-        - Go to date
-        - Outline depth
-        - Busy times
-        - Yearly calendar
-        - Report
+        - Go to date                Cnd G
+        - Set outline depth         Cmd O
+        - Choose calendars
+        - ====
+        - Busy periods              Cmd B
+        - Report                    Alt M
+        - ====
+        - Yearly calendar           Cmd Y
         - Date calculator
-        - Check for updates
-        - Change log
+        - ====
+        - Change log                Cmd L
         - Error log
+        - Check for updates         Cmd U
     - Help
         - About
         - Help
@@ -47,10 +58,10 @@
         - Item
         - Timer
     - Edit
-        - Clone
-        - Delete
-        - Edit
-        - Finish
+        - Copy                      Alt C
+        - Delete                    Alt D
+        - Edit                      Alt E
+        - Finish                    Alt F
 
 ## Commands
 
