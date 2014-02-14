@@ -1538,12 +1538,15 @@ def tree2Text(tree, indent=2, width1=54, width2=14, colors=0,
                 else:
                     logger.debug("col2: {0}; e_c: {1}".format(col2, e_c))
                     rmlft = width1 - indent * level
-                    s = u"{0:s}{1:s}{2:s} {3:<*s} {4:s}{5:s}".format(
-                        tab * level, s_c,
-                        unicode(t),
-                        rmlft,
-                        unicode(truncate(node[1][2], rmlft)),
+                    s = "%s%s%s %-*s %s%s" % (tab * level, s_c, unicode(t),
+                        rmlft, unicode(truncate(node[1][2], rmlft)),
                         col2, e_c)
+                    # s = u"{0:s}{1:s}{2:s} {3:<*s} {4:s}{5:s}".format(
+                    #     tab * level, s_c,
+                    #     unicode(t),
+                    #     rmlft,
+                    #     unicode(truncate(node[1][2], rmlft)),
+                    #     col2, e_c)
                 text_lst.append(s)
             else:
                 text_lst.append("%s%s" % (tab * level, node[1]))
@@ -4428,13 +4431,22 @@ def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
                 indent=options['current_indent'],
                 width1=options['current_width1'],
                 width2=options['current_width2'],
-                calendars=options['calendars']
+                calendars=options['calendars'],
+                mode='text'
             )
-        # logger.debug('tree: {0}'.format(tree))
-        txt = tree2Text(tree)
-        logger.debug('text: {0}'.format(text))
-        if txt and not txt[0]:
+        logger.debug('text colors: {0}'.format(options['agenda_colors']))
+        txt, args0, args1 = tree2Text(tree,
+                colors=options['agenda_colors'],
+                indent=options['current_indent'],
+                width1=options['current_width1'],
+                width2=options['current_width2']
+     )
+        logger.debug('text: {0}'.format(txt))
+        if txt and not txt[0].strip():
             txt.pop(0)
+        # for part in txt:
+        #     for line in part:
+        #         print(line)
         fo = codecs.open(options['current_textfile'], 'w', file_encoding)
         fo.writelines("\n".join(txt))
         fo.close()
@@ -4446,19 +4458,29 @@ def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
                 uuid2hash,
                 options)
         else:
-            html, count2id = getAgenda(
+            logger.debug('calendars: {0}'.format(options['calendars']))
+            tree = getAgenda(
                 allrows,
                 colors=options['agenda_colors'],
                 days=options['agenda_days'],
                 indent=options['current_indent'],
                 width1=options['current_width1'],
                 width2=options['current_width2'],
-                calendars=options['calendars'])
-        if not html[0]:
-            html.pop(0)
+                calendars=options['calendars'],
+                mode='html')
+        logger.debug('html width2: {0}'.format(options['current_width2']))
+        txt = tree2Html(tree,
+                colors=options['agenda_colors'],
+                indent=options['current_indent'],
+                width1=options['current_width1'],
+                width2=options['current_width2']
+     )
+        logger.debug('html: {0}'.format(txt))
+        if not txt[0].strip():
+            txt.pop(0)
         fo = codecs.open(options['current_htmlfile'], 'w', file_encoding)
         fo.writelines('<!DOCTYPE html> <html> <head> <meta charset="utf-8">\
-            </head><body><pre>%s</pre></body>' % "\n".join(html))
+            </head><body><pre>%s</pre></body>' % "\n".join(txt))
         fo.close()
     return(True)
 
