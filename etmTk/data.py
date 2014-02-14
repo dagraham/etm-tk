@@ -525,7 +525,7 @@ def calyear(advance=0, options=None):
     return ret
 
 
-def date_calculator(s):
+def date_calculator(s, options=None):
     """
         x [+-] y
         where x is a datetime and y is either a datetime or a timeperiod
@@ -540,11 +540,11 @@ def date_calculator(s):
         dt_x = parse(parse_dtstr(x))
         pmy = "%s%s" % (pm, y)
         if period_string_regex.match(pmy):
-            return dt_x + parse_period(pmy)
+            return fmt_datetime(dt_x + parse_period(pmy), options)
         else:
             dt_y = parse(parse_dtstr(y))
             if pm == '-':
-                return dt_x - dt_y
+                return fmt_period(dt_x - dt_y)
             else:
                 return 'error: datetimes cannot be added'
     except ValueError:
@@ -1509,6 +1509,7 @@ def tree2Text(tree, indent=2, width1=54, width2=14, colors=0,
     tab = " " * indent
 
     def t2H(tree_hsh, node=('', '_'), level=0):
+        logger.debug("node: {0}".format(node))
         if args[1] is None:
             args[1] = {}
         if type(node) == tuple:
@@ -1518,8 +1519,12 @@ def tree2Text(tree, indent=2, width1=54, width2=14, colors=0,
                 args[1][args[0]] = "{0}::{1}".format(node[-1][0], node[-1][-1])
                 t = id2Type[node[1][1]]
                 s_c = ''
-                col2 = "{0:^{width}}".format(
-                    truncate(node[1][3], width2), width=width2)
+                logger.debug("node13: {0}; width2: {1}".format(node[1][3],  width2))
+                if node[1][3]:
+                    col2 = "{0:^{width}}".format(
+                        truncate(node[1][3], width2), width=width2)
+                else:
+                    col2 = ""
                 if number:
                     rmlft = width1 - indent * level - 2 - len(str(args[0]))
                     s = u"{0:s}{1:s}{2:s} [{3:s}] {4:<*s} {5:s}{6:s}".format(
@@ -1531,6 +1536,7 @@ def tree2Text(tree, indent=2, width1=54, width2=14, colors=0,
                         unicode(truncate(node[1][2], rmlft)),
                         col2, e_c)
                 else:
+                    logger.debug("col2: {0}; e_c: {1}".format(col2, e_c))
                     rmlft = width1 - indent * level
                     s = u"{0:s}{1:s}{2:s} {3:<*s} {4:s}{5:s}".format(
                         tab * level, s_c,
@@ -4403,6 +4409,60 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
                     continue
     return items, busytimes, busydays, alerts, datetimes, occasions
 
+def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
+    # logger.debug("allrows: {0}".format(allrows))
+    # logger.debug(('options: {0}'.format(options)))
+    if options['current_textfile']:
+        if 'current_opts' in options and options['current_opts']:
+            txt, count2id = getReportData(
+                options['current_opts'],
+                file2uuids,
+                uuid2hash,
+                options,
+                colors=0)
+        else:
+            tree = getAgenda(
+                allrows,
+                colors=options['agenda_colors'],
+                days=options['agenda_days'],
+                indent=options['current_indent'],
+                width1=options['current_width1'],
+                width2=options['current_width2'],
+                calendars=options['calendars']
+            )
+        # logger.debug('tree: {0}'.format(tree))
+        txt = tree2Text(tree)
+        logger.debug('text: {0}'.format(text))
+        if txt and not txt[0]:
+            txt.pop(0)
+        fo = codecs.open(options['current_textfile'], 'w', file_encoding)
+        fo.writelines("\n".join(txt))
+        fo.close()
+    if options['current_htmlfile']:
+        if 'current_opts' in options and options['current_opts']:
+            html, count2id = getReportData(
+                options['current_opts'],
+                file2uuids,
+                uuid2hash,
+                options)
+        else:
+            html, count2id = getAgenda(
+                allrows,
+                colors=options['agenda_colors'],
+                days=options['agenda_days'],
+                indent=options['current_indent'],
+                width1=options['current_width1'],
+                width2=options['current_width2'],
+                calendars=options['calendars'])
+        if not html[0]:
+            html.pop(0)
+        fo = codecs.open(options['current_htmlfile'], 'w', file_encoding)
+        fo.writelines('<!DOCTYPE html> <html> <head> <meta charset="utf-8">\
+            </head><body><pre>%s</pre></body>' % "\n".join(html))
+        fo.close()
+    return(True)
+
+
 
 def tupleSum(list_of_tuples):
     # get the common length of the tuples
@@ -4911,6 +4971,8 @@ class ETMCmd():
             bef, file2uuids, uuid2hash, options=self.options,
             # calendars=self.calendars
         )
+        updateCurrentFiles(
+            self.rows, file2uuids, uuid2hash, self.options)
         # print(self.dates)
         # self.prevnext = getPrevNext(self.dates)
         # self.rows = rows

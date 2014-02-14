@@ -4,64 +4,60 @@
 
 # TODO: don't trigger alerts for finished tasks
 
-# TODO: history -> open file dialog, changes for all if none selected.
-
-# TODO: main help: menu and toolbar optiions, main key bindings
-
 # TODO: edit help:
 
 
 ## Menus
 
 Save Cmd F (find), Cmd C (copy), Cmd V (paste), Cmd G (search forward),
-Shift Cmd G (search backwards)
+Shift Cmd G (search backwards)::
 
-- Menu
-    - File
-        - Open data file            Alt F
-        - ====
-        - Preferences               Alt P
-        - Auto completions          Alt C
-        - Report specification      Alt R
-        - Scratchpad                Alt S
-        - ====
-        - Export ical               Alt E
-        - ====
-        - Quit                      Cmd W
-
-    - View
-        - Go to date                Cnd G
-        - Set outline depth         Cmd O
-        - Choose calendars
-        - ====
-        - Busy periods              Cmd B
-        - Report                    Alt M
-        - ====
-        - Yearly calendar           Cmd Y
-        - Date calculator
-        - ====
-        - Change log                Cmd L
-        - Error log
-        - Check for updates         Cmd U
-    - Help
-        - About
-        - Help
-
-- Tool bar
-    - Show
-        - Agenda
-        - Schedule
-        - Paths
-        - Keywords
-        - Tags
-    - Add
-        - Item
-        - Timer
-    - Edit
-        - Copy                      Alt C
-        - Delete                    Alt D
-        - Edit                      Alt E
-        - Finish                    Alt F
+    Menu
+        File
+            Open data file            Shift-Cmd-F
+            ----
+            Preferences               Shift-Cmd-P
+            Auto completions          Shift-Cmd-A
+            Report specifications     Shift-Cmd-R
+            Scratchpad                Shift-Cmd-S
+            ----
+            Export to iCal
+            ----
+            Quit
+        View
+            Go to date                   Cmd-G
+            Set outline depth            Cmd-O
+            Choose active calendars
+            ----
+            Busy periods                 Cmd-B
+            Report                       Cmd-R
+            ----
+            Yearly calendar              Cmd-Y
+            Date calculator              Cmd-L
+            ----
+            Change history               Cmd-H
+            Error log
+        Help
+            Search
+            Help                          F1
+            About                         F2
+            Check for update
+    Toolbar
+        Show
+            Agenda                       Cmd-A
+            Schedule                     Cmd-S
+            Paths                        Cmd-P
+            Keywords                     Cmd-K
+            Tags                         Cmd-T
+        Create
+            Item                         Cmd-N
+            Timer                        Cmd-M
+        Change
+            Copy                         Cmd-C
+            Delete                       Cmd-D
+            Edit                         Cmd-E
+            Finish                       Cmd-F
+            Reschedule                   Cmd-R
 
 ## Commands
 
