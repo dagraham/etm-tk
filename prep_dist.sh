@@ -166,7 +166,7 @@ cd $home
 # pyinstaller  --runtime-hook rthook_pyqt4.py --clean -w --noupx etm_qt
 
 echo
-echo -n "Create os x package?"
+echo -n "Create OSX package?"
 if asksure; then
     sudo rm -fR releases/*
     cxfreeze3 -OO etm --icon=etmTk/etmlogo.icns --target-dir releases/etmtk-${tag}-freeze-OSX
@@ -175,7 +175,7 @@ if asksure; then
     zip -r etmtk-${tag}-freeze-OSX.zip etmtk-${tag}-freeze-OSX
     cd $home
 #    sudo rm -fR releases/etmtk-${tag}
-    echo "Creating os x package" >> $logfile
+    echo "Creating OSX package" >> $logfile
 else
     echo "Skipping etm.app creation."
 fi
