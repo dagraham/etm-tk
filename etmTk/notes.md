@@ -10,7 +10,7 @@
 ## Menus
 
 Save Cmd F (find), Cmd C (copy), Cmd V (paste), Cmd G (search forward),
-Shift Cmd G (search backwards)::
+Shift Cmd G (search backwards), Shift Cmd M (stop timer)::
 
     Menu
         File

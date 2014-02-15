@@ -48,7 +48,7 @@ import etmTk.data as data
 from dateutil.parser import parse
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, hsh2str, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, bgclr, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator)
+    init_localization, fmt_weekday, fmt_dt, hsh2str, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, bgclr, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator)
 
 from etmTk.edit import SimpleEditor
 
@@ -600,7 +600,7 @@ class App(Tk):
         # leaf: (parent, (option, [accelerator])
         menubar = Menu(self)
         logger.debug('AFTER: {0}'.format(AFTER))
-        menu = _("Menu")
+        menu = _("Menubar")
         self.add2menu(root, (menu,))
 
         # File menu
@@ -692,8 +692,8 @@ class App(Tk):
         viewmenu = Menu(menubar, tearoff=0)
 
         # go to date
-        l, c = commandShortcut('g')
-        label=_("Go to date")
+        l, c = commandShortcut('j')
+        label=_("Jump to date")
         viewmenu.add_command(
             label=label, underline=1, accelerator=l,
             command=self.goToDate)
@@ -814,7 +814,8 @@ class App(Tk):
         # l, c = commandShortcut('u')
         label = _("Check for update")
         helpmenu.add_command(label=label, underline=1, command=self.checkForUpdate)
-        self.add2menu(path, (label, ))
+        self.add2menu(path, (label, "F3"))
+        self.bind_all("<F3>", self.checkForUpdate)
 
 
         menubar.add_cascade(label="Help", menu=helpmenu)
@@ -976,18 +977,21 @@ class App(Tk):
         self.editValue = StringVar(self)
         self.editValue.set(self.editLabel)
         self.em_options = [
-                            [_('Copy'), 'c'],
-                            [_('Delete'), 'd'],
-                            [_('Edit'), 'e'],
-                            [_('Finish'), 'f'],
-                            [_('Reschedule'), 'r'],
+            [_('Copy'), 'c'],
+            [_('Delete'), 'd'],
+            [_('Edit'), 'e'],
+            [_('Finish'), 'f'],
+            [_('Reschedule'), 'r'],
+            [_('Open link'), 'g'],
         ]
         self.edit2cmd = {
             'c': self.copyItem,
             'd': self.deleteItem,
             'e': self.editItem,
             'f': self.finishItem,
-            'r': self.rescheduleItem}
+            'r': self.rescheduleItem,
+            'g': self.openWithDefault,
+        }
         self.em_opts = [x[0] for x in self.em_options]
         em_cmds = [x[1] for x in self.em_options]
 
@@ -1149,6 +1153,22 @@ class App(Tk):
     def donothing(self, e=None):
         """For testing"""
         logger.debug('donothing')
+
+    def openWithDefault(self):
+        if 'g' not in self.itemSelected:
+            return(False)
+        path = self.itemSelected['g']
+
+        if windoz:
+            os.startfile(path)
+            return()
+        if mac:
+            cmd = 'open' + " {0}".format(path)
+        else:
+            cmd = 'xdg-open' + " {0}".format(path)
+        subprocess.call(cmd, shell=True)
+        return True
+
 
     def dateCalculator(self, event=None):
         prompt = """\
@@ -1713,9 +1733,6 @@ or 0 to display all changes.""").format(title)
             numstr = ""
         else:
             numstr = "-l {0}".format(depth)
-
-
-
         command = loop.options['hg_history'].format(
             repo=loop.options['datadir'],
             numchanges=numstr, rev="{rev}", desc="{desc}") + fn
@@ -1761,6 +1778,7 @@ or 0 to display all changes.""").format(title)
                 self.em["menu"].entryconfig(2, label=self.em_opts[2])
                 item = _('selected')
             isUnfinished = (type_chr in ['-', '+', '%'])
+            hasLink = ('g' in hsh and hsh['g'])
             l1 = hsh['fileinfo'][1]
             l2 = hsh['fileinfo'][2]
             if l1 == l2:
@@ -1778,6 +1796,10 @@ or 0 to display all changes.""").format(title)
                 self.em["menu"].entryconfig(3, state='normal')
             else:
                 self.em["menu"].entryconfig(3, state='disabled')
+            if hasLink:
+                self.em["menu"].entryconfig(5, state='normal')
+            else:
+                self.em["menu"].entryconfig(5, state='disabled')
             self.uuidSelected = uuid
             self.itemSelected = hsh
             self.dtSelected = dt

@@ -54,22 +54,6 @@ def setup_logging(level='3'):
               'root': {'handlers': ['console', 'file'], 'level': 'DEBUG'},
               'version': 1}
 
-    #
-    # default_path='etmTk/logging.yaml',
-    #     default_level=logging.INFO,
-    #     # env_key='LOG_CFG'
-    #
-    # path = default_path
-    # # value = os.getenv(env_key, None)
-    # # if value:
-    # #     path = value
-    # if os.path.exists(path):
-    #     with open(path, 'rt') as f:
-    #         config = yaml.load(f.read())
-    #     config['root']['level'] = default_level
-    #     logging.config.dictConfig(config)
-    # else:
-    #     logging.basicConfig(level=default_level)
     logging.config.dictConfig(config)
     logger.info('logging enabled at level {0}'.format(loglevel))
 
