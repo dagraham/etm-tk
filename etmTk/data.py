@@ -1072,26 +1072,27 @@ type2Str = {
 
 id2Type = {
     #   TStr  TNum Forground Color   Icon         view
-    "ib": '$',
-    "oc": '^',
-    "ev": '*',
-    "rm": '*',
-    "pt": '-',
-    "pd": '%',
-    "pc": '+',
-    "av": '-',
-    "ds": '%',
-    "cs": '+',
-    "by": '>',
-    "un": '-',
-    "du": '%',
-    "cu": '+',
     "ac": '~',
+    "av": '-',
+    "by": '>',
+    "cs": '+',  # unifinished dated
+    "cu": '+',  # unfinished prereqs
+    "dl": '#',
+    "ds": '%',
+    "du": '%',
+    "ev": '*',
+    "fn": 'X',
+    "ib": '$',
     "ns": '!',
     "nu": '!',
+    "oc": '^',
+    "pc": '+', # pastdue
+    "pd": '%',
+    "pt": '-',
+    "rm": '*',
     "so": '?',
-    "fn": 'X',
-    "dl": '#'}
+    "un": '-',
+}
 
 # named colors: aliceblue antiquewhite aqua aquamarine azure beige
 # bisque black blanchedalmond blue blueviolet brown burlywood
@@ -1124,21 +1125,21 @@ tstr2SCI = {
     "ac": [23, "darkorchid", "action", "day"],
     "av": [16, "steelblue4", "task", "day"],
     "by": [19, "steelblue3", "beginby", "now"],
-    "cs": [18, "lightslategrey", "child", "day"],
-    "cu": [22, "lightslategrey", "child", "day"],
+    "cs": [18, "gray65", "child", "day"],
+    "cu": [22, "gray65", "child", "day"],
     "dl": [28, "gray80", "delete", "folder"],
     "ds": [17, "darkslategray", "delegated", "day"],
     "du": [21, "darkslategrey", "delegated", "day"],
     "ev": [12, "forestgreen", "event", "day"],
-    "fn": [27, "gray70", "finished", "day"],
+    "fn": [27, "gray80", "finished", "day"],
     "ib": [10, "orangered", "inbox", "now"],
     "ns": [24, "saddlebrown", "note", "day"],
     "nu": [25, "saddlebrown", "note", "day"],
-    "oc": [11, "darkgrey", "occasion", "day"],
+    "oc": [11, "peachpuff3", "occasion", "day"],
     "pc": [15, "firebrick3", "child", "now"],
     "pd": [14, "firebrick3", "delegated", "now"],
     "pt": [13, "firebrick3", "task", "now"],
-    "rm": [12, "olivedrab", "reminder", "day"],
+    "rm": [12, "seagreen", "reminder", "day"],
     "so": [26, "skyblue3", "someday", "now"],
     "un": [20, "skyblue4", "task", "next"],
 }
@@ -2396,6 +2397,8 @@ def get_reps(bef, hsh):
     else:
         start = parse(parse_dtstr(hsh['s'])).replace(tzinfo=None)
     tmp = []
+    if not start:
+        return False, []
     for hsh_r in hsh['_r']:
         tests = [
             u'f' in hsh_r and hsh_r['f'] == 'l',
@@ -2412,7 +2415,12 @@ def get_reps(bef, hsh):
 
     if passed:
         # finite, get instances after start
-        tmp.extend([x for x in hsh['rrule'] if x >= start])
+        # rrr = [x for x in hsh['rrule']]
+        # if rrr:
+        try:
+            tmp.extend([x for x in hsh['rrule'] if x >= start])
+        except:
+            logger.exception('done: {0}; due: {1}; following: {2}; start: {3}; rrule: {4}'.format(done, due, following, start, rrr))
     else:
         tmp.extend(list(hsh['rrule'].between(start, bef, inc=True)))
         tmp.append(hsh['rrule'].after(bef, inc=False))
@@ -3022,7 +3030,7 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
 
         # if cal_regex and not cal_regex.match(item[0][-1]):
         #     continue
-        logger.debug('view: {0}'.format(item[0][0]))
+        # logger.debug('view: {0}'.format(item[0][0]))
         if item[0][0] == 'day':
             if item[0][1] >= beg_fmt and day_count <= days + 1:
                 # process day items until we get to days+1 so that all items
@@ -3983,6 +3991,29 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
                                  hsh['_summary'], f), (tag,),
                                 (uid, typ, setSummary(hsh, ''), '', etmdt)]
                             add2list(items, item)
+
+                    # if 'e' in hsh and hsh['e'] is not None:
+                    #     extstr = fmt_period(hsh['e'])
+                    #     exttd = hsh['e']
+                    # else:
+                    #     extstr = ''
+                    #     exttd = 0 * oneday
+                    # if hsh['itemtype'] == '+':
+                    #     if 'prereqs' in hsh and hsh['prereqs']:
+                    #         typ = 'cu'
+                    #     else:
+                    #         typ = 'un'
+                    # elif hsh['itemtype'] == '%':
+                    #     typ = 'du'
+                    # else:
+                    #     typ = type2Str[hsh['itemtype']]
+                    #
+                    # item = [
+                    #     ('next', (1, hsh['c'], hsh['_p'], exttd),
+                    #      tstr2SCI[typ][0], hsh['_p'], hsh['_summary'], f),
+                    #     (hsh['c'],), (uid, typ, hsh['_summary'], extstr)]
+                    # add2list(items, item)
+
             else:  # not a task type
                 if 's' in hsh:
                     if 'rrule' in hsh:
@@ -4072,10 +4103,9 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
                     (uid, 'so', setSummary(hsh, dt), sdt, etmdt)]
                 add2list(items, item)
                 continue
-                #--------- make entry for next view ----------#
-            if dts == "none":
-                if hsh['itemtype'] == '!':
-                    continue
+            #--------- make entry for next view ----------#
+            if 's' not in hsh and hsh['itemtype'] in [u'+', u'-', u'%']:
+                dts = "none"
                 if 'f' in hsh:
                     continue
                 if 'e' in hsh and hsh['e'] is not None:
@@ -4100,7 +4130,7 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
                     (hsh['c'],), (uid, typ, hsh['_summary'], extstr)]
                 add2list(items, item)
                 continue
-                #---- make entries for day view and friends ----#
+            #---- make entries for day view and friends ----#
             dates = []
             if 'rrule' in hsh:
                 gotall, dates = get_reps(bef, hsh)
@@ -4438,14 +4468,14 @@ def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
                 calendars=options['calendars'],
                 mode='text'
             )
-        logger.debug('text colors: {0}'.format(options['agenda_colors']))
+        # logger.debug('text colors: {0}'.format(options['agenda_colors']))
         txt, args0, args1 = tree2Text(tree,
                 colors=options['agenda_colors'],
                 indent=options['current_indent'],
                 width1=options['current_width1'],
                 width2=options['current_width2']
      )
-        logger.debug('text: {0}'.format(txt))
+        # logger.debug('text: {0}'.format(txt))
         if txt and not txt[0].strip():
             txt.pop(0)
         # for part in txt:
@@ -4462,7 +4492,7 @@ def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
                 uuid2hash,
                 options)
         else:
-            logger.debug('calendars: {0}'.format(options['calendars']))
+            # logger.debug('calendars: {0}'.format(options['calendars']))
             tree = getAgenda(
                 allrows,
                 colors=options['agenda_colors'],
@@ -4472,14 +4502,14 @@ def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
                 width2=options['current_width2'],
                 calendars=options['calendars'],
                 mode='html')
-        logger.debug('html width2: {0}'.format(options['current_width2']))
+        # logger.debug('html width2: {0}'.format(options['current_width2']))
         txt = tree2Html(tree,
                 colors=options['agenda_colors'],
                 indent=options['current_indent'],
                 width1=options['current_width1'],
                 width2=options['current_width2']
      )
-        logger.debug('html: {0}'.format(txt))
+        # logger.debug('html: {0}'.format(txt))
         if not txt[0].strip():
             txt.pop(0)
         fo = codecs.open(options['current_htmlfile'], 'w', file_encoding)

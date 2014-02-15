@@ -790,7 +790,7 @@ class App(Tk):
 
         menubar.add_cascade(label=path, menu=viewmenu, underline=0)
 
-        logger.debug('menu_tree:\n{0}'.format(self.menutree.showMenu(root)))
+        # logger.debug('menu_tree:\n{0}'.format(self.menutree.showMenu(root)))
 
         helpmenu = Menu(menubar, tearoff=0)
         path = _("Help")
@@ -1781,7 +1781,7 @@ or 0 to display all changes.""").format(title)
             self.uuidSelected = uuid
             self.itemSelected = hsh
             self.dtSelected = dt
-            logger.debug(('selected: {0}'.format(hsh)))
+            # logger.debug(('selected: {0}'.format(hsh)))
         else:
             self.em.configure(state="disabled")
             text = ""
