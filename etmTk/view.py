@@ -48,7 +48,7 @@ import etmTk.data as data
 from dateutil.parser import parse
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, hsh2str, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, bgclr, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator)
+    init_localization, fmt_weekday, fmt_dt, hsh2str, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, bgclr, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator)
 
 from etmTk.edit import SimpleEditor
 
@@ -884,6 +884,9 @@ class App(Tk):
         self.tree.bind('<Escape>', self.cleartext)
         self.tree.bind('<space>', self.goHome)
         # self.tree.bind('<j>', self.jumpToDate)
+
+        for t in tstr2SCI:
+            self.tree.tag_configure(t, foreground=tstr2SCI[t][1])
 
         self.date2id = {}
         # padx = 2
@@ -2318,6 +2321,7 @@ or 0 to expand all branches completely.""")
                     dt = ''
                 else:  # len 5 day view with datetime appended
                     uuid, item_type, col1, col2, dt = text[1]
+                # logger.debug("leaf: {0}, {1}".format(item_type, tstr2SCI[item_type][1]))
 
                 # This hack avoids encoding issues under python 2
                 col1 = "{0} ".format(id2Type[item_type]) + col1
@@ -2327,8 +2331,7 @@ or 0 to expand all branches completely.""")
                 else:
                     col2 = s2or3(col2)
 
-                oid = self.tree.insert(parent, 'end', iid=self.count, text=col1,
-                                       open=(depth <= max_depth), value=[col2])
+                oid = self.tree.insert(parent, 'end', iid=self.count, text=col1, open=(depth <= max_depth), value=[col2], tags=(item_type))
                 # oid = self.tree.insert(parent, 'end', text=col1, open=True, value=[col2])
                 # print(self.count, oid)
                 # print(self.count, oid, depth, col1, depth<=max_depth)

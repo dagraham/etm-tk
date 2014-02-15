@@ -1118,28 +1118,29 @@ id2Type = {
 # tomato transparent turquoise violet wheat white whitesmoke yellow
 # yellowgreen
 
+# type string to Sort Color Icon
 tstr2SCI = {
     #   TStr  TNum Forground Color   Icon         view
-    "ib": [10, "green", "inbox", "now"],
-    "oc": [11, "darkgrey", "occasion", "day"],
-    "ev": [12, "green", "event", "day"],
-    "rm": [12, "olivedrab", "reminder", "day"],
-    "pt": [13, "crimson", "task", "now"],
-    "pd": [14, "crimson", "delegated", "now"],
-    "pc": [15, "crimson", "child", "now"],
-    "av": [16, "steelblue", "task", "day"],
-    "ds": [17, "darkslategray", "delegated", "day"],
-    "cs": [18, "lightslategrey", "child", "day"],
-    "by": [19, "steelblue", "beginby", "now"],
-    "un": [20, "steelblue", "task", "day"],
-    "du": [21, "darkslategrey", "delegated", "day"],
-    "cu": [22, "lightslategrey", "child", "day"],
     "ac": [23, "darkorchid", "action", "day"],
+    "av": [16, "steelblue4", "task", "day"],
+    "by": [19, "steelblue3", "beginby", "now"],
+    "cs": [18, "lightslategrey", "child", "day"],
+    "cu": [22, "lightslategrey", "child", "day"],
+    "dl": [28, "gray80", "delete", "folder"],
+    "ds": [17, "darkslategray", "delegated", "day"],
+    "du": [21, "darkslategrey", "delegated", "day"],
+    "ev": [12, "forestgreen", "event", "day"],
+    "fn": [27, "gray70", "finished", "day"],
+    "ib": [10, "orangered", "inbox", "now"],
     "ns": [24, "saddlebrown", "note", "day"],
     "nu": [25, "saddlebrown", "note", "day"],
-    "so": [26, "cornflowerblue", "someday", "now"],
-    "fn": [27, "lightslategrey", "finished", "day"],
-    "dl": [28, "lightslategrey", "delete", "folder"],
+    "oc": [11, "darkgrey", "occasion", "day"],
+    "pc": [15, "firebrick3", "child", "now"],
+    "pd": [14, "firebrick3", "delegated", "now"],
+    "pt": [13, "firebrick3", "task", "now"],
+    "rm": [12, "olivedrab", "reminder", "day"],
+    "so": [26, "skyblue3", "someday", "now"],
+    "un": [20, "skyblue4", "task", "next"],
 }
 
 
@@ -3004,7 +3005,7 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
     day = []
     inbasket = []
     now = []
-    next_lst = []
+    next = []
     someday = []
     if colors and mode == 'html':
         bb = "<b>"
@@ -3021,6 +3022,7 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
 
         # if cal_regex and not cal_regex.match(item[0][-1]):
         #     continue
+        logger.debug('view: {0}'.format(item[0][0]))
         if item[0][0] == 'day':
             if item[0][1] >= beg_fmt and day_count <= days + 1:
                 # process day items until we get to days+1 so that all items
@@ -3036,9 +3038,9 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
         elif item[0][0] == 'now':
             item.insert(1, "%sNow%s" % (bb, eb))
             now.append(item)
-        elif item[0][0] == 'next_lst':
+        elif item[0][0] == 'next':
             item.insert(1, "%sNext%s" % (bb, eb))
-            next_lst.append(item)
+            next.append(item)
         elif item[0][0] == 'someday':
             item.insert(1, "%sSomeday%s" % (bb, eb))
             someday.append(item)
@@ -3047,7 +3049,7 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
     count2id = None
     tree = {}
     nv = 0
-    for l in [day, inbasket, now, next_lst, someday]:
+    for l in [day, inbasket, now, next, someday]:
         if l:
             nv += 1
             update = makeTree(l, calendars=calendars, fltr=fltr)
@@ -3965,6 +3967,8 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
                         tuple(folders),
                         (uid, typ, setSummary(hsh, ''), '')]
                     add2list(items, item)
+
+
                     if 'k' in hsh and hsh['k'] != 'none':
                         keywords = [x.strip() for x in hsh['k'].split(':')]
                         item = [
@@ -4068,7 +4072,7 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
                     (uid, 'so', setSummary(hsh, dt), sdt, etmdt)]
                 add2list(items, item)
                 continue
-                #--------- make entry for due view ----------#
+                #--------- make entry for next view ----------#
             if dts == "none":
                 if hsh['itemtype'] == '!':
                     continue
@@ -4091,7 +4095,7 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
                     typ = type2Str[hsh['itemtype']]
 
                 item = [
-                    ('due', (1, hsh['c'], hsh['_p'], exttd),
+                    ('next', (1, hsh['c'], hsh['_p'], exttd),
                      tstr2SCI[typ][0], hsh['_p'], hsh['_summary'], f),
                     (hsh['c'],), (uid, typ, hsh['_summary'], extstr)]
                 add2list(items, item)
