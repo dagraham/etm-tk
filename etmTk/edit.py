@@ -380,8 +380,9 @@ class SimpleEditor(Toplevel):
             ans = True
         if ans:
             if self.parent:
-                self.parent.focus_set()
-                self.parent.tree.focus()
+                logger.debug('focus set')
+                self.parent.focus()
+                self.parent.tree.focus_set()
             self.destroy()
         return "break"
 

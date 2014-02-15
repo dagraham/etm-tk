@@ -589,8 +589,10 @@ class App(Tk):
         self.actionTimer = Timer()
         self.loop = loop
         self.configure(background=bgclr)
+        self.option_add('*tearOff', False)
         self.menu_lst = []
         self.menutree = Tree()
+
         root = "_"
         # create the root node for the menu tree
         self.menutree.create_node(root, root)
@@ -615,8 +617,7 @@ class App(Tk):
 
         l, c = commandShortcut('F')
         label = _("Open data file")
-        filemenu.add_command(label=label, accelerator=l,
-                             underline=0, command=self.editData)
+        filemenu.add_command(label=label, underline=0, command=self.editData)
         # self.bind_all(c, self.editData)
         self.add2menu(path, (label, l))
 
@@ -628,32 +629,32 @@ class App(Tk):
         file = loop.options['config']
         # label = relpath(file, loop.options['etmdir'])
         label = _("Preferences")
-        filemenu.add_command(label=label, underline=0, command=lambda x=file: self.editFile(file=x), accelerator=l)
-        # self.bind_all(c, lambda e, x=file:  self.editFile(file=x))
+        filemenu.add_command(label=label, underline=0, command=lambda e=None, x=file: self.editFile(e, file=x), )
+        self.bind_all(c, lambda e, x=file:  self.editFile(file=x))
         self.add2menu(path, (label, l))
 
         l, c = commandShortcut('A')
         file = loop.options['auto_completions']
         # label = relpath(file, loop.options['etmdir'])
         label = _("Auto completions")
-        filemenu.add_command(label=label, underline=0, command=lambda x=file: self.editFile(file=x), accelerator=l)
-        # self.bind_all(c, lambda e, x=file:  self.editFile(file=x))
+        filemenu.add_command(label=label, underline=0, command=lambda x=file: self.editFile(file=x))
+        self.bind_all(c, lambda e, x=file:  self.editFile(file=x))
         self.add2menu(path, (label, l))
 
         l, c = commandShortcut('R')
         file = loop.options['report_specifications']
         # label = relpath(file, loop.options['etmdir'])
         label = _("Report specifications")
-        filemenu.add_command(label=label, underline=0, command=lambda x=file: self.editFile(e=None, file=x), accelerator=l)
-        # self.bind_all(c, lambda e, x=file:  self.editFile(file=x))
+        filemenu.add_command(label=label, underline=0, command=lambda x=file: self.editFile(e=None, file=x))
+        self.bind_all(c, lambda e, x=file:  self.editFile(file=x))
         self.add2menu(path, (label, l))
 
         l, c = commandShortcut('S')
         file = loop.options['scratchpad']
         # label = relpath(file, loop.options['etmdir'])
         label = _("Scratchpad")
-        filemenu.add_command(label=label, underline=0, command=lambda x=file: self.editFile(file=x), accelerator=l)
-        # self.bind_all(c, lambda e, x=file: self.editFile(file=x))
+        filemenu.add_command(label=label, underline=0, command=lambda x=file: self.editFile(file=x))
+        self.bind_all(c, lambda e, x=file: self.editFile(file=x))
         self.add2menu(path, (label, l))
 
         filemenu.add_separator()
