@@ -348,7 +348,6 @@ def getMercurial():
     return base_command, history_command, commit_command, init_command
 
 
-# TODO: add these with @z prefixes to default completions
 zonelist = [
     'Africa/Cairo',
     'Africa/Casablanca',
@@ -1111,11 +1110,11 @@ tstr2SCI = {
     "by": [19, "steelblue3", "beginby", "now"],
     "cs": [18, "gray65", "child", "day"],
     "cu": [22, "gray65", "child", "day"],
-    "dl": [28, "gray80", "delete", "folder"],
+    "dl": [28, "gray70", "delete", "folder"],
     "ds": [17, "darkslategray", "delegated", "day"],
     "du": [21, "darkslategrey", "delegated", "day"],
     "ev": [12, "forestgreen", "event", "day"],
-    "fn": [27, "gray80", "finished", "day"],
+    "fn": [27, "gray70", "finished", "day"],
     "ib": [10, "orangered", "inbox", "now"],
     "ns": [24, "saddlebrown", "note", "day"],
     "nu": [25, "saddlebrown", "note", "day"],
@@ -3558,8 +3557,7 @@ def get_data(options=None, dirty=False, use_pickle=True):
     if use_pickle and os.path.isfile(options['datafile']):
         objects = load_data(options)
     if objects is None:
-        (uuid2hash, file2uuids, file2lastmodified, bad_datafiles, messages) \
-            = process_all_datafiles(options)
+        (uuid2hash, file2uuids, file2lastmodified, bad_datafiles, messages) = process_all_datafiles(options)
         dirty = True
     else:  # objects is not None
         if not dirty:
@@ -3634,7 +3632,6 @@ def getDoneAndTwo(hsh, keep=False):
             s_aft = due
             s_inc = False
     else:
-        # FIXME: maybe, if this breaks things?
         if 's' in hsh:
             k_aft = r_aft = hsh['s']
         else:

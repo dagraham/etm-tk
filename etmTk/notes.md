@@ -2,9 +2,7 @@
 
 123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|
 
-# TODO: don't trigger alerts for finished tasks
 
-# TODO: edit help:
 
 
 ## Menus

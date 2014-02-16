@@ -143,7 +143,7 @@ class Tree:
         if level == _ROOT:
             self.lst = []
         else:
-            s = "{0}{1}".format("    "*(level), self[position].name)
+            s = "{0}{1}".format("    "*(level-1), self[position].name)
             self.lst.append(s)
         if self[position].expanded:
             level += 1
@@ -792,17 +792,20 @@ class App(Tk):
 
         # logger.debug('menu_tree:\n{0}'.format(self.menutree.showMenu(root)))
 
+        # TODO: add help topics
+        # overview
+        # data
+        # views
+        # X commands and shortcuts
+        # preferences
+        # reports
+
         helpmenu = Menu(menubar, tearoff=0)
         path = _("Help")
         self.add2menu(menu, (path, ))
 
+        # search is built in
         self.add2menu(path, (_("Search"), ))
-
-        label = _("Help")
-        helpmenu.add_command(label=label, accelerator="F1", command=self.help)
-        # self.bind(c, self.help)
-        self.bind_all("<F1>", self.help)
-        self.add2menu(path, (label, "F1"))
 
         label = _("About")
         helpmenu.add_command(label="About", accelerator="F2", command=self\
@@ -813,9 +816,25 @@ class App(Tk):
         # check for updates
         # l, c = commandShortcut('u')
         label = _("Check for update")
-        helpmenu.add_command(label=label, underline=1, command=self.checkForUpdate)
+        helpmenu.add_command(label=label, underline=1, accelerator="F3", command=self.checkForUpdate)
         self.add2menu(path, (label, "F3"))
         self.bind_all("<F3>", self.checkForUpdate)
+
+        submenu = _("Topics")
+        topicsmenu = Menu(menubar, tearoff=0)
+        helpmenu.add_cascade(label=submenu, menu=topicsmenu)
+        self.add2menu(path, (submenu,))
+        self.bind_all("<F1>", helpmenu.invoke(4))
+
+
+        path = submenu
+
+        label = _("Comands and shortcuts")
+        topicsmenu.add_command(label=label, command=self
+                               .help)
+        # self.bind(c, self.help)
+        self.add2menu(path, (label, "F1"))
+
 
 
         menubar.add_cascade(label="Help", menu=helpmenu)
@@ -1022,8 +1041,8 @@ class App(Tk):
                       )
         self.e.bind('<Return>', self.showView)
         self.e.bind('<Escape>', self.cleartext)
-        self.e.bind('<Up>', self.prev_history)
-        self.e.bind('<Down>', self.next_history)
+        # self.e.bind('<Up>', self.prev_history)
+        # self.e.bind('<Down>', self.next_history)
         self.e.pack(side="left", fill=tkinter.BOTH, expand=1, padx=2)
         self.e.configure(width=menuwidth, highlightthickness=0)
 
@@ -1110,9 +1129,9 @@ class App(Tk):
         else:
             id = child[0]
         if len(child) == 2:
-            leaf = "{0:<25} {1:^11}".format(child[0], child[1])
+            leaf = "{0:<30} {1:^11}".format(child[0], child[1])
         else:
-            leaf = child[0]
+            leaf = "{0:<30}".format(child[0])
         logger.debug('create_node: {0}, {1}, parent = {2}'.format(leaf, id,  parent))
         self.menutree.create_node(leaf, id, parent=parent)
 
@@ -1271,6 +1290,7 @@ a time period if "+" is used."""
         else:
             self.tree.focus_set()
 
+    # TODO: delete: add option for all prior instances
 
     def deleteItem(self, e=None):
         logger.debug('{0}: {1}'.format(self.itemSelected['_summary'], self.dtSelected))
@@ -2049,29 +2069,27 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
         else:
             self.pending.configure(state="disabled")
 
-    # FIXME: is this needed?
-    def prev_history(self, event):
-        """
-        Replace input with the previous history item.
-        """
-        print('up')
-        if self.index >= 1:
-            self.index -= 1
-            self.e.delete(0, END)
-            self.e.insert(0, self.history[self.index])
-        return 'break'
-
-    # FIXME: is this needed?
-    def next_history(self, event):
-        """
-        Replace input with the next history item.
-        """
-        print('down')
-        if self.index + 1 < len(self.history):
-            self.index += 1
-            self.e.delete(0, END)
-            self.e.insert(0, self.history[self.index])
-        return 'break'
+    # def prev_history(self, event):
+    #     """
+    #     Replace input with the previous history item.
+    #     """
+    #     print('up')
+    #     if self.index >= 1:
+    #         self.index -= 1
+    #         self.e.delete(0, END)
+    #         self.e.insert(0, self.history[self.index])
+    #     return 'break'
+    #
+    # def next_history(self, event):
+    #     """
+    #     Replace input with the next history item.
+    #     """
+    #     print('down')
+    #     if self.index + 1 < len(self.history):
+    #         self.index += 1
+    #         self.e.delete(0, END)
+    #         self.e.insert(0, self.history[self.index])
+    #     return 'break'
 
     def textWindow(self, parent, title=None, prompt=None, modal=True):
         d = TextDialog(parent, title=title, prompt=prompt, modal=modal)

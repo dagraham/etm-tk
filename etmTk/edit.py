@@ -49,6 +49,7 @@ logger = logging.getLogger()
 SOMEREPS = _('Selected repetitions')
 ALLREPS = _('Repetitions')
 MESSAGES = _('Error messages')
+FOUND = "found"
 
 from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, optionShortcut, bgclr, CMD, relpath
 
@@ -81,7 +82,7 @@ class SimpleEditor(Toplevel):
         # self.frame = frame = Frame(parent)
         Toplevel.__init__(self, parent)
         self.minsize(400, 300)
-        self.geometry('440x400')
+        self.geometry('500x200')
         self.transient(parent)
         self.parent = parent
         self.loop = parent.loop
@@ -118,17 +119,16 @@ class SimpleEditor(Toplevel):
 
 
         # find
-        Button(frame, text='<', command=self.clearFind, highlightbackground=bgclr, padx=8).pack(side=LEFT,
-                                                                                                         padx=0)
+        Button(frame, text='x', command=self.clearFind, highlightbackground=bgclr, padx=8).pack(side=LEFT, padx=0)
         self.find_text = StringVar(frame)
-        e = Entry(frame, textvariable=self.find_text, width=10, highlightbackground=bgclr)
-        e.pack(side=LEFT, padx=0, expand=1, fill=X)
-        e.bind("<Return>", self.onFind)
-        e.bind("<Escape>", self.clearFind)
+        self.e = Entry(frame, textvariable=self.find_text, width=10, highlightbackground=bgclr)
+        self.e.pack(side=LEFT, padx=0, expand=1, fill=X)
+        self.e.bind("<Return>", self.onFind)
         Button(frame, text='>', command=self.onFind, highlightbackground=bgclr,  padx=8).pack(side=LEFT, padx=0)
 
         text = Text(self, bd=2, relief="sunken", padx=3, pady=2, font=tkFont.Font(family="Lucida Sans Typewriter"), undo=True, width=70)
         text.configure(highlightthickness=0)
+        text.tag_configure(FOUND, background="lightskyblue")
 
         text.pack(side="bottom", padx=4, pady=4, expand=1, fill=BOTH)
         self.text = text
@@ -206,6 +206,10 @@ class SimpleEditor(Toplevel):
             self.geometry("+%d+%d" % (parent.winfo_rootx() + 50,
                                       parent.winfo_rooty() + 50))
         self.configure(background=bgclr)
+        l, c = commandShortcut('f')
+        self.bind(c, lambda e: self.e.focus_set())
+        l, c = commandShortcut('g')
+        self.bind(c, lambda e: self.onFind())
         self.wait_window(self)
 
     def settext(self, text=''):
@@ -349,27 +353,26 @@ class SimpleEditor(Toplevel):
         return True
 
     def clearFind(self, *args):
+        self.text.tag_remove(FOUND, "0.0", END)
         self.find_text.set("")
 
     def onFind(self, *args):
         target = self.find_text.get()
-        print('onFind')
-        # target = askstring('SimpleEditor', 'Search String?')
-        print('target', target)
+        logger.debug('target: {0}'.format(target))
         if target:
-            where = self.text.search(target, INSERT, END)
-            if not where:
-                where = self.text.search(target, "0.0", INSERT)
-            if where:
-                print(where)
-                pastit = where + ('+%dc' % len(target))
-                # self.text.tag_remove(SEL, '1.0', END)
-                self.text.tag_add(SEL, where, pastit)
-                self.text.mark_set(INSERT, pastit)
-                self.text.see(INSERT)
-                self.text.focus()
+            where = self.text.search(target, INSERT)
+        if where:
+            pastit = where + ('+%dc' % len(target))
+            # self.text.tag_remove(SEL, '1.0', END)
+            self.text.tag_add(FOUND, where, pastit)
+            self.text.mark_set(INSERT, pastit)
+            self.text.see(INSERT)
+            self.text.focus()
 
     def quit(self, e=None):
+        if self.find_text.get():
+            self.clearFind()
+            return "break"
         logger.debug(('quit'))
         if self.checkmodified():
             ans = askokcancel(
