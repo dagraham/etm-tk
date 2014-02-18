@@ -20,7 +20,7 @@ import platform
 
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X
     # from tkinter import messagebox as tkMessageBox
     from tkinter import ttk
     from tkinter import font as tkFont
@@ -30,7 +30,7 @@ if platform.python_version() >= '3':
     # from tkinter import simpledialog as tkSimpleDialog
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X
     # import tkMessageBox
     import ttk
     import tkFont
@@ -50,6 +50,8 @@ from dateutil.parser import parse
 from etmTk.data import (
     init_localization, fmt_weekday, fmt_dt, hsh2str, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, bgclr, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator)
 
+from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES)
+
 from etmTk.edit import SimpleEditor
 
 import gettext
@@ -61,6 +63,8 @@ if mac:
     AFTER = 100
 else:
     AFTER = 1
+
+FOUND = "found"
 
 from idlelib.WidgetRedirector import WidgetRedirector
 
@@ -369,6 +373,102 @@ class Dialog(Toplevel):
     def messageWindow(self, title, prompt):
         MessageWindow(self.parent, title, prompt)
 
+class NotebookWindow(Dialog):
+
+    def body(self, master):
+        self.currIndex = 0
+        self.tabIndex = -1
+        self.tabText = {}
+        self.nb = nb = ttk.Notebook(master)
+        self.nb.pack(side="top", fill=tkinter.BOTH, expand=1, padx=0, pady=0)
+        self.nb.enable_traversal()
+        self.nb.bind("<<NotebookTabChanged>>", self.tabChanged)
+        l, c = commandShortcut('f')
+        self.bind_all(c, lambda e: self.e.focus_set())
+        l, c = commandShortcut('g')
+        self.bind_all(c, lambda e: self.onFind())
+        return self.nb
+
+    def addTab(self, label="", content=""):
+        self.tabIndex += 1
+        frame = Frame(self.nb)
+        # text = ReadOnlyText(
+        text = Text(
+            frame,
+            wrap="word", padx=2, pady=2, bd=2, relief="sunken",
+            font=tkFont.Font(family="Lucida Sans Typewriter"),
+            height=30,
+            width=52,
+            takefocus=False)
+        text.tag_configure(FOUND, background="lightskyblue")
+        text.insert("1.0", content)
+        text.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0, pady=0)
+        ysb = ttk.Scrollbar(frame, orient='vertical', command=text.yview, width=8)
+        ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
+        text.configure(yscroll=ysb.set)
+        self.nb.add(frame, text=label)
+        self.tabText[self.tabIndex] = text
+        logger.debug("tabIndex {0}: {1}".format(self.tabIndex, type(self.tabText[self
+                                              .tabIndex])))
+
+    def buttonbox(self):
+        box = Frame(self)
+        # find
+        Button(box, text='x', command=self.clearFind, padx=8).pack(side="left", padx=0)
+        self.find_text = StringVar(box)
+        self.e = Entry(box, textvariable=self.find_text, width=15)
+        self.e.pack(side="left", padx=0, fill=X)
+        self.e.bind("<Return>", self.onFind)
+        Button(box, text='>', command=self.onFind, padx=6).pack(side="left", padx=0)
+        w = Button(box, text="OK", width=10, command=self.cancel,
+                   default=ACTIVE)
+        w.pack(side="right", padx=30, anchor="e")
+        # self.bind("<Return>", self.ok)
+        self.bind("<Escape>", self.ok)
+        box.pack(side='bottom')
+
+    def tabChanged(self, e=None):
+        self.currIndex = self.nb.index(self.nb.select())
+        logger.debug("currIndex: {0}".format(self.currIndex))
+
+
+    def clearFind(self, *args):
+        self.tabText[self.currIndex].tag_remove(FOUND, "0.0", END)
+        self.find_text.set("")
+
+    def onFind(self, *args):
+        target = self.find_text.get()
+        logger.debug('target {0}: {1}'.format(target, self.tabText[self.currIndex]))
+        # self.tabText[self.currIndex].insert(INSERT, target)
+        if target:
+            where = self.tabText[self.currIndex].search(target, INSERT, nocase=1)
+        if where:
+            pastit = where + ('+%dc' % len(target))
+            logger.debug('pastit: {0}'.format(pastit))
+            # self.text.tag_remove(SEL, '1.0', END)
+            self.tabText[self.currIndex].tag_add(FOUND, where, pastit)
+            self.tabText[self.currIndex].mark_set(INSERT, pastit)
+            self.tabText[self.currIndex].see(INSERT)
+            self.tabText[self.currIndex].focus()
+
+    def ok(self, event=None):
+        if self.find_text.get():
+            self.clearFind()
+            return "break"
+        self.withdraw()
+        self.quit()
+
+
+    def test(self):
+        self.addTab(label="One", content="""\
+Now is the time
+for all good men
+        """)
+        self.addTab(label="Two", content="""\
+to come to the aid
+of their country.
+        """)
+
 
 class DialogWindow(Dialog):
     # master will be a frame in Dialog
@@ -376,11 +476,7 @@ class DialogWindow(Dialog):
     def body(self, master):
         self.entry = Entry(master)
         self.entry.pack(side="bottom", padx=5, pady=5)
-        Label(master,
-              text=self.prompt, justify='left').pack(side="top",
-                                                             fill=tkinter.BOTH,
-                                                             expand=1,
-                                                             padx=10, pady=5)
+        Label(master, text=self.prompt, justify='left').pack(side="top", fill=tkinter.BOTH, expand=1, padx=10, pady=5)
         if self.default is not None:
             self.entry.insert(0, self.default)
             self.entry.select_range(0, END)
@@ -629,8 +725,8 @@ class App(Tk):
         file = loop.options['config']
         # label = relpath(file, loop.options['etmdir'])
         label = _("Preferences")
-        filemenu.add_command(label=label, underline=0, command=lambda e=None, x=file: self.editFile(e, file=x), )
-        self.bind_all(c, lambda e, x=file:  self.editFile(file=x))
+        filemenu.add_command(label=label, underline=0, command=lambda e=None, x=file: self.editFile(e, file=x, config=True), )
+        self.bind_all(c, lambda e, x=file:  self.editFile(file=x, config=True))
         self.add2menu(path, (label, l))
 
         l, c = commandShortcut('A')
@@ -807,6 +903,13 @@ class App(Tk):
         # search is built in
         self.add2menu(path, (_("Search"), ))
 
+        label = _("Help")
+        helpmenu.add_command(label=label, underline=1, accelerator="F1", command=self
+                             .help)
+        self.add2menu(path, (label, "F1"))
+        self.bind_all("<F1>", lambda e: self.after(AFTER, self.help))
+
+
         label = _("About")
         helpmenu.add_command(label="About", accelerator="F2", command=self\
             .about)
@@ -820,20 +923,23 @@ class App(Tk):
         self.add2menu(path, (label, "F3"))
         self.bind_all("<F3>", self.checkForUpdate)
 
-        submenu = _("Topics")
-        topicsmenu = Menu(menubar, tearoff=0)
-        helpmenu.add_cascade(label=submenu, menu=topicsmenu)
-        self.add2menu(path, (submenu,))
-        self.bind_all("<F1>", helpmenu.invoke(4))
 
 
-        path = submenu
 
-        label = _("Comands and shortcuts")
-        topicsmenu.add_command(label=label, command=self
-                               .help)
-        # self.bind(c, self.help)
-        self.add2menu(path, (label, "F1"))
+        # submenu = _("Topics")
+        # topicsmenu = Menu(menubar, tearoff=0)
+        # helpmenu.add_cascade(label=submenu, menu=topicsmenu)
+        # self.add2menu(path, (submenu,))
+        # self.bind_all("<F1>", helpmenu.invoke(4))
+        #
+        #
+        # path = submenu
+        #
+        # label = _("Comands and shortcuts")
+        # topicsmenu.add_command(label=label, command=self
+        #                        .help)
+        # # self.bind(c, self.help)
+        # self.add2menu(path, (label, "F1"))
 
 
 
@@ -882,6 +988,8 @@ class App(Tk):
         # else:
         #     logger.debug('using windows icon')
         #     self.wm_iconbitmap('etmlogo.ico')
+
+        # TODO: add next(), prev() navigation to trees bound to right and left cursor keys
 
         self.columnconfigure(0, minsize=300, weight=1)
         self.rowconfigure(1, weight=2)
@@ -1399,7 +1507,7 @@ a time period if "+" is used."""
         else:
             self.tree.focus_set()
 
-    def editFile(self, e=None, file=None):
+    def editFile(self, e=None, file=None, config=False):
         if e is not None:
             logger.debug('event: {0}'.format(e))
             e = None
@@ -1407,6 +1515,15 @@ a time period if "+" is used."""
         logger.debug('file: {0}'.format(file))
         changed = SimpleEditor(parent=self, file=file, options=loop.options, title=relfile).changed
         if changed:
+            logger.debug("config: {0}".format(config))
+            if config:
+                current_options = deepcopy(loop.options)
+                (user_options, options, use_locale) = data.get_options(
+                    d=loop.options['etmdir'])
+                loop.options = options
+                logger.debug('ampm: {}'.format(loop.options['ampm']))
+                if options['calendars'] != current_options['calendars']:
+                    self.updateCalendars()
             logger.debug("changed - calling loadData and updateAlerts")
             loop.loadData()
             self.updateAlerts()
@@ -1714,7 +1831,18 @@ parsing are supported.""")
 
     def help(self, event=None):
         res = self.menutree.showMenu("_")
-        self.textWindow(parent=self, title='etm', prompt=res, modal=False)
+        # self.textWindow(parent=self, title='etm', prompt=res, modal=False)
+        nb = NotebookWindow(self, title="Note Book", modal=False)
+        nb.addTab(label=_("Overview"), content=OVERVIEW)
+        nb.addTab(label=_("Items"), content=ITEMTYPES)
+        nb.addTab(label=_("@ Keys"), content=ATKEYS)
+        nb.addTab(label=_("Dates"), content=DATES)
+        nb.addTab(label=_("Preference"), content=PREFERENCES)
+        nb.addTab(label=_("Commands"), content=res)
+
+
+        # logger.debug('tabs: {0}'.format(nb.tabs()))
+        # nb.test()
 
     def about(self, event=None):
         res = loop.do_v("")

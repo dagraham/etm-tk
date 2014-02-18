@@ -114,7 +114,7 @@ class SimpleEditor(Toplevel):
         Button(frame, text=_("Cancel"), highlightbackground=bgclr, width=btnwdth, command=self.quit).pack(side=RIGHT, padx=4)
         self.bind("<Escape>", self.quit)
         # check will evaluate the item entry and, if repeating, show reps
-        inspect = Button(frame, text=_("Inspect"), highlightbackground=bgclr, width=btnwdth, command=self.onCheck)
+        inspect = Button(frame, text=_("Validate"), highlightbackground=bgclr,  command=self.onCheck)
         inspect.pack(side=LEFT, padx=4)
 
 
@@ -360,7 +360,7 @@ class SimpleEditor(Toplevel):
         target = self.find_text.get()
         logger.debug('target: {0}'.format(target))
         if target:
-            where = self.text.search(target, INSERT)
+            where = self.text.search(target, INSERT, nocase=1)
         if where:
             pastit = where + ('+%dc' % len(target))
             # self.text.tag_remove(SEL, '1.0', END)
