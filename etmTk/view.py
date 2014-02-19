@@ -712,7 +712,7 @@ class App(Tk):
         #                      underline=0, command=self.donothing)
 
         l, c = commandShortcut('F')
-        label = _("Open data file")
+        label = _("Data file ...")
         filemenu.add_command(label=label, underline=0, command=self.editData)
         # self.bind_all(c, self.editData)
         self.add2menu(path, (label, l))
@@ -783,7 +783,7 @@ class App(Tk):
         # logger.debug('tree:\n{0}'.format(tree))
 
         # view menu
-        path = _("View")
+        path = _("Commands")
         self.add2menu(menu, (path, ))
         viewmenu = Menu(menubar, tearoff=0)
 
@@ -835,7 +835,7 @@ class App(Tk):
 
         # busy times
         l, c = commandShortcut('b')
-        label = _("Busy periods")
+        label = _("Show busy periods")
         viewmenu.add_command(label=label, underline=1,
                              accelerator=l,
                              command=self.showBusyTimes)
@@ -844,7 +844,7 @@ class App(Tk):
 
         # report
         l, c = commandShortcut('r')
-        label=_("Report")
+        label=_("Create report")
         viewmenu.add_command(label=label, accelerator=l,
                              underline=1,
                              command=self.donothing)
@@ -855,7 +855,7 @@ class App(Tk):
         self.add2menu(path, (SEP, ))
 
         l, c = commandShortcut('y')
-        label=_("Yearly calendar")
+        label=_("Display yearly calendar")
         viewmenu.add_command(label=label, underline=1, accelerator=l,
                              command=self.showCalendar)
         self.bind_all(c, lambda event: self.after(AFTER, self.showCalendar))
@@ -863,7 +863,7 @@ class App(Tk):
 
         # date calculator
         l, c = commandShortcut('l')
-        label=_("Date calculator")
+        label=_("Open date calculator")
         viewmenu.add_command(label=label, underline=1, accelerator=l, command=self.dateCalculator)
         self.bind(c, lambda event: self.after(AFTER, self.dateCalculator))
         # c
@@ -880,9 +880,9 @@ class App(Tk):
         self.bind_all(c, lambda event: self.after(AFTER, self.showChanges))
         self.add2menu(path, (label, l))
 
-        label = _("Error log")
-        viewmenu.add_command(label=label, underline=1, command=self.donothing)
-        self.add2menu(path, (label, ))
+        # label = _("Error log")
+        # viewmenu.add_command(label=label, underline=1, command=self.donothing)
+        # self.add2menu(path, (label, ))
 
         menubar.add_cascade(label=path, menu=viewmenu, underline=0)
 
@@ -1030,7 +1030,7 @@ class App(Tk):
         menuwidth = 9
 
         # show menu
-        self.viewLabel = _("Show")
+        self.viewLabel = _("View")
         self.add2menu(tbar, (self.viewLabel, ))
         path = self.viewLabel
 
@@ -1067,7 +1067,7 @@ class App(Tk):
         self.vm.configure(width=menuwidth, background=bgclr, takefocus=False)
 
         # make
-        self.newLabel = _("Create")
+        self.newLabel = _("New")
         self.add2menu(tbar, (self.newLabel, ))
         path = self.newLabel
 
@@ -1097,7 +1097,7 @@ class App(Tk):
         self.nm.configure(width=menuwidth, background=bgclr, takefocus=False)
 
         # edit
-        self.editLabel = _("Change")
+        self.editLabel = _("Edit")
         self.add2menu(tbar, (self.editLabel, ))
         path = self.editLabel
 
@@ -1512,7 +1512,7 @@ a time period if "+" is used."""
             logger.debug('event: {0}'.format(e))
             e = None
         relfile = relpath(file, self.options['etmdir'])
-        logger.debug('file: {0}'.format(file))
+        logger.debug('file: {0}; config: {1}'.format(file, config))
         changed = SimpleEditor(parent=self, file=file, options=loop.options, title=relfile).changed
         if changed:
             logger.debug("config: {0}".format(config))
@@ -1521,7 +1521,6 @@ a time period if "+" is used."""
                 (user_options, options, use_locale) = data.get_options(
                     d=loop.options['etmdir'])
                 loop.options = options
-                logger.debug('ampm: {}'.format(loop.options['ampm']))
                 if options['calendars'] != current_options['calendars']:
                     self.updateCalendars()
             logger.debug("changed - calling loadData and updateAlerts")
@@ -1833,12 +1832,12 @@ parsing are supported.""")
         res = self.menutree.showMenu("_")
         # self.textWindow(parent=self, title='etm', prompt=res, modal=False)
         nb = NotebookWindow(self, title="Note Book", modal=False)
+        nb.addTab(label=_("Shortcuts"), content=res)
         nb.addTab(label=_("Overview"), content=OVERVIEW)
         nb.addTab(label=_("Items"), content=ITEMTYPES)
         nb.addTab(label=_("@ Keys"), content=ATKEYS)
         nb.addTab(label=_("Dates"), content=DATES)
         nb.addTab(label=_("Preference"), content=PREFERENCES)
-        nb.addTab(label=_("Commands"), content=res)
 
 
         # logger.debug('tabs: {0}'.format(nb.tabs()))
@@ -1935,7 +1934,10 @@ or 0 to display all changes.""").format(title)
                 lines = "{0} {1}-{2}".format(_('lines'), l1, l2)
             self.filetext = filetext = "{0}, {1}".format(hsh['fileinfo'][0],
                                                       lines)
-            text = "{1}\n\n{2}: {3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
+            if 'errors' in hsh and hsh['errors']:
+                text = "{1}\n\n{2}: {3}\n\n{4}: {5}".format(item, hsh['entry'].lstrip(), _("Errors"), hsh['errors'],  _("file"), filetext)
+            else:
+                text = "{1}\n\n{2}: {3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
             # self.nm["menu"].entryconfig(2, state='normal')
             for i in [0, 1, 2, 4]: # everything except finish
                 self.em["menu"].entryconfig(i, state='normal')

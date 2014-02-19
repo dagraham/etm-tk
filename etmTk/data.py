@@ -2206,6 +2206,15 @@ def items2Hashes(list_of_items, options=None):
     # in_task_group = False
     for item, rel_name, linenums in list_of_items:
         hsh, msg = str2hsh(item, options=options)
+        tmp_hsh = {}
+        tmp_hsh.update(defaults)
+        tmp_hsh.update(hsh)
+        hsh = tmp_hsh
+        try:
+            hsh['fileinfo'] = (rel_name, linenums[0], linenums[-1])
+        except:
+            raise ValueError("exception in fileinfo:",
+                             rel_name, linenums, "\n", hsh)
         if msg:
             lines = []
             item = item.strip()
@@ -2218,16 +2227,16 @@ def items2Hashes(list_of_items, options=None):
             for m in msg:
                 messages.append('      <font color="red">%s</font>' % m)
 
+            # put the bad item in the inbox for repairs
+            hsh['_summary'] = "{0} {1}".format(hsh['itemtype'], hsh['_summary'])
+            hsh['itemtype'] = "$"
+            hsh['i'] = uniqueId()
+            hsh['errors'] = "\n".join(msg)
+            logger.warn("hsh errors: {0}".format(msg))
+            # no more processing
+            # print('hsh:', hsh)
+            hashes.append(hsh)
             continue
-        tmp_hsh = {}
-        tmp_hsh.update(defaults)
-        tmp_hsh.update(hsh)
-        hsh = tmp_hsh
-        try:
-            hsh['fileinfo'] = (rel_name, linenums[0], linenums[-1])
-        except:
-            raise ValueError("exception in fileinfo:",
-                             rel_name, linenums, "\n", hsh)
 
         tooltip = [hsh['_summary']]
         if 'l' in hsh:
@@ -3570,8 +3579,7 @@ def get_data(options=None, dirty=False, use_pickle=True):
             (uuid2hash, file2uuids, file2lastmodified,
              bad_datafiles, messages) = objects
     if bad_datafiles:
-        print("bad data files")
-        print(bad_datafiles)
+        logger.warn("bad data files: {0}".format(bad_datafiles))
     if dirty and not messages:
         dump_data(options, uuid2hash, file2uuids, file2lastmodified,
                   bad_datafiles, messages)
@@ -5705,5 +5713,32 @@ j        When the day view is displayed, select the
         self.safe_save(fp, itemstr, mode=mode)
         return True
 
+
+def main(etmdir='', argv=[]):
+    logger.debug("data.main etmdir: {0}, argv: {1}".format(etmdir, argv))
+    use_locale = ()
+    (user_options, options, use_locale) = get_options(etmdir)
+
+    if len(argv) > 1:
+        if argv[1] in ['a', 'c', 's', 'm', 'n', 'v', '?']:
+            c = ETMCmd(options)
+            c.loop = False
+            c.number = False
+            args = []
+            for x in argv[1:]:
+                x = s2or3(x)
+                args.append(x)
+            argstr = ' '.join(args)
+            c.do_command(argstr)
+        else:
+            logger.warn("argv: {0}".format(argv))
+
 if __name__ == "__main__":
-    print('data.py should only be imported. Run etm instead.')
+    etmdir = ''
+    if len(sys.argv) > 1:
+        if sys.argv[1] not in ['a', 'c']:
+            etmdir = sys.argv.pop(1)
+    main(etmdir, sys.argv)
+
+# if __name__ == "__main__":
+#     print('data.py should only be imported. Run etm instead.')

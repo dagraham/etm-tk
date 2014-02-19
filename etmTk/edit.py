@@ -111,8 +111,9 @@ class SimpleEditor(Toplevel):
         self.bind(c, self.onSave)
 
         # cancel will quit with a warning prompt if modified
-        Button(frame, text=_("Cancel"), highlightbackground=bgclr, width=btnwdth, command=self.quit).pack(side=RIGHT, padx=4)
-        self.bind("<Escape>", self.quit)
+        Button(frame, text=_("Cancel"), highlightbackground=bgclr, width=btnwdth, command=self.cancel).pack(side=RIGHT, padx=4)
+        # self.bind("<Escape>", self.quit)
+        self.bind("<Escape>", self.cancel)
         # check will evaluate the item entry and, if repeating, show reps
         inspect = Button(frame, text=_("Validate"), highlightbackground=bgclr,  command=self.onCheck)
         inspect.pack(side=LEFT, padx=4)
@@ -253,7 +254,8 @@ class SimpleEditor(Toplevel):
             # we are editing an item
             ok = self.onCheck(showreps=False)
             if not ok:
-                return False
+                logger.debug('not ok')
+                return "break"
             if self.mode in [1, 3]:  # new
                 if 's' in self.edithsh and self.edithsh['s']:
                     dt = self.edithsh['s']
@@ -314,7 +316,6 @@ class SimpleEditor(Toplevel):
         error = False
         try:
             hsh, msg = str2hsh(text, options=self.options)
-            logger.debug("hsh: {0}".format(hsh))
         except Exception as e:
             logger.exception('could not process: {0}'.format(text))
             error = True
@@ -324,7 +325,8 @@ class SimpleEditor(Toplevel):
             self.messageWindow(MESSAGES, messages)
         if error or msg:
             self.newhsh = None
-            return False, ''
+            logger.debug('returning ok False')
+            return False
 
         # we have a good hsh
         if self.edithsh and 'fileinfo' in self.edithsh:
@@ -369,11 +371,15 @@ class SimpleEditor(Toplevel):
             self.text.see(INSERT)
             self.text.focus()
 
-    def quit(self, e=None):
-        if self.find_text.get():
+    def cancel(self, e=None):
+        t = self.find_text.get()
+        if t.strip():
             self.clearFind()
             return "break"
-        logger.debug(('quit'))
+        logger.debug(('calling quit'))
+        self.quit()
+
+    def quit(self, e=None):
         if self.checkmodified():
             ans = askokcancel(
                 _('Quit'),
