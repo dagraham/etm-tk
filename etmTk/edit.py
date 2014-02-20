@@ -11,7 +11,7 @@ from copy import deepcopy
 
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Frame, LEFT, RIGHT, Text, PanedWindow, OptionMenu, StringVar, Menu, BooleanVar, ACTIVE, X, RIDGE, BOTH, SEL, SEL_FIRST, SEL_LAST, Button, FLAT
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Frame, LEFT, RIGHT, Text, PanedWindow, OptionMenu, StringVar, Menu, BooleanVar, ACTIVE, X, RIDGE, BOTH, SEL, SEL_FIRST, SEL_LAST, Button, FLAT, Listbox
     from tkinter import ttk
     # from ttk import Button, Style
     from tkinter import font as tkFont
@@ -22,7 +22,7 @@ if platform.python_version() >= '3':
     from tkinter.filedialog import askopenfilename
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Frame, LEFT, RIGHT, Text, PanedWindow, OptionMenu, StringVar, Menu, BooleanVar, ACTIVE, X, RIDGE, BOTH, SEL, SEL_FIRST, SEL_LAST, Button, FLAT
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Frame, LEFT, RIGHT, Text, PanedWindow, OptionMenu, StringVar, Menu, BooleanVar, ACTIVE, X, RIDGE, BOTH, SEL, SEL_FIRST, SEL_LAST, Button, FLAT, Listbox
     import ttk
     # from ttk import Button, Style
     import tkFont
@@ -38,6 +38,11 @@ else:
 # askyesno ()
 # askretrycancel ()
 
+import string
+ID_CHARS = string.ascii_letters + string.digits + "_@/"
+from idlelib.AutoComplete import AutoComplete
+from idlelib.AutoCompleteWindow import AutoCompleteWindow
+
 import gettext
 _ = gettext.gettext
 
@@ -51,7 +56,7 @@ ALLREPS = _('Repetitions')
 MESSAGES = _('Error messages')
 FOUND = "found"
 
-from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, optionShortcut, bgclr, CMD, relpath
+from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, optionShortcut, BGCOLOR, CMD, relpath, completion_regex
 
 
 from idlelib.WidgetRedirector import WidgetRedirector
@@ -88,6 +93,12 @@ class SimpleEditor(Toplevel):
         self.loop = parent.loop
         self.changed = False
 
+        self.scrollbar = None
+        self.listbox = None
+        self.autocompletewindow = None
+        self.line = None
+        self.match = None
+
         self.file = file
         self.initfile = None
         self.fileinfo = None
@@ -100,32 +111,32 @@ class SimpleEditor(Toplevel):
         # self.text_value.trace_variable("w", self.setSaveStatus)
         frame = Frame(self, bd=0, relief=FLAT)
         frame.pack(side="bottom", fill=X, padx=4, pady=3)
-        frame.configure(background=bgclr)
+        frame.configure(background=BGCOLOR)
 
         btnwdth = 5
 
         # ok will check, save and quit
-        Button(frame, text=_("OK"), highlightbackground=bgclr, width=btnwdth, command=self.onSave).pack(side=RIGHT, padx=4)
+        Button(frame, text=_("OK"), highlightbackground=BGCOLOR, width=btnwdth, command=self.onSave).pack(side=RIGHT, padx=4)
 
         l, c = commandShortcut('w')
         self.bind(c, self.onSave)
 
         # cancel will quit with a warning prompt if modified
-        Button(frame, text=_("Cancel"), highlightbackground=bgclr, width=btnwdth, command=self.cancel).pack(side=RIGHT, padx=4)
+        Button(frame, text=_("Cancel"), highlightbackground=BGCOLOR, width=btnwdth, command=self.cancel).pack(side=RIGHT, padx=4)
         # self.bind("<Escape>", self.quit)
         self.bind("<Escape>", self.cancel)
         # check will evaluate the item entry and, if repeating, show reps
-        inspect = Button(frame, text=_("Validate"), highlightbackground=bgclr,  command=self.onCheck)
+        inspect = Button(frame, text=_("Validate"), highlightbackground=BGCOLOR,  command=self.onCheck)
         inspect.pack(side=LEFT, padx=4)
 
 
         # find
-        Button(frame, text='x', command=self.clearFind, highlightbackground=bgclr, padx=8).pack(side=LEFT, padx=0)
+        Button(frame, text='x', command=self.clearFind, highlightbackground=BGCOLOR, padx=8).pack(side=LEFT, padx=0)
         self.find_text = StringVar(frame)
-        self.e = Entry(frame, textvariable=self.find_text, width=10, highlightbackground=bgclr)
+        self.e = Entry(frame, textvariable=self.find_text, width=10, highlightbackground=BGCOLOR)
         self.e.pack(side=LEFT, padx=0, expand=1, fill=X)
         self.e.bind("<Return>", self.onFind)
-        Button(frame, text='>', command=self.onFind, highlightbackground=bgclr,  padx=8).pack(side=LEFT, padx=0)
+        Button(frame, text='>', command=self.onFind, highlightbackground=BGCOLOR,  padx=8).pack(side=LEFT, padx=0)
 
         text = Text(self, bd=2, relief="sunken", padx=3, pady=2, font=tkFont.Font(family="Lucida Sans Typewriter"), undo=True, width=70)
         text.configure(highlightthickness=0)
@@ -133,6 +144,18 @@ class SimpleEditor(Toplevel):
 
         text.pack(side="bottom", padx=4, pady=4, expand=1, fill=BOTH)
         self.text = text
+
+        if self.options['auto_completions']:
+            cf = self.options['auto_completions']
+            logger.debug("auto_completions: {0}".format(cf))
+            fe = self.options['encoding']['file']
+            completions = []
+            with codecs.open(cf, 'r', fe) as fo:
+                self.completions = [x.rstrip() for x in fo.readlines() if x
+                    .rstrip()]
+            logger.debug('completions: {0}'.format(self.completions))
+
+
         if title is not None:
             self.wm_title(title)
         if file is not None:
@@ -150,8 +173,8 @@ class SimpleEditor(Toplevel):
             #   2: replace
             #   3: new and replace
             initfile = None
-            logger.debug("newhsh: {0}".format(self.newhsh))
-            logger.debug("rephsh: {0}".format(self.rephsh))
+            # logger.debug("newhsh: {0}".format(self.newhsh))
+            # logger.debug("rephsh: {0}".format(self.rephsh))
             # set the mode
             if newhsh is None and rephsh is None:
                 # we are creating a new item from scratch
@@ -206,12 +229,17 @@ class SimpleEditor(Toplevel):
         if parent:
             self.geometry("+%d+%d" % (parent.winfo_rootx() + 50,
                                       parent.winfo_rooty() + 50))
-        self.configure(background=bgclr)
+        self.configure(background=BGCOLOR)
         l, c = commandShortcut('f')
         self.bind(c, lambda e: self.e.focus_set())
         l, c = commandShortcut('g')
         self.bind(c, lambda e: self.onFind())
+
+        l, c = commandShortcut('/')
+        self.text.bind(c, self.showCompletions)
+
         self.wait_window(self)
+
 
     def settext(self, text=''):
         self.text.delete('1.0', END)
@@ -222,6 +250,83 @@ class SimpleEditor(Toplevel):
 
     def gettext(self):
         return self.text.get('1.0', END + '-1c')
+
+    def showCompletions(self, e=None):
+        # print(self.text.get("insert -1c wordstart", INSERT))
+        line = self.text.get("insert linestart", INSERT)
+        m = completion_regex.match(line)
+        if m:
+            match = m.groups()[0]
+            print(match)
+            self.matches = matches = [x for x in self.completions if x.lower()
+                .startswith(match.lower())]
+            print(matches)
+            if len(matches) >= 1:
+                # self.line = line
+                self.match = match
+                self.autocompletewindow = acw = Toplevel(self)
+                self.scrollbar = scrollbar = ttk.Scrollbar(acw,
+                                                           orient="vertical",
+                                                           width=8)
+                self.listbox = listbox = Listbox(acw, yscrollcommand=scrollbar.set, exportselection=False, bg="white")
+                for item in matches:
+                    listbox.insert(END, item)
+                scrollbar.config(command=listbox.yview)
+                scrollbar.pack(side=RIGHT, fill="y")
+                listbox.pack(side=LEFT, fill=BOTH, expand=True)
+                self.listbox.select_set(0)
+                self.listbox.see(0)
+                self.listbox.focus_set()
+                self.listbox.bind("<Return>", self.completionSelected)
+                self.listbox.bind("<Escape>", self.hideCompletions)
+                self.listbox.bind("Up", self.cursorUp)
+                self.listbox.bind("Down", self.cursorDown)
+
+            else:
+                return
+        else:
+            print(line)
+        return "break"
+
+    def is_active(self):
+        return self.autocompletewindow is not None
+
+    def hideCompletions(self):
+        if not self.is_active():
+            return
+        # destroy widgets
+        # self.match = None
+        self.scrollbar.destroy()
+        self.scrollbar = None
+        self.listbox.destroy()
+        self.listbox = None
+        self.autocompletewindow.destroy()
+        self.autocompletewindow = None
+
+    def completionSelected(self, event):
+        # Put the selected completion in the text, and close the list
+        cursel = self.matches[int(self.listbox.curselection()[0])]
+        start = "insert-{0}c".format(len(self.match))
+        end = "insert-1c wordend"
+        logger.debug("cursel: {0}; match: {1}; start: {2}; insert: {3}".format(
+            cursel, self.match, start, INSERT))
+        self.text.delete(start, end)
+        self.text.insert(INSERT, cursel)
+        self.hideCompletions()
+
+    def cursorUp(self):
+        cursel = int(self.listbox.curselection()[0])
+        newsel = max(0, cursel=1)
+        self.listbox.select_clear(cursel)
+        self.listbox.select_set(newsel)
+        self.listbox.see(newsel)
+
+    def cursorDown(self):
+        cursel = int(self.listbox.curselection()[0])
+        newsel = min(len(self.matches)-1, cursel+1)
+        self.listbox.select_clear(cursel)
+        self.listbox.select_set(newsel)
+        self.listbox.see(newsel)
 
     def setmodified(self, bool):
         if bool is not None:

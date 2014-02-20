@@ -15,9 +15,22 @@ echo Creating pdf version of man file
 ps2pdf etm-man.ps etm-man.pdf
 
 cd /Users/dag/etm-tk/etmTk/help
-for file in HEADER overview data views reports shortcuts preferences using_mercurial; do
-    pandoc -s --toc --toc-depth=4 -B style-before -f markdown -t html5 -o $file.html $file.md
+pwd
+#for file in HEADER overview data views reports shortcuts preferences using_mercurial; do
+#    pandoc -s --toc --toc-depth=4 -B style-before -f markdown -t html5 -o $file.html $file.md
+#done
+
+quotes='"""'
+echo "" > ../help.py
+for file in ATKEYS DATES ITEMTYPES OVERVIEW PREFERENCES REPORTS; do
+    pandoc -o $file.text -t plain --no-wrap $file.md
+    echo "$file = $quotes\\" >> ../help.py
+    cat $file.text >> ../help.py
+    echo '"""' >> ../help.py
+    echo '' >> ../help.py
 done
+
+exit
 
 echo "% ETM Users Manual" > help.md
 for file in overview.md data.md views.md reports.md shortcuts.md preferences.md; do

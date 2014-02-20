@@ -48,9 +48,9 @@ import etmTk.data as data
 from dateutil.parser import parse
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, hsh2str, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, bgclr, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator)
+    init_localization, fmt_weekday, fmt_dt, hsh2str, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, BGCOLOR, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator)
 
-from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES)
+from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES, REPORTS)
 
 from etmTk.edit import SimpleEditor
 
@@ -84,6 +84,10 @@ SCHEDULE = _('Schedule')
 PATHS = _('Paths')
 KEYWORDS = _('Keywords')
 TAGS = _('Tags')
+
+COPY = _("Copy")
+EDIT = _("Edit")
+DELETE = _("Delete")
 
 SEP = "----"
 
@@ -267,7 +271,8 @@ class Dialog(Toplevel):
 
     def __init__(self, parent, title=None, prompt=None, opts=None, default=None, modal=True):
 
-        Toplevel.__init__(self, parent)
+        Toplevel.__init__(self, parent, highlightbackground=BGCOLOR,
+                    background=BGCOLOR)
         if modal:
             logger.debug('modal')
             self.transient(parent)
@@ -287,9 +292,10 @@ class Dialog(Toplevel):
 
         self.buttonbox()
 
-        body = Frame(self)
+        body = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
         self.initial_focus = self.body(body)
-        body.pack(side="top", fill=tkinter.BOTH, padx=5, pady=5, expand=1)
+        # body.pack(side="top", fill=tkinter.BOTH, padx=5, pady=5, expand=1)
+        body.pack(side="top", fill=tkinter.BOTH, padx=0, pady=0, expand=1)
 
         # self.buttonbox()
 
@@ -379,7 +385,7 @@ class NotebookWindow(Dialog):
         self.currIndex = 0
         self.tabIndex = -1
         self.tabText = {}
-        self.nb = nb = ttk.Notebook(master)
+        self.nb = nb = ttk.Notebook(master, padding=8)
         self.nb.pack(side="top", fill=tkinter.BOTH, expand=1, padx=0, pady=0)
         self.nb.enable_traversal()
         self.nb.bind("<<NotebookTabChanged>>", self.tabChanged)
@@ -411,21 +417,29 @@ class NotebookWindow(Dialog):
         logger.debug("tabIndex {0}: {1}".format(self.tabIndex, type(self.tabText[self
                                               .tabIndex])))
 
+    # def setText(self, indx, content=""):
+    #     text = self.tabText[indx]
+    #     text.delete("1.0", END)
+    #     text.insert("1.0", content)
+
     def buttonbox(self):
-        box = Frame(self)
+        box = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
         # find
-        Button(box, text='x', command=self.clearFind, padx=8).pack(side="left", padx=0)
-        self.find_text = StringVar(box)
-        self.e = Entry(box, textvariable=self.find_text, width=15)
-        self.e.pack(side="left", padx=0, fill=X)
-        self.e.bind("<Return>", self.onFind)
-        Button(box, text='>', command=self.onFind, padx=6).pack(side="left", padx=0)
         w = Button(box, text="OK", width=10, command=self.cancel,
-                   default=ACTIVE)
-        w.pack(side="right", padx=30, anchor="e")
+                   default=ACTIVE, highlightbackground=BGCOLOR)
+        w.pack(side="right", padx=10, anchor="n")
+        Button(box, text='x', highlightbackground=BGCOLOR, command=self.clearFind, padx=8).pack(side="right", padx=0, anchor="n")
+        self.find_text = StringVar(box)
+        self.e = Entry(box, textvariable=self.find_text, width=20, highlightbackground=BGCOLOR)
+        self.e.pack(side="right", padx=0, fill=X, expand=0, anchor="n")
+        self.e.bind("<Return>", self.onFind)
+        Button(box, text='>', command=self.onFind, padx=6, highlightbackground=BGCOLOR).pack(side="right", padx=0)
         # self.bind("<Return>", self.ok)
         self.bind("<Escape>", self.ok)
-        box.pack(side='bottom')
+        # box.pack(side='bottom', pady=0, fill='x', expand=0)
+        separator = Frame(self, height=8, bd=0, relief='flat', highlightbackground=BGCOLOR, background=BGCOLOR)
+        separator.pack(side='bottom')
+        box.pack(side='bottom', pady=0,  expand=0)
 
     def tabChanged(self, e=None):
         self.currIndex = self.nb.index(self.nb.select())
@@ -442,14 +456,14 @@ class NotebookWindow(Dialog):
         # self.tabText[self.currIndex].insert(INSERT, target)
         if target:
             where = self.tabText[self.currIndex].search(target, INSERT, nocase=1)
-        if where:
-            pastit = where + ('+%dc' % len(target))
-            logger.debug('pastit: {0}'.format(pastit))
-            # self.text.tag_remove(SEL, '1.0', END)
-            self.tabText[self.currIndex].tag_add(FOUND, where, pastit)
-            self.tabText[self.currIndex].mark_set(INSERT, pastit)
-            self.tabText[self.currIndex].see(INSERT)
-            self.tabText[self.currIndex].focus()
+            if where:
+                pastit = where + ('+%dc' % len(target))
+                logger.debug('pastit: {0}'.format(pastit))
+                # self.text.tag_remove(SEL, '1.0', END)
+                self.tabText[self.currIndex].tag_add(FOUND, where, pastit)
+                self.tabText[self.currIndex].mark_set(INSERT, pastit)
+                self.tabText[self.currIndex].see(INSERT)
+                self.tabText[self.currIndex].focus()
 
     def ok(self, event=None):
         if self.find_text.get():
@@ -458,16 +472,15 @@ class NotebookWindow(Dialog):
         self.withdraw()
         self.quit()
 
-
-    def test(self):
-        self.addTab(label="One", content="""\
-Now is the time
-for all good men
-        """)
-        self.addTab(label="Two", content="""\
-to come to the aid
-of their country.
-        """)
+#     def test(self):
+#         self.addTab(label="One", content="""\
+# Now is the time
+# for all good men
+#         """)
+#         self.addTab(label="Two", content="""\
+# to come to the aid
+# of their country.
+#         """)
 
 
 class DialogWindow(Dialog):
@@ -684,7 +697,7 @@ class App(Tk):
         self.timerItem = None
         self.actionTimer = Timer()
         self.loop = loop
-        self.configure(background=bgclr)
+        self.configure(background=BGCOLOR)
         self.option_add('*tearOff', False)
         self.menu_lst = []
         self.menutree = Tree()
@@ -1064,7 +1077,7 @@ class App(Tk):
             self.add2menu(path, (label, l))
 
         self.vm.pack(side="left")
-        self.vm.configure(width=menuwidth, background=bgclr, takefocus=False)
+        self.vm.configure(width=menuwidth, background=BGCOLOR, takefocus=False)
 
         # make
         self.newLabel = _("New")
@@ -1094,7 +1107,7 @@ class App(Tk):
 
 
         self.nm.pack(side="left")
-        self.nm.configure(width=menuwidth, background=bgclr, takefocus=False)
+        self.nm.configure(width=menuwidth, background=BGCOLOR, takefocus=False)
 
         # edit
         self.editLabel = _("Edit")
@@ -1133,18 +1146,18 @@ class App(Tk):
             self.add2menu(path, (label, l))
 
         self.em.pack(side="left")
-        self.em.configure(width=menuwidth, background=bgclr, takefocus=False)
+        self.em.configure(width=menuwidth, background=BGCOLOR, takefocus=False)
 
         self.helpBtn = Button(toolbar, bd=0, text="?", takefocus=False, command=self.help)
         self.helpBtn.pack(side="right")
-        self.helpBtn.configure(highlightbackground=bgclr, highlightthickness=0)
+        self.helpBtn.configure(highlightbackground=BGCOLOR, highlightthickness=0)
 
         self.filterValue = StringVar(self)
         self.filterValue.set('')
         self.filterValue.trace_variable("w", self.filterView)
         self.e = Entry(toolbar, width=8, textvariable=self.filterValue,
                        # relief="raised",
-                       # highlightcolor=bgclr,
+                       # highlightcolor=BGCOLOR,
                        # bd=4
                       )
         self.e.bind('<Return>', self.showView)
@@ -1166,17 +1179,17 @@ class App(Tk):
         panedwindow.add(self.l, padx=3, pady=0, stretch="never")
 
         panedwindow.grid(row=1, column=0, sticky="nsew", padx=0, pady=0)
-        panedwindow.configure(background=bgclr)
+        panedwindow.configure(background=BGCOLOR)
 
         self.sf = Frame(self)
-        toolbar.configure(background=bgclr)
+        toolbar.configure(background=BGCOLOR)
         # self.pendingAlerts = StringVar(self)
         # self.pendingAlerts.set("")
 
         showing = Label(self.sf, textvariable=self.currentView, bd=1, relief="flat",
                         anchor="w", padx=0, pady=0)
         showing.pack(side="left")
-        showing.configure(width=menuwidth, background=bgclr,
+        showing.configure(width=menuwidth, background=BGCOLOR,
                           highlightthickness=0)
 
         self.nonDefaultCalendars = StringVar(self)
@@ -1184,20 +1197,20 @@ class App(Tk):
         nonDefCal = Label(self.sf, textvariable=self.nonDefaultCalendars, bd=0,
                           relief="flat", anchor="center", padx=0, pady=0)
         nonDefCal.pack(side="left")
-        nonDefCal.configure(background=bgclr)
+        nonDefCal.configure(background=BGCOLOR)
 
         self.timerStatus = StringVar(self)
         self.timerStatus.set("")
         timer_status = Label(self.sf, textvariable=self.timerStatus, bd=0, relief="flat",
                              anchor="center", padx=4, pady=0)
         timer_status.pack(side="left", expand=1)
-        timer_status.configure(background=bgclr, highlightthickness=0)
+        timer_status.configure(background=BGCOLOR, highlightthickness=0)
 
         self.pendingAlerts = IntVar(self)
         self.pendingAlerts.set(0)
         self.pending = Button(self.sf, bd=0, width=1, takefocus=False, textvariable=self.pendingAlerts, command=self.showAlerts)
         self.pending.pack(side="right")
-        self.pending.configure(highlightbackground=bgclr,
+        self.pending.configure(highlightbackground=BGCOLOR,
                                highlightthickness=0, state="disabled")
         self.showPending = True
 
@@ -1205,10 +1218,10 @@ class App(Tk):
         currenttime = Label(self.sf, textvariable=self.currentTime, bd=1, relief="flat",
                             anchor="e", padx=4, pady=0)
         currenttime.pack(side="right")
-        currenttime.configure(background=bgclr)
+        currenttime.configure(background=BGCOLOR)
 
         self.sf.grid(row=2, column=0, sticky="ew", padx=8, pady=4)
-        self.sf.configure(background=bgclr)
+        self.sf.configure(background=BGCOLOR)
 
         self.grid()
 
@@ -1323,21 +1336,32 @@ a time period if "+" is used."""
         prompt = "\n".join([
             _("You have selected an instance of a repeating"),
             _("item. What do you want to {0}?").format(act)])
-        opt_lst = [
-            _("this instance"),
-            _("this and all subsequent instances"),
-            _("all instances")]
+        if act == DELETE:
+            opt_lst = [
+                _("this instance"),
+                _("this and all subsequent instances"),
+                _("all instances"),
+                _("all previous instances")]
+        else:
+            opt_lst = [
+                _("this instance"),
+                _("this and all subsequent instances"),
+                _("all instances")]
+
         indx, value = OptionsDialog(parent=self, title=_("instance: {0}").format(instance), prompt=prompt, opts=opt_lst).getValue()
         return indx, value
+
+    # TODO: replace dt with dtn in copyItem and editItem?
 
     def copyItem(self, e=None):
         """
         newhsh = selected, rephsh = None
         """
         if 'r' in self.itemSelected:
-            choice, value = self.which(_('clone'), self.dtSelected)
+            choice, value = self.which(COPY, self.dtSelected)
             logger.debug("{0}: {1}".format(choice, value))
             if not choice:
+                self.tree.focus_set()
                 return
             self.itemSelected['_dt'] = parse(self.dtSelected)
         else:
@@ -1349,6 +1373,7 @@ a time period if "+" is used."""
                 title=_('Confirm'),
                 prompt=_("Open a copy of this item?"))
             if not ans:
+                self.tree.focus_set()
                 return
             choice = 3
         hsh_cpy = deepcopy(self.itemSelected)
@@ -1360,7 +1385,7 @@ a time period if "+" is used."""
             # we need to modify the copy according to the choice
             dt = hsh_cpy['_dt'].replace(
                 tzinfo=tzlocal()).astimezone(gettz(hsh_cpy['z']))
-            # dtn = dt.replace(tzinfo=None)
+            dtn = dt.replace(tzinfo=None)
 
             if choice == 1:
                 # this instance
@@ -1376,13 +1401,13 @@ a time period if "+" is used."""
                 if u'+' in hsh:
                     tmp_cpy = []
                     for d in hsh_cpy['+']:
-                        if d >= dt:
+                        if d >= dtn:
                             tmp_cpy.append(d)
                     hsh_cpy['+'] = tmp_cpy
                 if u'-' in hsh_cpy:
                     tmp_cpy = []
                     for d in hsh_rev['-']:
-                        if d >= dt:
+                        if d >= dtn:
                             tmp_cpy.append(d)
                     hsh_cpy['-'] = tmp_cpy
                 hsh_cpy['s'] = dt
@@ -1398,15 +1423,14 @@ a time period if "+" is used."""
         else:
             self.tree.focus_set()
 
-    # TODO: delete: add option for all prior instances
-
     def deleteItem(self, e=None):
         logger.debug('{0}: {1}'.format(self.itemSelected['_summary'], self.dtSelected))
         indx = 3
         if 'r' in self.itemSelected:
-            indx, value = self.which(_('delete'), self.dtSelected)
+            indx, value = self.which(DELETE, self.dtSelected)
             logger.debug("{0}: {1}".format(indx, value))
             if not indx:
+                self.tree.focus_set()
                 return
             self.itemSelected['_dt'] = parse(self.dtSelected)
         else:
@@ -1416,6 +1440,7 @@ a time period if "+" is used."""
                 prompt=_("Delete this item?"),
                 parent=self.tree)
             if not ans:
+                self.tree.focus_set()
                 return
         loop.item_hsh = self.itemSelected
         loop.cmd_do_delete(indx)
@@ -1429,7 +1454,7 @@ a time period if "+" is used."""
         choice = 3
         title = "etm tk"
         if 'r' in self.itemSelected:
-            choice, value = self.which(_('edit'), self.dtSelected)
+            choice, value = self.which(EDIT, self.dtSelected)
             logger.debug("{0}: {1}".format(choice, value))
             if not choice:
                 self.tree.focus_set()
@@ -1831,17 +1856,15 @@ parsing are supported.""")
     def help(self, event=None):
         res = self.menutree.showMenu("_")
         # self.textWindow(parent=self, title='etm', prompt=res, modal=False)
-        nb = NotebookWindow(self, title="Note Book", modal=False)
+        nb = NotebookWindow(self, title="etm Help", modal=False)
         nb.addTab(label=_("Shortcuts"), content=res)
+        self.update_idletasks()
         nb.addTab(label=_("Overview"), content=OVERVIEW)
-        nb.addTab(label=_("Items"), content=ITEMTYPES)
-        nb.addTab(label=_("@ Keys"), content=ATKEYS)
+        nb.addTab(label=_("Types"), content=ITEMTYPES)
+        nb.addTab(label=_("@ keys"), content=ATKEYS)
         nb.addTab(label=_("Dates"), content=DATES)
-        nb.addTab(label=_("Preference"), content=PREFERENCES)
-
-
-        # logger.debug('tabs: {0}'.format(nb.tabs()))
-        # nb.test()
+        nb.addTab(label=_("Preferences"), content=PREFERENCES)
+        nb.addTab(label=_("Reports"), content=REPORTS)
 
     def about(self, event=None):
         res = loop.do_v("")
@@ -2390,7 +2413,7 @@ Relative dates and fuzzy parsing are supported.""")
         if not res:
             res = _('command "{0}" returned no output').format(cmd)
             # MessageWindow(self, 'info', res)
-            self.deleteItems()
+            self.clearTree()
             return ()
 
         if type(res) == dict:
@@ -2446,10 +2469,10 @@ or 0 to expand all branches completely.""")
 
     def showTree(self, tree, event=None):
         self.date2id = {}
-        self.deleteItems()
+        self.clearTree()
         self.count = 0
         self.count2id = {}
-        self.addItems(u'', tree[self.root], tree)
+        self.addToTree(u'', tree[self.root], tree)
         loop.count2id = self.count2id
         # self.l.configure(state="normal")
         self.l.delete("0.0", END)
@@ -2458,14 +2481,14 @@ or 0 to expand all branches completely.""")
             # view selected from menu
             self.goHome()
 
-    def deleteItems(self):
+    def clearTree(self):
         """
         Remove all items from the tree
         """
         for child in self.tree.get_children():
             self.tree.delete(child)
 
-    def addItems(self, parent, elements, tree, depth=0):
+    def addToTree(self, parent, elements, tree, depth=0):
         max_depth = 100
         for text in elements:
             self.count += 1
@@ -2483,7 +2506,7 @@ or 0 to expand all branches completely.""")
                 self.depth2id.setdefault(depth, set([])).add(oid)
                 # recurse to get children
                 self.count2id[oid] = None
-                self.addItems(oid, children, tree, depth=depth + 1)
+                self.addToTree(oid, children, tree, depth=depth + 1)
             else:
                 # this is a leaf
                 if len(text[1]) == 4:

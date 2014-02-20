@@ -57,8 +57,6 @@ def setup_logging(level='3'):
     logging.config.dictConfig(config)
     logger.info('logging enabled at level {0}'.format(loglevel))
 
-# TODO: change type to inbox for items that can't be loaded so that they will be accessible for repair.
-
 import subprocess
 
 if platform.python_version() >= '3':
@@ -80,7 +78,7 @@ else:
 dayfirst = False
 yearfirst = True
 # bgclr = "#e9e9e9"
-bgclr = "#ebebeb"
+BGCOLOR = "#ebebeb"
 
 import re
 import sys
@@ -656,6 +654,7 @@ anniversary_regex = re.compile(r'!(\d{4})!')
 group_regex = re.compile(r'^\s*(.*)\s+(\d+)/(\d+):\s*(.*)')
 groupdate_regex = re.compile(r'\by{2}\b|\by{4}\b|\b[dM]{1,4}\b')
 options_regex = re.compile(r'^\s*(!?[fk](\[[:\d]+\])?)|(!?[clostu])\s*$')
+completion_regex = re.compile(r'(?:^.*?)((?:\@[a-zA-Z] )?\b\S*)$')
 
 # what about other languages?
 # lun mar mer jeu ven sam dim
@@ -776,7 +775,7 @@ def get_options(d=''):
         'action_minutes': 6,
         'action_interval': 1,
         'action_timer': {'running': '', 'paused': ''},
-        'action_status': {'running': '', 'paused': '', 'stopped': ''},
+        # 'action_status': {'running': '', 'paused': '', 'stopped': ''},
         'action_rates': {'default': 100.0, },
         'action_template': '!hours!h $!value!) !label! (!count!)',
 
@@ -2116,9 +2115,9 @@ def removeIds(root):
             fin.close()
             fout.close()
             os.remove(bakfile)
-            print("removed %s idlines" % count)
+            logger.debug("removed %s idlines" % count)
         except:
-            print('error processing', filename)
+            logger.warn('error processing', filename)
 
 
 def lines2Items(lines):
@@ -2225,16 +2224,16 @@ def items2Hashes(list_of_items, options=None):
             for line in lines:
                 messages.append("   %s" % line)
             for m in msg:
-                messages.append('      <font color="red">%s</font>' % m)
+                messages.append('      %s' % m)
 
             # put the bad item in the inbox for repairs
             hsh['_summary'] = "{0} {1}".format(hsh['itemtype'], hsh['_summary'])
             hsh['itemtype'] = "$"
             hsh['i'] = uniqueId()
             hsh['errors'] = "\n".join(msg)
-            logger.warn("hsh errors: {0}".format(msg))
+            logger.warn("hsh errors: {0}".format(hsh['errors']))
             # no more processing
-            # print('hsh:', hsh)
+            # ('hsh:', hsh)
             hashes.append(hsh)
             continue
 
@@ -2333,12 +2332,12 @@ def items2Hashes(list_of_items, options=None):
                     summary, job_num, num_jobs, job['j'])
                 del job['j']
                 if 'q' not in job:
-                    print('error: q missing from job')
+                    logger.warn('error: q missing from job')
                     continue
                 try:
                     current_level = int(job['q'])
                 except:
-                    print('error: bad value for q', job['q'])
+                    logger.warn('error: bad value for q', job['q'])
                     continue
                 job['i'] = current_id
 
@@ -2358,7 +2357,7 @@ def items2Hashes(list_of_items, options=None):
                 try:
                     job['fileinfo'] = (rel_name, linenums[0], linenums[-1])
                 except:
-                    print("exception in fileinfo", rel_name, linenums)
+                    logger.exception("fileinfo: {0}.{1}".format(rel_name, linenums))
                 hashes.append(job)
         else:
             tmp_hsh = {}
@@ -2444,10 +2443,8 @@ def get_rrulestr(hsh, key_hsh=rrule_hsh):
             try:
                 l = ["RRULE:FREQ=%s" % freq_hsh[h['f']]]
             except:
-                print("bad rrule:", rrule, "\nh:", h)
-                print(hsh)
+                logger.exception("bad rrule: {0}, {1}, {2}\n{3}".format(rrule, "\nh:", h, hsh))
                 f = StringIO()
-                traceback.print_exc(file=f)
 
         for k in rrule_keys:
             if k in h and h[k]:
@@ -2543,9 +2540,8 @@ def checkhsh(hsh):
     elif hsh['itemtype'] in ['~'] and 'e' not in hsh and 'x' not in hsh:
         messages.append("An entry for either @e or @x is required for actions.")
     if ('a' in hsh or 'r' in hsh) and 's' not in hsh:
-        messages.extend(
-            ["An entry for @s is required for items with",
-             "either @a or @r entries."])
+        messages.append(
+            "An entry for @s is required for items with either @a or @r entries.")
     if ('+' in hsh or '-' in hsh) and 'r' not in hsh:
         messages.extend(
             ["An entry for @r is required for items with",
@@ -2912,7 +2908,7 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                         bisect.insort(dates, dt)
                 for dt in dates:
                     item = []
-                    # print('dt', type(dt), dt)
+                    # ('dt', type(dt), dt)
                     for g in grpby['tuples']:
                         if groupdate_regex.search(g):
                             item.append(d_to_str(dt, g))
@@ -2926,7 +2922,7 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                         dt,
                         reportDT(dt, grpby['include'], options),
                         uid])
-                    # print('insort', tuple(item))
+                    # ('insort', tuple(item))
                     bisect.insort(tups, tuple(item))
 
             else:  # no date spec in grpby
@@ -2990,7 +2986,7 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                     uid])
                 bisect.insort(tups, tuple(item))
         except:
-            print('Error processing', hsh['_summary'], hsh['fileinfo'])
+            logger.exception('Error processing: {0}, {1}'.format(hsh['_summary'], hsh['fileinfo']))
     return tups
 
 
@@ -3097,11 +3093,7 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False, colors=N
                       'd_to_str': d_to_str, 'dt_to_str': dt_to_str})
                 for x in fmts]
         except Exception as e:
-            print('getReportData exception', type(e), e)
-            print(fmts)
-            print(tup, hsh, rsplit, d_to_str, dt_to_str)
-            for x in fmts:
-                print('x', x)
+            logger.exception('fmts: {0}'.format(fmts))
             continue
         if filters['dates']:
             dt = reportDT(tup[-3], grpby['include'], options)
@@ -3124,12 +3116,9 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False, colors=N
 
         try:
             item = (cols.format(*eval_fmts)).split('::')
-            # print('item', item)
         except:
             us = u"{0}".format(*eval_fmts)
-            print(*eval_fmts)
-            print(us)
-            print(type(*eval_fmts))
+            logger.exception("eval_fmts: {0}".format(*eval_fmts))
 
         if grpby['report'] == 'r':
             if fmts.count(u"hsh['t']"):
@@ -3298,7 +3287,6 @@ def str2hsh(s, uid=None, options=None):
                 hsh['s'] = parse(
                     parse_datetime(
                         hsh['s'], hsh['z'])).replace(tzinfo=None)
-                # print('hsh[s]', hsh['s'].strftime(reprdatefmt))
 
             except:
                 err = "error: could not parse '@s {0}'".format(hsh['s'])
@@ -3399,15 +3387,14 @@ def str2hsh(s, uid=None, options=None):
             except Exception:
                 msg.append("could not process rrule: %s" % hsh['_r'])
                 f = StringIO()
-                traceback.print_exc(file=f)
                 msg.append("exception in get_rrule: '%s" % f.getvalue())
                 # generated, not stored
         hsh['i'] = unicode(uuid.uuid4())
     except:
         fio = StringIO()
+        logger.exception(fio)
         traceback.print_exc(file=fio)
         msg.append(fio.getvalue())
-        print(fio.getvalue())
     return hsh, msg
 
 
@@ -3450,7 +3437,7 @@ last_added = None
 def add2list(l, item, expand=True):
     """Add item to l if not already present using bisect to maintain order."""
     global last_added
-    # print('add2list', item)
+    # ('add2list', item)
     if expand and len(item) == 3:
         # this is a tree entry, so we need to expand the middle tuple
         # for makeTree
@@ -3460,41 +3447,39 @@ def add2list(l, item, expand=True):
             entry.append(item[2])
             item = entry
         except:
-            print('error expanding', len(item))
-            for i in item:
-                print("   ", type(i), i)
+            logger.exception('error expanding: {0}'.formt(item))
             return ()
     try:
         i = bisect.bisect_left(l, item)
     except:
-        print("error adding")
-        count = 0
-        for i in item:
-            count += 1
-            if type(i) == tuple:
-                subcount = 0
-                print('   %s tuple' % count)
-                for j in i:
-                    subcount += 1
-                    print("       %s.%s %s:" % (
-                        count, subcount, type(j)), j)
-            else:
-                print("   %s %s:" % (count, type(i)), i)
-
-        print("last added")
-        count = 0
-        for i in last_added:
-            count += 1
-            if type(i) == tuple:
-                subcount = 0
-                print('   %s tuple' % count)
-                for j in i:
-                    subcount += 1
-                    print("       %s.%s %s:" % (
-                        count, subcount, type(j)), j)
-            else:
-                print("   %s %s:" % (count, type(i)), i)
-        print(sys.exc_info())
+        logger.exception("error adding: {0}".format(item))
+        # count = 0
+        # for i in item:
+        #     count += 1
+        #     if type(i) == tuple:
+        #         subcount = 0
+        #         print('   %s tuple' % count)
+        #         for j in i:
+        #             subcount += 1
+        #             print("       %s.%s %s:" % (
+        #                 count, subcount, type(j)), j)
+        #     else:
+        #         print("   %s %s:" % (count, type(i)), i)
+        #
+        # print("last added")
+        # count = 0
+        # for i in last_added:
+        #     count += 1
+        #     if type(i) == tuple:
+        #         subcount = 0
+        #         print('   %s tuple' % count)
+        #         for j in i:
+        #             subcount += 1
+        #             print("       %s.%s %s:" % (
+        #                 count, subcount, type(j)), j)
+        #     else:
+        #         print("   %s %s:" % (count, type(i)), i)
+        # print(sys.exc_info())
         return ()
 
     if i != len(l) and l[i] == item:
@@ -3852,16 +3837,11 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
     occasions = {}  # isodate -> [(uuid, subject)]
     alerts = []  # today only [(start_minutes, alert_minutes, action, uuid, f)]
     for f in file2uuids:
-        # if cal_regex and not cal_regex.match(uuid2hash[uid]['fileinfo'][0]):
-        # if cal_regex and not cal_regex.match(uuid2hash[uid][f]):
-        #     # print('skipping')
-        #     continue
         folders = expandPath(f)
         for uid in file2uuids[f]:
             # this will give the items in file order!
             if uuid2hash[uid]['itemtype'] in ['=']:
                 continue
-            # print(uuid2hash[uid]['fileinfo'])
             hsh = {}
             for k, v in uuid2hash[uid].items():
                 hsh[k] = v
@@ -4028,8 +4008,7 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
                             fmt_time(dt, True, options=options))
                         dts = dt.strftime(sortdatefmt)
                     except:
-                        print("bad datetime", dt, type(dt))
-                        print(hsh)
+                        logger.exception("bad datetime: {0}, {1}\n{2}".format(dt, type(dt), hsh))
                     if hsh['itemtype'] == '*':
                         sdt = "%s %s" % (
                             fmt_time(dt, True, options=options),
@@ -4165,7 +4144,7 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
                         tmpl_hsh['e'] = fmt_period(hsh['e'])
                         etl = (dtl + hsh['e'])
                     except:
-                        print("Could not fmt hsh['e']=%s" % hsh['e'])
+                        logger.exception("Could not fmt hsh['e']=%s" % hsh['e'])
                 else:
                     tmpl_hsh['e'] = ''
                     etl = dtl
@@ -4385,8 +4364,6 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
                         extstr = fmt_period(hsh['e'])
                     else:
                         extstr = ''
-                    if 'f' in hsh and 'bath' in hsh['_summary']:
-                        print('f in hsh', hsh['_summary'], hsh['f'][-1][1], dtl, typ)
                     if 'f' in hsh and hsh['f'][-1][1] == dtl:
                         typ = 'fn'
                     else:
@@ -4467,9 +4444,6 @@ def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
         # logger.debug('text: {0}'.format(txt))
         if txt and not txt[0].strip():
             txt.pop(0)
-        # for part in txt:
-        #     for line in part:
-        #         print(line)
         fo = codecs.open(options['current_textfile'], 'w', file_encoding)
         fo.writelines("\n".join(txt))
         fo.close()
@@ -4555,14 +4529,13 @@ def hsh2ical(hsh):
         for r in rlst:
             if r['f'] == 'l':
                 if '+' not in hsh:
-                    print("Error: an entry for '@=' is required but missing.")
+                    logger.warn("An entry for '@=' is required but missing.")
                     continue
                     # list only kludge: make it repeat daily for a count of 1
                 # using the first element from @+ as the starting datetime
                 dz = parse(
                     parse_dtstr(
                         hsh['+'].pop(0), hsh['z'])).replace(tzinfo=tzinfo)
-                # print('dz', dz)
                 dt = dz
                 dd = dz.date()
 
@@ -4623,7 +4596,7 @@ def hsh2ical(hsh):
         try:
             element.add('dtstart', dt)
         except:
-            print('exception adding dtstart', dt)
+            logger.exception('exception adding dtstart: {0}'.format(dt))
 
     if hsh['itemtype'] == '*':
         if 'e' in hsh and hsh['e']:
@@ -4633,7 +4606,7 @@ def hsh2ical(hsh):
         try:
             element.add('dtend', ez)
         except:
-            print('exception adding dtend', ez, tz)
+            logger.exception('exception adding dtend: {0}, {1}'.format(ez, tz))
     elif hsh['itemtype'] == '~':
         if 'e' in hsh and hsh['e']:
             element.add('comment', timedelta2Str(hsh['e']))
@@ -4662,14 +4635,14 @@ def export_ical_item(hsh, vcal_file):
         cal_str = cal.to_ical()
     except Exception:
         f = StringIO()
-        traceback.print_exc(file=f)
+        logger.exception(f)
         return False, "could not serialize the calendar\n%s" % f.getvalue()
     fo = open(pname, 'wb')
     try:
         fo.write(cal_str)
     except Exception:
         f = StringIO()
-        traceback.print_exc(file=f)
+        logger.exception(f)
         return False, "Could not write to %s\n%s" % (pname, f.getvalue)
     fo.close()
     return True, ''
@@ -4704,14 +4677,14 @@ def export_ical(uuid2hash, vcal_file, calendars=None):
         cal_str = cal.to_ical()
     except Exception:
         f = StringIO()
-        traceback.print_exc(file=f)
+        logger.exception(f)
         return False, "could not serialize the calendar\n%s" % f.getvalue()
     fo = open(pname, 'wb')
     try:
         fo.write(cal_str)
     except Exception:
         f = StringIO()
-        traceback.print_exc(file=f)
+        logger.exception(f)
         return False, "Could not write to %s\n%s" % (pname, f.getvalue)
     fo.close()
     return True, ''
@@ -4930,7 +4903,6 @@ class ETMCmd():
             arg_str = " ".join(args)
         else:
             arg_str = ''
-            # print('do_command', cmd, arg_str)
         if cmd not in self.cmdDict:
             return _('"{0}" is an unrecognized command.').format(cmd)
         return self.cmdDict[cmd](arg_str)
@@ -5018,9 +4990,6 @@ class ETMCmd():
         )
         updateCurrentFiles(
             self.rows, file2uuids, uuid2hash, self.options)
-        # print(self.dates)
-        # self.prevnext = getPrevNext(self.dates)
-        # self.rows = rows
         self.file2uuids = file2uuids
         self.uuid2hash = uuid2hash
         self.currfile = ensureMonthly(self.options, now)
@@ -5144,7 +5113,7 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         except:
             return False
 
-        if choice in [1, 2]:
+        if choice in [1, 2, 4]:
             hsh = self.item_hsh
             dt = parse(
                 hsh['_dt']).replace(
@@ -5173,25 +5142,45 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
                 tmp = []
                 for h in hsh_rev['_r']:
                     if 'f' in h and h['f'] != u'l':
-                        h['u'] = dt - oneminute
+                        h['u'] = dtn - oneminute
                     tmp.append(h)
                 hsh_rev['_r'] = tmp
                 if u'+' in hsh:
                     tmp_rev = []
                     for d in hsh_rev['+']:
-                        if d < dt:
+                        if d < dtn:
                             tmp_rev.append(d)
                     hsh_rev['+'] = tmp_rev
                 if u'-' in hsh:
                     tmp_rev = []
                     for d in hsh_rev['-']:
-                        if d < dt:
+                        if d < dtn:
                             tmp_rev.append(d)
                     hsh_rev['-'] = tmp_rev
-                hsh_rev['s'] = dt
+                hsh_rev['s'] = dtn
                 # rev_str = hsh2str(hsh_rev, self.options)
                 self.replace_item(hsh_rev)
 
+            elif choice == 4:
+                # delete all previous instances
+                if u'+' in hsh:
+                    logger.debug('starting @+: {0}'.format(hsh['+']))
+                    tmp_rev = []
+                    for d in hsh_rev['+']:
+                        if d >= dtn:
+                            tmp_rev.append(d)
+                    hsh_rev['+'] = tmp_rev
+                    logger.debug('ending @+: {0}'.format(hsh['+']))
+                if u'-' in hsh:
+                    logger.debug('starting @-: {0}'.format(hsh['-']))
+                    tmp_rev = []
+                    for d in hsh_rev['-']:
+                        if d >= dtn:
+                            tmp_rev.append(d)
+                    hsh_rev['-'] = tmp_rev
+                    logger.debug('ending @-: {0}'.format(hsh['-']))
+                hsh_rev['s'] = dtn
+                self.replace_item(hsh_rev)
         else:
             self.delete_item()
 
