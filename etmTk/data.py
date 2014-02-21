@@ -855,8 +855,6 @@ def get_options(d=''):
         'sunmoon_location': [],
         'weather_location': '',
         'weeks_after': 52,
-        'window_height': 428,
-        'window_width': 464,
         'yearfirst': yearfirst}
 
     if not os.path.isdir(etmdir):
@@ -4886,8 +4884,7 @@ class ETMCmd():
         self.dates = None
         self.occasions = None
         self.prevnext = None
-        self.line_length = self.options['agenda_indent'] + self.options['agenda_width1'] + \
-                           self.options['agenda_width2']
+        self.line_length = self.options['agenda_indent'] + self.options['agenda_width1'] + self.options['agenda_width2']
         self.currfile = ''  # ensureMonthly(options)
         if 'edit_cmd' in self.options and self.options['edit_cmd']:
             self.editcmd = self.options['edit_cmd']

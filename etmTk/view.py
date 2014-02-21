@@ -327,9 +327,9 @@ class Dialog(Toplevel):
         # add standard button box. override if you don't want the
         # standard buttons
 
-        box = Frame(self)
+        box = Frame(self, background=BGCOLOR, highlightbackground=BGCOLOR)
 
-        w = Button(box, text="Cancel", width=10, command=self.cancel)
+        w = Button(box, text="Cancel", width=10, command=self.cancel, highlightbackground=BGCOLOR)
         w.pack(side=LEFT, padx=5, pady=5)
         w = Button(box, text="OK", width=10, command=self.ok, default=ACTIVE)
         w.pack(side=LEFT, padx=5, pady=5)
@@ -520,10 +520,10 @@ class TextDialog(Dialog):
         # add standard button box. override if you don't want the
         # standard buttons
 
-        box = Frame(self)
+        box = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
 
         w = Button(box, text="OK", width=10, command=self.cancel,
-                   default=ACTIVE)
+                   default=ACTIVE, highlightbackground=BGCOLOR)
         w.pack(side=LEFT, padx=5, pady=5)
 
         self.bind("<Return>", self.ok)
@@ -934,7 +934,7 @@ class App(Tk):
         label = _("Check for update")
         helpmenu.add_command(label=label, underline=1, accelerator="F3", command=self.checkForUpdate)
         self.add2menu(path, (label, "F3"))
-        self.bind_all("<F3>", self.checkForUpdate)
+        self.bind_all("<F3>", lambda e: self.after(AFTER, self.checkForUpdate))
 
 
 
@@ -1080,7 +1080,7 @@ class App(Tk):
         self.vm.configure(width=menuwidth, background=BGCOLOR, takefocus=False)
 
         # make
-        self.newLabel = _("New")
+        self.newLabel = _("Add")
         self.add2menu(tbar, (self.newLabel, ))
         path = self.newLabel
 
@@ -1110,7 +1110,7 @@ class App(Tk):
         self.nm.configure(width=menuwidth, background=BGCOLOR, takefocus=False)
 
         # edit
-        self.editLabel = _("Edit")
+        self.editLabel = _("Use")
         self.add2menu(tbar, (self.editLabel, ))
         path = self.editLabel
 

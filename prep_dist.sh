@@ -57,6 +57,7 @@ Edit etmQt/v.py to change the major and minor numbers."
     hg tag $tag -f
     echo "version = \"$tag\"" > /Users/dag/etm-tk/etmTk/v.py
     echo "version = \"$tag [$versioninfo]\"" > etmTk/version.py
+    echo "$tag [$versioninfo]" > etmTk/version.txt
     echo "Updated to $tag [$versioninfo]" >> $logfile
 else
     tag=$major.$minor.$patch

@@ -1,7 +1,7 @@
 
 ATKEYS = """\
 @a alert
---------
+========
 
 The specification of the alert(s) to use with the item. One or more alerts can be specified in an item. E.g.,
 
@@ -60,27 +60,27 @@ In addition to the default action used when the optional : action is not given, 
 Note: either e or p can be combined with other actions in a single alert but not with one another.
 
 @b beginby
-----------
+==========
 
 An integer number of days before the starting date time at which to begin displaying begin by notices. When notices are displayed they will be sorted by the item's starting datetime and then by the item's priority, if any.
 
 @c context
-----------
+==========
 
 Intended primarily for tasks to indicate the context in which the task can be completed. Common contexts include home, office, phone, computer and errands. The "next view" supports this usage by showing undated tasks, grouped by context. If you're about to run errands, for example, you can open the "next view", look under "errands" and be sure that you will have no "wish I had remembered" regrets.
 
 @d description
---------------
+==============
 
 An elaboration of the details of the item to complement the summary.
 
 @e extent
----------
+=========
 
 A time period string such as 1d2h (1 day 2 hours). For an action, this would be the elapsed time. For a task, this could be an estimate of the time required for completion. For an event, this would be the duration. The ending time of the event would be this much later than the starting datetime.
 
 @f done[; due]
---------------
+==============
 
 Datetimes; tasks, delegated tasks and task groups only. When a task is completed an @f done entry is added to the task. When the task has a due date, ; due is appended to the entry. Similarly, when a job from a task group is completed in etm, an &f done or &f done; due entry is appended to the job and it is removed from the list of prerequisites for the other jobs. In both cases done is the completion datetime and due, if added, is the datetime that the task or job was due. The completed task or job is shown as finished on the completion date. When the last job in a task group is finished an @f done or @f done; due entry is added to the task group itself reflecting the datetime that the last job was done and, if the task group is repeating, the &f entries are removed from the individual jobs.
 
@@ -101,12 +101,12 @@ Here "organize bills" and "get stamps, envelopes, checkbook" have no prerequisit
 The repetition that was due on 10/25 was completed on 10/24. The next repetition was due on 11/23 and, since none of the jobs for this repetition have been completed, the completion of the group on 10/24 and the list of jobs due on 11/23 will be displayed initially. The following sequence of screen shots show the effect of completing the jobs for the 11/23 repetition one by one on 11/27.
 
 @g goto
--------
+=======
 
 The path to a file or a URL to be opened using the system default application when the user presses Control-G in the GUI.
 
 @j job
-------
+======
 
 Component tasks or jobs within a task group are given by @j job entries. @key value entries prior to the first @j become the defaults for the jobs that follow. &key value entries given in jobs use & rather than @ and apply only to the specific job.
 
@@ -122,7 +122,7 @@ Many key-value pairs can be given either in the group task using @ or in the com
 The key-value pair &q (queue position) can only be given in component jobs where it is required. Key-values other than &q and those listed above, can only be given in the initial group task entry and their values are inherited by the component jobs.
 
 @k keyword
-----------
+==========
 
 A heirarchical classifier for the item. Intended for actions to support time billing where a common format would be client:job:category. etm treats such a keyword as a heirarchy so that an action report grouped by month and then keyword might appear as follows
 
@@ -143,27 +143,27 @@ A heirarchical classifier for the item. Intended for actions to support time bil
 An arbitrary number of heirarchical levels in keywords is supported.
 
 @l location
------------
+===========
 
 The location at which, for example, an event will take place.
 
 @m memo
--------
+=======
 
 Further information about the item not included in the summary or the description. Since the summary is used as the subject of an email alert and the descripton is commonly included in the body of an email alert, this field could be used for information not to be included in the email.
 
 @o overdue
-----------
+==========
 
 Repeating tasks only. One of the following choices: k) keep, r) restart, or s) skip. Details below.
 
 @p priority
------------
+===========
 
 Either 0 (no priority) or an intger between 1 (highest priority) and 9 (lowest priority). Primarily used with undated tasks.
 
 @r repetition rule
-------------------
+==================
 
 The specification of how an item is to repeat. Repeating items must have an @s entry as well as one or more @r entries. Generated datetimes are those satisfying any of the @r entries and falling on or after the datetime given in @s. Note that the datetime given in @s will only be included if it matches one of the datetimes generated by the @r entry.
 
@@ -227,22 +227,22 @@ A repeating task may optionally also include an @o <k|s|r> entry (default = k):
 -   @o r: Restart the repetitions based on the last completion date. Suppose you want to mow the grass once every ten days and that when you mowed yesterday, you were already nine days past due. Then you want the next due date to be ten days from yesterday and not today. Similarly, if you were one day early when you mowed yesterday, then you would want the next due date to be ten days from yesterday and not ten days from today.
 
 @s starting datetime
---------------------
+====================
 
 When an action is started, an event begins or a task is due.
 
 @t tags
--------
+=======
 
 A tag or list of tags for the item.
 
 @u user
--------
+=======
 
 Intended to specify the person to whom a delegated task is assigned. Could also be used in actions to indicate the person performing the action.
 
 @v action_rates key
--------------------
+===================
 
 Actions only. A key from action_rates in your etm.cft to apply to the value of @e. Used in actions to apply a billing rate to time spent in an action. E.g., with
 
@@ -254,7 +254,7 @@ Actions only. A key from action_rates in your etm.cft to apply to the value of @
 then entries of @v br1 and @e 2h25m in an action would entail a value of 45.0 * 2.5 = 112.50.
 
 @w action_markups key
----------------------
+=====================
 
 A key from action_markups in your etm.cfg to apply to the value of @x. Used in actions to apply a markup rate to expense in an action. E.g., with
 
@@ -265,22 +265,22 @@ A key from action_markups in your etm.cfg to apply to the value of @x. Used in a
 then entries of @w mr1 and @x 27.50 in an action would entail a value of 27.50 * 1.5 = 41.25.
 
 @x expense
-----------
+==========
 
 Actions only. A currency amount such as 27.50. Used in conjunction with @w above to bill for action expenditures.
 
 @z time zone
-------------
+============
 
 The time zone of the item, e.g., US/Eastern. The starting and other datetimes in the item will be interpreted as belonging to this time zone.
 
 @+ include
-----------
+==========
 
 A datetime or list of datetimes to be added to the repetitions generated by the @r rrule entry. If only a date is provided, 12:00am is assumed.
 
 @- exclude
-----------
+==========
 
 A datetime or list of datetimes to be removed from the repetitions generated by the @r rrule entry. If only a date is provided, 12:00am is assumed.
 
@@ -289,7 +289,7 @@ Note that to exclude a datetime from the recurrence rule, the @- datetime must e
 
 DATES = """\
 Fuzzy dates
------------
+===========
 
 When either a datetime or an time period is to be entered, special formats are used in etm. Examples include entering a starting datetime for an item using @s, jumping to a date using Ctrl-J and calculating a date using F5.
 
@@ -308,7 +308,7 @@ Note that 12am is the default time when a time is not explicity entered. E.g., +
 To avoid ambiguity, always append either 'a', 'p' or 'h' when entering an hourly time, e.g., use 1p or 13h.
 
 Time periods
-------------
+============
 
 Time periods are entered using the format DdHhMm where D, H and M are integers and d, h and m refer to days, hours and minutes respectively. For example:
 
@@ -319,7 +319,7 @@ Time periods are entered using the format DdHhMm where D, H and M are integers a
 As an example, if it is currently 8:50am on Friday February 15, 2013, then entering now + 2d4h30m into the date calculator would give 2013-02-17 1:20pm.
 
 Time zones
-----------
+==========
 
 Dates and times are always stored in etm data files as times in the time zone given by the entry for @z. On the other hand, dates and times are always displayed in etm using the local time zone of the system.
 
@@ -334,7 +334,7 @@ then the data file would contain
 but this item would be displayed as starting at 8:50am 2013-02-15 on the system in the US/Eastern time zone.
 
 Anniversary substitutions
--------------------------
+=========================
 
 An anniversary substitution is an expression of the form !YYYY! that appears in an item summary. Consider, for example, the occassion
 
@@ -345,7 +345,7 @@ This would appear on Feb 20 of 2011, 2012, 2013 and 2014, respectively, as 1st a
 
 ITEMTYPES = """\
 ~ Action
---------
+========
 
 A record of an action involving the expenditure of time (@e) and/or money (@x). Actions are not reminders, they are instead records of how time and/or money was actually spent. Action lines begin with a tilde, ~.
 
@@ -354,7 +354,7 @@ A record of an action involving the expenditure of time (@e) and/or money (@x). 
 Entries such as @s mon 3p, @e 1h15m and @x 127.32 are discussed below under Item details. Action entries form the basis for time and expense billing using action reports - see help/reports.
 
 * Event
--------
+=======
 
 Something that will happen on particular day(s) and time(s). Event lines begin with an asterick, *.
 
@@ -369,7 +369,7 @@ begins at 9am on Wednesday and ends at 5pm on Friday.
 An event without an @e entry or with @e 0 is regarded as a reminder and, since there is no extent, will not be displayed in the week view.
 
 ^ Occasion
-----------
+==========
 
 Holidays, anniversaries, birthdays and the like. Like an event with a date but no starting time and no extent. Occasions begin with a caret sign, ^.
 
@@ -378,14 +378,14 @@ Holidays, anniversaries, birthdays and the like. Like an event with a date but n
 On July 4, 2013, this would appear as The 237th Independence Day.
 
 ! Note
-------
+======
 
 A record of some useful information. Note lines begin with an exclamation point, !.
 
     ! xyz software @d user: dnlg, pw: abc123def
 
 - Task
-------
+======
 
 Something that needs to be done. It may or may not have a due date. Task lines begin with a minus sign, -.
 
@@ -394,14 +394,14 @@ Something that needs to be done. It may or may not have a due date. Task lines b
 A task with an @s entry becomes due on that date and past due when that date has passed. If the task also has an @b begin-by entry, then advance warnings of the task will begin appearing the specified number of days before the task is due. An @e entry in a task is interpreted as an estimate of the time required to finish the task.
 
 % Delegated task
-----------------
+================
 
 A task that is assigned to someone else, usually the person designated in an @u entry. Delegated tasks begin with a percent sign, %.
 
         % make reservations for trip @u joe @s fri
 
 + Task group
-------------
+============
 
 A collection of related tasks, some of which may be prerequities for others. Task groups begin with a plus sign, +.
 
@@ -416,7 +416,7 @@ Note that a task group is a single item and is treated as such. E.g., if any job
 Individual jobs are given by the @j entries. The queue entries, &q, set the order --- tasks with smaller &q values are prerequisites for subsequent tasks with larger &q values. In the example above, neither "pickup lumber" nor "pickup paint" have any prerequisites. "Pickup lumber", however, is a prerequisite for "cut pieces" which, in turn, is a prerequisite for "assemble". Both "assemble" and "pickup paint" are prerequisites for "paint".
 
 $ In basket
------------
+===========
 
 A quick, don't worry about the details item to be edited later when you have the time. In basket entries begin with a dollar sign, $.
 
@@ -425,19 +425,19 @@ A quick, don't worry about the details item to be edited later when you have the
 If you create an item using etm and forget to provide a type character, an $ will automatically be inserted.
 
 ? Someday maybe
----------------
+===============
 
 Something are you don't want to forget about altogether but don't want to appear on your next or scheduled lists. Someday maybe items begin with a question mark, ?.
 
         ? lose weight and exercise more
 
 # Hidden
---------
+========
 
 Hidden items begin with a hash mark, #. Such items are ignored by etm save for appearing in the folder view. Stick a hash mark in front of any item that you don't want to delete but don't want to see in your other views.
 
 = Defaults
-----------
+==========
 
 Default entries begin with an equal sign, =. These entries consist of @key value pairs which then become the defaults for subsequent entries in the same file until another = entry is reached.
 
@@ -460,7 +460,7 @@ There are several types of items in etm - see Help/Types for details. Each item 
 Dates can be entered in etm using fuzzy parsing - e.g., +7 for seven days from today, fri for next Friday, +1/1 for the first day of next month. See Help/Dates for details.
 
 Sample entries
---------------
+==============
 
 -   A sales meeting (an event) [s]tarting seven days from today at 9:00am with an [e]xtent of one hour and a default [a]lert 5 minutes before the start:
 
@@ -502,8 +502,8 @@ Sample entries
         - join the etm discussion group @s +1/1
           @g groups.google.com/group/eventandtaskmanager/topics
 
-Folders
--------
+Organization
+============
 
 etm offers two heirarchical ways of organizing your data: by folder (file path) and by keyword. There are no hard and fast rules about how to use these heirarchies but the goal is a system that makes complementary uses of folder and keyword and fits your needs. As with any filing system, planning and consistency are paramount.
 
@@ -549,15 +549,50 @@ Template expansions
 
 The following template expansions can be used in alert_displaycmd, alert_template, alert_voicecmd, email_template, sms_message and sms_subject below.
 
--   !summary!: the item's summary (this will be used as the subject of email and message alerts)
--   !start_date!: the starting date of the event
--   !start_time!: the starting time of the event
--   !time_span!: the time span of the event (see below)
--   !alert_time!: the time the alert is triggered
--   !time_left!: the time remaining until the event starts
--   !when!: the time remaining until the event starts as a sentence (see below)
--   !d!: the item's @d (description)
--   !l!: the item's @l (location)
+!summary!
+---------
+
+the item's summary (this will be used as the subject of email and message alerts)
+
+!start_date!
+------------
+
+the starting date of the event
+
+!start_time!
+------------
+
+the starting time of the event
+
+!time_span!
+-----------
+
+the time span of the event (see below)
+
+!alert_time!
+------------
+
+the time the alert is triggered
+
+!time_left!
+-----------
+
+the time remaining until the event starts
+
+!when!
+------
+
+the time remaining until the event starts as a sentence (see below)
+
+!d!
+---
+
+the item's @d (description)
+
+!l!
+---
+
+the item's @l (location)
 
 The value of !time_span! depends on the starting and ending datetimes. Here are some examples:
 
@@ -590,19 +625,6 @@ Here are values of !time_left! and !when! for some illustrative periods:
         when      : 'now'
 
 Note that 'now', 'from now', 'days', 'day', 'hours' and so forth are determined by the translation file in use.
-
-Available template expansions for action_template (below) include:
-
--   !label! the item or group label.
--   !count! the number of children represented in the reported item or group.
--   !minutes! the total time from @e entries in minutes rounded up using the setting for action_minutes.
--   !hours! if action_minutes = 1, the time in hours and minutes. Otherwise, the time in floating point hours.
--   !value! the billing value of the rounded total time. Requires an action entry such as @v br1 and a setting for action_rates.
--   !expense! the total expense from @x entries.
--   !charge! the billing value of the total expense. Requires an action entry such as @w mu1 and a setting for action_markups.
--   !total! the sum of !value! and !charge!.
-
-Note: when aggregating amounts in action reports, billing and markup rates are applied first to times and expenses for individual actions and the resulting amounts are then aggregated. Similarly, when times are rounded up, the rounding is done for individual actions and the results are then aggregated.
 
 Options
 =======
@@ -641,7 +663,7 @@ Round action times up to the nearest action_minutes in action reports. Possible 
 action_rates
 ------------
 
-    <!-- action_rates: -->
+    action_rates:
         default: 30.0
         br1: 45.0
         br2: 60.0
@@ -688,6 +710,50 @@ Used for action reports. With the above settings for action_minutes and action_t
         2.1h) Project F (1)
         6.6h) Project G (1)
 
+Available template expansions for action_template include:
+
+!label!
+-------
+
+the item or group label.
+
+!count!
+-------
+
+the number of children represented in the reported item or group.
+
+!minutes!
+---------
+
+the total time from @e entries in minutes rounded up using the setting for action_minutes.
+
+!hours!
+-------
+
+if action_minutes = 1, the time in hours and minutes. Otherwise, the time in floating point hours.
+
+!value!
+-------
+
+the billing value of the rounded total time. Requires an action entry such as @v br1 and a setting for action_rates.
+
+!expense!
+---------
+
+the total expense from @x entries.
+
+!charge!
+--------
+
+the billing value of the total expense. Requires an action entry such as @w mu1 and a setting for action_markups.
+
+!total!
+-------
+
+the sum of !value! and !charge!.
+
+Note: when aggregating amounts in action reports, billing and markup rates are applied first to times and expenses for individual actions and the resulting amounts are then aggregated. Similarly, when times are rounded up, the rounding is done for individual actions and the results are then aggregated.
+
 action_timer
 ------------
 
@@ -697,12 +763,16 @@ action_timer
 
 The command running is executed every action_interval minutes whenever the action timer is running and paused every minute when the action timer is paused.
 
-agenda_days
------------
+agenda
+------
 
-    agenda_days:    4
+    agenda_colors: 2,
+    agenda_days: 4,
+    agenda_indent: 2,
+    agenda_width1: 43,
+    agenda_width2: 17,
 
-The number of active days to display in agenda view.
+Sets the number of active days to display in agenda view and other parameters affecting the display in the CLI.
 
 alert_default
 -------------
@@ -714,14 +784,14 @@ The alert or list of alerts to be used when an alert is specified for an item bu
 alert_displaycmd
 ----------------
 
-    alert_displaycmd: /usr/local/bin/growlnotify -t !summary! -m '!time_span!'
+    alert_displaycmd: growlnotify -t !summary! -m '!time_span!'
 
 The command to be executed when d is included in an alert. Possible template expansions are discussed at the beginning of this tab.
 
 alert_soundcmd
 --------------
 
-    alert_soundcmd: '/usr/bin/play /home/dag/.etm/sounds/etm_alert.wav'
+    alert_soundcmd: 'play ~/.etm/sounds/etm_alert.wav'
 
 The command to execute when s is included in an alert. Possible template expansions are discussed at the beginning of this tab.
 
@@ -735,14 +805,14 @@ The template to use for the body of m (message) alerts. See the discussion of te
 alert_voicecmd
 --------------
 
-    alert_voicecmd: /usr/bin/say -v 'Alex' '!summary! begins !when!.'
+    alert_voicecmd: say -v 'Alex' '!summary! begins !when!.'
 
 The command to be executed when v is included in an alert. Possible expansions are are discussed at the beginning of this tab.
 
 alert_wakecmd
 -------------
 
-    alert_wakecmd: /Users/dag/bin/SleepDisplay -w
+    alert_wakecmd: ~/bin/SleepDisplay -w
 
 If given, this command will be issued to "wake up the display" before executing alert_displaycmd.
 
@@ -867,7 +937,7 @@ The encodings to be used for file IO, the GUI and terminal IO.
 filechange_alert
 ----------------
 
-    filechange_alert: '/usr/bin/play /home/dag/.etm/sounds/etm_alert.wav'
+    filechange_alert: 'play ~/.etm/sounds/etm_alert.wav'
 
 The command to be executed when etm detects an external change in any of its data files. Leave this command empty to disable the notification.
 
@@ -887,13 +957,13 @@ hg_commit
 
 The command to commit changes to the repository.
 
-    hg_commit: /usr/local/bin/hg commit -A -R {repo} -m '{mesg}'
+    hg_commit: hg commit -A -R {repo} -m '{mesg}'
 
 hg_history
 
 The command to show the history of changes for a particular data file.
 
-    hg_history: '/usr/local/bin/hg log --style compact \
+    hg_history: 'hg log --style compact \
         --template `{rev}: {desc}\n` \
         -R {repo} -p -r `tip`:0 {file}'
 
@@ -901,7 +971,7 @@ hg_init
 
 The command to initialize or create a repository.
 
-    hg_init: /usr/local/bin/hg init {0}
+    hg_init: hg init {0}
 
 iCalendar files
 ---------------
@@ -1004,7 +1074,7 @@ sundayfirst
 
     sundayfirst: false
 
-The setting affects only the twelve month calendar display. The first column in each month is Sunday if true and Monday otherwise. Both the week and month views list Monday first regardless of this setting since both reflect the iso standard for week numbering in which weeks begin with Monday.
+The setting affects only the twelve month calendar display.
 
 sunmoon_location
 ----------------
@@ -1037,15 +1107,7 @@ weeks_after
 
     weeks_after: 52
 
-In the day view, all non-repeating, dated items are shown. Additionally all repetitions of repeating items with a finite number of repetitions are shown. This includes 'list-only' repeating items and items with &u (until) or &t (total number of repetitions) entries. For repeating items with an infinite number of repetitions, those repetitions that occur within the first weeks_after weeks after the current week are displayed along with the first repetition after this interval. This assures that for infrequently repeating items such as voting for president, at least one repetition will be displayed.
-
-window height and width
------------------------
-
-    window_height: 428
-    window_width: 464
-
-The height and width for the GUI main window.
+In the schedule view, all non-repeating, dated items are shown. Additionally all repetitions of repeating items with a finite number of repetitions are shown. This includes 'list-only' repeating items and items with &u (until) or &t (total number of repetitions) entries. For repeating items with an infinite number of repetitions, those repetitions that occur within the first weeks_after weeks after the current week are displayed along with the first repetition after this interval. This assures that for infrequently repeating items such as voting for president, at least one repetition will be displayed.
 
 yearfirst
 ---------
@@ -1060,26 +1122,38 @@ etm supports creating, printing and exporting reports. Either click on the repor
 
 A report specification is created by entering a report type character followed by a groupby setting and, perhaps, by one or more report options. Together, the type character, groupby setting and options determine which items will appear in the report and how they will be organized and displayed.
 
+Report types
+============
+
 There are two possible report type characters, a and c:
 
--   a: action or accounting report. A report of expenditures of time and money recorded in actions with output formatted using action_template computations and expansions.
+a: action or accounting report.
+-------------------------------
 
--   c: custom report. Any item types but without action_template computations and expansions.
+A report of expenditures of time and money recorded in actions with output formatted using action_template computations and expansions. See Help/Preferences for further details about the role of action_template in formatting action report output. E.g., with this setting in etmtk.cfg:
 
-Available action_template expansions for action reports include:
+    action_template: '!hours!h) !label! (!count!)'
 
--   !label! the item or group label.
--   !count! the number of children represented in the reported item or group.
--   !minutes! the total time from @e entries in minutes rounded up using the setting for action_minutes.
--   !hours! if action_minutes = 1, the time in hours and minutes. Otherwise, the time in floating point hours.
--   !value! the billing value of the rounded total time. Requires an action entry such as @v br1 and a setting for action_rates.
--   !expense! the total expense from @x entries.
--   !charge! the billing value of the total expense. Requires an action entry such as @w mu1 and a setting for action_markups.
--   !total! the sum of !value! and !charge!.
+then a report might appear as follows:
 
-Note: when aggregating amounts in action reports, billing and markup rates are applied first to times and expenses for individual actions and the resulting amounts are then aggregated. Similarly, when times are rounded up, the rounding is done for individual actions and the results are then aggregated.
+    27.5h) Client 1 (3)
+        4.9h) Project A (1)
+        15h) Project B (1)
+        7.6h) Project C (1)
+    24.2h) Client 2 (3)
+        3.1h) Project D (1)
+        21.1h) Project E (2)
+            5.1h) Category a (1)
+            16h) Category b (1)
+    4.2h) Client 3 (1)
+    8.7h) Client 4 (2)
+        2.1h) Project F (1)
+        6.6h) Project G (1)
 
-See help/preferences for further details about setting action_template.
+c: custom report.
+-----------------
+
+Any item types but without action_template computations and expansions.
 
 You can select a report specification from a list of saved specifications, modify an existing specification or create an entirely new specification. Clicking on the create report icon or pressing Control-R will create a report based on the current specification.
 
@@ -1090,6 +1164,7 @@ If the current specification has been modified, then deleting it by clicking on 
 When temporary changes have been made to the list, the save button will be enabled and you can either click on this button or press Control-S to save the changes. If you attempt to close the reports dialog while there are unsaved changes, you will be given the opportunity to save them.
 
 groupby
+=======
 
 A semicolon separated list that determines how items will be grouped and sorted. Possible elements include date specifications and elements from
 
@@ -1144,18 +1219,29 @@ With the heirarchial elements, file path and keyword, it is possible to use part
     f[2:] = C
     f = A/B/C
 
-Suppose that keywords have the format client:project. Then c MMM yyyy; k[0]; k[1] would group by year and month, then client and finally project to give output such as
+Suppose that keywords have the format client:project. Then grouping by year and month, then client and finally project to give output such as
 
-    Apr 2011
-        client a
-            project 1
-                items for client a project 1 for April
-            project 2
-                items for client a project 2 for April
-        client b
-            project i
-                items for client b project i for April
-    ...
+    report: a MMM yyyy; u; k[0]; k[1] -b 1 -e +1/1
+
+    13.1) Feb 2014
+       6.3) agent 1
+          1.3) client 1
+             1.3) project 2
+                1.3) Activity 12
+          5) client 2
+             4.5) project 1
+                4.5) Activity 21
+             0.5) project 2
+                0.5) Activity 22
+       6.8) agent 2
+          2.2) client 1
+             2.2) project 2
+                2.2) Activity 13
+          4.6) client 2
+             3.9) project 1
+                3.9) Activity 23
+             0.7) project 2
+                0.7) Activity 23
 
 Items that are missing an element specified in groupby will be omitted from the output. E.g., undated tasks and notes will be omitted when a date specification is included, items without keywords will be omitted when k is included and so forth.
 
@@ -1164,71 +1250,74 @@ When a date specification is not included in groupby, undated notes and tasks wi
 Within groups, items are automatically sorted by date, type and time.
 
 options
+=======
 
 Report options are listed below. Report types c supports all options except -d. Report type a supports all options except -o and -h.
 
 -b BEGIN_DATE
+-------------
 
 Fuzzy parsed date. Limit the display of dated items to those with datetimes falling on or after this datetime. Relative day and month expressions can also be used so that, for example, -b -14 would begin 14 days before the current date and -b -1/1 would begin on the first day of the previous month. It is also possible to add (or subtract) a time period from the fuzzy date, e.g., -b mon + 7d would begin with the second Monday falling on or after today. Default: None.
 
 -c CONTEXT
+----------
 
 Regular expression. Limit the display to items with contexts matching CONTEXT (ignoring case). Prepend an exclamation mark, i.e., use !CONTEXT rather than CONTEXT, to limit the display to items which do NOT have contexts matching CONTEXT.
 
 -d DEPTH
+--------
 
-The default, -d 0, includes all outline levels. Use -d 1 to include only level 1, -d 2 to include levels 1 and 2 and so forth. For example, a report that appears as follows with the default, -d 0:
+The default, -d 0, includes all outline levels. Use -d 1 to include only level 1, -d 2 to include levels 1 and 2 and so forth.
 
-[]
-Exporting this report (CSV format) would give:
+For example, modifying the report above by adding -d 3 would give the following:
 
-[]
-With -d 3, these would change to
+    report: a MMM yyyy; u; k[0]; k[1] -b 1 -e +1/1 -d 3
 
-[] []
-and, with -d 2 to
-
-[] []
-In this example, the relevant settings from etm.cfg are
-
-    action_minutes: 6
-    action_rates:
-        default: 100.0
-        br1:    125.0
-        br2:    150.0
-    action_template: '!hours!h $!value! !label! (!count!)'
-
-The default action_rate is used for client 1, br1 for client 2 and br3 for client 3.
+    13.1) Feb 2014
+       6.3) agent 1
+          1.3) client 1
+          5) client 2
+       6.8) agent 2
+          2.2) client 1
+          4.6) client 2
 
 -e END_DATE
+-----------
 
 Fuzzy parsed date. Limit the display of dated items to those with datetimes falling before this datetime. As with BEGIN_DATE relative month expressions can be used so that, for example, -b -1/1  -e 1 would include all items from the previous month. As with -b, period strings can be appended, e.g., -b mon -e mon + 7d would include items from the week that begins with the first Monday falling on or after today. Default: None.
 
 -f FILE
+-------
 
 Regular expression. Limit the display to items from files whose paths match FILE (ignoring case). Prepend an exclamation mark, i.e., use !FILE rather than FILE, to limit the display to items from files whose path does NOT match FILE.
 
 -h HUE
+------
 
 0, 1 or 2. -h 2 uses all possible colors for leaf fonts, -h 1 uses red for past due items and black for everything else and -h 0 uses black for everything. The default is taken from the setting for colors in emt.cfg.
 
 -k KEYWORD
+----------
 
 Regular expression. Limit the display to items with contexts matching KEYWORD (ignoring case). Prepend an exclamation mark, i.e., use !KEYWORD rather than KEYWORD, to limit the display to items which do NOT have keywords matching KEYWORD.
 
 -l LOCATION
+-----------
 
 Regular expression. Limit the display to items with location matching LOCATION (ignoring case). Prepend an exclamation mark, i.e., use !LOCATION rather than LOCATION, to limit the display to items which do NOT have a location that matches LOCATION.
 
 -o OMIT
+-------
 
 String. Show/hide a)ctions, d)elegated tasks, e)vents, g)roup tasks, n)otes, o)ccasions and/or other t)asks. For example, -o on would show everything except occasions and notes and -o !on would show only occasions and notes.
 
 -s SUMMARY
+----------
 
 Regular expression. Limit the display to items containing SUMMARY (ignoring case) in the item summary. Prepend an exclamation mark, i.e., use !SUMMARY rather than SUMMARY, to limit the display to items which do NOT contain SUMMARY in the summary.
 
 -t TAGS
+-------
 
 Comma separated list of case insensitive regular expressions. E.g., use
 
@@ -1237,14 +1326,17 @@ Comma separated list of case insensitive regular expressions. E.g., use
 to display items with one or more tags that match 'tag1' but none that match 'tag2'.
 
 -u USER
+-------
 
 Regular expression. Limit the display to items with user matching USER (ignoring case). Prepend an exclamation mark, i.e., use !USER rather than USER, to limit the display to items which do NOT have a user that matches USER.
 
 -w WIDTH1
+---------
 
 Integer. Limit the first column display width to this number of characters. Default: report_width1 in etm.cfg.
 
 -W WIDTH2
+---------
 
 Integer. Limit the second column display width to this number of characters. Default: report_width2 in etm.cfg.
 """
