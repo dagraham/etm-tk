@@ -6,13 +6,13 @@ A *report specification* is created by entering a report *type character* follow
 
 There are two possible report type characters, *a* and *c*:
 
-## **a**: action or accounting report.
+## **a**: action report.
 
 A report of expenditures of time and money recorded in actions with output formatted using `action_template` computations and expansions. See Help/Preferences for further details about the role of `action_template` in formatting action report output. E.g., with this setting in `etmtk.cfg`:
 
     action_template: '!hours!h) !label! (!count!)'
 
-then a report might appear as follows:
+a report might appear as follows:
 
     27.5h) Client 1 (3)
         4.9h) Project A (1)
@@ -28,7 +28,7 @@ then a report might appear as follows:
         2.1h) Project F (1)
         6.6h) Project G (1)
 
-## **c**: custom report.
+## **c**: composite report.
 
 Any item types but without `action_template` computations and expansions.
 

@@ -1,6 +1,6 @@
 # ~ Action
 
-A record of an action involving the expenditure of time (`@e`) and/or money (`@x`). Actions are not reminders, they are instead records of how time and/or money was actually spent. Action lines begin with a tilde, `~`.
+A record of the expenditure of time (`@e`) and/or money (`@x`). Actions are not reminders, they are instead records of how time and/or money was actually spent. Action lines begin with a tilde, `~`.
 
         ~ picked up lumber and paint @s mon 3p @e 1h15m @x 127.32
 
@@ -18,15 +18,15 @@ Events have a starting datetime, `@s` and an extent, `@e`. The ending datetime i
 
 begins at 9am on Wednesday and ends at 5pm on Friday.
 
-An event without an `@e` entry or with `@e 0` is regarded as a *reminder* and, since there is no extent, will not be displayed in the *week view*.
+An event without an `@e` entry or with `@e 0` is regarded as a *reminder* and, since there is no extent, will not be displayed in *busy times*.
 
 # ^ Occasion
 
-Holidays, anniversaries, birthdays and the like. Like an event with a date but no starting time and no extent. Occasions begin with a caret sign, `^`.
+Holidays, anniversaries, birthdays and such. Similar to an event with a date but no starting time and no extent. Occasions begin with a caret sign, `^`.
 
         ^ The !1776! Independence Day @s 2010-07-04 @r y &M 7 &m 4
 
-On July 4, 2013, this would appear as `The 237th Independence Day`.
+On July 4, 2013, this would appear as `The 237th Independence Day`. Here !1776!` is an example of an *anniversary substitution* - see Help/Dates for details.
 
 # ! Note
 
@@ -50,7 +50,7 @@ A task that is assigned to someone else, usually the person designated in an `@u
 
 # + Task group
 
-A collection of related tasks, some of which may be prerequities for others. Task groups begin with a plus sign, `+`.
+A collection of related tasks, some of which may be prerequisite for others. Task groups begin with a plus sign, `+`.
 
         + dog house
           @j pickup lumber and paint      &q 1

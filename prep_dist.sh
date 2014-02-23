@@ -31,6 +31,13 @@ echo # just a final linefeed, optics...
 
 return $retval
 }
+
+#echo Tk/Tcl version information:
+#otool -L $(arch -i386 python3 -c 'import _tkinter;\
+#               print(_tkinter.__file__)')
+#otool -L $(arch -x86_64 python3 -c 'import _tkinter;\
+#               print(_tkinter.__file__)')
+
 logfile="prep_dist.txt"
 # get the current major.minor.patch tag
 vinfo=`cat etmTk/v.py | head -1 | sed 's/\"//g' | sed 's/^.*= *//g'`
@@ -57,7 +64,6 @@ Edit etmQt/v.py to change the major and minor numbers."
     hg tag $tag -f
     echo "version = \"$tag\"" > /Users/dag/etm-tk/etmTk/v.py
     echo "version = \"$tag [$versioninfo]\"" > etmTk/version.py
-    echo "$tag [$versioninfo]" > etmTk/version.txt
     echo "Updated to $tag [$versioninfo]" >> $logfile
 else
     tag=$major.$minor.$patch
@@ -65,6 +71,7 @@ else
     echo "Kept $tag [$versioninfo]" >> $logfile
     # hg tag $tag -f
 fi
+echo "$tag [$versioninfo]" > version.txt
 
 echo $tag > etmTk/v.txt
 

@@ -40,7 +40,9 @@ else:
     def utf8(s):
         return(s)
 
-tkversion = tkinter.TkVersion
+# tkversion = tkinter.TkVersion
+
+tkversion = tkinter.Tcl().eval('info patchlevel')
 
 import etmTk.data as data
 # from data import init_localization
@@ -60,7 +62,7 @@ _ = gettext.gettext
 
 # used in hack to prevent dialog from hanging under os x
 if mac:
-    AFTER = 100
+    AFTER = 200
 else:
     AFTER = 1
 
@@ -331,7 +333,7 @@ class Dialog(Toplevel):
 
         w = Button(box, text="Cancel", width=10, command=self.cancel, highlightbackground=BGCOLOR)
         w.pack(side=LEFT, padx=5, pady=5)
-        w = Button(box, text="OK", width=10, command=self.ok, default=ACTIVE)
+        w = Button(box, text="OK", width=10, command=self.ok, default=ACTIVE,  highlightbackground=BGCOLOR)
         w.pack(side=LEFT, padx=5, pady=5)
 
         self.bind("<Return>", self.ok)
@@ -489,7 +491,7 @@ class DialogWindow(Dialog):
     def body(self, master):
         self.entry = Entry(master)
         self.entry.pack(side="bottom", padx=5, pady=5)
-        Label(master, text=self.prompt, justify='left').pack(side="top", fill=tkinter.BOTH, expand=1, padx=10, pady=5)
+        Label(master, text=self.prompt, justify='left', highlightbackground=BGCOLOR, background=BGCOLOR).pack(side="top", fill=tkinter.BOTH, expand=1, padx=10, pady=5)
         if self.default is not None:
             self.entry.insert(0, self.default)
             self.entry.select_range(0, END)
@@ -724,57 +726,59 @@ class App(Tk):
         # filemenu.add_command(label=_("Recently changed ..."),
         #                      underline=0, command=self.donothing)
 
-        l, c = commandShortcut('F')
+        l, c = commandShortcut('D')
         label = _("Data file ...")
-        filemenu.add_command(label=label, underline=0, command=self.editData)
-        # self.bind_all(c, self.editData)
+        filemenu.add_command(label=label, command=self.editData)
+        self.bind_all(c, lambda e: filemenu.invoke(1))
         self.add2menu(path, (label, l))
 
         filemenu.add_separator()
         self.add2menu(path, (SEP, ))
 
 
-        l, c = commandShortcut('P')
+        l, c = commandShortcut('E')
+        logger.debug("config: {0}, {1}".format(l, c))
         file = loop.options['config']
-        # label = relpath(file, loop.options['etmdir'])
-        label = _("Preferences")
-        filemenu.add_command(label=label, underline=0, command=lambda e=None, x=file: self.editFile(e, file=x, config=True), )
-        self.bind_all(c, lambda e, x=file:  self.editFile(file=x, config=True))
+        label = relpath(file, loop.options['etmdir'])
+        # label = _("Preferences")
+        filemenu.add_command(label=label, command=lambda x=file: self.editFile(file=x, config=True))
+        self.bind_all(c, lambda e: filemenu.invoke(2))
         self.add2menu(path, (label, l))
 
-        l, c = commandShortcut('A')
+        l, c = commandShortcut('C')
         file = loop.options['auto_completions']
-        # label = relpath(file, loop.options['etmdir'])
-        label = _("Auto completions")
-        filemenu.add_command(label=label, underline=0, command=lambda x=file: self.editFile(file=x))
-        self.bind_all(c, lambda e, x=file:  self.editFile(file=x))
+        # label = _("Auto completions")
+        label = relpath(file, loop.options['etmdir'])
+        filemenu.add_command(label=label,  command=lambda x=file: self.editFile(file=x))
+        self.bind_all(c, lambda e: filemenu.invoke(3))
         self.add2menu(path, (label, l))
 
         l, c = commandShortcut('R')
         file = loop.options['report_specifications']
-        # label = relpath(file, loop.options['etmdir'])
-        label = _("Report specifications")
-        filemenu.add_command(label=label, underline=0, command=lambda x=file: self.editFile(e=None, file=x))
-        self.bind_all(c, lambda e, x=file:  self.editFile(file=x))
+        # label = _("Report specifications")
+        label = relpath(file, loop.options['etmdir'])
+        logger.debug("{0}: {1}, {2}".format(label, l, c))
+        filemenu.add_command(label=label, command=lambda x=file: self.editFile(file=x))
+        self.bind_all(c, lambda e, x=file: self.editFile(file=x))
         self.add2menu(path, (label, l))
 
         l, c = commandShortcut('S')
         file = loop.options['scratchpad']
-        # label = relpath(file, loop.options['etmdir'])
-        label = _("Scratchpad")
-        filemenu.add_command(label=label, underline=0, command=lambda x=file: self.editFile(file=x))
-        self.bind_all(c, lambda e, x=file: self.editFile(file=x))
+        label = relpath(file, loop.options['etmdir'])
+        # label = _("Scratchpad")
+        filemenu.add_command(label=label, command=lambda x=file: self.editFile(file=x))
+        self.bind_all(c, lambda e: filemenu.invoke(5))
         self.add2menu(path, (label, l))
 
         filemenu.add_separator()
         self.add2menu(path, (SEP, ))
 
         ## export
-        # l, c = commandShortcut('X')
+        l, c = commandShortcut('X')
         label = _("Export to iCal")
         filemenu.add_command(label=label, underline=1, command=self.donothing)
-        # self.bind_all(c, self.donothing)
-        self.add2menu(path, (label, ))
+        self.bind_all(c, self.donothing)
+        self.add2menu(path, (label, l))
 
         filemenu.add_separator()
         self.add2menu(path, (SEP, ))
@@ -856,8 +860,8 @@ class App(Tk):
         self.add2menu(path, (label, l))
 
         # report
-        l, c = commandShortcut('r')
-        label=_("Create report")
+        l, c = commandShortcut('m')
+        label=_("Make report")
         viewmenu.add_command(label=label, accelerator=l,
                              underline=1,
                              command=self.donothing)
@@ -1072,6 +1076,7 @@ class App(Tk):
             label = self.vm_options[i][0]
             k = self.vm_options[i][1]
             l, c = commandShortcut(k)
+            logger.debug("{0} ({1}): {2}, {3}".format(label, k, l, c))
             self.bind(c, self.view2cmd[k])  # a, s, p, k, t
             self.vm["menu"].entryconfig(i, accelerator=l)
             self.add2menu(path, (label, l))
@@ -1087,7 +1092,7 @@ class App(Tk):
         self.newValue = StringVar(self)
         self.newValue.set(self.newLabel)
         self.nm_options = [[_('Item'), 'n'],
-                           [_('Timer'), 'm'],
+                           [_('Timer'), 'i'],
         ]
         self.nm_opts = [x[0] for x in self.nm_options]
         self.nm = OptionMenu(toolbar, self.newValue, *self.nm_opts)
@@ -1142,7 +1147,7 @@ class App(Tk):
             k = self.em_options[i][1]
             l, c = commandShortcut(k)
             self.em["menu"].entryconfig(i, accelerator=l, command=lambda x=k: self.after(AFTER, self.edit2cmd[x]))
-            self.bind_all(c, lambda event, x=k: self.after(AFTER, self.edit2cmd[x]))
+            self.tree.bind(c, lambda event, x=k: self.after(AFTER, self.edit2cmd[x]))
             self.add2menu(path, (label, l))
 
         self.em.pack(side="left")
@@ -1242,10 +1247,10 @@ class App(Tk):
             m = LASTLTR.search(child[1])
             if m:
                 child = list(child)
-                v = child[1]
-                l = m.group(1).upper()
-                v = LASTLTR.sub("{0}".format(l), v, count=1)
-                child[1] = v
+                # v = child[1]
+                # l = m.group(1).upper()
+                # v = LASTLTR.sub("{0}".format(l), v, count=1)
+                # child[1] = v
                 child = tuple(child)
         else:
             id = child[0]
@@ -1585,6 +1590,8 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
 
 
     def rescheduleItem(self, e=None):
+        if not self.itemSelected:
+            return
         loop.item_hsh = item_hsh = self.itemSelected
         if self.dtSelected:
             loop.old_dt = old_dt = parse(self.dtSelected)

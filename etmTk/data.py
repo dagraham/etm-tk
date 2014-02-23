@@ -113,9 +113,12 @@ def commandShortcut(s):
     else:
         shift = ""
     if mac:
-        return "{0}Cmd-{1}".format(shift, s), "<{0}Command-{1}>".format(shift, s)
+        # return "{0}Cmd-{1}".format(shift, s), "<{0}Command-{1}>".format(shift, s)
+        return "{0}Ctrl-{1}".format(shift, s.upper()), "<{0}Control-{1}>".format(shift,
+                                                                       s)
     else:
-        return "{0}Ctrl-{1}".format(shift, s), "<{0}Control-{1}>".format(shift, s)
+        return "{0}Ctrl-{1}".format(shift, s.upper()), "<{0}Control-{1}>".format( shift, s)
+
 
 def optionShortcut(s):
     """
@@ -127,11 +130,9 @@ def optionShortcut(s):
     else:
         shift = ""
     if mac:
-        return "{0}Alt-{1}".format(shift, s), "<{0}Option-{1}>".format(shift,
-                                                                       s)
+        return "{0}Alt-{1}".format(shift, s.upper()), "<{0}Option-{1}>".format(shift, s)
     else:
-        return "{0}Alt-{1}".format(shift, s), "<{0}Alt-{1}>".format(shift,
-                                                                       s)
+        return "{0}Alt-{1}".format(shift, s.upper()), "<{0}Alt-{1}>".format(shift, s)
 
 
 def init_localization():
@@ -1006,7 +1007,7 @@ def checkForNewerVersion():
         python_version2 = True
         from urllib2 import urlopen, URLError
 
-    url = "http://people.duke.edu/~dgraham/etmqt/version.txt"
+    url = "http://people.duke.edu/~dgraham/etmtk/version.txt"
     try:
         response = urlopen(url)
     except URLError as e:
@@ -5627,7 +5628,7 @@ This application provides a format for using plain text files to store events, t
 System Information:
   Python:    {0[python]}
   Dateutil:  {0[dateutil]}
-  Tk:        {0[tkversion]}
+  Tk/Tcl:    {0[tkversion]}
   Platform:  {0[platform]}
 
 ETM Information:

@@ -1,9 +1,8 @@
 NAME
     etm - manage events and tasks using simple text files
 SYNOPSIS
-    etm_qt [loglevel] [path] [?] [acmsv]
+    etm [loglevel] [path] [?] [a|n|m|r|v]
 DESCRIPTION
-Usage:
 
 With no arguments, etm will use settings from the configuration file
 ~/.etm/etmtk.cfg, set logging level 3 (warn) and open the GUI.
@@ -26,8 +25,8 @@ the GUI.
             positive integer, to display a report using the corresponding
             entry from the file given by report_specifications in etmtk.cfg.
             Use ? m to display the numbered list of entries from this file.
-    r ARGS  display a report using the remaining arguments as the
-            report specification.
+    r ARGS  display an action or composite report using the remaining
+            arguments as the specification.
     v       display information about etm and the operating system.
 
     ? ARGS  display (this) command line help information if ARGS = '' or,
