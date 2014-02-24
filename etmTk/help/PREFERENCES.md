@@ -152,37 +152,21 @@ Used for action reports. With the above settings for `action_minutes` and `actio
 
 Available template expansions for `action_template` include:
 
-## `!label!`
+- `!label!`: the item or group label.
 
-the item or group label.
+- `!count!`: the number of children represented in the reported item or group.
 
-## `!count!`
+- `!minutes!:` the total time from `@e` entries in minutes rounded up using the setting for `action_minutes`.
 
-the number of children represented in the reported item or group.
+- `!hours!`: if action_minutes = 1, the time in hours and minutes. Otherwise, the time in floating point hours.
 
-## `!minutes!`
+- `!value!`: the billing value of the rounded total time. Requires an action entry such as `@v br1` and a setting for `action_rates`.
 
-the total time from `@e` entries in minutes rounded up using the setting for `action_minutes`.
+- `!expense!`: the total expense from `@x` entries.
 
-## `!hours!`
+- `!charge!`: the billing value of the total expense. Requires an action entry such as `@w mu1` and a setting for `action_markups`.
 
-if action_minutes = 1, the time in hours and minutes. Otherwise, the time in floating point hours.
-
-## `!value!`
-
-the billing value of the rounded total time. Requires an action entry such as `@v br1` and a setting for `action_rates`.
-
-## `!expense!`
-
-the total expense from `@x` entries.
-
-## `!charge!`
-
-the billing value of the total expense. Requires an action entry such as `@w mu1` and a setting for `action_markups`.
-
-## `!total!`
-
-the sum of `!value!` and `!charge!`.
+- `!total!`: the sum of `!value!` and `!charge!`.
 
 Note: when aggregating amounts in action reports, billing and markup rates are applied first to times and expenses for individual actions and the resulting amounts are then aggregated. Similarly, when times are rounded up, the rounding is done for individual actions and the results are then aggregated.
 
@@ -270,7 +254,7 @@ The absolute path to the file to be used for autocompletions. Each line in the f
     @z US/Pacific
     dnlgrhm@gmail.com
 
-As soon as you enter, for example, "@c" in the editor, a list of possible completions will pop up and then, as you type further characters, the list will shrink to show only those that still match:
+If you enter, for example, "@c" in the editor and press Ctrl-/, a list of possible completions will pop up and then, as you type further characters, the list will shrink to show only those that still match:
 
 <center>
 ![](images/completion.png "Completion")

@@ -46,9 +46,50 @@ Dates can be entered in etm using *fuzzy parsing* - e.g., `+7` for seven days fr
         - join the etm discussion group @s +1/1
           @g groups.google.com/group/eventandtaskmanager/topics
 
+# Views
+
+Note: if a (case-insensitive) filter is entered then the display in all views will be limited to items that match somewhere in either the branch or the leaf.
+
+## Agenda
+
+What you need to know now beginning with your schedule for the next few days and followed by items in these groups:
+
+- **In basket**: In basket items and items with missing types or other errors.
+
+- **Now**: All *scheduled* (dated) tasks whose due dates have passed including delegated tasks and waiting tasks (tasks with unfinished prerequisites) grouped by available, delegated and waiting and, within each group, by the due date.
+
+- **Next**: All *unscheduled* (undated) tasks grouped by context (home, office, phone, computer, errands and so forth) and sorted by priority and extent. These tasks correspond to GTD's *next actions*. These are tasks which don't really have a deadline and can be completed whenever a convenient  opportunity arises.  Check this view, for example, before you leave to run errands for opportunities to clear other errands.
+
+- **Someday**: Someday (maybe) items. Review these periodically.
+
+
+## Schedule
+
+Scheduled (dated) items appear in this view, grouped by date and sorted by starting time and item type. This includes:
+
+- All non-repeating, dated items.
+
+- All repetitions of repeating items with a finite number of repetitions. This includes 'list-only' repeating items and items with `&u` (until) or `&t` (total number of repetitions) entries.
+
+- For repeating items with an infinite number of repetitions, those repetitions that occur within the first `weeks_after` weeks after the current week are displayed along with the first repetition after this interval. This assures that at least one repetition will be displayed for infrequently repeating items such as voting for president.
+
+## Tags
+
+All items with tag entries grouped by tag and sorted by type and *relevant datetime*. Note that items with multiple tags will be listed under each tag.
+
+## Keywords
+
+All items grouped by keyword and sorted by type and *relevant datetime*.
+
+## Paths
+
+All items grouped by file path and sorted by type and *relevant datetime*. Use this view to review the status of your projects.
+
+The *relevant datetime* is the past due date for any past due task, the starting datetime for any non-repeating item and the datetime of the next instance for any repeating item.
+
 # Organization
 
-*etm* offers two heirarchical ways of organizing your data: by folder (file path) and by keyword. There are no hard and fast rules about how to use these heirarchies but the goal is a system that makes complementary uses of folder and keyword and fits your needs. As with any filing system, planning and consistency are paramount.
+*etm* offers two hierarchical ways of organizing your data: by keyword and file path. There are no hard and fast rules about how to use these hierarchies but the goal is a system that makes complementary uses of folder and keyword and fits your needs. As with any filing system, planning and consistency are paramount.
 
 For example, one pattern of use for a business would be to use folders for people and keywords for client-project-category.
 
@@ -69,16 +110,18 @@ Here
 
 would both contain `datadir` entries specifying the common root data directory. Additionally, if these configuration files contained, respectively, the entries
 
-    calendars
-    - [dag, true, dag]
-    - [erp, false, erp]
-    - [shared, true, shared]
+    ~dag/.etm/etm.cfg
+        calendars
+        - [dag, true, dag]
+        - [erp, false, erp]
+        - [shared, true, shared]
 
 and
 
-    calendars
-    - [erp, true, erp]
-    - [dag, false, dag]
-    - [shared, true, shared]
+    ~erp/.etm/etm.cfg
+        calendars
+        - [erp, true, erp]
+        - [dag, false, dag]
+        - [shared, true, shared]
 
-then, by default, both dag and erp would see the entries from their personal files as well as the shared entries and each could optionally view the entries from the other's personal files as well.  See the *Preferences* tab for details on the `calendars` entry.
+then, by default, both dag and erp would see the entries from their personal files as well as the shared entries and each could optionally view the entries from the other's personal files as well.  See the Help/Preferences for details on the `calendars` entry.

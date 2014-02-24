@@ -4,6 +4,7 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 #import the 'tkinter' module
 from idlelib.EditorWindow import get_accelerator
+
 import os
 import re
 import uuid
@@ -864,7 +865,7 @@ class App(Tk):
         label=_("Make report")
         viewmenu.add_command(label=label, accelerator=l,
                              underline=1,
-                             command=self.donothing)
+                             command=self.makeReport)
         self.bind(c, self.donothing)
         self.add2menu(path, (label, l))
 
@@ -904,14 +905,6 @@ class App(Tk):
         menubar.add_cascade(label=path, menu=viewmenu, underline=0)
 
         # logger.debug('menu_tree:\n{0}'.format(self.menutree.showMenu(root)))
-
-        # TODO: add help topics
-        # overview
-        # data
-        # views
-        # X commands and shortcuts
-        # preferences
-        # reports
 
         helpmenu = Menu(menubar, tearoff=0)
         path = _("Help")
@@ -1053,9 +1046,10 @@ class App(Tk):
 
         self.vm_options = [[AGENDA, 'a'],
                            [SCHEDULE, 's'],
-                           [PATHS, 'p'],
+                           [TAGS, 't'],
                            [KEYWORDS, 'k'],
-                           [TAGS, 't']]
+                           [PATHS, 'p'],
+        ]
 
         self.view2cmd = {'a': self.agendaView,
                          's': self.scheduleView,
@@ -1299,6 +1293,11 @@ class App(Tk):
         """For testing"""
         logger.debug('donothing')
 
+    # TODO: implement makeReport
+    def makeReport(self):
+        logger.debug('makeReport')
+        pass
+
     def openWithDefault(self):
         if 'g' not in self.itemSelected:
             return(False)
@@ -1356,8 +1355,6 @@ a time period if "+" is used."""
         indx, value = OptionsDialog(parent=self, title=_("instance: {0}").format(instance), prompt=prompt, opts=opt_lst).getValue()
         return indx, value
 
-    # TODO: replace dt with dtn in copyItem and editItem?
-
     def copyItem(self, e=None):
         """
         newhsh = selected, rephsh = None
@@ -1397,7 +1394,7 @@ a time period if "+" is used."""
                 for k in ['_r', 'o', '+', '-']:
                     if k in hsh_cpy:
                         del hsh_cpy[k]
-                hsh_cpy['s'] = dt
+                hsh_cpy['s'] = dtn
                 # edit_str = hsh2str(hsh_cpy, loop.options)
 
             elif choice == 2:
@@ -1415,7 +1412,7 @@ a time period if "+" is used."""
                         if d >= dtn:
                             tmp_cpy.append(d)
                     hsh_cpy['-'] = tmp_cpy
-                hsh_cpy['s'] = dt
+                hsh_cpy['s'] = dtn
                 # edit_str = hsh2str(hsh_cpy, loop.options)
 
         changed = SimpleEditor(parent=self, newhsh=hsh_cpy, rephsh=None,
@@ -1491,7 +1488,7 @@ a time period if "+" is used."""
                 for k in ['_r', 'o', '+', '-']:
                     if k in hsh_cpy:
                         del hsh_cpy[k]
-                hsh_cpy['s'] = dt
+                hsh_cpy['s'] = dtn
 
             elif choice == 2:
                 # this and all subsequent instances
@@ -1505,7 +1502,7 @@ a time period if "+" is used."""
                     tmp_rev = []
                     tmp_cpy = []
                     for d in hsh_rev['+']:
-                        if d < dt:
+                        if d < dtn:
                             tmp_rev.append(d)
                         else:
                             tmp_cpy.append(d)
@@ -1515,13 +1512,13 @@ a time period if "+" is used."""
                     tmp_rev = []
                     tmp_cpy = []
                     for d in hsh_rev['-']:
-                        if d < dt:
+                        if d < dtn:
                             tmp_rev.append(d)
                         else:
                             tmp_cpy.append(d)
                     hsh_rev['-'] = tmp_rev
                     hsh_cpy['-'] = tmp_cpy
-                hsh_cpy['s'] = dt
+                hsh_cpy['s'] = dtn
         else: # replace
             self.mode = 2
             hsh_rev = deepcopy(self.itemSelected)
@@ -1860,6 +1857,7 @@ parsing are supported.""")
         self.newValue.set(self.newLabel)
         print('newCommand', newcommand)
 
+    # TODO: Speed up help display
     def help(self, event=None):
         res = self.menutree.showMenu("_")
         # self.textWindow(parent=self, title='etm', prompt=res, modal=False)

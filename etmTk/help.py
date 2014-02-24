@@ -347,7 +347,7 @@ ITEMTYPES = """\
 ~ Action
 ========
 
-A record of an action involving the expenditure of time (@e) and/or money (@x). Actions are not reminders, they are instead records of how time and/or money was actually spent. Action lines begin with a tilde, ~.
+A record of the expenditure of time (@e) and/or money (@x). Actions are not reminders, they are instead records of how time and/or money was actually spent. Action lines begin with a tilde, ~.
 
         ~ picked up lumber and paint @s mon 3p @e 1h15m @x 127.32
 
@@ -366,16 +366,16 @@ Events have a starting datetime, @s and an extent, @e. The ending datetime is gi
 
 begins at 9am on Wednesday and ends at 5pm on Friday.
 
-An event without an @e entry or with @e 0 is regarded as a reminder and, since there is no extent, will not be displayed in the week view.
+An event without an @e entry or with @e 0 is regarded as a reminder and, since there is no extent, will not be displayed in busy times.
 
 ^ Occasion
 ==========
 
-Holidays, anniversaries, birthdays and the like. Like an event with a date but no starting time and no extent. Occasions begin with a caret sign, ^.
+Holidays, anniversaries, birthdays and such. Similar to an event with a date but no starting time and no extent. Occasions begin with a caret sign, ^.
 
         ^ The !1776! Independence Day @s 2010-07-04 @r y &M 7 &m 4
 
-On July 4, 2013, this would appear as The 237th Independence Day.
+On July 4, 2013, this would appear as The 237th Independence Day. Here !1776!` is an example of an anniversary substitution - see Help/Dates for details.
 
 ! Note
 ======
@@ -403,7 +403,7 @@ A task that is assigned to someone else, usually the person designated in an @u 
 + Task group
 ============
 
-A collection of related tasks, some of which may be prerequities for others. Task groups begin with a plus sign, +.
+A collection of related tasks, some of which may be prerequisite for others. Task groups begin with a plus sign, +.
 
         + dog house
           @j pickup lumber and paint      &q 1
@@ -502,10 +502,56 @@ Sample entries
         - join the etm discussion group @s +1/1
           @g groups.google.com/group/eventandtaskmanager/topics
 
+Views
+=====
+
+Note: if a (case-insensitive) filter is entered then the display in all views will be limited to items that match somewhere in either the branch or the leaf.
+
+Agenda
+------
+
+What you need to know now beginning with your schedule for the next few days and followed by items in these groups:
+
+-   In basket: In basket items and items with missing types or other errors.
+
+-   Now: All scheduled (dated) tasks whose due dates have passed including delegated tasks and waiting tasks (tasks with unfinished prerequisites) grouped by available, delegated and waiting and, within each group, by the due date.
+
+-   Next: All unscheduled (undated) tasks grouped by context (home, office, phone, computer, errands and so forth) and sorted by priority and extent. These tasks correspond to GTD's next actions. These are tasks which don't really have a deadline and can be completed whenever a convenient opportunity arises. Check this view, for example, before you leave to run errands for opportunities to clear other errands.
+
+-   Someday: Someday (maybe) items. Review these periodically.
+
+Schedule
+--------
+
+Scheduled (dated) items appear in this view, grouped by date and sorted by starting time and item type. This includes:
+
+-   All non-repeating, dated items.
+
+-   All repetitions of repeating items with a finite number of repetitions. This includes 'list-only' repeating items and items with &u (until) or &t (total number of repetitions) entries.
+
+-   For repeating items with an infinite number of repetitions, those repetitions that occur within the first weeks_after weeks after the current week are displayed along with the first repetition after this interval. This assures that at least one repetition will be displayed for infrequently repeating items such as voting for president.
+
+Tags
+----
+
+All items with tag entries grouped by tag and sorted by type and relevant datetime. Note that items with multiple tags will be listed under each tag.
+
+Keywords
+--------
+
+All items grouped by keyword and sorted by type and relevant datetime.
+
+Paths
+-----
+
+All items grouped by file path and sorted by type and relevant datetime. Use this view to review the status of your projects.
+
+The relevant datetime is the past due date for any past due task, the starting datetime for any non-repeating item and the datetime of the next instance for any repeating item.
+
 Organization
 ============
 
-etm offers two heirarchical ways of organizing your data: by folder (file path) and by keyword. There are no hard and fast rules about how to use these heirarchies but the goal is a system that makes complementary uses of folder and keyword and fits your needs. As with any filing system, planning and consistency are paramount.
+etm offers two hierarchical ways of organizing your data: by keyword and file path. There are no hard and fast rules about how to use these hierarchies but the goal is a system that makes complementary uses of folder and keyword and fits your needs. As with any filing system, planning and consistency are paramount.
 
 For example, one pattern of use for a business would be to use folders for people and keywords for client-project-category.
 
@@ -526,19 +572,21 @@ Here
 
 would both contain datadir entries specifying the common root data directory. Additionally, if these configuration files contained, respectively, the entries
 
-    calendars
-    - [dag, true, dag]
-    - [erp, false, erp]
-    - [shared, true, shared]
+    ~dag/.etm/etm.cfg
+        calendars
+        - [dag, true, dag]
+        - [erp, false, erp]
+        - [shared, true, shared]
 
 and
 
-    calendars
-    - [erp, true, erp]
-    - [dag, false, dag]
-    - [shared, true, shared]
+    ~erp/.etm/etm.cfg
+        calendars
+        - [erp, true, erp]
+        - [dag, false, dag]
+        - [shared, true, shared]
 
-then, by default, both dag and erp would see the entries from their personal files as well as the shared entries and each could optionally view the entries from the other's personal files as well. See the Preferences tab for details on the calendars entry.
+then, by default, both dag and erp would see the entries from their personal files as well as the shared entries and each could optionally view the entries from the other's personal files as well. See the Help/Preferences for details on the calendars entry.
 """
 
 PREFERENCES = """\
@@ -712,45 +760,21 @@ Used for action reports. With the above settings for action_minutes and action_t
 
 Available template expansions for action_template include:
 
-!label!
--------
+-   !label!: the item or group label.
 
-the item or group label.
+-   !count!: the number of children represented in the reported item or group.
 
-!count!
--------
+-   !minutes!: the total time from @e entries in minutes rounded up using the setting for action_minutes.
 
-the number of children represented in the reported item or group.
+-   !hours!: if action_minutes = 1, the time in hours and minutes. Otherwise, the time in floating point hours.
 
-!minutes!
----------
+-   !value!: the billing value of the rounded total time. Requires an action entry such as @v br1 and a setting for action_rates.
 
-the total time from @e entries in minutes rounded up using the setting for action_minutes.
+-   !expense!: the total expense from @x entries.
 
-!hours!
--------
+-   !charge!: the billing value of the total expense. Requires an action entry such as @w mu1 and a setting for action_markups.
 
-if action_minutes = 1, the time in hours and minutes. Otherwise, the time in floating point hours.
-
-!value!
--------
-
-the billing value of the rounded total time. Requires an action entry such as @v br1 and a setting for action_rates.
-
-!expense!
----------
-
-the total expense from @x entries.
-
-!charge!
---------
-
-the billing value of the total expense. Requires an action entry such as @w mu1 and a setting for action_markups.
-
-!total!
--------
-
-the sum of !value! and !charge!.
+-   !total!: the sum of !value! and !charge!.
 
 Note: when aggregating amounts in action reports, billing and markup rates are applied first to times and expenses for individual actions and the resulting amounts are then aggregated. Similarly, when times are rounded up, the rounding is done for individual actions and the results are then aggregated.
 
@@ -841,7 +865,7 @@ The absolute path to the file to be used for autocompletions. Each line in the f
     @z US/Pacific
     dnlgrhm@gmail.com
 
-As soon as you enter, for example, "@c" in the editor, a list of possible completions will pop up and then, as you type further characters, the list will shrink to show only those that still match:
+If you enter, for example, "@c" in the editor and press Ctrl-/, a list of possible completions will pop up and then, as you type further characters, the list will shrink to show only those that still match:
 
 []
 Up and down arrow keys change the selection and either Tab or Return inserts the selection.
@@ -1127,14 +1151,14 @@ Report types
 
 There are two possible report type characters, a and c:
 
-a: action or accounting report.
--------------------------------
+a: action report.
+-----------------
 
 A report of expenditures of time and money recorded in actions with output formatted using action_template computations and expansions. See Help/Preferences for further details about the role of action_template in formatting action report output. E.g., with this setting in etmtk.cfg:
 
     action_template: '!hours!h) !label! (!count!)'
 
-then a report might appear as follows:
+a report might appear as follows:
 
     27.5h) Client 1 (3)
         4.9h) Project A (1)
@@ -1150,8 +1174,8 @@ then a report might appear as follows:
         2.1h) Project F (1)
         6.6h) Project G (1)
 
-c: custom report.
------------------
+c: composite report.
+--------------------
 
 Any item types but without action_template computations and expansions.
 

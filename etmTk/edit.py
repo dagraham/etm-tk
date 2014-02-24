@@ -254,14 +254,14 @@ class SimpleEditor(Toplevel):
     def showCompletions(self, e=None):
         # print(self.text.get("insert -1c wordstart", INSERT))
         line = self.text.get("insert linestart", INSERT)
-        m = completion_regex.match(line)
+        m = completion_regex.search(line)
         if m:
             match = m.groups()[0]
-            print(match)
+            logger.debug("found match '{0}' in line '{1}'".format(match, line))
             self.matches = matches = [x for x in self.completions if x.lower()
                 .startswith(match.lower())]
-            print(matches)
             if len(matches) >= 1:
+                logger.debug("{0} items in completions matching '{1}'".format(len(matches), match))
                 # self.line = line
                 self.match = match
                 self.autocompletewindow = acw = Toplevel(self)
@@ -283,15 +283,19 @@ class SimpleEditor(Toplevel):
                 self.listbox.bind("Down", self.cursorDown)
 
             else:
-                return
+                relfile = relpath(self.options['auto_completions'], self.options['etmdir'])
+                self.messageWindow(title=_('etm'), prompt=_("No matches for '{0}'\nin '{1}'.").format(match, relfile))
+                # logger.debug("nothing in completions matching '{0}'.".format(match))
+                return "break"
         else:
-            print(line)
+            # return
+            logger.debug("no match in {0}".format(line))
         return "break"
 
     def is_active(self):
         return self.autocompletewindow is not None
 
-    def hideCompletions(self):
+    def hideCompletions(self, e=None):
         if not self.is_active():
             return
         # destroy widgets

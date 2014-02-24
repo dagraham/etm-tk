@@ -655,7 +655,8 @@ anniversary_regex = re.compile(r'!(\d{4})!')
 group_regex = re.compile(r'^\s*(.*)\s+(\d+)/(\d+):\s*(.*)')
 groupdate_regex = re.compile(r'\by{2}\b|\by{4}\b|\b[dM]{1,4}\b')
 options_regex = re.compile(r'^\s*(!?[fk](\[[:\d]+\])?)|(!?[clostu])\s*$')
-completion_regex = re.compile(r'(?:^.*?)((?:\@[a-zA-Z] )?\b\S*)$')
+# completion_regex = re.compile(r'(?:^.*?)((?:\@[a-zA-Z] ?)?\b\S*)$')
+completion_regex = re.compile(r'((?:\@[a-zA-Z]? ?)?(?:\b[a-zA-Z0-9_/]+)?)$')
 
 # what about other languages?
 # lun mar mer jeu ven sam dim
@@ -930,7 +931,7 @@ def get_options(d=''):
      options['rfmt']) = get_fmts(options)
     options['config'] = config
     options['datafile'] = datafile
-    options['scratchpad'] = os.path.join(options['etmdir'], "scratchpad")
+    options['scratchpad'] = os.path.join(options['etmdir'], _("scratchpad"))
 
     if options['action_minutes'] not in [1, 6, 12, 15, 30, 60]:
         print(
