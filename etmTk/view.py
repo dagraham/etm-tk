@@ -15,6 +15,8 @@ import codecs
 
 import logging
 import logging.config
+from edit import ReportWindow
+
 logger = logging.getLogger()
 
 import platform
@@ -51,21 +53,15 @@ import etmTk.data as data
 from dateutil.parser import parse
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, hsh2str, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, BGCOLOR, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator)
+    init_localization, fmt_weekday, fmt_dt, hsh2str, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, BGCOLOR, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator, AFTER)
 
 from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES, REPORTS)
 
-from etmTk.edit import SimpleEditor
+from etmTk.edit import SimpleEditor, ReportWindow
 
 import gettext
 
 _ = gettext.gettext
-
-# used in hack to prevent dialog from hanging under os x
-if mac:
-    AFTER = 200
-else:
-    AFTER = 1
 
 FOUND = "found"
 
@@ -91,6 +87,10 @@ TAGS = _('Tags')
 COPY = _("Copy")
 EDIT = _("Edit")
 DELETE = _("Delete")
+
+FILE = _("File")
+NEW = _("New")
+OPEN = _("Open")
 
 SEP = "----"
 
@@ -128,7 +128,7 @@ class Node:
         elif mode is _INSERT:
             self.__fpointer = [sanitize_id(identifier)]
 
-class Tree:
+class MenuTree:
 
     def __init__(self):
         self.nodes = []
@@ -141,7 +141,7 @@ class Tree:
         return index
 
     def create_node(self, name, identifier=None, parent=None):
-        logger.debug("name: {0}, identifier: {1}; parent: {2}".format(name, identifier, parent))
+        logger.debug("name: {0},identifier: {1}; parent: {2}".format(name, identifier, parent))
 
         node = Node(name, identifier)
         self.nodes.append(node)
@@ -150,11 +150,14 @@ class Tree:
         return node
 
     def showMenu(self, position, level=_ROOT):
+        logger.debug("position: {0}, level: {1}".format(position, level))
         queue = self[position].fpointer
         if level == _ROOT:
             self.lst = []
         else:
-            s = "{0}{1}".format("    "*(level-1), self[position].name)
+            name, key = self[position].name.split("::")
+            name = "{0}{1}".format("    "*(level-1), name.strip())
+            s = "{0:<49} {1:^11}".format(name, key.strip())
             self.lst.append(s)
         if self[position].expanded:
             level += 1
@@ -703,7 +706,7 @@ class App(Tk):
         self.configure(background=BGCOLOR)
         self.option_add('*tearOff', False)
         self.menu_lst = []
-        self.menutree = Tree()
+        self.menutree = MenuTree()
 
         root = "_"
         # create the root node for the menu tree
@@ -717,41 +720,55 @@ class App(Tk):
 
         # File menu
         filemenu = Menu(menubar, tearoff=0)
-        path = _("File")
+        path = FILE
         self.add2menu(menu, (path, ))
 
-        ## open file
+        newmenu = Menu(filemenu, tearoff=0)
+        self.add2menu(path, (NEW, ))
+        path = NEW
 
-        # openmenu = Menu(filemenu, tearoff=0)
-
-        # filemenu.add_command(label=_("Recently changed ..."),
-        #                      underline=0, command=self.donothing)
-
-        l, c = commandShortcut('D')
-        label = _("Data file ...")
-        filemenu.add_command(label=label, command=self.editData)
-        self.bind_all(c, lambda e: filemenu.invoke(1))
+        label = _("Item")
+        l, c = commandShortcut('n')
+        logger.debug("{0}: {1}, {2}".format(label, l, c))
+        newmenu.add_command(label=label, accelerator=l, command=self.newItem)
+        self.bind_all(c, lambda e: self.after(AFTER, self.newItem))
         self.add2menu(path, (label, l))
 
-        filemenu.add_separator()
-        self.add2menu(path, (SEP, ))
+        label = _("Timer")
+        l, c = commandShortcut('i')
+        logger.debug("{0}: {1}, {2}".format(label, l, c))
+        newmenu.add_command(label=label, accelerator=l, command=self.startActionTimer)
+        self.bind_all(c, lambda e: self.after(AFTER, self.startActionTimer))
+        self.add2menu(path, (label, l))
 
+        filemenu.add_cascade(label=NEW, menu=newmenu)
+
+        path = FILE
+        # Open
+        openmenu = Menu(filemenu, tearoff=0)
+        self.add2menu(path, (OPEN, ))
+        path = OPEN
+        l, c = commandShortcut('D')
+        label = _("Data file ...")
+        openmenu.add_command(label=label, command=self.editData)
+        self.bind_all(c, lambda e: openmenu.invoke(0))
+        self.add2menu(path, (label, l))
 
         l, c = commandShortcut('E')
         logger.debug("config: {0}, {1}".format(l, c))
         file = loop.options['config']
         label = relpath(file, loop.options['etmdir'])
         # label = _("Preferences")
-        filemenu.add_command(label=label, command=lambda x=file: self.editFile(file=x, config=True))
-        self.bind_all(c, lambda e: filemenu.invoke(2))
+        openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x, config=True))
+        self.bind_all(c, lambda e: openmenu.invoke(1))
         self.add2menu(path, (label, l))
 
         l, c = commandShortcut('C')
         file = loop.options['auto_completions']
         # label = _("Auto completions")
         label = relpath(file, loop.options['etmdir'])
-        filemenu.add_command(label=label,  command=lambda x=file: self.editFile(file=x))
-        self.bind_all(c, lambda e: filemenu.invoke(3))
+        openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x))
+        self.bind_all(c, lambda e: openmenu.invoke(2))
         self.add2menu(path, (label, l))
 
         l, c = commandShortcut('R')
@@ -759,24 +776,51 @@ class App(Tk):
         # label = _("Report specifications")
         label = relpath(file, loop.options['etmdir'])
         logger.debug("{0}: {1}, {2}".format(label, l, c))
-        filemenu.add_command(label=label, command=lambda x=file: self.editFile(file=x))
-        self.bind_all(c, lambda e, x=file: self.editFile(file=x))
+        openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x))
+        # self.bind_all(c, lambda e, x=file: self.editFile(file=x))
+        self.bind_all(c, lambda e: openmenu.invoke(3))
         self.add2menu(path, (label, l))
 
         l, c = commandShortcut('S')
         file = loop.options['scratchpad']
         label = relpath(file, loop.options['etmdir'])
         # label = _("Scratchpad")
-        filemenu.add_command(label=label, command=lambda x=file: self.editFile(file=x))
-        self.bind_all(c, lambda e: filemenu.invoke(5))
+        openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x))
+        self.bind_all(c, lambda e: openmenu.invoke(4))
         self.add2menu(path, (label, l))
 
-        filemenu.add_separator()
-        self.add2menu(path, (SEP, ))
+        # filemenu.add_separator()
+        # self.add2menu(path, (SEP, ))
+
+        filemenu.add_cascade(label=OPEN, menu=openmenu)
+
+        path = FILE
+
+        # calendars
+        label = _("Choose active calendars")
+        calendarmenu = Menu(filemenu, tearoff=0)
+        self.calendars = deepcopy(loop.options['calendars'])
+        logger.debug('{0}: {1}'.format(label, [x[:2] for x in self.calendars]))
+        self.calendarValues = []
+        for i in range(len(self.calendars)):
+            # logger.debug('Adding calendar: {0}'.format(self.calendars[i][:2]))
+            self.calendarValues.append(BooleanVar())
+            self.calendarValues[i].set(self.calendars[i][1])
+            self.calendarValues[i].trace_variable("w", self.updateCalendars)
+            calendarmenu.add_checkbutton(label=self.calendars[i][0], onvalue=True, offvalue=False, variable=self.calendarValues[i])
+
+        if self.calendars:
+            filemenu.add_cascade(label=label,
+                                 menu=calendarmenu)
+        else:
+            filemenu.add_cascade(label=label,
+                                 menu=calendarmenu,
+                                 state="disabled")
+        self.add2menu(path, (label, ))
 
         ## export
         l, c = commandShortcut('X')
-        label = _("Export to iCal")
+        label = _("Export active calendars to iCal")
         filemenu.add_command(label=label, underline=1, command=self.donothing)
         self.bind_all(c, self.donothing)
         self.add2menu(path, (label, l))
@@ -825,27 +869,6 @@ class App(Tk):
         self.bind_all(c, lambda event: self.after(AFTER, self.expand2Depth))
         self.add2menu(path, (label, l))
 
-        # calendars
-        label = _("Choose active calendars")
-        calendarmenu = Menu(viewmenu, tearoff=0)
-        self.calendars = deepcopy(loop.options['calendars'])
-        logger.debug('{0}: {1}'.format(label, [x[:2] for x in self.calendars]))
-        self.calendarValues = []
-        for i in range(len(self.calendars)):
-            # logger.debug('Adding calendar: {0}'.format(self.calendars[i][:2]))
-            self.calendarValues.append(BooleanVar())
-            self.calendarValues[i].set(self.calendars[i][1])
-            self.calendarValues[i].trace_variable("w", self.updateCalendars)
-            calendarmenu.add_checkbutton(label=self.calendars[i][0], onvalue=True, offvalue=False, variable=self.calendarValues[i])
-
-        if self.calendars:
-            viewmenu.add_cascade(label=label,
-                                 menu=calendarmenu)
-        else:
-            viewmenu.add_cascade(label=label,
-                                 menu=calendarmenu,
-                                 state="disabled")
-        self.add2menu(path, (label, ))
 
         viewmenu.add_separator()
         self.add2menu(path, (SEP, ))
@@ -1078,38 +1101,38 @@ class App(Tk):
         self.vm.pack(side="left")
         self.vm.configure(width=menuwidth, background=BGCOLOR, takefocus=False)
 
-        # make
-        self.newLabel = _("Add")
-        self.add2menu(tbar, (self.newLabel, ))
-        path = self.newLabel
-
-        self.newValue = StringVar(self)
-        self.newValue.set(self.newLabel)
-        self.nm_options = [[_('Item'), 'n'],
-                           [_('Timer'), 'i'],
-        ]
-        self.nm_opts = [x[0] for x in self.nm_options]
-        self.nm = OptionMenu(toolbar, self.newValue, *self.nm_opts)
-
-        label = self.nm_options[0][0]
-        l, c = commandShortcut(self.nm_options[0][1])
-        logger.debug("new item: {0}, {1}".format(l, c))
-        self.nm["menu"].entryconfig(0, accelerator=l, command=self.newItem)
-        self.bind(c, self.newItem)  # n
-        self.add2menu(path, (label, l))
-
-        label = self.nm_options[1][0]
-        l, c = commandShortcut(self.nm_options[1][1])
-        self.nm["menu"].entryconfig(1, accelerator=l, command=self.startActionTimer)
-        self.bind(c, self.startActionTimer)  # +
-        self.add2menu(path, (label, l))
-
-
-        self.nm.pack(side="left")
-        self.nm.configure(width=menuwidth, background=BGCOLOR, takefocus=False)
-
+        # # make
+        # self.newLabel = _("Add")
+        # self.add2menu(tbar, (self.newLabel, ))
+        # path = self.newLabel
+        #
+        # self.newValue = StringVar(self)
+        # self.newValue.set(self.newLabel)
+        # self.nm_options = [[_('Item'), 'n'],
+        #                    [_('Timer'), 'i'],
+        # ]
+        # self.nm_opts = [x[0] for x in self.nm_options]
+        # self.nm = OptionMenu(toolbar, self.newValue, *self.nm_opts)
+        #
+        # label = self.nm_options[0][0]
+        # l, c = commandShortcut(self.nm_options[0][1])
+        # logger.debug("new item: {0}, {1}".format(l, c))
+        # self.nm["menu"].entryconfig(0, accelerator=l, command=self.newItem)
+        # self.bind(c, self.newItem)  # n
+        # self.add2menu(path, (label, l))
+        #
+        # label = self.nm_options[1][0]
+        # l, c = commandShortcut(self.nm_options[1][1])
+        # self.nm["menu"].entryconfig(1, accelerator=l, command=self.startActionTimer)
+        # self.bind(c, self.startActionTimer)  # +
+        # self.add2menu(path, (label, l))
+        #
+        #
+        # self.nm.pack(side="left")
+        # self.nm.configure(width=menuwidth, background=BGCOLOR, takefocus=False)
+        #
         # edit
-        self.editLabel = _("Use")
+        self.editLabel = _("Selection")
         self.add2menu(tbar, (self.editLabel, ))
         path = self.editLabel
 
@@ -1240,18 +1263,14 @@ class App(Tk):
             id = uuid.uuid1()
             m = LASTLTR.search(child[1])
             if m:
-                child = list(child)
-                # v = child[1]
-                # l = m.group(1).upper()
-                # v = LASTLTR.sub("{0}".format(l), v, count=1)
-                # child[1] = v
+                # child = list(child)
                 child = tuple(child)
         else:
             id = child[0]
-        if len(child) == 2:
-            leaf = "{0:<30} {1:^11}".format(child[0], child[1])
+        if len(child) >= 2:
+            leaf = "{0}::{1}".format(child[0], child[1])
         else:
-            leaf = "{0:<30}".format(child[0])
+            leaf = "{0}::".format(child[0])
         logger.debug('create_node: {0}, {1}, parent = {2}'.format(leaf, id,  parent))
         self.menutree.create_node(leaf, id, parent=parent)
 
@@ -1296,7 +1315,7 @@ class App(Tk):
     # TODO: implement makeReport
     def makeReport(self):
         logger.debug('makeReport')
-        pass
+        ReportWindow(parent=self, options=loop.options, title=_("report"))
 
     def openWithDefault(self):
         if 'g' not in self.itemSelected:
@@ -1860,6 +1879,7 @@ parsing are supported.""")
     # TODO: Speed up help display
     def help(self, event=None):
         res = self.menutree.showMenu("_")
+        print("res:", res)
         # self.textWindow(parent=self, title='etm', prompt=res, modal=False)
         nb = NotebookWindow(self, title="etm Help", modal=False)
         nb.addTab(label=_("Shortcuts"), content=res)

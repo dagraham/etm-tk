@@ -190,6 +190,13 @@ else:
     mac = False
     CMD = "Control"
 
+# used in hack to prevent dialog from hanging under os x
+if mac:
+    AFTER = 200
+else:
+    AFTER = 1
+
+
 
 import traceback
 
@@ -833,7 +840,7 @@ def get_options(d=''):
         'report_colors': 2,
         'report_indent': 2,
         'report_specifications': os.path.join(etmdir, 'reports.cfg'),
-        'report_width1': 30,
+        'report_width1': 43,
         'report_width2': 17,
 
         'rowsize': default_rowsize,
@@ -1481,7 +1488,7 @@ def tree2Rst(tree, indent=2, width1=54, width2=14, colors=0,
     return [x for x in text_lst], args[0], args[1]
 
 
-def tree2Text(tree, indent=2, width1=54, width2=14, colors=0,
+def tree2Text(tree, indent=2, width1=43, width2=17, colors=0,
               number=False, count=0, count2id=None):
     global text_lst
     args = [count, count2id]
@@ -1493,7 +1500,7 @@ def tree2Text(tree, indent=2, width1=54, width2=14, colors=0,
     tab = " " * indent
 
     def t2H(tree_hsh, node=('', '_'), level=0):
-        logger.debug("node: {0}".format(node))
+        # logger.debug("node: {0}".format(node))
         if args[1] is None:
             args[1] = {}
         if type(node) == tuple:
@@ -1503,7 +1510,7 @@ def tree2Text(tree, indent=2, width1=54, width2=14, colors=0,
                 args[1][args[0]] = "{0}::{1}".format(node[-1][0], node[-1][-1])
                 t = id2Type[node[1][1]]
                 s_c = ''
-                logger.debug("node13: {0}; width2: {1}".format(node[1][3],  width2))
+                # logger.debug("node13: {0}; width2: {1}".format(node[1][3],  width2))
                 if node[1][3]:
                     col2 = "{0:^{width}}".format(
                         truncate(node[1][3], width2), width=width2)
@@ -1520,7 +1527,7 @@ def tree2Text(tree, indent=2, width1=54, width2=14, colors=0,
                         unicode(truncate(node[1][2], rmlft)),
                         col2, e_c)
                 else:
-                    logger.debug("col2: {0}; e_c: {1}".format(col2, e_c))
+                    # logger.debug("col2: {0}; e_c: {1}".format(col2, e_c))
                     rmlft = width1 - indent * level
                     s = "%s%s%s %-*s %s%s" % (tab * level, s_c, unicode(t),
                         rmlft, unicode(truncate(node[1][2], rmlft)),
@@ -2562,7 +2569,7 @@ def str2opts(s, options=None):
     head = parts.pop(0)
     report = head[0]
     groupbystr = head[1:].strip()
-    if not report or report not in ['r', 'l'] or not groupbystr:
+    if not report or report not in ['c', 'a'] or not groupbystr:
         return {}
 
     grpby = {'report': report}
@@ -2679,7 +2686,7 @@ def str2opts(s, options=None):
                 filters['search'] = (True, re.compile(r'%s' % value,
                                                       re.IGNORECASE))
         elif key == 'd':
-            if grpby['report'] == 't':
+            if grpby['report'] == 'a':
                 grpby['depth'] = int(part[1:])
         elif key == 't':
             value = [x.strip() for x in part[1:].split(',')]
@@ -2805,7 +2812,7 @@ def applyFilters(file2uuids, uuid2hash, filters):
                 if not tf and res:
                     skip = True
             for t in ['c', 'k', 'u']:
-                if t in filters['groupby'] and t not in hsh:
+                if t in filters['grpby'] and t not in hsh:
                     # t is missing from hsh
                     skip = True
                     break
@@ -3056,8 +3063,10 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
 
 
 @memoize
-def getReportData(s, file2uuids, uuid2hash, options=None, export=False, colors=None,
-                  mode='html'):
+def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
+                  colors=None,
+                  # mode='html'
+            ):
     """
         getViewData returns items with the format:
             [(view, (sort)), node1, node2, ...,
@@ -3069,7 +3078,9 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False, colors=N
             (node1, node2, ... (minutes, value, expense, charge))
     """
     if not options: options = {}
+
     grpby, dated, filters = str2opts(s, options)
+    logger.debug("grpby: {0}\ndated: {1}\nfilters: {2}".format(grpby, dated, filters))
     if not grpby:
         return [str(_('invalid grpby setting'))]
     uuids = applyFilters(file2uuids, uuid2hash, filters)
@@ -3120,7 +3131,7 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False, colors=N
             us = u"{0}".format(*eval_fmts)
             logger.exception("eval_fmts: {0}".format(*eval_fmts))
 
-        if grpby['report'] == 'r':
+        if grpby['report'] == 'c':
             if fmts.count(u"hsh['t']"):
                 position = fmts.index(u"hsh['t']")
                 for tag in hsh['t']:
@@ -3132,7 +3143,7 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False, colors=N
             else:
                 item.append((tup[-1], tup[-4], setSummary(hsh, parse(dtl)), dt, etmdt))
                 items.append(item)
-        else:
+        else:  # action report
             item.append(setSummary(hsh, parse(dt)))
             temp = []
             temp.extend(timeValue(hsh, options))
@@ -3141,20 +3152,46 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False, colors=N
             items.append(item)
     count = 0
     count2id = None
-    if grpby['report'] == 'r' and not export:
+    if grpby['report'] == 'c' and not export:
         if colors is not None:
             clrs = colors
         else:
             clrs = grpby['colors']
         tree = makeTree(items, sort=False)
-        return tree
+        txt, args0, args1 = tree2Text(tree,
+                width1=options['report_width1'],
+                width2=options['report_width2'])
+        return "\n".join([x.rstrip() for x in txt if x.strip()])
     else:
-        if grpby['report'] == 't' and 'depth' in grpby and grpby['depth']:
+        if grpby['report'] == 'a' and 'depth' in grpby and grpby['depth']:
             depth = min(grpby['depth'], len(grpby['lst']))
         else:
             depth = len(grpby['lst'])
-        items = tallyByGroup(items, max_level=depth, options=options)
-        return "\n".join(items)
+        if export:
+            # head = map(str, grpby['lst'][:depth])
+            head = ["{0}".format(x) for x in grpby['lst'][:depth]]
+            logger.debug('head: {0}\nlst: {1}\ndepth: {2}'.format(head, grpby['lst'], depth))
+            csv = [head]
+            if grpby['report'] == 'c':
+                for row in items:
+                    tup = ['"{0}"'.format(x) for x in row.pop(-1)[2:6]]
+                    row.extend(tup)
+                    csv.append(row)
+            else:
+                head.extend(['minutes', 'value', 'expense', 'charge'])
+                csv = [head]
+                lst = tallyByGroup(
+                    items, max_level=depth, options=options, export=True)
+                for row in lst:
+                    # if not row:
+                    #     continue
+                    tup = ['"{0}"'.format(x) for x in list(row.pop(-1))]
+                    row.extend(tup)
+                    csv.append(row)
+            return(csv)
+        else:
+            items = tallyByGroup(items, max_level=depth, options=options)
+            return "\n".join([x.rstrip() for x in items if x.strip()])
 
 
 def str2hsh(s, uid=None, options=None):

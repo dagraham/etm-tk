@@ -12,19 +12,6 @@ import logging
 import logging.config
 logger = logging.getLogger()
 
-# import importlib
-
-# default = 3
-
-# '1': logging.DEBUG,
-# '2': logging.INFO,
-# '3': logging.WARN,
-# '4': logging.ERROR,
-# '5': logging.CRITICAL
-
-# usage:
-# etm [log-level] [etmdir] [a|c|l|m|n|s|v|?]
-
 log_levels = [str(x) for x in range(1,6)]
 
 if __name__ == "__main__":
@@ -91,43 +78,5 @@ the GUI.
     else:
         logger.debug("calling view.main with etmdir: {0}".format(etmdir))
         view.main(dir=etmdir)
-
-
-#     msg = []
-#     while len(sys.argv) > 1:
-#         if os.path.isdir(sys.argv[1]):
-#             temp = sys.argv.pop(1)
-#             path = os.path.join(temp, 'etm.cfg')
-#             if os.path.isfile(path):
-#                 etmdir = temp
-#                 print('using etmdir: "{0}"'.format(etmdir))
-#             else:
-#                 msg.append('"{0}" does not exist'.format(path))
-#         elif sys.argv[1] in log_levels:
-#             loglevel = sys.argv.pop(1)
-#             print('using log level: "{0}"'.format(loglevel))
-#         else:
-#             msg.append('"{0}" is not an acceptable log level'.format(sys.argv[
-#                 1]))
-#             sys.argv.pop(1)
-#             # break
-#     if len(msg) > 0:
-#         for m in msg:
-#             print(m)
-#         print("""
-# Usage:
-#
-#     etm [path[[level]] | [leve[path]}
-#
-# With no arguments, etm will use settings from the configuration file
-# ~/.etm/etmtk.cfg and open the GUI at logging level 3 (warn).
-#
-# If either of the first two arguments is the path to a directory which
-# contains a file named etm.cfg, then settings from that file will be used
-# instead.
-#
-# If either of the first two arguments is an integer between 1 and 5 then
-# that number will be used as the logging level.
-#     """)
         sys.exit()
 
