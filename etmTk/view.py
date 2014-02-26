@@ -47,6 +47,7 @@ else:
 
 tkversion = tkinter.Tcl().eval('info patchlevel')
 
+
 import etmTk.data as data
 # from data import init_localization
 
@@ -391,6 +392,9 @@ class NotebookWindow(Dialog):
         self.currIndex = 0
         self.tabIndex = -1
         self.tabText = {}
+        self.tkfixedfont = tkFont.nametofont("TkFixedFont")
+        self.tkfixedfont.configure(size=self.options['fontsize'])
+        # print(self.options['fontsize'], self.tkfixedfont.actual())
         self.nb = nb = ttk.Notebook(master, padding=8)
         self.nb.pack(side="top", fill=tkinter.BOTH, expand=1, padx=0, pady=0)
         self.nb.enable_traversal()
@@ -408,14 +412,14 @@ class NotebookWindow(Dialog):
         text = Text(
             frame,
             wrap="word", padx=2, pady=2, bd=2, relief="sunken",
-            font=tkFont.Font(family="Lucida Sans Typewriter"),
+            font=self.tkfixedfont,
             height=30,
             width=52,
             takefocus=False)
         text.tag_configure(FOUND, background="lightskyblue")
         text.insert("1.0", content)
         text.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0, pady=0)
-        ysb = ttk.Scrollbar(frame, orient='vertical', command=text.yview, width=8)
+        ysb = ttk.Scrollbar(frame, orient='vertical', command=text.yview)
         ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
         text.configure(yscroll=ysb.set)
         self.nb.add(frame, text=label)
@@ -505,9 +509,12 @@ class DialogWindow(Dialog):
 class TextDialog(Dialog):
 
     def body(self, master):
+        tkfixedfont = tkFont.nametofont("TkFixedFont")
+        tkfixedfont.configure(size=self.options['fontsize'])
         self.text = ReadOnlyText(
             master, wrap="word", padx=2, pady=2, bd=2, relief="sunken",
-            font=tkFont.Font(family="Lucida Sans Typewriter"),
+            # font=tkFont.Font(family="Lucida Sans Typewriter"),
+            font=tkfixedfont,
             height=14,
             width=52,
             takefocus=False)
@@ -515,8 +522,7 @@ class TextDialog(Dialog):
         self.text.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0,
                        pady=0)
         ysb = ttk.Scrollbar(master, orient='vertical', command=self.text
-                            .yview,
-                            width=8)
+                            .yview)
         ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
         # t.configure(state="disabled", yscroll=ysb.set)
         self.text.configure(yscroll=ysb.set)
@@ -707,7 +713,6 @@ class App(Tk):
         self.option_add('*tearOff', False)
         self.menu_lst = []
         self.menutree = MenuTree()
-
         root = "_"
         # create the root node for the menu tree
         self.menutree.create_node(root, root)
@@ -845,7 +850,7 @@ class App(Tk):
         # logger.debug('tree:\n{0}'.format(tree))
 
         # view menu
-        path = _("Commands")
+        path = _("Tools")
         self.add2menu(menu, (path, ))
         viewmenu = Menu(menubar, tearoff=0)
 
@@ -956,31 +961,9 @@ class App(Tk):
         self.add2menu(path, (label, "F3"))
         self.bind_all("<F3>", lambda e: self.after(AFTER, self.checkForUpdate))
 
-
-
-
-        # submenu = _("Topics")
-        # topicsmenu = Menu(menubar, tearoff=0)
-        # helpmenu.add_cascade(label=submenu, menu=topicsmenu)
-        # self.add2menu(path, (submenu,))
-        # self.bind_all("<F1>", helpmenu.invoke(4))
-        #
-        #
-        # path = submenu
-        #
-        # label = _("Comands and shortcuts")
-        # topicsmenu.add_command(label=label, command=self
-        #                        .help)
-        # # self.bind(c, self.help)
-        # self.add2menu(path, (label, "F1"))
-
-
-
         menubar.add_cascade(label="Help", menu=helpmenu)
 
         self.config(menu=menubar)
-
-        # self.configure(background="lightgrey")
 
         self.history = []
         self.index = 0
@@ -989,6 +972,11 @@ class App(Tk):
         self.now = get_current_time()
         self.today = self.now.date()
         self.options = loop.options
+        tkfixedfont = tkFont.nametofont("TkFixedFont")
+        tkfixedfont.configure(size=self.options['fontsize'])
+        print(tkfixedfont.actual())
+        self.tkfixedfont = tkfixedfont
+
         self.popup = ''
         self.value = ''
         self.firsttime = True
@@ -1005,9 +993,10 @@ class App(Tk):
         self.rowSelected = None
 
         self.title("etm tk")
+
         # self.wm_iconbitmap(bitmap='etmlogo.gif')
         # self.wm_iconbitmap('etmlogo-4.xbm')
-        self.call('wm', 'iconbitmap', self._w, '/Users/dag/etm-tk/etmTk/etmlogo.gif')
+        # self.call('wm', 'iconbitmap', self._w, '/Users/dag/etm-tk/etmTk/etmlogo.gif')
 
         # if sys_platform == 'Linux':
         #     logger.debug('using linux icon')
@@ -1082,11 +1071,11 @@ class App(Tk):
 
         self.vm_opts = [x[0] for x in self.vm_options]
         self.view = self.vm_options[0][0]
-        self.viewValue = StringVar(self)
+        # self.viewValue = StringVar(self)
         self.currentView = StringVar(self)
         self.currentView.set(self.view)
-        self.viewValue.set(self.viewLabel)
-        self.vm = OptionMenu(toolbar, self.viewValue, *self.vm_opts, command=self.setView)
+        # self.viewValue.set(self.viewLabel)
+        self.vm = OptionMenu(toolbar, self.currentView, *self.vm_opts, command=self.setView)
 
         self.vm.configure(width=menuwidth)
         for i in range(len(self.vm_options)):
@@ -1101,36 +1090,12 @@ class App(Tk):
         self.vm.pack(side="left")
         self.vm.configure(width=menuwidth, background=BGCOLOR, takefocus=False)
 
-        # # make
-        # self.newLabel = _("Add")
-        # self.add2menu(tbar, (self.newLabel, ))
-        # path = self.newLabel
-        #
-        # self.newValue = StringVar(self)
-        # self.newValue.set(self.newLabel)
-        # self.nm_options = [[_('Item'), 'n'],
-        #                    [_('Timer'), 'i'],
-        # ]
-        # self.nm_opts = [x[0] for x in self.nm_options]
-        # self.nm = OptionMenu(toolbar, self.newValue, *self.nm_opts)
-        #
-        # label = self.nm_options[0][0]
-        # l, c = commandShortcut(self.nm_options[0][1])
-        # logger.debug("new item: {0}, {1}".format(l, c))
-        # self.nm["menu"].entryconfig(0, accelerator=l, command=self.newItem)
-        # self.bind(c, self.newItem)  # n
-        # self.add2menu(path, (label, l))
-        #
-        # label = self.nm_options[1][0]
-        # l, c = commandShortcut(self.nm_options[1][1])
-        # self.nm["menu"].entryconfig(1, accelerator=l, command=self.startActionTimer)
-        # self.bind(c, self.startActionTimer)  # +
-        # self.add2menu(path, (label, l))
-        #
-        #
-        # self.nm.pack(side="left")
-        # self.nm.configure(width=menuwidth, background=BGCOLOR, takefocus=False)
-        #
+        # self.nonDefaultCalendars = StringVar(self)
+        # self.nonDefaultCalendars.set("")
+        # nonDefCal = Label(toolbar, textvariable=self.nonDefaultCalendars, bd=0, relief="flat", anchor="center", padx=0, pady=0)
+        # nonDefCal.pack(side="left")
+        # nonDefCal.configure(background=BGCOLOR)
+
         # edit
         self.editLabel = _("Selection")
         self.add2menu(tbar, (self.editLabel, ))
@@ -1174,6 +1139,7 @@ class App(Tk):
         self.helpBtn.pack(side="right")
         self.helpBtn.configure(highlightbackground=BGCOLOR, highlightthickness=0)
 
+        # filter
         self.filterValue = StringVar(self)
         self.filterValue.set('')
         self.filterValue.trace_variable("w", self.filterView)
@@ -1191,14 +1157,15 @@ class App(Tk):
 
         panedwindow.add(self.tree, padx=3, pady=0, stretch="first")
 
-        self.l = ReadOnlyText(panedwindow, wrap="word", padx=3, bd=2, relief="sunken",
-                              font=tkFont.Font(family="Lucida Sans Typewriter"), height=6,
+        self.content = ReadOnlyText(panedwindow, wrap="word", padx=3, bd=2, relief="sunken",
+                              # font=tkFont.Font(family="Lucida Sans Typewriter"), height=6,
+                              font=tkfixedfont, height=6,
                               width=46, takefocus=False)
-        self.l.bind('<Escape>', self.cleartext)
-        self.l.bind('<space>', self.goHome)
-        self.l.bind('<Tab>', self.focus_next_window)
+        self.content.bind('<Escape>', self.cleartext)
+        self.content.bind('<space>', self.goHome)
+        self.content.bind('<Tab>', self.focus_next_window)
 
-        panedwindow.add(self.l, padx=3, pady=0, stretch="never")
+        panedwindow.add(self.content, padx=3, pady=0, stretch="never")
 
         panedwindow.grid(row=1, column=0, sticky="nsew", padx=0, pady=0)
         panedwindow.configure(background=BGCOLOR)
@@ -1208,18 +1175,23 @@ class App(Tk):
         # self.pendingAlerts = StringVar(self)
         # self.pendingAlerts.set("")
 
-        showing = Label(self.sf, textvariable=self.currentView, bd=1, relief="flat",
-                        anchor="w", padx=0, pady=0)
-        showing.pack(side="left")
-        showing.configure(width=menuwidth, background=BGCOLOR,
-                          highlightthickness=0)
+        # showing = Label(self.sf, textvariable=self.currentView, bd=1, relief="flat",
+        #                 anchor="w", padx=0, pady=0)
+        # showing.pack(side="left")
+        # showing.configure(width=menuwidth, background=BGCOLOR,
+        #                   highlightthickness=0)
 
         self.nonDefaultCalendars = StringVar(self)
         self.nonDefaultCalendars.set("")
-        nonDefCal = Label(self.sf, textvariable=self.nonDefaultCalendars, bd=0,
-                          relief="flat", anchor="center", padx=0, pady=0)
+        nonDefCal = Label(self.sf,
+                          textvariable=self.nonDefaultCalendars,
+                          # bd=0,
+                          relief="flat",
+                          # anchor="center",
+                          padx=0, pady=0)
         nonDefCal.pack(side="left")
         nonDefCal.configure(background=BGCOLOR)
+
 
         self.timerStatus = StringVar(self)
         self.timerStatus.set("")
@@ -1232,7 +1204,7 @@ class App(Tk):
         self.pendingAlerts.set(0)
         self.pending = Button(self.sf, bd=0, width=1, takefocus=False, textvariable=self.pendingAlerts, command=self.showAlerts)
         self.pending.pack(side="right")
-        self.pending.configure(highlightbackground=BGCOLOR,
+        self.pending.configure(highlightbackground=BGCOLOR, background=BGCOLOR,
                                highlightthickness=0, state="disabled")
         self.showPending = True
 
@@ -1287,7 +1259,7 @@ class App(Tk):
             cal_pattern = r'^%s' % '|'.join(
                 [x[2] for x in loop.calendars if x[1]])
             loop.cal_regex = re.compile(cal_pattern)
-            self.nonDefaultCalendars.set("*")
+            self.nonDefaultCalendars.set(_("Calendars"))
         else:
             cal_pattern = ''
             loop.cal_regex = None
@@ -1687,7 +1659,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
     def showView(self, e=None, row=None):
         self.depth2id = {}
         self.currentView.set(self.view)
-        self.viewValue.set(self.viewLabel)
+        # self.viewValue.set(self.viewLabel)
         fltr = self.filterValue.get()
         cmd = "{0} {1}".format(
             self.vm_options[self.vm_opts.index(self.view)][1], fltr)
@@ -1815,7 +1787,7 @@ parsing are supported.""")
             if times:
                 lines.append("   %s: %s" % (weekdays[i], "; ".join(times)))
         s = "\n".join(lines)
-        self.textWindow(parent=self, title=_('busy times'), prompt=s)
+        self.textWindow(parent=self, title=_('busy times'), prompt=s, opts=self.options)
 
     # noinspection PyShadowingNames
     def showCalendar(self, e=None):
@@ -1852,7 +1824,8 @@ parsing are supported.""")
         win.bind('<Escape>', (lambda e, b=b: b.invoke()))
 
         t = ReadOnlyText(f, wrap="word", padx=2, pady=2, bd=2, relief="sunken",
-                         font=tkFont.Font(family="Lucida Sans Typewriter"),
+                         # font=tkFont.Font(family="Lucida Sans Typewriter"),
+                         font=self.tkfixedfont,
                          # height=14,
                          # width=52,
                          takefocus=False)
@@ -1861,7 +1834,7 @@ parsing are supported.""")
         win.bind('<space>', (lambda e: showYear()))
         showYear()
         t.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0, pady=0)
-        ysb = ttk.Scrollbar(f, orient='vertical', command=t.yview, width=8)
+        ysb = ttk.Scrollbar(f, orient='vertical', command=t.yview)
         ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
         # t.configure(state="disabled", yscroll=ysb.set)
         t.configure(yscroll=ysb.set)
@@ -1881,7 +1854,7 @@ parsing are supported.""")
         res = self.menutree.showMenu("_")
         print("res:", res)
         # self.textWindow(parent=self, title='etm', prompt=res, modal=False)
-        nb = NotebookWindow(self, title="etm Help", modal=False)
+        nb = NotebookWindow(self, title="etm Help", opts=self.options, modal=False)
         nb.addTab(label=_("Shortcuts"), content=res)
         self.update_idletasks()
         nb.addTab(label=_("Overview"), content=OVERVIEW)
@@ -1893,7 +1866,7 @@ parsing are supported.""")
 
     def about(self, event=None):
         res = loop.do_v("")
-        self.textWindow(parent=self, title='etm', prompt=res, modal=False)
+        self.textWindow(parent=self, title='etm', opts=self.options, prompt=res, modal=False)
 
     def checkForUpdate(self, event=None):
         res = checkForNewerVersion()[1]
@@ -1934,7 +1907,7 @@ or 0 to display all changes.""").format(title)
         logger.debug('history command: {0}'.format(command))
         p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
                              universal_newlines=True).stdout.read()
-        self.textWindow(parent=self, title=title, prompt=str(p))
+        self.textWindow(parent=self, title=title, prompt=str(p), opts=self.options)
 
     def focus_next_window(self, event):
         event.widget.tk_focusNext().focus()
@@ -1960,7 +1933,7 @@ or 0 to display all changes.""").format(title)
         type_chr = self.tree.item(item)['text'][0]
         uuid, dt, hsh = self.getInstance(item)
         # self.l.configure(state="normal")
-        self.l.delete("0.0", END)
+        self.content.delete("0.0", END)
         if uuid is not None:
             self.em.configure(state="normal")
             isRepeating = ('r' in hsh and dt)
@@ -2018,7 +1991,7 @@ or 0 to display all changes.""").format(title)
         else:
             self.topSelected = 1
 
-        logger.debug("top: {3}; row: '{0}'; uuid: '{1}'; instance: '{2}'".format(self.rowSelected, self.uuidSelected, self.dtSelected,  self.topSelected)); self.l.insert(INSERT, text)
+        logger.debug("top: {3}; row: '{0}'; uuid: '{1}'; instance: '{2}'".format(self.rowSelected, self.uuidSelected, self.dtSelected,  self.topSelected)); self.content.insert(INSERT, text)
         return "break"
 
     def OnActivate(self, event):
@@ -2269,8 +2242,8 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
     #         self.e.insert(0, self.history[self.index])
     #     return 'break'
 
-    def textWindow(self, parent, title=None, prompt=None, modal=True):
-        d = TextDialog(parent, title=title, prompt=prompt, modal=modal)
+    def textWindow(self, parent, title=None, prompt=None, opts=None, modal=True):
+        d = TextDialog(parent, title=title, prompt=prompt, opts=opts, modal=modal)
 
 
     def goToDate(self, e=None):
@@ -2500,7 +2473,7 @@ or 0 to expand all branches completely.""")
         self.addToTree(u'', tree[self.root], tree)
         loop.count2id = self.count2id
         # self.l.configure(state="normal")
-        self.l.delete("0.0", END)
+        self.content.delete("0.0", END)
         # self.l.configure(state="disabled")
         if event is None:
             # view selected from menu
