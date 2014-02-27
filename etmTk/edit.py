@@ -91,16 +91,19 @@ class ReportWindow(Toplevel):
         self.changed = False
         self.options = options
         self.modified = False
+        self.tkfixedfont = tkFont.nametofont("TkFixedFont")
+        self.tkfixedfont.configure(size=self.options['fontsize'])
         # self.text_value.trace_variable("w", self.setSaveStatus)
         btnwdth = 5
         topbar = Frame(self, bd=0, relief=FLAT)
+        PADY = 2
         topbar.pack(side="top", fill=X, padx=0, pady=4)
         topbar.configure(background=BGCOLOR)
 
         botbar = Frame(self, bd=0, relief=FLAT, highlightbackground=BGCOLOR, background=BGCOLOR)
         botbar.pack(side="bottom", fill=X, padx=0, pady=4)
 
-        text = ReadOnlyText(self, bd=2, relief="sunken", padx=3, pady=2, font=tkFont.Font(family="Lucida Sans Typewriter"), width=70, takefocus=False)
+        text = ReadOnlyText(self, bd=2, relief="sunken", padx=3, pady=2, font=self.tkfixedfont, width=70, takefocus=False)
         text.configure(highlightthickness=0)
         text.tag_configure(FOUND, background="lightskyblue")
 
@@ -170,16 +173,17 @@ class ReportWindow(Toplevel):
         # Button(botbar, text=_("Process"), highlightbackground=BGCOLOR, width=btnwdth, command=self.makeReport).pack(side=RIGHT, padx=4)
 
         # reportspec
+
         self.box_value = StringVar()
         self.box = ttk.Combobox(botbar, textvariable=self.box_value, font=tkFont.Font(family="Lucida Sans Typewriter"))
         self.box.bind("<<ComboboxSelected>>", self.newselection)
         self.bind("<Return>", self.makeReport)
         self.specs = ['']
-        if self.options and 'report_specifications' in self.options:
+        if ('report_specifications' in self.options and os.path.isfile(self.options['report_specifications'])):
             with open(self.options['report_specifications']) as fo:
                 tmp = fo.readlines()
             self.specs = [str(x).rstrip() for x in tmp if x[0] != "#"]
-            logger.debug('specs: {0}'.format(self.specs))
+        logger.debug('specs: {0}'.format(self.specs))
         self.value_of_combo = self.specs[0]
         self.box['values'] = self.specs
         self.box.current(0)
@@ -232,6 +236,8 @@ class ReportWindow(Toplevel):
     def messageWindow(self, title, prompt):
         win = Toplevel()
         win.title(title)
+        tkfixedfont = tkFont.nametofont("TkFixedFont")
+        tkfixedfont.configure(size=self.options['fontsize'])
         # win.minsize(444, 430)
         # win.minsize(450, 450)
         f = Frame(win)
@@ -243,7 +249,8 @@ class ReportWindow(Toplevel):
 
         t = ReadOnlyText(
             f, wrap="word", padx=2, pady=2, bd=2, relief="sunken",
-            font=tkFont.Font(family="Lucida Sans Typewriter"),
+            # font=tkFont.Font(family="Lucida Sans Typewriter"),
+            font=self.tkfixedfont,
             height=14,
             width=52,
             takefocus=False)
@@ -341,6 +348,7 @@ class SimpleEditor(Toplevel):
         self.minsize(400, 300)
         self.geometry('500x200')
         self.transient(parent)
+        self.configure(background=BGCOLOR, highlightbackground=BGCOLOR)
         self.parent = parent
         self.loop = parent.loop
         self.changed = False
@@ -360,41 +368,43 @@ class SimpleEditor(Toplevel):
         self.rephsh = rephsh
         self.value = ''
         self.options = options
+        self.tkfixedfont = tkFont.nametofont("TkFixedFont")
+        self.tkfixedfont.configure(size=self.options['fontsize'])
         # self.text_value.trace_variable("w", self.setSaveStatus)
         frame = Frame(self, bd=0, relief=FLAT)
-        frame.pack(side="bottom", fill=X, padx=4, pady=3)
-        frame.configure(background=BGCOLOR)
+        frame.pack(side="bottom", fill=X, padx=4, pady=0)
+        frame.configure(background=BGCOLOR, highlightbackground=BGCOLOR)
 
         btnwdth = 5
 
         # ok will check, save and quit
-        Button(frame, text=_("OK"), highlightbackground=BGCOLOR, width=btnwdth, command=self.onSave).pack(side=RIGHT, padx=4)
+        Button(frame, text=_("OK"), highlightbackground=BGCOLOR, width=btnwdth, command=self.onSave, pady=2).pack(side=RIGHT, padx=4)
 
         l, c = commandShortcut('w')
         self.bind(c, self.onSave)
 
         # cancel will quit with a warning prompt if modified
-        Button(frame, text=_("Cancel"), highlightbackground=BGCOLOR, width=btnwdth, command=self.cancel).pack(side=RIGHT, padx=4)
+        Button(frame, text=_("Cancel"), highlightbackground=BGCOLOR, pady=2, width=btnwdth, command=self.cancel).pack(side=RIGHT, padx=4)
         # self.bind("<Escape>", self.quit)
         self.bind("<Escape>", self.cancel)
         # check will evaluate the item entry and, if repeating, show reps
-        inspect = Button(frame, text=_("Validate"), highlightbackground=BGCOLOR,  command=self.onCheck)
+        inspect = Button(frame, text=_("Validate"), highlightbackground=BGCOLOR,  command=self.onCheck, pady=2)
         inspect.pack(side=LEFT, padx=4)
 
 
         # find
-        Button(frame, text='x', command=self.clearFind, highlightbackground=BGCOLOR, padx=8).pack(side=LEFT, padx=0)
+        Button(frame, text='x', command=self.clearFind, highlightbackground=BGCOLOR, padx=8, pady=2).pack(side=LEFT, padx=0)
         self.find_text = StringVar(frame)
         self.e = Entry(frame, textvariable=self.find_text, width=10, highlightbackground=BGCOLOR)
         self.e.pack(side=LEFT, padx=0, expand=1, fill=X)
         self.e.bind("<Return>", self.onFind)
-        Button(frame, text='>', command=self.onFind, highlightbackground=BGCOLOR,  padx=8).pack(side=LEFT, padx=0)
+        Button(frame, text='>', command=self.onFind, highlightbackground=BGCOLOR, padx=8, pady=2).pack(side=LEFT, padx=0)
 
-        text = Text(self, bd=2, relief="sunken", padx=3, pady=2, font=tkFont.Font(family="Lucida Sans Typewriter"), undo=True, width=70)
+        text = Text(self, bd=2, relief="sunken", padx=3, pady=2, font=self.tkfixedfont, undo=True, width=70)
         text.configure(highlightthickness=0)
         text.tag_configure(FOUND, background="lightskyblue")
 
-        text.pack(side="bottom", padx=4, pady=4, expand=1, fill=BOTH)
+        text.pack(side="bottom", padx=4, pady=3, expand=1, fill=BOTH)
         self.text = text
 
         if self.options['auto_completions']:
@@ -473,7 +483,7 @@ class SimpleEditor(Toplevel):
         self.text.edit_reset()
         self.setmodified(False)
         self.text.bind('<<Modified>>', self.updateSaveStatus)
-        self.grab_set()
+
         # if self.parent:
         #     self.initial_focus().focus_set = self.parent
         self.text.focus_set()
@@ -487,8 +497,11 @@ class SimpleEditor(Toplevel):
         l, c = commandShortcut('g')
         self.bind(c, lambda e: self.onFind())
 
-        l, c = commandShortcut('/')
-        self.text.bind(c, self.showCompletions)
+        # l, c = commandShortcut('/')
+        logger.debug("/: {0}, {1}".format(l, c))
+        # self.text.bind("<Control-slash>", self.showCompletions)
+        self.text.bind("<Control-space>", self.showCompletions)
+        self.grab_set()
 
         self.wait_window(self)
 
@@ -536,7 +549,7 @@ class SimpleEditor(Toplevel):
 
             else:
                 relfile = relpath(self.options['auto_completions'], self.options['etmdir'])
-                self.messageWindow(title=_('etm'), prompt=_("No matches for '{0}'\nin '{1}'.").format(match, relfile))
+                self.messageWindow(title=_('etm'), prompt=_("No matches for '{0}'\nin '{1}'.").format(match, relfile), opts=self.options)
                 # logger.debug("nothing in completions matching '{0}'.".format(match))
                 return "break"
         else:
@@ -683,7 +696,7 @@ class SimpleEditor(Toplevel):
         if msg:
             messages = "{0}".format("\n".join(msg))
             logger.debug("messages: {0}".format(messages))
-            self.messageWindow(MESSAGES, messages)
+            self.messageWindow(MESSAGES, messages, opts=self.options)
         if error or msg:
             self.newhsh = None
             logger.debug('returning ok False')
@@ -709,9 +722,9 @@ class SimpleEditor(Toplevel):
 
             repetitions = "{0}".format("\n".join(repsfmt))
             if showing_all:
-                self.messageWindow(ALLREPS, repetitions)
+                self.messageWindow(ALLREPS, repetitions, opts=self.options)
             else:
-                self.messageWindow(SOMEREPS, repetitions)
+                self.messageWindow(SOMEREPS, repetitions, opts=self.options)
         logger.debug(('onCheck: Ok'))
         return True
 
@@ -756,7 +769,7 @@ class SimpleEditor(Toplevel):
             self.destroy()
         return "break"
 
-    def messageWindow(self, title, prompt):
+    def messageWindow(self, title, prompt, opts=None):
         win = Toplevel()
         win.title(title)
         # win.minsize(444, 430)
@@ -770,13 +783,13 @@ class SimpleEditor(Toplevel):
 
         t = ReadOnlyText(
             f, wrap="word", padx=2, pady=2, bd=2, relief="sunken",
-            font=tkFont.Font(family="Lucida Sans Typewriter"),
+            font=self.tkfixedfont,
             height=14,
             width=52,
             takefocus=False)
         t.insert("0.0", prompt)
         t.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0, pady=0)
-        ysb = ttk.Scrollbar(f, orient='vertical', command=t.yview, width=8)
+        ysb = ttk.Scrollbar(f, orient='vertical', command=t.yview)
         ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
         # t.configure(state="disabled", yscroll=ysb.set)
         t.configure(yscroll=ysb.set)

@@ -2,6 +2,34 @@
 
 123456789|123456789|123456789|123456789|123456789|123456789|123456789|123456789|
 
+
+File
+
+    + Make report
+    + Change history
+    - Choose active calendars
+    Export active calendars...
+
++ View
+
+    Agenda
+    ...
+    ---
+    Choose active calendars
+    Apply filter
+    Set outline depth
+
++ Item
+    Copy
+    ...
+
+Tools
+    - set outline depth
+    - Make report
+    - Change history
+
+Help
+
 ## makeReport
 
     menu:

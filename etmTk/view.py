@@ -23,7 +23,7 @@ import platform
 
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame
     # from tkinter import messagebox as tkMessageBox
     from tkinter import ttk
     from tkinter import font as tkFont
@@ -33,7 +33,7 @@ if platform.python_version() >= '3':
     # from tkinter import simpledialog as tkSimpleDialog
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame
     # import tkMessageBox
     import ttk
     import tkFont
@@ -92,6 +92,9 @@ DELETE = _("Delete")
 FILE = _("File")
 NEW = _("New")
 OPEN = _("Open")
+VIEW = _("View")
+ITEM = _("Item")
+TOOLS = _("Tools")
 
 SEP = "----"
 
@@ -194,7 +197,7 @@ class Timer():
         self.timer_hsh = hsh
         text = hsh['_summary']
         if len(text) > 10:
-            self.timer_summary = "{0}~".format(text[:9])
+            self.timer_summary = "{0}~".format(text[:16])
         else:
             self.timer_summary = text
         self.timer_toggle(self.timer_hsh)
@@ -492,6 +495,34 @@ class NotebookWindow(Dialog):
 # of their country.
 #         """)
 
+class TextVariableWindow(Dialog):
+    def body(self, master):
+        if 'textvariable' not in self.options:
+            return
+        self.entry = entry = Entry(master, textvariable=self.options['textvariable'])
+        self.entry.pack(side="bottom", padx=5, pady=5)
+        Label(master, text=self.prompt, justify='left', highlightbackground=BGCOLOR, background=BGCOLOR).pack(side="top", fill=tkinter.BOTH, expand=1, padx=10, pady=5)
+        self.entry.focus_set()
+        self.entry.bind('<Escape>', self.entry.delete(0, END))
+
+    def buttonbox(self):
+        # add standard button box. override if you don't want the
+        # standard buttons
+
+        box = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
+
+        w = Button(box, text="OK", width=10, command=self.ok,
+                   default=ACTIVE, highlightbackground=BGCOLOR)
+        w.pack(side=LEFT, padx=5, pady=5)
+        self.bind("<Return>", self.ok)
+        self.bind("<Escape>", self.ok)
+        box.pack(side='bottom')
+
+    def apply(self, e=None):
+        logger.debug("got here")
+        self.entry.delete(0, END)
+        self.entry.insert(0, "")
+
 
 class DialogWindow(Dialog):
     # master will be a frame in Dialog
@@ -511,12 +542,16 @@ class TextDialog(Dialog):
     def body(self, master):
         tkfixedfont = tkFont.nametofont("TkFixedFont")
         tkfixedfont.configure(size=self.options['fontsize'])
+        lines = self.prompt.split('\n')
+        height = min(25, len(lines) + 1)
+        lengths = [len(line) for line in lines]
+        width = min(70, max(lengths) + 2)
         self.text = ReadOnlyText(
             master, wrap="word", padx=2, pady=2, bd=2, relief="sunken",
             # font=tkFont.Font(family="Lucida Sans Typewriter"),
             font=tkfixedfont,
-            height=14,
-            width=52,
+            height=height,
+            width=width,
             takefocus=False)
         self.text.insert("1.1", self.prompt)
         self.text.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0,
@@ -714,10 +749,14 @@ class App(Tk):
         self.menu_lst = []
         self.menutree = MenuTree()
         root = "_"
+
         # create the root node for the menu tree
         self.menutree.create_node(root, root)
         # branch: (parent, child)
         # leaf: (parent, (option, [accelerator])
+        menuwidth = 9
+
+        # main menu
         menubar = Menu(self)
         logger.debug('AFTER: {0}'.format(AFTER))
         menu = _("Menubar")
@@ -728,7 +767,7 @@ class App(Tk):
         path = FILE
         self.add2menu(menu, (path, ))
 
-        newmenu = Menu(filemenu, tearoff=0)
+        self.newmenu = newmenu = Menu(filemenu, tearoff=0)
         self.add2menu(path, (NEW, ))
         path = NEW
 
@@ -801,27 +840,27 @@ class App(Tk):
 
         path = FILE
 
-        # calendars
-        label = _("Choose active calendars")
-        calendarmenu = Menu(filemenu, tearoff=0)
-        self.calendars = deepcopy(loop.options['calendars'])
-        logger.debug('{0}: {1}'.format(label, [x[:2] for x in self.calendars]))
-        self.calendarValues = []
-        for i in range(len(self.calendars)):
-            # logger.debug('Adding calendar: {0}'.format(self.calendars[i][:2]))
-            self.calendarValues.append(BooleanVar())
-            self.calendarValues[i].set(self.calendars[i][1])
-            self.calendarValues[i].trace_variable("w", self.updateCalendars)
-            calendarmenu.add_checkbutton(label=self.calendars[i][0], onvalue=True, offvalue=False, variable=self.calendarValues[i])
 
-        if self.calendars:
-            filemenu.add_cascade(label=label,
-                                 menu=calendarmenu)
-        else:
-            filemenu.add_cascade(label=label,
-                                 menu=calendarmenu,
-                                 state="disabled")
-        self.add2menu(path, (label, ))
+        filemenu.add_separator()
+        self.add2menu(path, (SEP, ))
+
+        # report
+        l, c = commandShortcut('m')
+        label=_("Make report")
+        filemenu.add_command(label=label, accelerator=l,
+                             underline=1,
+                             command=self.makeReport)
+        self.bind(c, self.makeReport)
+        self.add2menu(path, (label, l))
+
+        # changes
+        l, c = commandShortcut('h')
+        label = _("Show changes")
+        filemenu.add_command(label=label, underline=1,  accelerator=l, command=self
+                             .showChanges)
+        self.bind_all(c, lambda event: self.after(AFTER, self.showChanges))
+        self.add2menu(path, (label, l))
+
 
         ## export
         l, c = commandShortcut('X')
@@ -843,25 +882,53 @@ class App(Tk):
 
         menubar.add_cascade(label=path, underline=0, menu=filemenu)
 
-        # treetext = tree2Text(tree)
-        # logger.debug('menu_tree:\n{0}'.format(self.tree.show(root)))
-        # self.tree.show(root)
-        # tree = make_tree(self.menu_lst)
-        # logger.debug('tree:\n{0}'.format(tree))
-
-        # view menu
-        path = _("Tools")
-        self.add2menu(menu, (path, ))
+        # View menu
         viewmenu = Menu(menubar, tearoff=0)
+        path = VIEW
+        self.add2menu(menu, (path, ))
 
-        # go to date
-        l, c = commandShortcut('j')
-        label=_("Jump to date")
+        self.vm_options = [[AGENDA, 'a'],
+                           [SCHEDULE, 's'],
+                           [TAGS, 't'],
+                           [KEYWORDS, 'k'],
+                           [PATHS, 'p'],
+        ]
+
+        self.view2cmd = {'a': self.agendaView,
+                         's': self.scheduleView,
+                         'p': self.pathView,
+                         'k': self.keywordView,
+                         't': self.tagView}
+
+        self.vm_opts = [x[0] for x in self.vm_options]
+        self.view = self.vm_options[0][0]
+        # self.viewValue = StringVar(self)
+        self.currentView = StringVar(self)
+        self.currentView.set(self.view)
+        # self.viewValue.set(self.viewLabel)
+
+        for i in range(len(self.vm_options)):
+            label = self.vm_options[i][0]
+            k = self.vm_options[i][1]
+            l, c = commandShortcut(k)
+            logger.debug("{0} ({1}): {2}, {3}".format(label, k, l, c))
+            # self.bind(c, self.view2cmd[k])  # a, s, p, k, t
+            # label = _("Scratchpad")
+            viewmenu.add_command(label=label, accelerator=l, command=self.view2cmd[k])
+            self.bind(c, lambda e, x=k: self.after(AFTER, self.view2cmd[x]))
+            self.add2menu(path, (label, l))
+
+        viewmenu.add_separator()
+        self.add2menu(path, (SEP, ))
+
+        # apply filter
+        l, c = commandShortcut('f')
+        label=_("Apply filter")
         viewmenu.add_command(
             label=label, underline=1, accelerator=l,
-            command=self.goToDate)
+            command=self.setFilter)
         # needed for os x to prevent dialog hanging
-        self.bind_all(c, lambda event: self.after(AFTER, self.goToDate))
+        self.bind_all(c, lambda event: self.after(AFTER, self.setFilter))
         self.add2menu(path, (label, l))
 
         # expand to depth
@@ -874,35 +941,92 @@ class App(Tk):
         self.bind_all(c, lambda event: self.after(AFTER, self.expand2Depth))
         self.add2menu(path, (label, l))
 
+        # calendars
+        label = _("Choose active calendars")
+        calendarmenu = Menu(filemenu, tearoff=0)
+        self.calendars = deepcopy(loop.options['calendars'])
+        logger.debug('{0}: {1}'.format(label, [x[:2] for x in self.calendars]))
+        self.calendarValues = []
+        for i in range(len(self.calendars)):
+            # logger.debug('Adding calendar: {0}'.format(self.calendars[i][:2]))
+            self.calendarValues.append(BooleanVar())
+            self.calendarValues[i].set(self.calendars[i][1])
+            self.calendarValues[i].trace_variable("w", self.updateCalendars)
+            calendarmenu.add_checkbutton(label=self.calendars[i][0], onvalue=True, offvalue=False, variable=self.calendarValues[i])
 
-        viewmenu.add_separator()
-        self.add2menu(path, (SEP, ))
+        if self.calendars:
+            viewmenu.add_cascade(label=label,
+                                 menu=calendarmenu)
+        else:
+            viewmenu.add_cascade(label=label,
+                                 menu=calendarmenu,
+                                 state="disabled")
+        self.add2menu(path, (label, ))
+
+        menubar.add_cascade(label=path, underline=0, menu=viewmenu)
+
+        # View menu
+        self.itemmenu = itemmenu = Menu(menubar, tearoff=0)
+        path = ITEM
+        self.add2menu(menu, (path, ))
+
+        self.em_options = [
+            [_('Copy'), 'c'],
+            [_('Delete'), 'd'],
+            [_('Edit'), 'e'],
+            [_('Finish'), 'x'],
+            [_('Reschedule'), 'r'],
+            [_('Open link'), 'g'],
+        ]
+        self.edit2cmd = {
+            'c': self.copyItem,
+            'd': self.deleteItem,
+            'e': self.editItem,
+            'x': self.finishItem,
+            'r': self.rescheduleItem,
+            'g': self.openWithDefault,
+        }
+        self.em_opts = [x[0] for x in self.em_options]
+        em_cmds = [x[1] for x in self.em_options]
+
+        for i in range(len(self.em_options)):
+            label = self.em_options[i][0]
+            k = self.em_options[i][1]
+            l, c = commandShortcut(k)
+            itemmenu.add_command(label=label, command=self.edit2cmd[k])
+            self.bind_all(c, lambda e, x=k: self.after(AFTER, self.edit2cmd[x]))
+            self.add2menu(path, (label, l))
+
+        menubar.add_cascade(label=path, underline=0, menu=itemmenu)
+
+        # tools menu
+        path = TOOLS
+        self.add2menu(menu, (path, ))
+        toolsmenu = Menu(menubar, tearoff=0)
+
+        # go to date
+        l, c = commandShortcut('j')
+        label=_("Jump to date")
+        toolsmenu.add_command(
+            label=label, underline=1, accelerator=l,
+            command=self.goToDate)
+        # needed for os x to prevent dialog hanging
+        self.bind_all(c, lambda event: self.after(AFTER, self.goToDate))
+        self.add2menu(path, (label, l))
 
 
         # busy times
         l, c = commandShortcut('b')
         label = _("Show busy periods")
-        viewmenu.add_command(label=label, underline=1,
+        toolsmenu.add_command(label=label, underline=1,
                              accelerator=l,
                              command=self.showBusyTimes)
         self.bind_all(c, lambda event: self.after(AFTER, self.showBusyTimes))
         self.add2menu(path, (label, l))
 
-        # report
-        l, c = commandShortcut('m')
-        label=_("Make report")
-        viewmenu.add_command(label=label, accelerator=l,
-                             underline=1,
-                             command=self.makeReport)
-        self.bind(c, self.donothing)
-        self.add2menu(path, (label, l))
-
-        viewmenu.add_separator()
-        self.add2menu(path, (SEP, ))
-
         l, c = commandShortcut('y')
         label=_("Display yearly calendar")
-        viewmenu.add_command(label=label, underline=1, accelerator=l,
+        toolsmenu.add_command(label=label, underline=1, accelerator=l,
                              command=self.showCalendar)
         self.bind_all(c, lambda event: self.after(AFTER, self.showCalendar))
         self.add2menu(path, (label, l))
@@ -910,27 +1034,11 @@ class App(Tk):
         # date calculator
         l, c = commandShortcut('l')
         label=_("Open date calculator")
-        viewmenu.add_command(label=label, underline=1, accelerator=l, command=self.dateCalculator)
+        toolsmenu.add_command(label=label, underline=1, accelerator=l, command=self.dateCalculator)
         self.bind(c, lambda event: self.after(AFTER, self.dateCalculator))
-        # c
         self.add2menu(path, (label, l))
 
-        viewmenu.add_separator()
-        self.add2menu(path, (SEP, ))
-
-        # changes
-        l, c = commandShortcut('h')
-        label = _("Change history")
-        viewmenu.add_command(label=label, underline=1,  accelerator=l, command=self
-                             .showChanges)
-        self.bind_all(c, lambda event: self.after(AFTER, self.showChanges))
-        self.add2menu(path, (label, l))
-
-        # label = _("Error log")
-        # viewmenu.add_command(label=label, underline=1, command=self.donothing)
-        # self.add2menu(path, (label, ))
-
-        menubar.add_cascade(label=path, menu=viewmenu, underline=0)
+        menubar.add_cascade(label=path, menu=toolsmenu, underline=0)
 
         # logger.debug('menu_tree:\n{0}'.format(self.menutree.showMenu(root)))
 
@@ -942,8 +1050,7 @@ class App(Tk):
         self.add2menu(path, (_("Search"), ))
 
         label = _("Help")
-        helpmenu.add_command(label=label, underline=1, accelerator="F1", command=self
-                             .help)
+        helpmenu.add_command(label=label, underline=1, accelerator="F1", command=self.help)
         self.add2menu(path, (label, "F1"))
         self.bind_all("<F1>", lambda e: self.after(AFTER, self.help))
 
@@ -974,7 +1081,7 @@ class App(Tk):
         self.options = loop.options
         tkfixedfont = tkFont.nametofont("TkFixedFont")
         tkfixedfont.configure(size=self.options['fontsize'])
-        print(tkfixedfont.actual())
+        logger.debug("fixedfont: {0}".format(tkfixedfont.actual()))
         self.tkfixedfont = tkfixedfont
 
         self.popup = ''
@@ -992,7 +1099,7 @@ class App(Tk):
         self.dtSelected = None
         self.rowSelected = None
 
-        self.title("etm tk")
+        self.title("etm")
 
         # self.wm_iconbitmap(bitmap='etmlogo.gif')
         # self.wm_iconbitmap('etmlogo-4.xbm')
@@ -1016,12 +1123,35 @@ class App(Tk):
         self.columnconfigure(0, minsize=300, weight=1)
         self.rowconfigure(1, weight=2)
 
-        toolbar = Frame(self)
+        topbar = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
+
+        # viewbar = Frame(self)
+
+        self.showing = showing = Label(topbar, textvariable=self.currentView, bd=1, relief="flat", anchor="w", padx=0, pady=0, highlightbackground=BGCOLOR, background=BGCOLOR)
+        self.showing.pack(side="left", padx=8, pady=0)
+
+        self.matchingFilter = StringVar(self)
+        self.matchingFilter.set("")
+        matching = Label(topbar, textvariable=self.matchingFilter, bd=1, relief="flat", anchor="w", padx=0, pady=0, highlightbackground=BGCOLOR, background=BGCOLOR)
+        matching.pack(side="right", padx=2, pady=2)
+
+        self.specialCalendars = StringVar(self)
+        self.specialCalendars.set("")
+        nonDefCal = Label(topbar, textvariable=self.specialCalendars, bd=1, relief="flat", anchor="w", padx=0, pady=0, highlightbackground=BGCOLOR, background=BGCOLOR)
+        nonDefCal.pack(side="right", padx=2, pady=2)
+
+        topbar.pack(side="top", fill="both", expand=0, padx=0, pady=0)
+
+
+        # labelframe = LabelFrame(self, labelwidget=self.currentView)
 
         panedwindow = PanedWindow(self, orient="vertical",
                          # showhandle=True,
                          sashwidth=6, sashrelief='flat',
         )
+
+        # self.labelframe = labelframe = LabelFrame(self, labelwidget=self.showing, highlightbackground=BGCOLOR, background=BGCOLOR
+        # )
 
         self.tree = ttk.Treeview(panedwindow, show='tree', columns=["#1"], selectmode='browse',
                                  # padding=(3, 2, 3, 2)
@@ -1031,7 +1161,7 @@ class App(Tk):
         self.tree.bind('<<TreeviewSelect>>', self.OnSelect)
         self.tree.bind('<Double-1>', self.OnDoubleClick)
         self.tree.bind('<Return>', self.OnActivate)
-        self.tree.bind('<Escape>', self.cleartext)
+        # self.tree.bind('<Escape>', self.cleartext)
         self.tree.bind('<space>', self.goHome)
         # self.tree.bind('<j>', self.jumpToDate)
 
@@ -1041,120 +1171,27 @@ class App(Tk):
         self.date2id = {}
         # padx = 2
 
-        self.root = (u'', u'_')
-
-        toolbar.grid(row=0, column=0, sticky='ew', padx=3, pady=2)
-
-        tbar = _("Toolbar")
-        self.add2menu(root, (tbar,))
-        path = tbar,
-
-        menuwidth = 9
-
-        # show menu
-        self.viewLabel = _("View")
-        self.add2menu(tbar, (self.viewLabel, ))
-        path = self.viewLabel
-
-        self.vm_options = [[AGENDA, 'a'],
-                           [SCHEDULE, 's'],
-                           [TAGS, 't'],
-                           [KEYWORDS, 'k'],
-                           [PATHS, 'p'],
-        ]
-
-        self.view2cmd = {'a': self.agendaView,
-                         's': self.scheduleView,
-                         'p': self.pathView,
-                         'k': self.keywordView,
-                         't': self.tagView}
-
-        self.vm_opts = [x[0] for x in self.vm_options]
-        self.view = self.vm_options[0][0]
-        # self.viewValue = StringVar(self)
-        self.currentView = StringVar(self)
-        self.currentView.set(self.view)
-        # self.viewValue.set(self.viewLabel)
-        self.vm = OptionMenu(toolbar, self.currentView, *self.vm_opts, command=self.setView)
-
-        self.vm.configure(width=menuwidth)
-        for i in range(len(self.vm_options)):
-            label = self.vm_options[i][0]
-            k = self.vm_options[i][1]
-            l, c = commandShortcut(k)
-            logger.debug("{0} ({1}): {2}, {3}".format(label, k, l, c))
-            self.bind(c, self.view2cmd[k])  # a, s, p, k, t
-            self.vm["menu"].entryconfig(i, accelerator=l)
-            self.add2menu(path, (label, l))
-
-        self.vm.pack(side="left")
-        self.vm.configure(width=menuwidth, background=BGCOLOR, takefocus=False)
-
-        # self.nonDefaultCalendars = StringVar(self)
-        # self.nonDefaultCalendars.set("")
-        # nonDefCal = Label(toolbar, textvariable=self.nonDefaultCalendars, bd=0, relief="flat", anchor="center", padx=0, pady=0)
-        # nonDefCal.pack(side="left")
-        # nonDefCal.configure(background=BGCOLOR)
-
-        # edit
-        self.editLabel = _("Selection")
-        self.add2menu(tbar, (self.editLabel, ))
-        path = self.editLabel
-
-        self.editValue = StringVar(self)
-        self.editValue.set(self.editLabel)
-        self.em_options = [
-            [_('Copy'), 'c'],
-            [_('Delete'), 'd'],
-            [_('Edit'), 'e'],
-            [_('Finish'), 'f'],
-            [_('Reschedule'), 'r'],
-            [_('Open link'), 'g'],
-        ]
-        self.edit2cmd = {
-            'c': self.copyItem,
-            'd': self.deleteItem,
-            'e': self.editItem,
-            'f': self.finishItem,
-            'r': self.rescheduleItem,
-            'g': self.openWithDefault,
-        }
-        self.em_opts = [x[0] for x in self.em_options]
-        em_cmds = [x[1] for x in self.em_options]
-
-        self.em = OptionMenu(toolbar, self.editValue, *self.em_opts)
-
-        for i in range(len(self.em_options)):
-            label = self.em_options[i][0]
-            k = self.em_options[i][1]
-            l, c = commandShortcut(k)
-            self.em["menu"].entryconfig(i, accelerator=l, command=lambda x=k: self.after(AFTER, self.edit2cmd[x]))
-            self.tree.bind(c, lambda event, x=k: self.after(AFTER, self.edit2cmd[x]))
-            self.add2menu(path, (label, l))
-
-        self.em.pack(side="left")
-        self.em.configure(width=menuwidth, background=BGCOLOR, takefocus=False)
-
-        self.helpBtn = Button(toolbar, bd=0, text="?", takefocus=False, command=self.help)
-        self.helpBtn.pack(side="right")
-        self.helpBtn.configure(highlightbackground=BGCOLOR, highlightthickness=0)
+        self.root = ('', '_')
 
         # filter
         self.filterValue = StringVar(self)
         self.filterValue.set('')
         self.filterValue.trace_variable("w", self.filterView)
-        self.e = Entry(toolbar, width=8, textvariable=self.filterValue,
-                       # relief="raised",
-                       # highlightcolor=BGCOLOR,
-                       # bd=4
-                      )
-        self.e.bind('<Return>', self.showView)
-        self.e.bind('<Escape>', self.cleartext)
-        # self.e.bind('<Up>', self.prev_history)
-        # self.e.bind('<Down>', self.next_history)
-        self.e.pack(side="left", fill=tkinter.BOTH, expand=1, padx=2)
-        self.e.configure(width=menuwidth, highlightthickness=0)
 
+        # self.e = Entry(toolbar, width=8, textvariable=self.filterValue,
+        #                relief="groove",
+        #                highlightcolor=BGCOLOR,
+        #                bd=6
+        #               )
+        # self.e.bind('<Return>', self.showView)
+        # self.e.bind('<Escape>', self.cleartext)
+        # # self.e.bind('<Up>', self.prev_history)
+        # # self.e.bind('<Down>', self.next_history)
+        # self.e.pack(side="left", fill=tkinter.BOTH, expand=1, padx=2)
+        # self.e.configure(width=menuwidth, highlightthickness=0)
+
+        self.tree.pack(fill="both", expand=1, padx=4, pady=4)
+        # panedwindow.add(self.tree, padx=3, pady=0, stretch="first")
         panedwindow.add(self.tree, padx=3, pady=0, stretch="first")
 
         self.content = ReadOnlyText(panedwindow, wrap="word", padx=3, bd=2, relief="sunken",
@@ -1167,59 +1204,48 @@ class App(Tk):
 
         panedwindow.add(self.content, padx=3, pady=0, stretch="never")
 
-        panedwindow.grid(row=1, column=0, sticky="nsew", padx=0, pady=0)
+        # panedwindow.grid(row=1, column=0, sticky="nsew", padx=0, pady=0)
+        panedwindow.pack(side="top", fill="both", expand=1, padx=2, pady=0)
         panedwindow.configure(background=BGCOLOR)
 
-        self.sf = Frame(self)
-        toolbar.configure(background=BGCOLOR)
-        # self.pendingAlerts = StringVar(self)
-        # self.pendingAlerts.set("")
 
-        # showing = Label(self.sf, textvariable=self.currentView, bd=1, relief="flat",
-        #                 anchor="w", padx=0, pady=0)
-        # showing.pack(side="left")
-        # showing.configure(width=menuwidth, background=BGCOLOR,
-        #                   highlightthickness=0)
-
-        self.nonDefaultCalendars = StringVar(self)
-        self.nonDefaultCalendars.set("")
-        nonDefCal = Label(self.sf,
-                          textvariable=self.nonDefaultCalendars,
-                          # bd=0,
-                          relief="flat",
-                          # anchor="center",
-                          padx=0, pady=0)
-        nonDefCal.pack(side="left")
-        nonDefCal.configure(background=BGCOLOR)
+        self.statusbar = Frame(self)
 
 
         self.timerStatus = StringVar(self)
         self.timerStatus.set("")
-        timer_status = Label(self.sf, textvariable=self.timerStatus, bd=0, relief="flat",
-                             anchor="center", padx=4, pady=0)
-        timer_status.pack(side="left", expand=1)
+        timer_status = Label(self.statusbar, textvariable=self.timerStatus, bd=0,  relief="flat",  anchor="w", padx=0, pady=0)
+        timer_status.pack(side="left", expand=0, padx=2)
         timer_status.configure(background=BGCOLOR, highlightthickness=0)
 
         self.pendingAlerts = IntVar(self)
         self.pendingAlerts.set(0)
-        self.pending = Button(self.sf, bd=0, width=1, takefocus=False, textvariable=self.pendingAlerts, command=self.showAlerts)
-        self.pending.pack(side="right")
-        self.pending.configure(highlightbackground=BGCOLOR, background=BGCOLOR,
-                               highlightthickness=0, state="disabled")
+        self.pending = Button(self.statusbar, padx=8, pady=2,
+            # relief="flat",
+            takefocus=False, textvariable=self.pendingAlerts, command=self.showAlerts, anchor="center")
+        self.pending.pack(side="right", padx=0, pady=0)
+        self.pending.configure(highlightbackground=BGCOLOR,
+                               background=BGCOLOR,
+                               highlightthickness=0,
+                               state="disabled"
+        )
         self.showPending = True
 
         self.currentTime = StringVar(self)
-        currenttime = Label(self.sf, textvariable=self.currentTime, bd=1, relief="flat",
+        currenttime = Label(self.statusbar, textvariable=self.currentTime, bd=1, relief="flat",
                             anchor="e", padx=4, pady=0)
         currenttime.pack(side="right")
         currenttime.configure(background=BGCOLOR)
 
-        self.sf.grid(row=2, column=0, sticky="ew", padx=8, pady=4)
-        self.sf.configure(background=BGCOLOR)
+        self.statusbar.pack(side="bottom", fill="x", expand=0, padx=6, pady=0)
+        self.statusbar.configure(background=BGCOLOR)
 
-        self.grid()
-
-        # self.e.select_range(0, END)
+        # set cal_regex here and update it in updateCalendars
+        self.cal_regex = None
+        if loop.calendars:
+            cal_pattern = r'^%s' % '|'.join(
+                [x[2] for x in loop.calendars if x[1]])
+            self.cal_regex = re.compile(cal_pattern)
 
         # start clock
         self.updateClock()
@@ -1258,13 +1284,13 @@ class App(Tk):
         if loop.calendars != loop.options['calendars']:
             cal_pattern = r'^%s' % '|'.join(
                 [x[2] for x in loop.calendars if x[1]])
-            loop.cal_regex = re.compile(cal_pattern)
-            self.nonDefaultCalendars.set(_("Calendars"))
+            self.cal_regex = re.compile(cal_pattern)
+            self.specialCalendars.set(_("not default calendars"))
         else:
             cal_pattern = ''
-            loop.cal_regex = None
-            self.nonDefaultCalendars.set("")
-            # print('updateCalendars', loop.calendars, cal_pattern, loop.cal_regex)
+            self.cal_regex = None
+            self.specialCalendars.set("")
+            # print('updateCalendars', loop.calendars, cal_pattern, self.cal_regex)
         self.showView()
 
 
@@ -1285,9 +1311,10 @@ class App(Tk):
         logger.debug('donothing')
 
     # TODO: implement makeReport
-    def makeReport(self):
+    def makeReport(self, e=None):
         logger.debug('makeReport')
-        ReportWindow(parent=self, options=loop.options, title=_("report"))
+        ReportWindow(parent=self, options=self.options, title=_("report"))
+
 
     def openWithDefault(self):
         if 'g' not in self.itemSelected:
@@ -1623,7 +1650,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
                         utf8(x[1]['summary'][:26])) for x in loop.alerts]))
         else:
             s = _("none")
-        self.textWindow(self, t, s)
+        self.textWindow(self, t, s, opts=self.options)
 
     def agendaView(self, e=None):
         self.setView(AGENDA)
@@ -1653,7 +1680,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             self.vm_options[self.vm_opts.index(self.view)][1], fltr)
         self.mode = 'command'
         self.process_input(event=e, cmd=cmd)
-        self.e.focus_set()
+        # self.focus_set()
 
 
     def showView(self, e=None, row=None):
@@ -1680,12 +1707,12 @@ parsing are supported.""")
         d = GetDateTime(parent=self, title=_('date'), prompt=prompt)
         chosen_day = d.value
         logger.debug('chosen_day: {0}'.format(chosen_day))
-        cal_regex = None
-        # logger.debug('options: {0}'.format(loop.options))
-        if loop.options['calendars']:
-            cal_pattern = r'^%s' % '|'.join([x[2] for x in self.options['calendars'] if x[1]])
-            cal_regex = re.compile(cal_pattern)
-            logger.debug('cal_pattern: {0}'.format(cal_pattern))
+        # cal_regex = None
+        # # logger.debug('options: {0}'.format(loop.options))
+        # if loop.options['calendars']:
+        #     cal_pattern = r'^%s' % '|'.join([x[2] for x in self.options['calendars'] if x[1]])
+        #     cal_regex = re.compile(cal_pattern)
+        #     logger.debug('cal_pattern: {0}'.format(cal_pattern))
 
         if chosen_day is None:
             return ()
@@ -1706,18 +1733,15 @@ parsing are supported.""")
         day = weekbeg
         busy_lst = []
         occasion_lst = []
-        # matching = self.cal_regex is not None and self.default_regex is not None
         while day <= weekend:
             weekdays.append(fmt_weekday(day))
             isokey = day.isocalendar()
-            # if isokey == iso_today:
-            #     self.today_col = col_num
 
             if isokey in loop.occasions:
                 bt = []
                 for item in loop.occasions[isokey]:
                     it = list(item)
-                    if cal_regex and not cal_regex.match(it[-1]):
+                    if self.cal_regex and not self.cal_regex.match(it[-1]):
                         continue
                     item = tuple(it)
                     bt.append(item)
@@ -1729,7 +1753,7 @@ parsing are supported.""")
                 bt = []
                 for item in loop.busytimes[isokey][1]:
                     it = list(item)
-                    if cal_regex and not cal_regex.match(it[-1]):
+                    if self.cal_regex and not self.cal_regex.match(it[-1]):
                         continue
                     item = tuple(it)
                     bt.append(item)
@@ -1752,8 +1776,8 @@ parsing are supported.""")
             header = "{0} - {1}".format(
                 fmt_dt(weekbeg, '%b %d, %Y'), fmt_dt(weekend, '%b %d, %Y'))
         header = leadingzero.sub('', header)
-
-        lines = [_("Scheduled times for week {0}: {1}").format(wn, header)]
+        theweek = _("Scheduled times for week {0}: {1}").format(wn, header)
+        lines = [theweek, '-'*len(theweek)]
         ampm = loop.options['ampm']
         s1 = s2 = ''
         for i in range(7):
@@ -1785,7 +1809,7 @@ parsing are supported.""")
 
                     times.append("%s-%s" % (T1, T2))
             if times:
-                lines.append("   %s: %s" % (weekdays[i], "; ".join(times)))
+                lines.append("%s: %s" % (weekdays[i], "; ".join(times)))
         s = "\n".join(lines)
         self.textWindow(parent=self, title=_('busy times'), prompt=s, opts=self.options)
 
@@ -1852,14 +1876,13 @@ parsing are supported.""")
     # TODO: Speed up help display
     def help(self, event=None):
         res = self.menutree.showMenu("_")
-        print("res:", res)
         # self.textWindow(parent=self, title='etm', prompt=res, modal=False)
         nb = NotebookWindow(self, title="etm Help", opts=self.options, modal=False)
         nb.addTab(label=_("Shortcuts"), content=res)
         self.update_idletasks()
         nb.addTab(label=_("Overview"), content=OVERVIEW)
         nb.addTab(label=_("Types"), content=ITEMTYPES)
-        nb.addTab(label=_("@ keys"), content=ATKEYS)
+        nb.addTab(label=_("@Keys"), content=ATKEYS)
         nb.addTab(label=_("Dates"), content=DATES)
         nb.addTab(label=_("Preferences"), content=PREFERENCES)
         nb.addTab(label=_("Reports"), content=REPORTS)
@@ -1870,7 +1893,7 @@ parsing are supported.""")
 
     def checkForUpdate(self, event=None):
         res = checkForNewerVersion()[1]
-        self.textWindow(parent=self, title='etm', prompt=res)
+        self.textWindow(parent=self, title='etm', prompt=res, opts=self.options)
 
     def showChanges(self, event=None):
         if self.itemSelected:
@@ -1881,7 +1904,7 @@ parsing are supported.""")
         else:
             fn = ""
             title = _("Showing changes for all files.")
-
+        logger.debug('fn: {0}'.format(fn))
         prompt = _("""\
 {0}
 
@@ -1935,15 +1958,15 @@ or 0 to display all changes.""").format(title)
         # self.l.configure(state="normal")
         self.content.delete("0.0", END)
         if uuid is not None:
-            self.em.configure(state="normal")
+            # self.itemmenu.configure(state="normal")
             isRepeating = ('r' in hsh and dt)
             if isRepeating:
                 item = "{0} {1}".format(_('selected'), dt)
-                self.em["menu"].entryconfig(1, label="{0} ...".format(self.em_opts[1]))
-                self.em["menu"].entryconfig(2, label="{0} ...".format(self.em_opts[2]))
+                self.itemmenu.entryconfig(1, label="{0} ...".format(self.em_opts[1]))
+                self.itemmenu.entryconfig(2, label="{0} ...".format(self.em_opts[2]))
             else:
-                self.em["menu"].entryconfig(1, label=self.em_opts[1])
-                self.em["menu"].entryconfig(2, label=self.em_opts[2])
+                self.itemmenu.entryconfig(1, label=self.em_opts[1])
+                self.itemmenu.entryconfig(2, label=self.em_opts[2])
                 item = _('selected')
             isUnfinished = (type_chr in ['-', '+', '%'])
             hasLink = ('g' in hsh and hsh['g'])
@@ -1959,28 +1982,24 @@ or 0 to display all changes.""").format(title)
                 text = "{1}\n\n{2}: {3}\n\n{4}: {5}".format(item, hsh['entry'].lstrip(), _("Errors"), hsh['errors'],  _("file"), filetext)
             else:
                 text = "{1}\n\n{2}: {3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
-            # self.nm["menu"].entryconfig(2, state='normal')
             for i in [0, 1, 2, 4]: # everything except finish
-                self.em["menu"].entryconfig(i, state='normal')
-                # self.em.configure(state="normal")
+                self.itemmenu.entryconfig(i, state='normal')
             if isUnfinished:
-                self.em["menu"].entryconfig(3, state='normal')
+                self.itemmenu.entryconfig(3, state='normal')
             else:
-                self.em["menu"].entryconfig(3, state='disabled')
+                self.itemmenu.entryconfig(3, state='disabled')
             if hasLink:
-                self.em["menu"].entryconfig(5, state='normal')
+                self.itemmenu.entryconfig(5, state='normal')
             else:
-                self.em["menu"].entryconfig(5, state='disabled')
+                self.itemmenu.entryconfig(5, state='disabled')
             self.uuidSelected = uuid
             self.itemSelected = hsh
             self.dtSelected = dt
             # logger.debug(('selected: {0}'.format(hsh)))
         else:
-            self.em.configure(state="disabled")
             text = ""
-            # self.nm["menu"].entryconfig(2, state='disabled')
-            for i in range(5):
-                self.em["menu"].entryconfig(i, state='disabled')
+            for i in range(6):
+                self.itemmenu.entryconfig(i, state='disabled')
             self.itemSelected = None
             self.uuidSelected = None
             self.dtSelected = None
@@ -1991,7 +2010,8 @@ or 0 to display all changes.""").format(title)
         else:
             self.topSelected = 1
 
-        logger.debug("top: {3}; row: '{0}'; uuid: '{1}'; instance: '{2}'".format(self.rowSelected, self.uuidSelected, self.dtSelected,  self.topSelected)); self.content.insert(INSERT, text)
+        logger.debug("top: {3}; row: '{0}'; uuid: '{1}'; instance: '{2}'".format(self.rowSelected, self.uuidSelected, self.dtSelected,  self.topSelected));
+        self.insert = self.content.insert(INSERT, text)
         return "break"
 
     def OnActivate(self, event):
@@ -2074,15 +2094,24 @@ or 0 to display all changes.""").format(title)
     def updateAlerts(self):
         self.update_idletasks()
         logger.debug('updateAlerts 1: {0}'.format(len(loop.alerts)))
+        # print(loop.alerts)
+        # cal_regex = None
+        # if loop.options['calendars']:
+        #     cal_pattern = r'^%s' % '|'.join([x[2] for x in self.options['calendars'] if x[1]])
+        #     cal_regex = re.compile(cal_pattern)
         if loop.alerts:
             curr_minutes = datetime2minutes(self.now)
             td = -1
             while td < 0 and loop.alerts:
-                td = loop.alerts[0][0] - curr_minutes
-                logger.debug('curr_minutes: {0}; td: {1}'.format(
-                    curr_minutes, td))
-                if td < 0:
+                logger.debug('f: {0}'.format(loop.alerts[0][-1]))
+                if self.cal_regex and not self.cal_regex.match(loop.alerts[0][-1]):
                     loop.alerts.pop(0)
+                else:
+                    td = loop.alerts[0][0] - curr_minutes
+                    logger.debug('curr_minutes: {0}; td: {1}'.format(
+                        curr_minutes, td))
+                    if td < 0:
+                        loop.alerts.pop(0)
             if td == 0:
                 if ('alert_wakecmd' in loop.options and
                         loop.options['alert_wakecmd']):
@@ -2102,7 +2131,7 @@ or 0 to display all changes.""").format(title)
                             self.textWindow(self,
                                 "etm", _("""\
 A sound alert failed. The setting for 'alert_soundcmd' is missing from \
-your etmtk.cfg."""))
+your etmtk.cfg.""", opts=self.options))
                     if 'd' in actions:
                         if ('alert_displaycmd' in self.options and
                                 self.options['alert_displaycmd']):
@@ -2113,7 +2142,7 @@ your etmtk.cfg."""))
                             self.textWindow(self,
                                 "etm", _("""\
 A display alert failed. The setting for 'alert_displaycmd' is missing \
-from your etmtk.cfg."""))
+from your etmtk.cfg.""", opts=self.options))
                     if 'v' in actions:
                         if ('alert_voicecmd' in self.options and
                                 self.options['alert_voicecmd']):
@@ -2124,7 +2153,7 @@ from your etmtk.cfg."""))
                             self.textWindow(self,
                                 "etm", _("""\
 An email alert failed. The setting for 'alert_voicecmd' is missing from \
-your etmtk.cfg."""))
+your etmtk.cfg.""", opts=self.options))
                     if 'e' in actions:
                         missing = []
                         for field in [
@@ -2139,7 +2168,7 @@ your etmtk.cfg."""))
                             self.textWindow(self,
                                 "etm", _("""\
 An email alert failed. Settings for the following variables are missing \
-from your etmtk.cfg: %s.""" % ", ".join(["'%s'" % x for x in missing])))
+from your etmtk.cfg: %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=self.options)
                         else:
                             subject = hsh['summary']
                             message = expand_template(
@@ -2183,7 +2212,7 @@ from your etmtk.cfg: %s.""" % ", ".join(["'%s'" % x for x in missing])))
                             self.textWindow(self,
                                 "etm", _("""\
 A text alert failed. Settings for the following variables are missing \
-from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
+from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=self.options)
                         else:
                             message = expand_template(
                                 self.options['sms_message'], hsh)
@@ -2214,33 +2243,12 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
                     td = loop.alerts[0][0] - curr_minutes
 
         logger.debug('updateAlerts 2: {0}'.format(len(loop.alerts)))
-        self.pendingAlerts.set(len(loop.alerts))
         if len(loop.alerts) > 0:
+            self.pendingAlerts.set(len(loop.alerts))
             self.pending.configure(state="normal")
         else:
+            self.pendingAlerts.set(0)
             self.pending.configure(state="disabled")
-
-    # def prev_history(self, event):
-    #     """
-    #     Replace input with the previous history item.
-    #     """
-    #     print('up')
-    #     if self.index >= 1:
-    #         self.index -= 1
-    #         self.e.delete(0, END)
-    #         self.e.insert(0, self.history[self.index])
-    #     return 'break'
-    #
-    # def next_history(self, event):
-    #     """
-    #     Replace input with the next history item.
-    #     """
-    #     print('down')
-    #     if self.index + 1 < len(self.history):
-    #         self.index += 1
-    #         self.e.delete(0, END)
-    #         self.e.insert(0, self.history[self.index])
-    #     return 'break'
 
     def textWindow(self, parent, title=None, prompt=None, opts=None, modal=True):
         d = TextDialog(parent, title=title, prompt=prompt, opts=opts, modal=modal)
@@ -2248,8 +2256,6 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])))
 
     def goToDate(self, e=None):
         """
-
-
         :param e:
         :return:
         """
@@ -2265,6 +2271,19 @@ Relative dates and fuzzy parsing are supported.""")
         if value is not None:
             self.scrollToDate(value.date())
         return "break"
+
+    def setFilter(self, e=None):
+        """
+        :param e:
+        :return:
+        """
+        print("setFilter")
+        prompt = _("""\
+Enter a case insensitive regular expression to
+limit the display to branches that match.\
+""")
+        TextVariableWindow(parent=self, title=_('filter'), prompt=prompt, opts={'textvariable': self.filterValue}, modal=False)
+        self.showView()
 
     def startActionTimer(self, event=None):
         """
@@ -2305,7 +2324,7 @@ Relative dates and fuzzy parsing are supported.""")
                 # shouldn't happen
                 return "break"
             logger.debug('item: {0}'.format(hsh))
-            self.nm["menu"].entryconfig(1, label=_("toggle timer"))
+            self.newmenu.entryconfig(1, label=_("toggle timer"))
             self.actionTimer.timer_start(hsh)
             if ('running' in loop.options['action_timer'] and
                     loop.options['action_timer']['running']):
@@ -2344,9 +2363,7 @@ Relative dates and fuzzy parsing are supported.""")
             return ''
 
     def cleartext(self, event=None):
-        if self.e.get():
-            self.e.delete(0, END)
-            self.showView()
+        self.showView()
         return 'break'
 
     def process_input(self, event=None, cmd=None):
@@ -2418,7 +2435,7 @@ Relative dates and fuzzy parsing are supported.""")
             self.showTree(res, event=event)
         else:
             # not a hash => not a tree
-            self.textWindow(self, title='etm', prompt=res)
+            self.textWindow(self, title='etm', prompt=res, opts=self.options)
             return 0
 
     def expand2Depth(self, event=None):
