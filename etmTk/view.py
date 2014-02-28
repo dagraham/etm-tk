@@ -15,7 +15,6 @@ import codecs
 
 import logging
 import logging.config
-from edit import ReportWindow
 
 logger = logging.getLogger()
 
@@ -279,7 +278,7 @@ class MessageWindow():
 
 class Dialog(Toplevel):
 
-    def __init__(self, parent, title=None, prompt=None, opts=None, default=None, modal=True):
+    def __init__(self, parent, title=None, prompt=None, opts=None, default=None, modal=True, xoffset=50, yoffset=50):
 
         Toplevel.__init__(self, parent, highlightbackground=BGCOLOR,
                     background=BGCOLOR)
@@ -293,6 +292,7 @@ class Dialog(Toplevel):
             self.title(title)
 
         self.parent = parent
+        logger.debug("parent: {0}".format(self.parent))
         self.prompt = prompt
         self.options = opts
         self.default = default
@@ -307,23 +307,16 @@ class Dialog(Toplevel):
         # body.pack(side="top", fill=tkinter.BOTH, padx=5, pady=5, expand=1)
         body.pack(side="top", fill=tkinter.BOTH, padx=0, pady=0, expand=1)
 
-        # self.buttonbox()
+        self.protocol("WM_DELETE_WINDOW", self.quit)
+
+        if parent:
+            self.geometry("+%d+%d" % (parent.winfo_rootx() + xoffset,
+                                  parent.winfo_rooty() + yoffset))
 
         if modal:
             self.grab_set()
-
-            if not self.initial_focus:
-                self.initial_focus = self
-
-        self.protocol("WM_DELETE_WINDOW", self.cancel)
-
-        self.geometry("+%d+%d" % (parent.winfo_rootx() + 50,
-                                  parent.winfo_rooty() + 50))
-
-        self.initial_focus.focus_set()
-
-        if modal:
             self.wait_window(self)
+        # return "break"
 
     # construction hooks
 
@@ -358,7 +351,7 @@ class Dialog(Toplevel):
             if self.error_message:
                 self.messageWindow('error', self.error_message)
             self.initial_focus.focus_set()  # put focus back
-            return
+            return "break"
 
         self.withdraw()
         self.update_idletasks()
@@ -373,8 +366,15 @@ class Dialog(Toplevel):
         self.quit()
 
     def quit(self, event=None):
-        self.parent.tree.focus_set()
+        if self.parent:
+            logger.debug("returning focus to parent: {0}".format(self.parent))
+            self.parent.focus()
+            self.parent.tree.focus_set()
+            # self.parent.focus_set()
+        else:
+            logger.debug("returning focus, no parent")
         self.destroy()
+        # return "break"
 
     # command hooks
 
@@ -430,11 +430,6 @@ class NotebookWindow(Dialog):
         logger.debug("tabIndex {0}: {1}".format(self.tabIndex, type(self.tabText[self
                                               .tabIndex])))
 
-    # def setText(self, indx, content=""):
-    #     text = self.tabText[indx]
-    #     text.delete("1.0", END)
-    #     text.insert("1.0", content)
-
     def buttonbox(self):
         box = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
         # find
@@ -485,16 +480,6 @@ class NotebookWindow(Dialog):
         self.withdraw()
         self.quit()
 
-#     def test(self):
-#         self.addTab(label="One", content="""\
-# Now is the time
-# for all good men
-#         """)
-#         self.addTab(label="Two", content="""\
-# to come to the aid
-# of their country.
-#         """)
-
 class TextVariableWindow(Dialog):
     def body(self, master):
         if 'textvariable' not in self.options:
@@ -504,6 +489,7 @@ class TextVariableWindow(Dialog):
         Label(master, text=self.prompt, justify='left', highlightbackground=BGCOLOR, background=BGCOLOR).pack(side="top", fill=tkinter.BOTH, expand=1, padx=10, pady=5)
         self.entry.focus_set()
         self.entry.bind('<Escape>', self.entry.delete(0, END))
+        return self.entry
 
     def buttonbox(self):
         # add standard button box. override if you don't want the
@@ -521,7 +507,7 @@ class TextVariableWindow(Dialog):
     def apply(self, e=None):
         logger.debug("got here")
         self.entry.delete(0, END)
-        self.entry.insert(0, "")
+        self.parent.goHome()
 
 
 class DialogWindow(Dialog):
@@ -1145,7 +1131,7 @@ class App(Tk):
 
         # labelframe = LabelFrame(self, labelwidget=self.currentView)
 
-        panedwindow = PanedWindow(self, orient="vertical",
+        self.panedwindow = panedwindow = PanedWindow(self, orient="vertical",
                          # showhandle=True,
                          sashwidth=6, sashrelief='flat',
         )
@@ -1205,8 +1191,6 @@ class App(Tk):
         panedwindow.add(self.content, padx=3, pady=0, stretch="never")
 
         # panedwindow.grid(row=1, column=0, sticky="nsew", padx=0, pady=0)
-        panedwindow.pack(side="top", fill="both", expand=1, padx=2, pady=0)
-        panedwindow.configure(background=BGCOLOR)
 
 
         self.statusbar = Frame(self)
@@ -1239,6 +1223,9 @@ class App(Tk):
 
         self.statusbar.pack(side="bottom", fill="x", expand=0, padx=6, pady=0)
         self.statusbar.configure(background=BGCOLOR)
+
+        panedwindow.pack(side="top", fill="both", expand=1, padx=2, pady=0)
+        panedwindow.configure(background=BGCOLOR)
 
         # set cal_regex here and update it in updateCalendars
         self.cal_regex = None
@@ -1680,7 +1667,6 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             self.vm_options[self.vm_opts.index(self.view)][1], fltr)
         self.mode = 'command'
         self.process_input(event=e, cmd=cmd)
-        # self.focus_set()
 
 
     def showView(self, e=None, row=None):
@@ -2282,8 +2268,11 @@ Relative dates and fuzzy parsing are supported.""")
 Enter a case insensitive regular expression to
 limit the display to branches that match.\
 """)
-        TextVariableWindow(parent=self, title=_('filter'), prompt=prompt, opts={'textvariable': self.filterValue}, modal=False)
-        self.showView()
+        v = TextVariableWindow(parent=self, title=_('filter'), prompt=prompt, opts={'textvariable': self.filterValue}, modal=False, xoffset=200).value
+        print('value', v)
+        # self.showView()
+        logger.debug("setting tree focus: {0}".format(v))
+        # self.tree.focus_set()
 
     def startActionTimer(self, event=None):
         """
