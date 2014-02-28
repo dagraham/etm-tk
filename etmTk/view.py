@@ -826,35 +826,6 @@ class App(Tk):
 
         path = FILE
 
-
-        filemenu.add_separator()
-        self.add2menu(path, (SEP, ))
-
-        # report
-        l, c = commandShortcut('m')
-        label=_("Make report")
-        filemenu.add_command(label=label, accelerator=l,
-                             underline=1,
-                             command=self.makeReport)
-        self.bind(c, self.makeReport)
-        self.add2menu(path, (label, l))
-
-        # changes
-        l, c = commandShortcut('h')
-        label = _("Show changes")
-        filemenu.add_command(label=label, underline=1,  accelerator=l, command=self
-                             .showChanges)
-        self.bind_all(c, lambda event: self.after(AFTER, self.showChanges))
-        self.add2menu(path, (label, l))
-
-
-        ## export
-        l, c = commandShortcut('X')
-        label = _("Export active calendars to iCal")
-        filemenu.add_command(label=label, underline=1, command=self.donothing)
-        self.bind_all(c, self.donothing)
-        self.add2menu(path, (label, l))
-
         filemenu.add_separator()
         self.add2menu(path, (SEP, ))
 
@@ -1022,6 +993,34 @@ class App(Tk):
         label=_("Open date calculator")
         toolsmenu.add_command(label=label, underline=1, accelerator=l, command=self.dateCalculator)
         self.bind(c, lambda event: self.after(AFTER, self.dateCalculator))
+        self.add2menu(path, (label, l))
+
+        toolsmenu.add_separator()
+        self.add2menu(path, (SEP, ))
+
+        # report
+        l, c = commandShortcut('m')
+        label=_("Make report")
+        toolsmenu.add_command(label=label, accelerator=l,
+                             underline=1,
+                             command=self.makeReport)
+        self.bind(c, self.makeReport)
+        self.add2menu(path, (label, l))
+
+        # changes
+        l, c = commandShortcut('h')
+        label = _("Show changes")
+        toolsmenu.add_command(label=label, underline=1,  accelerator=l, command=self
+                             .showChanges)
+        self.bind_all(c, lambda event: self.after(AFTER, self.showChanges))
+        self.add2menu(path, (label, l))
+
+
+        ## export
+        l, c = commandShortcut('X')
+        label = _("Export active calendars to iCal")
+        toolsmenu.add_command(label=label, underline=1, command=self.donothing)
+        self.bind_all(c, self.donothing)
         self.add2menu(path, (label, l))
 
         menubar.add_cascade(label=path, menu=toolsmenu, underline=0)
@@ -2567,6 +2566,7 @@ def main(dir=None):  # debug, info, warn, error, critical
     # app = App(path='/Users/dag/etm-tk')
     app = App()
     app.mainloop()
+
 
 if __name__ == "__main__":
     setup_logging('3')
