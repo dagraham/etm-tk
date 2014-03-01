@@ -75,10 +75,10 @@ setup(
     install_requires=REQUIRES,
     extras_require={"icalendar": EXTRAS},
     package_data={'etmTk': ['etmlogo.*', 'CHANGES']},
+    # TODO: fix man, icon, desktop, docs
     data_files=[
         ('share/doc/etmtk', ['etmTk/CHANGES']),
         ('share/icons/etmtk', glob.glob('etmTk/etmlogo.*')),
-        # TODO: fix man, icon, desktop, docs
         # ('share/man/man1', ['etmTk/etmtk.1']),
         # ('share/pixmaps', ['etmTk/etmtk.xpm']),
         # ('share/applications', ['etmTk/applications/etmtk.desktop']),

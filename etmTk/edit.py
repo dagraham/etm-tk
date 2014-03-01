@@ -41,8 +41,6 @@ else:
 
 import string
 ID_CHARS = string.ascii_letters + string.digits + "_@/"
-from idlelib.AutoComplete import AutoComplete
-from idlelib.AutoCompleteWindow import AutoCompleteWindow
 
 import gettext
 _ = gettext.gettext
