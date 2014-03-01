@@ -177,7 +177,8 @@ echo
 echo -n "Create OSX package?"
 if asksure; then
     sudo rm -fR releases/*
-    cxfreeze3 -OO etm --icon=etmTk/etmlogo.icns --target-dir releases/etmtk-${tag}-freeze-OSX
+#    cxfreeze3 -OO etm --icon=etmTk/etmlogo.icns --target-dir releases/etmtk-${tag}-freeze-OSX
+    cxfreeze3 -s -OO etm --icon=etmTk/etmlogo.icns --target-dir releases/etmtk-${tag}-freeze-OSX
     cd releases
     tar czf etmtk-${tag}-freeze-OSX.tar.gz etmtk-${tag}-freeze-OSX
     zip -r etmtk-${tag}-freeze-OSX.zip etmtk-${tag}-freeze-OSX

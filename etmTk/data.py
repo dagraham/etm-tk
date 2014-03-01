@@ -140,17 +140,19 @@ def init_localization():
     locale.setlocale(locale.LC_ALL, '')  # use user's preferred locale
     # take first two characters of country code
     loc = locale.getlocale()
-    filename = "language/messages_%s.mo" % locale.getlocale()[0][0:2]
-    if os.path.isfile(filename):
-        try:
-            logging.debug("Opening message file %s for locale %s", filename, loc[0])
-            trans = gettext.GNUTranslations(open(filename, "rb"))
-        except IOError:
-            logging.error("Could not load {0}. Using default messages.".format(filename))
-            trans = gettext.NullTranslations()
-    else:
-        logging.info("Could not find {0}. Using default messages.".format(filename))
-        trans = gettext.NullTranslations()
+    # FIXME: path won't work in package
+    # filename = "language/messages_%s.mo" % locale.getlocale()[0][0:2]
+    # if os.path.isfile(filename):
+    #     try:
+    #         logging.debug("Opening message file %s for locale %s", filename, loc[0])
+    #         trans = gettext.GNUTranslations(open(filename, "rb"))
+    #     except IOError:
+    #         logging.error("Could not load {0}. Using default messages.".format(filename))
+    #         trans = gettext.NullTranslations()
+    # else:
+    #     logging.info("Could not find {0}. Using default messages.".format(filename))
+    #     trans = gettext.NullTranslations()
+    trans = gettext.NullTranslations()
     trans.install()
 
 
