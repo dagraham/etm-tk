@@ -80,6 +80,45 @@ yearfirst = True
 # bgclr = "#e9e9e9"
 BGCOLOR = "#ebebeb"
 
+# command line usage
+USAGE = """\
+Usage:
+
+    etm_qt [logging level] [path] [?] [acmsv]
+
+With no arguments, etm will use settings from the configuration file
+~/.etm/etmtk.cfg, set logging level 3 (warn) and open the GUI.
+
+if the first argument is an integer not less than 1 (debug) and not
+greater than 5 (critical), then set logging level to that integer
+and remove the argument.
+
+If the first (remaining) argument is the path to a directory which
+contains a file named etm.cfg, then use that configuration file and
+remove the argument.
+
+If the first (remaining) argument is one of the commands listed below,
+then execute the remaining arguments without opening the GUI.
+
+    a ARG   display the agenda view using ARG, if given, as a filter.
+    k ARG   display the keywords view using ARG, if given, as a filter.
+    n ARGS  Create a new item using the remaining arguments
+            as the item specification.
+    m INT   display a report using the remaining argument, which must be a
+            positive integer, to display a report using the corresponding
+            entry from the file given by report_specifications in etmtk.cfg.
+            Use ? m to display the numbered list of entries from this file.
+    p ARG   display the path view using ARG, if given, as a filter.
+    r ARGS  display a report using the remaining arguments as the
+            report specification.
+    s ARG   display the schedule view using ARG, if given, as a filter.
+    t ARG   display the tags view using ARG, if given, as a filter.
+    v       display information about etm and the operating system.
+    ? ARGS  display (this) command line help information if ARGS = '' or,
+            if ARGS = X where X is one of the above commands, then display
+            details about command X. 'X ?' is equivalent to '? X'.\
+"""
+
 import re
 import sys
 import locale
@@ -347,8 +386,8 @@ def getMercurial():
     if hg:
         base_command = """%s -R {repp}""" % hg
         history_command = """\
-%s log --style compact --template "{rev}: {desc}\\n" -R {repo} -p \
--r "tip":0 {file}""" % hg
+%s log --style compact --template "{rev}: {desc}\\n" -R {repo} -p {numchanges}
+""" % hg
         commit_command = '%s commit -q -A -R {repo} -m "{mesg}"' % hg
         init_command = '%s init {0}' % hg
     else:
@@ -793,8 +832,8 @@ def get_options(d=''):
         'agenda_colors': 2,
         'agenda_days': 4,
         'agenda_indent': 2,
-        'agenda_width1': 24,
-        'agenda_width2': 8,
+        'agenda_width1': 32,
+        'agenda_width2': 18,
 
         'alert_default': ['m'],
         'alert_displaycmd': '',
@@ -811,8 +850,8 @@ def get_options(d=''):
         'current_htmlfile': '',
         'current_indent': 3,
         'current_opts': '',
-        'current_width1': 50,
-        'current_width2': 17,
+        'current_width1': 48,
+        'current_width2': 18,
 
         'datadir': default_datadir,
         'dayfirst': dayfirst,
@@ -901,6 +940,7 @@ def get_options(d=''):
         options.update(user_options)
     else:
         user_options = {}
+    logger.debug("user_options: {0}".format(user_options))
 
     for key in default_options:
         if key == 'show_finished':
@@ -920,6 +960,7 @@ def get_options(d=''):
             changed = True
             # we'll get custom user settings from a separate file
             #####################
+
     remove_keys = []
     for key in options:
         if key not in default_options:
@@ -977,6 +1018,7 @@ def get_options(d=''):
     setup_parse(options['dayfirst'], options['yearfirst'])
     term_encoding = options['encoding']['term']
     file_encoding = options['encoding']['file']
+    logger.debug("options: {0}".format(user_options))
     return user_options, options, use_locale
 
 
@@ -3001,6 +3043,7 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
 
 def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
               width2=14, calendars=None, mode='html', fltr=None):
+
     if not calendars: calendars = []
     cal_regex = None
     if calendars:
@@ -3061,6 +3104,7 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
             for key in update.keys():
                 tree.setdefault(key, []).extend(update[key])
     logger.debug("called makeTree for {0} views".format(nv))
+    logger.debug("returning tree: {0}".format(tree))
     return tree
 
 
@@ -3586,7 +3630,7 @@ def get_data(options=None, dirty=False, use_pickle=True):
     if not options: options = {}
     objects = None
     bad_datafiles = []
-    logger.debug(dirty)
+    logger.debug("dirty: {0}".format(dirty))
     if use_pickle and os.path.isfile(options['datafile']):
         objects = load_data(options)
     if objects is None:
@@ -4452,7 +4496,7 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
     return items, busytimes, busydays, alerts, datetimes, occasions
 
 def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
-    # logger.debug("allrows: {0}".format(allrows))
+    logger.debug("updateCurrent")
     # logger.debug(('options: {0}'.format(options)))
     if options['current_textfile']:
         if 'current_opts' in options and options['current_opts']:
@@ -4932,9 +4976,11 @@ class ETMCmd():
         else:
             self.editcmd = ''
         self.tmpfile = os.path.join(self.options['etmdir'], '.temp.txt')
-        self.loadData()
+        # FIXME: move this so that help can run without loading data
+        # self.loadData()
 
     def do_command(self, s):
+        logger.debug('processing command: {0}'.format(s))
         args = s.split(' ')
         cmd = args.pop(0)
         if args:
@@ -4952,12 +4998,13 @@ class ETMCmd():
             return self.help_help()
 
     def mk_rep(self, arg_str):
+        logger.debug("arg_str: {0}".format(arg_str))
         # we need to return the output string rather than print it
         self.last_rep = arg_str
         cmd = arg_str[0]
         ret = []
         views = {
-            's': 'day',
+            's': 'day',  # schedule view in the GUI
             'p': 'folder',
             't': 'tag',
             'k': 'keyword'
@@ -4968,6 +5015,7 @@ class ETMCmd():
                     f = arg_str[1:].strip()
                 else:
                     f = None
+                logger.debug('calling getAgenda')
                 return (getAgenda(
                     self.rows,
                     colors=self.options['agenda_colors'],
@@ -4994,9 +5042,7 @@ class ETMCmd():
                     arg_str,
                     self.file2uuids,
                     self.uuid2hash,
-                    self.options,
-                    calendars=self.calendars,
-                    mode=self.output))
+                    self.options))
 
         except:
             s = str(_('Could not process "{0}".')).format(arg_str)
@@ -5005,7 +5051,7 @@ class ETMCmd():
         return '\n'.join(ret)
 
     def loadData(self):
-        # logger.debug("options: {0}".format(self.options))
+        logger.debug("loadData")
         self.count2id = {}
         now = datetime.now()
         year, wn, dn = now.isocalendar()
@@ -5019,9 +5065,9 @@ class ETMCmd():
         self.options['bef'] = bef
         uuid2hash, file2uuids, self.file2lastmodified, bad_datafiles, messages = \
             get_data(options=self.options, use_pickle=True)
-        if messages:
-            for msg in messages:
-                term_print(msg)
+        # if messages:
+        #     for msg in messages:
+        #         term_print(msg)
         (self.rows, self.busytimes, self.busydays, self.alerts, self.dates, self.occasions) = getViewData(
             bef, file2uuids, uuid2hash, options=self.options,
             # calendars=self.calendars
@@ -5416,7 +5462,13 @@ This option requires a valid report_specifications setting in etmtk.cfg.""")
             return self.help_m()
         rep_spec = lines[n - 1].strip().split('#')[0]
         # return('\nreport: (#{0}) {1}'.format(n, rep_spec.strip()))
-        return self.mk_rep(rep_spec)
+        logger.debug(('rep_spec: {0}'.format(rep_spec)))
+        text = getReportData(
+            rep_spec,
+            self.file2uuids,
+            self.uuid2hash,
+            self.options)
+        return text
 
     def help_m(self):
         res = []
@@ -5497,22 +5549,28 @@ Open etmtk.cfg for editing. This command requires a setting for 'edit_cmd' in et
         return _('quit\n')
 
     def do_r(self, arg):
+        logger.debug('report spec: {0}, {1}'.format(arg, type(arg)))
         """report (non actions) specification"""
         if not arg:
             self.help_r()
             return ()
-        arg_str = "r {0}".format(arg)
-        # return('\nreport: {0}'.format(arg_str))
-        return self.mk_rep(arg_str)
+        text = getReportData(
+            arg,
+            self.file2uuids,
+            self.uuid2hash,
+            self.options)
+        return text
 
     @staticmethod
     def help_r():
         return _("""\
 Usage:
 
-    r <groupby> [options]
+    r <type> <groupby> [options]
 
-Generate a custom report. Groupby can include semicolon separated date specifications and elements from:
+Generate a report where type is either 'a' (action) or 'c' (composite).
+Groupby can include semicolon separated date specifications and
+elements from:
     c context
     f file path
     k keyword
@@ -5536,9 +5594,10 @@ Options include:
 
 Example:
 
-    r t -t tag 1 -t !tag 2
+    r c t -t tag 1 -t !tag 2
 
-Group by tag, showing items that have tag 1 but not tag 2.
+Composite report, grouped by tag, showing items that have tag 1 but
+not tag 2.\
 """)
 
     def do_R(self, arg):
@@ -5659,6 +5718,8 @@ Options include:
             'dateutil': dateutil_version,
             'tkversion': self.tkversion
         }
+        if not d['tkversion']: # command line
+            d['tkversion'] = 'NA'
         return _("""\
 Event and Task Manager
 etmtk {0[etmversion]}
@@ -5691,37 +5752,38 @@ Display information about etm and the operating system.""")
 
     @staticmethod
     def help_help():
-        return (_("""\
-Enter a CMD from list below in the command entry field (top) and press <Return> to execute it.
-
- ?  CMD   Display details about CMD.
- c        Edit a COPY of the selected item.
- d        Delete the selected item.
- e        Edit the selected item.
- f        Mark the selected task finished.
- h  ARGS  Execute 'hg_command' + ARGS.
- l  ARGS  Display a ledger using ARGS.
- m  INT   Display report number INT from the
-          file 'report_specifications'.
- n  ARGS  Create a new item from ARGS.
- O        Edit etmtk.cfg.
- r  ARGS  Display a report using ARGS.
- s  REGX  Limit the display to items with summaries
-          matching the case-insensitive regular
-          expression REGX.
- R        Edit 'report_specifications'.
- v        Display system and etm information.
-
-Keyboard Shortcuts:
-<Escape> Clear the command entry field.
-<Tab>    Toggle the focus between the command
-         field and the display panel.
-<Space>  When the display panel has focus, scroll
-         to the current date in day view or to the
-         top element in other views.
-j        When the day view is displayed, select the
-         date to display.\
-"""))
+        return (USAGE)
+#             _("""\
+# Enter a CMD from list below in the command entry field (top) and press <Return> to execute it.
+#
+#  ?  CMD   Display details about CMD.
+#  c        Edit a COPY of the selected item.
+#  d        Delete the selected item.
+#  e        Edit the selected item.
+#  f        Mark the selected task finished.
+#  h  ARGS  Execute 'hg_command' + ARGS.
+#  l  ARGS  Display a ledger using ARGS.
+#  m  INT   Display report number INT from the
+#           file 'report_specifications'.
+#  n  ARGS  Create a new item from ARGS.
+#  O        Edit etmtk.cfg.
+#  r  ARGS  Display a report using ARGS.
+#  s  REGX  Limit the display to items with summaries
+#           matching the case-insensitive regular
+#           expression REGX.
+#  R        Edit 'report_specifications'.
+#  v        Display system and etm information.
+#
+# Keyboard Shortcuts:
+# <Escape> Clear the command entry field.
+# <Tab>    Toggle the focus between the command
+#          field and the display panel.
+# <Space>  When the display panel has focus, scroll
+#          to the current date in day view or to the
+#          top element in other views.
+# j        When the day view is displayed, select the
+#          date to display.\
+# """))
 
 
     def replace_lines(self, fp, oldlines, begline, endline, newlines):
@@ -5745,18 +5807,34 @@ def main(etmdir='', argv=[]):
     logger.debug("data.main etmdir: {0}, argv: {1}".format(etmdir, argv))
     use_locale = ()
     (user_options, options, use_locale) = get_options(etmdir)
-
+    ARGS = ['a', 'k', 'm', 'n', 'p', 'r', 's', 't', 'v']
     if len(argv) > 1:
-        if argv[1] in ['a', 'c', 's', 'm', 'n', 'v', '?']:
-            c = ETMCmd(options)
-            c.loop = False
-            c.number = False
-            args = []
+        c = ETMCmd(options)
+        c.loop = False
+        c.number = False
+        args = []
+        if len(argv) == 3 and '?' in argv:
+            if argv[1] == '?':
+                args = ['?', argv[2]]
+            else:
+                args = ['?', argv[1]]
+            if args[1] not in ARGS:
+                term_print(USAGE)
+            else:
+                argstr = ' '.join(args)
+                res = c.do_command(argstr)
+                term_print(res)
+        elif argv[1] in ARGS:
             for x in argv[1:]:
                 x = s2or3(x)
                 args.append(x)
             argstr = ' '.join(args)
-            c.do_command(argstr)
+            logger.debug('calling do_command: {0}'.format(argstr))
+            c.loadData()
+            res = c.do_command(argstr)
+            if type(res) is dict:
+                res = "\n".join(tree2Text(res)[0])
+            term_print(res)
         else:
             logger.warn("argv: {0}".format(argv))
 

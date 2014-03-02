@@ -4,6 +4,7 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
 import os
+import sys
 import re
 import uuid
 from copy import deepcopy
@@ -2362,7 +2363,7 @@ limit the display to branches that match.\
         """
         # if not cmd:
         #     cmd = self.e.get().strip()
-
+        logger.debug('process_input cmd: {0}'.format(cmd))
         if not cmd:
             return True
 
@@ -2371,7 +2372,7 @@ limit the display to branches that match.\
             if cmd[0] == 'w':
                 self.editWhich()
                 return ()
-            elif cmd[0] in ['r', 't']:
+            elif cmd[0] in ['a', 'c']:
                 # simple command history for report commands
                 if cmd in self.history:
                     self.history.remove(cmd)
@@ -2561,6 +2562,12 @@ def main(dir=None):  # debug, info, warn, error, critical
     (user_options, options, use_locale) = data.get_options(etmdir)
     loop = data.ETMCmd(options=options)
     loop.tkversion = tkversion
+
+    # errors = os.path.join(options['etmdir'], '.stderr.log')
+    # outstr=codecs.open(errors, "w", 'utf-8')
+    # sys.stderr = outstr
+    # sys.stdout = outstr
+
     # app = App(path='/Users/dag/etm-tk')
     app = App()
     app.mainloop()
