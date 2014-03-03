@@ -1,43 +1,45 @@
 NAME
     etm - manage events and tasks using simple text files
 SYNOPSIS
-    etm [loglevel] [path] [?] [a|n|m|r|v]
+    etm [logging level] [path] [?] [acmsv]
 DESCRIPTION
-
 With no arguments, etm will use settings from the configuration file
 ~/.etm/etmtk.cfg, set logging level 3 (warn) and open the GUI.
 
-If the first argument is an integer between 1 and 5, then etm will employ
-logging at the specified level.
+if the first argument is an integer not less than 1 (debug) and not
+greater than 5 (critical), then etm will use that logging level
+and remove the argument.
 
-If the first argument other than the optional loglevel is the path to a
-directory which contains a file named etm.cfg, then etm will use that
-configuration file.
+If the first (remaining) argument is the path to a directory which
+contains a file named etm.cfg, then etm will use that configuration file
+and remove the argument.
 
-If the first argument, other than the optional loglevel and path, is one of
-the commands listed below, then it will be executed by etm without opening
-the GUI.
+If the first (remaining) argument is one of the commands listed below,
+then etm will execute the remaining arguments without opening the GUI.
 
-    a       display the agenda view.
+    a ARG   display the agenda view using ARG, if given, as a filter.
+    k ARG   display the keywords view using ARG, if given, as a filter.
     n ARGS  Create a new item using the remaining arguments
             as the item specification.
     m INT   display a report using the remaining argument, which must be a
             positive integer, to display a report using the corresponding
             entry from the file given by report_specifications in etmtk.cfg.
             Use ? m to display the numbered list of entries from this file.
-    r ARGS  display an action or composite report using the remaining
-            arguments as the specification.
+    p ARG   display the path view using ARG, if given, as a filter.
+    r ARGS  display a report using the remaining arguments as the
+            report specification.
+    s ARG   display the schedule view using ARG, if given, as a filter.
+    t ARG   display the tags view using ARG, if given, as a filter.
     v       display information about etm and the operating system.
-
     ? ARGS  display (this) command line help information if ARGS = '' or,
-            if ARGS = X, then display details about command X.\
-
+            if ARGS = X where X is one of the above commands, then display
+            details about command X. 'X ?' is equivalent to '? X'.\
 
 EXAMPLES
     COMMAND LINE
 Group items by year, month and day together
 
-    etm_qt r c ddd, MMM d yyyy
+    etm r c ddd, MMM d yyyy
 
 Output:
 
@@ -60,7 +62,7 @@ Data items begin with a data type character and continue on one or more lines ei
       prerequisites for others.
 \%$   Inbasket: quick entry to be edited later when time permits.
 \%?   Someday maybe: remember but don't show in the common views.
-\%#   Hidden: remember but hide from all etm views except folder view.
+\%#   Hidden: remember but hide from all etm views except path view.
 \%=   Defaults: set default options for subsequent entries in the
       same data file.
 
@@ -118,4 +120,4 @@ Please report bugs to the etm discussion group:
 AUTHOR
    Daniel A Graham <daniel.graham@duke.edu>
 COPYRIGHT
-   Copyright (c) 2009-2013 [Daniel Graham]. All rights reserved.
+   Copyright (c) 2009-2014 [Daniel Graham]. All rights reserved.

@@ -79,7 +79,7 @@ setup(
     data_files=[
         ('share/doc/etmtk', ['etmTk/CHANGES']),
         ('share/icons/etmtk', glob.glob('etmTk/etmlogo.*')),
-        # ('share/man/man1', ['etmTk/etmtk.1']),
+        ('share/man/man1', ['etmTk/etmtk.1']),
         # ('share/pixmaps', ['etmTk/etmtk.xpm']),
         # ('share/applications', ['etmTk/applications/etmtk.desktop']),
         # ('share/doc/etmtk/help', glob.glob('etmTk/help/*.html')),

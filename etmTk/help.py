@@ -457,7 +457,7 @@ on the twentieth line of the file would set the default keyword for entries betw
 OVERVIEW = """\
 In contrast to most calendar/todo applications, creating items (events, tasks, and so forth) in etm does not require filling out fields in a form. Instead, items are created as free-form text entries using a simple, intuitive format and stored in plain text files.
 
-Dates can be entered in etm using fuzzy parsing - e.g., +7 for seven days from today, fri for next Friday, +1/1 for the first day of next month. See Help/Dates for details.
+Dates in the examples below are entered using fuzzy parsing - e.g., +7 for seven days from today, fri for next Friday, +1/1 for the first day of next month. See Help/Dates for details.
 
 Sample entries
 ==============

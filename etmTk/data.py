@@ -46,7 +46,7 @@ def setup_logging(level='3'):
                                     'encoding': 'utf8',
                                     'filename': 'etmtk_log.txt',
                                     'formatter': 'simple',
-                                    'level': 'INFO',
+                                    'level': 'WARN',
                                     'maxBytes': 1048576}},
               'loggers': {'etmtk': {'handlers': ['console'],
                                     'level': 'DEBUG',
@@ -86,35 +86,34 @@ Usage:
 
     etm_qt [logging level] [path] [?] [acmsv]
 
-With no arguments, etm will use settings from the configuration file
-~/.etm/etmtk.cfg, set logging level 3 (warn) and open the GUI.
+With no arguments, etm will set logging level 3 (warn), use settings from
+the configuration file ~/.etm/etmtk.cfg, and open the GUI.
 
-if the first argument is an integer not less than 1 (debug) and not
-greater than 5 (critical), then set logging level to that integer
-and remove the argument.
+If the first argument is an integer not less than 1 (debug) and not greater
+than 5 (critical), then set that logging level and remove the argument.
 
-If the first (remaining) argument is the path to a directory which
-contains a file named etm.cfg, then use that configuration file and
-remove the argument.
+If the first (remaining) argument is the path to a directory which contains
+a file named etm.cfg, then use that configuration file and remove the
+argument.
 
-If the first (remaining) argument is one of the commands listed below,
-then execute the remaining arguments without opening the GUI.
+If the first (remaining) argument is one of the commands listed below, then
+execute the remaining arguments without opening the GUI.
 
     a ARG   display the agenda view using ARG, if given, as a filter.
     k ARG   display the keywords view using ARG, if given, as a filter.
-    n ARGS  Create a new item using the remaining arguments
-            as the item specification.
+    n ARGS  Create a new item using the remaining arguments as the item
+            specification.
     m INT   display a report using the remaining argument, which must be a
             positive integer, to display a report using the corresponding
             entry from the file given by report_specifications in etmtk.cfg.
             Use ? m to display the numbered list of entries from this file.
     p ARG   display the path view using ARG, if given, as a filter.
-    r ARGS  display a report using the remaining arguments as the
-            report specification.
+    r ARGS  display a report using the remaining arguments as the report
+            specification.
     s ARG   display the schedule view using ARG, if given, as a filter.
     t ARG   display the tags view using ARG, if given, as a filter.
     v       display information about etm and the operating system.
-    ? ARGS  display (this) command line help information if ARGS = '' or,
+    ? ARG   display (this) command line help information if ARGS = '' or,
             if ARGS = X where X is one of the above commands, then display
             details about command X. 'X ?' is equivalent to '? X'.\
 """
@@ -5350,6 +5349,7 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         items.append(new_item)
         itemstr = "\n".join(items)
         mode = _("added item")
+        logger.debug('saving {0} to {1}, mode: {2}'.format(itemstr, file, mode))
         self.safe_save(file, itemstr, mode=mode)
         # self.loadData()
         return True
@@ -5491,14 +5491,18 @@ where N is the number of a report specification from the file {0}:\n """.format(
         # return(res)
 
     def do_n(self, arg_str='', itemstr=""):
+        logger.debug('arg_str: {0}'.format(arg_str))
         if arg_str:
             new_item = s2or3(arg_str)
             new_hsh, msg = str2hsh(new_item, options=self.options)
+            logger.debug('new_hsh: {0}'.format(new_hsh))
             if msg:
                 return "\n".join(msg)
             if 's' not in new_hsh:
                 new_hsh['s'] = None
-            self.append_item(new_hsh, new_item)
+            res = self.append_item(new_hsh, self.currfile)
+            if res:
+                return _("item saved")
 
     @staticmethod
     def help_n():
@@ -5813,7 +5817,11 @@ def main(etmdir='', argv=[]):
         c.loop = False
         c.number = False
         args = []
-        if len(argv) == 3 and '?' in argv:
+        if len(argv) == 2 and argv[1] == "?":
+            term_print(USAGE)
+        elif len(argv) == 2 and argv[1] == 'v':
+            term_print(c.do_v(""))
+        elif len(argv) == 3 and '?' in argv:
             if argv[1] == '?':
                 args = ['?', argv[2]]
             else:
