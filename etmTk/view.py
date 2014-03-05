@@ -68,6 +68,8 @@ from idlelib.WidgetRedirector import WidgetRedirector
 
 from datetime import datetime, timedelta
 
+from collections import OrderedDict
+
 ONEMINUTE = timedelta(minutes=1)
 ONEHOUR = timedelta(hours=1)
 ONEDAY = timedelta(days=1)
@@ -93,6 +95,7 @@ OPEN = _("Open")
 VIEW = _("View")
 ITEM = _("Item")
 TOOLS = _("Tools")
+CLOSE = _("Close")
 
 SEP = "----"
 
@@ -248,7 +251,7 @@ class ReadOnlyText(Text):
         self.redirector = WidgetRedirector(self)
         self.insert = self.redirector.register("insert", lambda *args, **kw: "break")
         self.delete = self.redirector.register("delete", lambda *args, **kw: "break")
-        self.configure(highlightthickness=0)
+        self.configure(highlightthickness=0, wrap="word")
 
 
 class MessageWindow():
@@ -299,12 +302,15 @@ class Dialog(Toplevel):
 
         self.error_message = None
 
-        self.buttonbox()
+        # self.buttonbox()
 
         body = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
         self.initial_focus = self.body(body)
-        # body.pack(side="top", fill=tkinter.BOTH, padx=5, pady=5, expand=1)
-        body.pack(side="top", fill=tkinter.BOTH, padx=0, pady=0, expand=1)
+
+        # don't expand body or it will fill below the actual content
+        body.pack(side="top", fill=tkinter.BOTH, padx=0, pady=0, expand=0)
+
+        self.buttonbox()
 
         self.protocol("WM_DELETE_WINDOW", self.quit)
 
@@ -339,7 +345,7 @@ class Dialog(Toplevel):
         self.bind("<Return>", self.ok)
         self.bind("<Escape>", self.cancel)
 
-        box.pack(side='bottom')
+        box.pack(side='bottom', fill=X, expand=0)
 
     # standard button semantics
 
@@ -388,96 +394,177 @@ class Dialog(Toplevel):
     def messageWindow(self, title, prompt):
         MessageWindow(self.parent, title, prompt)
 
-class NotebookWindow(Dialog):
+class HelpWindow(Dialog):
 
     def body(self, master):
-        self.currIndex = 0
-        self.tabIndex = -1
-        self.tabText = {}
-        self.tkfixedfont = tkFont.nametofont("TkFixedFont")
-        self.tkfixedfont.configure(size=self.options['fontsize'])
-        # print(self.options['fontsize'], self.tkfixedfont.actual())
-        self.nb = nb = ttk.Notebook(master, padding=8)
-        self.nb.pack(side="top", fill=tkinter.BOTH, expand=1, padx=0, pady=0)
-        self.nb.enable_traversal()
-        self.nb.bind("<<NotebookTabChanged>>", self.tabChanged)
-        l, c = commandShortcut('f')
-        self.bind_all(c, lambda e: self.e.focus_set())
-        l, c = commandShortcut('g')
-        self.bind_all(c, lambda e: self.onFind())
-        return self.nb
+        # self.tkfixedfont = tkFont.nametofont("TkFixedFont")
+        # self.tkfixedfont.configure(size=self.options['fontsize'])
+        PADY = 2
 
-    def addTab(self, label="", content=""):
-        self.tabIndex += 1
-        frame = Frame(self.nb)
-        # text = ReadOnlyText(
-        text = Text(
-            frame,
-            wrap="word", padx=2, pady=2, bd=2, relief="sunken",
-            font=self.tkfixedfont,
-            height=30,
-            width=52,
-            takefocus=False)
-        text.tag_configure(FOUND, background="lightskyblue")
-        text.insert("1.0", content)
-        text.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0, pady=0)
-        ysb = ttk.Scrollbar(frame, orient='vertical', command=text.yview)
-        ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
-        text.configure(yscroll=ysb.set)
-        self.nb.add(frame, text=label)
-        self.tabText[self.tabIndex] = text
-        logger.debug("tabIndex {0}: {1}".format(self.tabIndex, type(self.tabText[self
-                                              .tabIndex])))
+        toolbar = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
+        # self.options = list of label, content pairs
+        self.vm_dict = OrderedDict(self.options['help_opts'])
+        vm_labels = [x[0] for x in self.options['help_opts']]
+        self.view = StringVar(self)
 
-    def buttonbox(self):
-        box = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
+        self.vm = vm = OptionMenu(toolbar, self.view, *vm_labels, command=self.showHelp)
+        vm.configure(width=10, height=1, highlightbackground=BGCOLOR, background=BGCOLOR, pady=PADY)
+        vm.pack(side="left", pady=0, padx=6)
+        self.view.set(vm_labels[0])
+
         # find
-        w = Button(box, text="OK", width=10, command=self.cancel,
-                   default=ACTIVE, highlightbackground=BGCOLOR)
-        w.pack(side="right", padx=10, anchor="n")
-        Button(box, text='x', highlightbackground=BGCOLOR, command=self.clearFind, padx=8).pack(side="right", padx=0, anchor="n")
-        self.find_text = StringVar(box)
-        self.e = Entry(box, textvariable=self.find_text, width=20, highlightbackground=BGCOLOR)
-        self.e.pack(side="right", padx=0, fill=X, expand=0, anchor="n")
+        Button(toolbar, text='x', command=self.clearFind, highlightbackground=BGCOLOR, pady=PADY).pack(side=LEFT, padx=0)
+        self.find_text = StringVar(toolbar)
+        self.e = Entry(toolbar, textvariable=self.find_text, width=16, highlightbackground=BGCOLOR)
+        self.e.pack(side=LEFT, padx=0)
         self.e.bind("<Return>", self.onFind)
-        Button(box, text='>', command=self.onFind, padx=6, highlightbackground=BGCOLOR).pack(side="right", padx=0)
-        # self.bind("<Return>", self.ok)
-        self.bind("<Escape>", self.ok)
-        # box.pack(side='bottom', pady=0, fill='x', expand=0)
-        separator = Frame(self, height=8, bd=0, relief='flat', highlightbackground=BGCOLOR, background=BGCOLOR)
-        separator.pack(side='bottom')
-        box.pack(side='bottom', pady=0,  expand=0)
+        Button(toolbar, text='>', command=self.onFind, highlightbackground=BGCOLOR, pady=PADY).pack(side=LEFT, padx=0)
 
-    def tabChanged(self, e=None):
-        self.currIndex = self.nb.index(self.nb.select())
-        logger.debug("currIndex: {0}".format(self.currIndex))
+        Button(toolbar, text=_("OK"), highlightbackground=BGCOLOR, pady=PADY, command=self.cancel).pack(side="right", padx=6)
+        # self.bind("<Escape>", self.quit)
+        self.bind("<Escape>", self.cancel)
 
+        toolbar.pack(side="top", padx=6, pady=0, expand="no", fill="x")
+
+        textwindow = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
+
+        text = ReadOnlyText(textwindow, bd=2, relief="sunken", padx=3, pady=2,
+                            # font=self.tkfixedfont,
+                            width=70)
+        text.configure(highlightthickness=0)
+        text.tag_configure(FOUND, background="lightskyblue")
+
+        text.pack(side="top", padx=4, pady=4,
+                  expand=1, fill="both"
+        )
+        self.text = text
+        textwindow.pack(side="top",
+                        expand=1, fill="both"
+        )
+        self.showHelp()
+        return self.vm
+
+    def showHelp(self, e=None):
+        label = self.view.get()
+        self.text.delete("1.0", END)
+        self.text.insert("1.0", self.vm_dict[label])
+        logger.debug("label: {0}".format(label))
 
     def clearFind(self, *args):
-        self.tabText[self.currIndex].tag_remove(FOUND, "0.0", END)
+        self.text.tag_remove(FOUND, "0.0", END)
         self.find_text.set("")
 
     def onFind(self, *args):
         target = self.find_text.get()
-        logger.debug('target {0}: {1}'.format(target, self.tabText[self.currIndex]))
-        # self.tabText[self.currIndex].insert(INSERT, target)
+        logger.debug('target {0}: {1}'.format(target, self.text))
         if target:
-            where = self.tabText[self.currIndex].search(target, INSERT, nocase=1)
+            where = self.text.search(target, INSERT, nocase=1)
             if where:
                 pastit = where + ('+%dc' % len(target))
                 logger.debug('pastit: {0}'.format(pastit))
                 # self.text.tag_remove(SEL, '1.0', END)
-                self.tabText[self.currIndex].tag_add(FOUND, where, pastit)
-                self.tabText[self.currIndex].mark_set(INSERT, pastit)
-                self.tabText[self.currIndex].see(INSERT)
-                self.tabText[self.currIndex].focus()
+                self.text.tag_add(FOUND, where, pastit)
+                self.text.mark_set(INSERT, pastit)
+                self.text.see(INSERT)
+                self.text.focus()
 
-    def ok(self, event=None):
-        if self.find_text.get():
-            self.clearFind()
-            return "break"
-        self.withdraw()
-        self.quit()
+    def buttonbox(self):
+        box = Frame(self, background=BGCOLOR, highlightbackground=BGCOLOR)
+        box.pack(side='bottom', fill=X, expand=0)
+
+# class NotebookWindow(Dialog):
+#
+#     def body(self, master):
+#         self.currIndex = 0
+#         self.tabIndex = -1
+#         self.tabText = {}
+#         self.tkfixedfont = tkFont.nametofont("TkFixedFont")
+#         self.tkfixedfont.configure(size=self.options['fontsize'])
+#         # print(self.options['fontsize'], self.tkfixedfont.actual())
+#         self.nb = nb = ttk.Notebook(master, padding=0)
+#         self.nb.pack(side="top", fill=tkinter.BOTH, expand=1, padx=0, pady=0)
+#         self.nb.enable_traversal()
+#         self.nb.bind("<<NotebookTabChanged>>", self.tabChanged)
+#         l, c = commandShortcut('f')
+#         self.bind_all(c, lambda e: self.e.focus_set())
+#         l, c = commandShortcut('g')
+#         self.bind_all(c, lambda e: self.onFind())
+#         return self.nb
+#
+#     def addTab(self, label="", content=""):
+#         self.tabIndex += 1
+#         frame = Frame(self.nb, highlightbackground=BGCOLOR, background=BGCOLOR)
+#         # text = ReadOnlyText(
+#         text = Text(
+#             frame,
+#             wrap="word", padx=2, pady=2, bd=2, relief="sunken",
+#             font=self.tkfixedfont,
+#             height=30,
+#             width=64,
+#             takefocus=False)
+#         text.tag_configure(FOUND, background="lightskyblue")
+#         # text.insert("1.0", content)
+#         text.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0, pady=0)
+#         ysb = ttk.Scrollbar(frame, orient='vertical', command=text.yview)
+#         ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
+#         text.configure(yscroll=ysb.set)
+#         self.nb.add(frame, text=label)
+#         self.tabText[self.tabIndex] = text
+#         text.insert("1.0", content)
+#         logger.debug("tabIndex {0}: {1}".format(self.tabIndex, type(self.tabText[self.tabIndex])))
+#         # print(self.nb.tab("current"))
+#
+#     def buttonbox(self):
+#         # box = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
+#         box = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
+#         # find
+#         w = Button(box, text="OK", width=6, pady=0, relief="raised", command=self.cancel,
+#                    default=ACTIVE, highlightbackground=BGCOLOR)
+#         w.pack(side="right", padx=0, pady=0)
+#
+#         # separator = Frame(box, height=8, bd=0, relief='flat', highlightbackground=BGCOLOR, background=BGCOLOR)
+#         # separator.pack(side='right', fill="x", expand=1)
+#
+#         self.find_text = StringVar(box)
+#         Button(box, text='x', highlightbackground=BGCOLOR, command=self.clearFind, padx=8, pady=2).pack(side="left", padx=0, pady=0)
+#         self.e = Entry(box, textvariable=self.find_text, width=20, highlightbackground=BGCOLOR)
+#         self.e.pack(side="left", padx=0, pady=0, fill=X, expand=0)
+#         self.e.bind("<Return>", self.onFind)
+#         Button(box, text='>', command=self.onFind, padx=6, pady=2, highlightbackground=BGCOLOR).pack(side="left", padx=0, pady=0)
+#         self.bind("<Escape>", self.ok)
+#         # box.pack(side='bottom', pady=0, fill='x', expand=0)
+#         box.pack(side='bottom', padx=12, pady=0, fill="x", expand=0)
+#
+#     def tabChanged(self, e=None):
+#         self.currIndex = self.nb.index(self.nb.select())
+#         logger.debug("currIndex: {0}".format(self.currIndex))
+#
+#
+#     def clearFind(self, *args):
+#         self.tabText[self.currIndex].tag_remove(FOUND, "0.0", END)
+#         self.find_text.set("")
+#
+#     def onFind(self, *args):
+#         target = self.find_text.get()
+#         logger.debug('target {0}: {1}'.format(target, self.tabText[self.currIndex]))
+#         # self.tabText[self.currIndex].insert(INSERT, target)
+#         if target:
+#             where = self.tabText[self.currIndex].search(target, INSERT, nocase=1)
+#             if where:
+#                 pastit = where + ('+%dc' % len(target))
+#                 logger.debug('pastit: {0}'.format(pastit))
+#                 # self.text.tag_remove(SEL, '1.0', END)
+#                 self.tabText[self.currIndex].tag_add(FOUND, where, pastit)
+#                 self.tabText[self.currIndex].mark_set(INSERT, pastit)
+#                 self.tabText[self.currIndex].see(INSERT)
+#                 self.tabText[self.currIndex].focus()
+#
+#     def ok(self, event=None):
+#         if self.find_text.get():
+#             self.clearFind()
+#             return "break"
+#         self.withdraw()
+#         self.quit()
 
 class TextVariableWindow(Dialog):
     def body(self, master):
@@ -496,7 +583,7 @@ class TextVariableWindow(Dialog):
 
         box = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
 
-        w = Button(box, text="OK", width=10, command=self.ok,
+        w = Button(box, text=CLOSE, width=10, command=self.ok,
                    default=ACTIVE, highlightbackground=BGCOLOR)
         w.pack(side=LEFT, padx=5, pady=5)
         self.bind("<Return>", self.ok)
@@ -554,9 +641,9 @@ class TextDialog(Dialog):
 
         box = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
 
-        w = Button(box, text="OK", width=10, command=self.cancel,
-                   default=ACTIVE, highlightbackground=BGCOLOR)
-        w.pack(side=LEFT, padx=5, pady=5)
+        w = Button(box, text="OK", width=6, command=self.cancel,
+                   default=ACTIVE, highlightbackground=BGCOLOR, pady=2)
+        w.pack(side=LEFT, padx=5, pady=0)
 
         self.bind("<Return>", self.ok)
         self.bind("<Escape>", self.ok)
@@ -1858,18 +1945,33 @@ parsing are supported.""")
         print('newCommand', newcommand)
 
     # TODO: Speed up help display
+    # def help(self, event=None):
+    #     res = self.menutree.showMenu("_")
+    #     # self.textWindow(parent=self, title='etm', prompt=res, modal=False)
+    #     nb = NotebookWindow(self, title="etm Help", opts=self.options, modal=False)
+    #     nb.addTab(label=_("Shortcuts"), content=res)
+    #     # self.update_idletasks()
+    #     nb.addTab(label=_("Overview"), content=OVERVIEW)
+    #     nb.addTab(label=_("Types"), content=ITEMTYPES)
+    #     nb.addTab(label=_("@Keys"), content=ATKEYS)
+    #     nb.addTab(label=_("Dates"), content=DATES)
+    #     nb.addTab(label=_("Preferences"), content=PREFERENCES)
+    #     nb.addTab(label=_("Reports"), content=REPORTS)
+
     def help(self, event=None):
         res = self.menutree.showMenu("_")
-        # self.textWindow(parent=self, title='etm', prompt=res, modal=False)
-        nb = NotebookWindow(self, title="etm Help", opts=self.options, modal=False)
-        nb.addTab(label=_("Shortcuts"), content=res)
-        self.update_idletasks()
-        nb.addTab(label=_("Overview"), content=OVERVIEW)
-        nb.addTab(label=_("Types"), content=ITEMTYPES)
-        nb.addTab(label=_("@Keys"), content=ATKEYS)
-        nb.addTab(label=_("Dates"), content=DATES)
-        nb.addTab(label=_("Preferences"), content=PREFERENCES)
-        nb.addTab(label=_("Reports"), content=REPORTS)
+        opts = self.options
+        opts['help_opts'] = [
+            [_("Shortcuts"), res],
+            [_("Overview"), OVERVIEW],
+            [_("Types"), ITEMTYPES],
+            [_("@Keys"),ATKEYS],
+            [_("Dates"), DATES],
+            [_("Preferences"), PREFERENCES],
+            [_("Reports"), REPORTS],
+        ]
+
+        hw = HelpWindow(parent=self, opts=opts)
 
     def about(self, event=None):
         res = loop.do_v("")
@@ -2077,7 +2179,8 @@ or 0 to display all changes.""").format(title)
 
     def updateAlerts(self):
         self.update_idletasks()
-        logger.debug('updateAlerts 1: {0}'.format(len(loop.alerts)))
+        if loop.alerts:
+            logger.debug('updateAlerts 1: {0}'.format(len(loop.alerts)))
         # print(loop.alerts)
         # cal_regex = None
         # if loop.options['calendars']:
@@ -2225,9 +2328,9 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
                     if not loop.alerts:
                         break
                     td = loop.alerts[0][0] - curr_minutes
-
-        logger.debug('updateAlerts 2: {0}'.format(len(loop.alerts)))
-        if len(loop.alerts) > 0:
+        if loop.alerts:
+            logger.debug('updateAlerts 2: {0}'.format(len(loop.alerts)))
+        if loop.alerts and len(loop.alerts) > 0:
             self.pendingAlerts.set(len(loop.alerts))
             self.pending.configure(state="normal")
         else:
@@ -2261,14 +2364,11 @@ Relative dates and fuzzy parsing are supported.""")
         :param e:
         :return:
         """
-        print("setFilter")
         prompt = _("""\
 Enter a case insensitive regular expression to
 limit the display to branches that match.\
 """)
         v = TextVariableWindow(parent=self, title=_('filter'), prompt=prompt, opts={'textvariable': self.filterValue}, modal=False, xoffset=200).value
-        print('value', v)
-        # self.showView()
         logger.debug("setting tree focus: {0}".format(v))
         # self.tree.focus_set()
 

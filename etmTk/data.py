@@ -9,9 +9,6 @@ from copy import deepcopy
 from textwrap import wrap
 import platform
 
-import gettext
-_ = gettext.gettext
-
 import logging
 import logging.config
 logger = logging.getLogger()
@@ -59,11 +56,13 @@ def setup_logging(level='3'):
 
 import subprocess
 
+import gettext
 if platform.python_version() >= '3':
     python_version = 3
     python_version2 = False
     from io import StringIO
     import pickle
+    from gettext import gettext as _
 
     unicode = str
     u = lambda x: x
@@ -74,6 +73,7 @@ else:
     from cStringIO import StringIO
     # noinspection PyPep8Naming
     import cPickle as pickle
+    _ = gettext.lgettext
 
 dayfirst = False
 yearfirst = True
@@ -842,6 +842,7 @@ def get_options(d=''):
         'alert_wakecmd': '',
 
         'ampm': True,
+        # TODO: make sure completions exists to avoid startup error
         'auto_completions': os.path.join(etmdir, 'completions.cfg'),
         'calendars': [],
 
@@ -983,20 +984,20 @@ def get_options(d=''):
     options['scratchpad'] = os.path.join(options['etmdir'], _("scratchpad"))
 
     if options['action_minutes'] not in [1, 6, 12, 15, 30, 60]:
-        print(
+        term_print(
             "Invalid action_minutes setting: %s. Reset to 1." %
             options['action_minutes'])
         options['action_minutes'] = 1
 
     z = gettz(options['local_timezone'])
     if z is None:
-        print(
+        term_print(
             "Error: bad entry for local_timezone in etmtk.cfg: '%s'" %
             options['local_timezone'])
         options['local_timezone'] = ''
 
     if not os.path.isdir(options['datadir']):
-        print('creating datadir', options['datadir'])
+        term_print('creating datadir: {0}'.format(options['datadir']))
         # first use of this datadir - first use of new etm?
         os.makedirs(options['datadir'])
 
@@ -4912,17 +4913,17 @@ class ETMCmd():
         self.cmdDict = {
             '?': self.do_help,
             'a': self.do_a,
-            'c': self.do_c,
-            'h': self.do_h,
+            # 'c': self.do_c,
+            # 'h': self.do_h,
             'k': self.do_k,
-            'l': self.do_l,
+            # 'l': self.do_l,
             'm': self.do_m,
             'n': self.do_n,
-            'O': self.do_O,
+            # 'O': self.do_O,
             'p': self.do_p,
-            'q': self.do_q,
+            # 'q': self.do_q,
             'r': self.do_r,
-            'R': self.do_R,
+            # 'R': self.do_R,
             's': self.do_s,
             't': self.do_t,
             'v': self.do_v,
@@ -4931,20 +4932,20 @@ class ETMCmd():
         self.helpDict = {
             'help': self.help_help,
             'a': self.help_a,
-            'c': self.help_c,
-            'd': self.help_d,
-            'e': self.help_e,
-            'f': self.help_f,
-            'h': self.help_h,
+            # 'c': self.help_c,
+            # 'd': self.help_d,
+            # 'e': self.help_e,
+            # 'f': self.help_f,
+            # 'h': self.help_h,
             'k': self.help_k,
-            'l': self.help_l,
+            # 'l': self.help_l,
             'm': self.help_m,
             'n': self.help_n,
-            'O': self.help_O,
+            # 'O': self.help_O,
             'p': self.help_p,
-            'q': self.help_q,
+            # 'q': self.help_q,
             'r': self.help_r,
-            'R': self.help_R,
+            # 'R': self.help_R,
             's': self.help_s,
             't': self.help_t,
             'v': self.help_v,
@@ -4975,8 +4976,6 @@ class ETMCmd():
         else:
             self.editcmd = ''
         self.tmpfile = os.path.join(self.options['etmdir'], '.temp.txt')
-        # FIXME: move this so that help can run without loading data
-        # self.loadData()
 
     def do_command(self, s):
         logger.debug('processing command: {0}'.format(s))
@@ -5178,15 +5177,15 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
             return ()
         self.do_n('', hsh['entry'])
 
-    @staticmethod
-    def help_c():
-        return _("""\
-Usage:
-
-    c INT
-
-If there is an item number INT among those displayed by the previous 'a' or 'r'  command then open a COPY of the item for editing. The edited copy will be saved as a new item.\
-""")
+#     @staticmethod
+#     def help_c():
+#         return _("""\
+# Usage:
+#
+#     c INT
+#
+# If there is an item number INT among those displayed by the previous 'a' or 'r'  command then open a COPY of the item for editing. The edited copy will be saved as a new item.\
+# """)
 
     def cmd_do_delete(self, choice):
         if not choice:
@@ -5267,15 +5266,15 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         else:
             self.delete_item()
 
-    @staticmethod
-    def help_d():
-        return _("""\
-Usage:
-
-    d INT
-
-If there is an item number INT among those displayed by the previous 'a' or 'r' command then delete that item, first prompting for confirmation. When a repeating item is selected, you will first be prompted to choose which of the repeated instances should be deleted. \
-""")
+#     @staticmethod
+#     def help_d():
+#         return _("""\
+# Usage:
+#
+#     d INT
+#
+# If there is an item number INT among those displayed by the previous 'a' or 'r' command then delete that item, first prompting for confirmation. When a repeating item is selected, you will first be prompted to choose which of the repeated instances should be deleted. \
+# """)
 
     def cmd_do_reschedule(self, new_dtn):
         # new_dtn = new_dt.astimezone(gettz(self.item_hsh['z'])).replace(tzinfo=None)
@@ -5354,15 +5353,15 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         # self.loadData()
         return True
 
-    @staticmethod
-    def help_e():
-        return _("""\
-Usage:
-
-    e INT
-
-If there is an item number INT among those displayed by the previous 'a' or 'r' command then open it for editing. When a repeating item is selected, you will first be prompted to choose which of the instances should be changed.\
-""")
+#     @staticmethod
+#     def help_e():
+#         return _("""\
+# Usage:
+#
+#     e INT
+#
+# If there is an item number INT among those displayed by the previous 'a' or 'r' command then open it for editing. When a repeating item is selected, you will first be prompted to choose which of the instances should be changed.\
+# """)
 
     def cmd_do_finish(self, dt):
         """
@@ -5405,31 +5404,31 @@ If there is an item number INT among those displayed by the previous 'a' or 'r' 
         # item = hsh2str(hsh, self.options)
         self.replace_item(hsh)
 
-    @staticmethod
-    def help_f():
-        return _("""\
-Usage:
-
-    f INT
-
-If there is an item number INT among those displayed by the previous 'a' or 'r' command and that item is an unfinished task, then first prompt for a completion date and time and then mark the task finished.""")
-
-    def do_h(self, arg_str):
-        if 'hg_command' in self.options and self.options['hg_command']:
-            cmd = self.options['hg_command'].format(
-                repo=self.options['datadir'])
-            cmd = "%s %s" % (cmd, arg_str)
-            return subprocess.check_output(cmd, shell=True)
-
-    @staticmethod
-    def help_h():
-        return _("""\
-Usage:
-
-    h ARGS
-
-If 'hg_command' is specified in etmtk.cfg, then execute that command with ARGS.
-""")
+#     @staticmethod
+#     def help_f():
+#         return _("""\
+# Usage:
+#
+#     f INT
+#
+# If there is an item number INT among those displayed by the previous 'a' or 'r' command and that item is an unfinished task, then first prompt for a completion date and time and then mark the task finished.""")
+#
+#     def do_h(self, arg_str):
+#         if 'hg_command' in self.options and self.options['hg_command']:
+#             cmd = self.options['hg_command'].format(
+#                 repo=self.options['datadir'])
+#             cmd = "%s %s" % (cmd, arg_str)
+#             return subprocess.check_output(cmd, shell=True)
+#
+#     @staticmethod
+#     def help_h():
+#         return _("""\
+# Usage:
+#
+#     h ARGS
+#
+# If 'hg_command' is specified in etmtk.cfg, then execute that command with ARGS.
+# """)
 
     def do_k(self, arg_str):
         # self.prevnext = getPrevNext(self.dates)
@@ -5513,36 +5512,34 @@ Usage:
 
 Create a new item from ITEM. E.g.,
 
-    n * meeting @s +0 4p @e 1h30m
+    n '* meeting @s +0 4p @e 1h30m'
 
-When the item is dated, it will be appended to the monthly file that corresponds to the date, otherwise it will be appended to the monthly file for the current month.
-
-If ITEM is missing the editor will be used to create the new item.\
+When the item is dated, it will be appended to the monthly file that corresponds to the date, otherwise it will be appended to the monthly file for the current month.\
 """)
 
-    def do_O(self, arg):
-        f = os.path.join(self.options['etmdir'], 'etmtk.cfg')
-        if not f or not os.path.isfile(f):
-            return ("""
-This option requires a valid path to etmtk.cfg.""")
-            return ()
-        if not self.editcmd:
-            return ("""
-edit_cmd must be specified in etmtk.cfg.
-""")
-        hsh = {'file': f, 'line': 1}
-        cmd = expand_template(self.editcmd, hsh)
-        os.system(cmd)
+#     def do_O(self, arg):
+#         f = os.path.join(self.options['etmdir'], 'etmtk.cfg')
+#         if not f or not os.path.isfile(f):
+#             return ("""
+# This option requires a valid path to etmtk.cfg.""")
+#             return ()
+#         if not self.editcmd:
+#             return ("""
+# edit_cmd must be specified in etmtk.cfg.
+# """)
+#         hsh = {'file': f, 'line': 1}
+#         cmd = expand_template(self.editcmd, hsh)
+#         os.system(cmd)
 
-    @staticmethod
-    def help_O():
-        return _("""\
-Usage:
-
-    o
-
-Open etmtk.cfg for editing. This command requires a setting for 'edit_cmd' in etmtk.cfg.\
-""")
+#     @staticmethod
+#     def help_O():
+#         return _("""\
+# Usage:
+#
+#     o
+#
+# Open etmtk.cfg for editing. This command requires a setting for 'edit_cmd' in etmtk.cfg.\
+# """)
 
     @staticmethod
     def do_q(line):
@@ -5573,7 +5570,7 @@ Usage:
     r <type> <groupby> [options]
 
 Generate a report where type is either 'a' (action) or 'c' (composite).
-Groupby can include semicolon separated date specifications and
+Groupby can include *semicolon* separated date specifications and
 elements from:
     c context
     f file path
@@ -5598,35 +5595,35 @@ Options include:
 
 Example:
 
-    r c t -t tag 1 -t !tag 2
+    r c t -t tag 1 -t '!tag 2'
 
 Composite report, grouped by tag, showing items that have tag 1 but
-not tag 2.\
+not tag 2. (Quotes prevent shell expansion.)\
 """)
 
-    def do_R(self, arg):
-        f = self.options['report_specifications']
-        if not f or not os.path.isfile(f):
-            return _("""
-This option requires a valid report_specifications setting in etmtk.cfg.""")
-            return ()
-        if not self.editcmd:
-            return ("""
-edit_cmd must be specified in etmtk.cfg.
-""")
-        hsh = {'file': f, 'line': 1}
-        cmd = expand_template(self.editcmd, hsh)
-        os.system(cmd)
-
-    @staticmethod
-    def help_R():
-        return _("""\
-Usage:
-
-    r
-
-Open 'report_specifications'  (specified in etmtk.cfg) for editing. This command requires a setting for 'edit_cmd' in etmtk.cfg.\
-""")
+#     def do_R(self, arg):
+#         f = self.options['report_specifications']
+#         if not f or not os.path.isfile(f):
+#             return _("""
+# This option requires a valid report_specifications setting in etmtk.cfg.""")
+#             return ()
+#         if not self.editcmd:
+#             return ("""
+# edit_cmd must be specified in etmtk.cfg.
+# """)
+#         hsh = {'file': f, 'line': 1}
+#         cmd = expand_template(self.editcmd, hsh)
+#         os.system(cmd)
+#
+#     @staticmethod
+#     def help_R():
+#         return _("""\
+# Usage:
+#
+#     r
+#
+# Open 'report_specifications'  (specified in etmtk.cfg) for editing. This command requires a setting for 'edit_cmd' in etmtk.cfg.\
+# """)
 
     def do_s(self, arg_str):
         self.prevnext = getPrevNext(self.dates)
@@ -5671,43 +5668,43 @@ Show items grouped and sorted by tag, optionally limited to those containing a c
 """)
 
 
-    def do_l(self, arg):
-        """time and expense ledger specification:"""
-        if not arg:
-            self.help_a()
-            return ()
-        arg = arg.split('#')[0]
-        arg_str = "t {0}".format(arg)
-        return '\nreport: {0}'.format(arg_str)
-        return self.mk_rep('s ' + arg_str)
-
-    @staticmethod
-    def help_l():
-        return _("""\
-Usage:
-
-    l <groupby> [options]
-
-Generate an action report. Groupby can include *semicolon* separated date specifications and elements from:
-    c context
-    f file path
-    k keyword
-    u user
-
-Options include:
-    -b begin date
-    -c context regex
-    -d depth
-    -e end date
-    -f file regex
-    -k keyword regex
-    -l location regex
-    -s summary regex
-    -t tags regex
-    -u user regex
-    -w column 1 width
-    -W column 2 width\
-""")
+#     def do_l(self, arg):
+#         """time and expense ledger specification:"""
+#         if not arg:
+#             self.help_a()
+#             return ()
+#         arg = arg.split('#')[0]
+#         arg_str = "t {0}".format(arg)
+#         return '\nreport: {0}'.format(arg_str)
+#         return self.mk_rep('s ' + arg_str)
+#
+#     @staticmethod
+#     def help_l():
+#         return _("""\
+# Usage:
+#
+#     l <groupby> [options]
+#
+# Generate an action report. Groupby can include *semicolon* separated date specifications and elements from:
+#     c context
+#     f file path
+#     k keyword
+#     u user
+#
+# Options include:
+#     -b begin date
+#     -c context regex
+#     -d depth
+#     -e end date
+#     -f file regex
+#     -k keyword regex
+#     -l location regex
+#     -s summary regex
+#     -t tags regex
+#     -u user regex
+#     -w column 1 width
+#     -W column 2 width\
+# """)
 
     def do_v(self, arg_str):
         d = {

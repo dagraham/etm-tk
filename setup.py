@@ -1,5 +1,5 @@
 # from distutils.core import setup
-from setuptools import setup
+from setuptools import setup, find_packages
 from etmTk.v import version
 import glob
 
@@ -74,14 +74,14 @@ setup(
     scripts=['etm'],
     install_requires=REQUIRES,
     extras_require={"icalendar": EXTRAS},
-    package_data={'etmTk': ['etmlogo.*', 'CHANGES']},
+    package_data={'etmTk': ['etmlogo.*', 'CHANGES', 'etmtk.desktop', 'etmtk.1', 'etmtk.xpm']},
     # TODO: fix man, icon, desktop, docs
     data_files=[
         ('share/doc/etmtk', ['etmTk/CHANGES']),
         ('share/icons/etmtk', glob.glob('etmTk/etmlogo.*')),
         ('share/man/man1', ['etmTk/etmtk.1']),
-        # ('share/pixmaps', ['etmTk/etmtk.xpm']),
-        # ('share/applications', ['etmTk/applications/etmtk.desktop']),
+        ('share/pixmaps', ['etmTk/etmtk.xpm']),
+        ('share/applications', ['etmTk/etmtk.desktop']),
         # ('share/doc/etmtk/help', glob.glob('etmTk/help/*.html')),
         # ('share/doc/etmtk/help/images', glob.glob('etmTk/help/images/*.png')),
     ]

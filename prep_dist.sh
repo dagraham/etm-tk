@@ -92,18 +92,9 @@ echo "Updating etm-sample"
 cp $home/etm-sample/data/shared/sample_datafile.txt.orig $home/etm-sample/data/shared/sample_datafile.txt
 # cd /Users/dag/etm-qt/etmQt/language
 
-#cd $home/etmTk/language
-# translations
-#for file in etm_*_*.ts; do
-#    # make etm_xx_XX.qm file from etm_xx_XX.ts
-#    echo Processing $file
-#    lrelease $file
-#    # # move resulting qm file to language/ for inclusion in qrc file
-#    # root=${file%%.*}
-#    # echo Moving $root.qm to language
-#    # mv $root.qm language/
-#    # cp $root.ts language/
-#done
+cd $home/etmTk
+xgettext --omit-header --language=Python --keyword=_ --output=po/etm.pot --from-code=UTF-8 `find . -name "*.py"`
+#xgettext --language=Python --keyword=_ --output=po/etm.pot --from-code=UTF-8 --copyright-holder="Daniel A Graham" --copyright-year="2009-2014"  --package-name="etm" --package-version="$vinfo" `find . -name "*.py"`
 
 cd $home
 
@@ -140,7 +131,7 @@ echo "copying etmtk-${tag} to ../etmtk-current"
 # rm -fR /Users/dag/etm_qt-current/*
 sudo rm -fR /Users/dag/etmtk-current/*
 sudo cp -fR "etmtk-${tag}/" /Users/dag/etmtk-current
-
+echo "home: $home"
 cd $home
 
 echo
@@ -176,15 +167,21 @@ cd $home
 echo
 echo -n "Create OSX package?"
 if asksure; then
-    sudo rm -fR releases/*
 #    cxfreeze3 -OO etm --icon=etmTk/etmlogo.icns --target-dir releases/etmtk-${tag}-freeze-OSX
-    cxfreeze3 -s -c -OO etm --icon=etmTk/etmlogo.icns --target-dir dist/etmtk-${tag}-freeze-OSX
-    cd dist
-    tar czf etmtk-${tag}-freeze-OSX.tar.gz etmtk-${tag}-freeze-OSX
-    zip -r etmtk-${tag}-freeze-OSX.zip etmtk-${tag}-freeze-OSX
+    plat=`uname`
+    echo "Building for $plat"
+    sudo rm -fR dist-$plat/*
+    if [ "$plat" = 'Darwin' ]; then
+        cxfreeze3 -s -c -OO etm --icon=etmTk/etmlogo.icns --target-dir dist-$plat/etmtk-${tag}-freeze-$plat
+    else
+        cxfreeze -s -c -OO etm --icon=etmTk/etmlogo.icns --target-dir dist-$plat/etmtk-${tag}-freeze-$plat
+    fi
+    cd dist-$plat
+    tar czf etmtk-${tag}-freeze-$plat.tar.gz etmtk-${tag}-freeze-$plat
+#    zip -r etmtk-${tag}-freeze-UBUNTU.zip etmtk-${tag}-freeze-UBUNTU
     cd $home
 #    sudo rm -fR releases/etmtk-${tag}
-    echo "Creating OSX package" >> $logfile
+    echo "Creating package" >> $logfile
 else
     echo "Skipping etm.app creation."
 fi

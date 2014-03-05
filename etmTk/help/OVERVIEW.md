@@ -85,7 +85,7 @@ All items grouped by file path and sorted by type and *relevant datetime*. Use t
 
 The *relevant datetime* is the past due date for any past due task, the starting datetime for any non-repeating item and the datetime of the next instance for any repeating item.
 
-# Organization
+# Data Organization and Calendars
 
 *etm* offers two hierarchical ways of organizing your data: by keyword and file path. There are no hard and fast rules about how to use these hierarchies but the goal is a system that makes complementary uses of folder and keyword and fits your needs. As with any filing system, planning and consistency are paramount.
 

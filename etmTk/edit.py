@@ -515,6 +515,8 @@ class SimpleEditor(Toplevel):
         return self.text.get('1.0', END + '-1c')
 
     def showCompletions(self, e=None):
+        if not self.completions:
+            return "break"
         # print(self.text.get("insert -1c wordstart", INSERT))
         line = self.text.get("insert linestart", INSERT)
         m = completion_regex.search(line)
@@ -547,7 +549,7 @@ class SimpleEditor(Toplevel):
 
             else:
                 relfile = relpath(self.options['auto_completions'], self.options['etmdir'])
-                self.messageWindow(title=_('etm'), prompt=_("No matches for '{0}'\nin '{1}'.").format(match, relfile), opts=self.options)
+                self.messageWindow(title='etm', prompt=_("No matches for '{0}'\nin '{1}'.").format(match, relfile), opts=self.options)
                 # logger.debug("nothing in completions matching '{0}'.".format(match))
                 return "break"
         else:

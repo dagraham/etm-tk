@@ -33,8 +33,7 @@ if __name__ == "__main__":
             etmdir = temp
 
     if len(sys.argv) > 1:
-        logger.debug('calling data.main with etmdir: {0}, argv: {1}'
-                     .format(etmdir, sys.argv))
+        logger.debug("calling data.main with etmdir: {0}, argv: {1}".format(etmdir, sys.argv))
         import etmTk.data as data
         data.main(etmdir, sys.argv)
 
