@@ -816,6 +816,7 @@ class App(Tk):
         self.timerItem = None
         self.actionTimer = Timer()
         self.loop = loop
+        self.activeAlerts = []
         self.configure(background=BGCOLOR)
         self.option_add('*tearOff', False)
         self.menu_lst = []
@@ -1318,6 +1319,7 @@ class App(Tk):
             cal_pattern = r'^%s' % '|'.join(
                 [x[2] for x in loop.calendars if x[1]])
             self.cal_regex = re.compile(cal_pattern)
+            logger.debug("cal_pattern: {0}".format(cal_pattern))
 
         # start clock
         self.updateClock()
@@ -1363,6 +1365,7 @@ class App(Tk):
             self.cal_regex = None
             self.specialCalendars.set("")
             # print('updateCalendars', loop.calendars, cal_pattern, self.cal_regex)
+        self.updateAlerts()
         self.showView()
 
 
@@ -1712,14 +1715,14 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             _('type'),
             _('summary'))
         divider = '-' * 52
-        if loop.alerts:
+        if self.activeAlerts:
             # for alert in loop.alerts:
             s = '%s\n%s\n%s' % (
                 header, divider, "\n".join(
                     ["{0:^7}\t{1:^7}\t{2:<8}{3:<26}".format(
                         x[1]['alert_time'], x[1]['_event_time'],
                         ", ".join(x[1]['_alert_action']),
-                        utf8(x[1]['summary'][:26])) for x in loop.alerts]))
+                        utf8(x[1]['summary'][:26])) for x in self.activeAlerts]))
         else:
             s = _("none")
         self.textWindow(self, t, s, opts=self.options)
@@ -2183,30 +2186,34 @@ or 0 to display all changes.""").format(title)
             logger.debug('updateAlerts 1: {0}'.format(len(loop.alerts)))
         # print(loop.alerts)
         # cal_regex = None
-        # if loop.options['calendars']:
-        #     cal_pattern = r'^%s' % '|'.join([x[2] for x in self.options['calendars'] if x[1]])
-        #     cal_regex = re.compile(cal_pattern)
-        if loop.alerts:
+        alerts = deepcopy(loop.alerts)
+        if loop.options['calendars']:
+            cal_pattern = r'^%s' % '|'.join([x[2] for x in self.options['calendars'] if x[1]])
+            cal_regex = re.compile(cal_pattern)
+            logger.debug("cal_regex: {0}".format(self.cal_regex))
+            alerts = [x for x in alerts if
+                           self.cal_regex.match(x[-1])]
+        if alerts:
             curr_minutes = datetime2minutes(self.now)
             td = -1
-            while td < 0 and loop.alerts:
-                logger.debug('f: {0}'.format(loop.alerts[0][-1]))
-                if self.cal_regex and not self.cal_regex.match(loop.alerts[0][-1]):
-                    loop.alerts.pop(0)
-                else:
-                    td = loop.alerts[0][0] - curr_minutes
-                    logger.debug('curr_minutes: {0}; td: {1}'.format(
-                        curr_minutes, td))
-                    if td < 0:
-                        loop.alerts.pop(0)
+            while td < 0 and alerts:
+                file = alerts[0][-1]
+                logger.debug('file: {0}'.format(file))
+                td = alerts[0][0] - curr_minutes
+                logger.debug('curr_minutes: {0}; td: {1}'.format(
+                    curr_minutes, td))
+                if td < 0:
+                    logger.debug('including: {0}'.format(alerts[0]))
+                    alerts.pop(0)
+            logger.debug('remaining: {0}'.format(alerts))
             if td == 0:
                 if ('alert_wakecmd' in loop.options and
                         loop.options['alert_wakecmd']):
                     cmd = loop.options['alert_wakecmd']
                     subprocess.call(cmd, shell=True)
                 while td == 0:
-                    hsh = loop.alerts[0][1]
-                    loop.alerts.pop(0)
+                    hsh = alerts[0][1]
+                    alerts.pop(0)
                     actions = hsh['_alert_action']
                     if 's' in actions:
                         if ('alert_soundcmd' in self.options and
@@ -2325,16 +2332,18 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
                         cmd = expand_template(proc, hsh)
                         subprocess.call(cmd, shell=True)
 
-                    if not loop.alerts:
+                    if not alerts:
                         break
-                    td = loop.alerts[0][0] - curr_minutes
-        if loop.alerts:
-            logger.debug('updateAlerts 2: {0}'.format(len(loop.alerts)))
-        if loop.alerts and len(loop.alerts) > 0:
-            self.pendingAlerts.set(len(loop.alerts))
+                    td = alerts[0][0] - curr_minutes
+        if alerts:
+            logger.debug('updateAlerts 2: {0}'.format(len(alerts)))
+        if alerts and len(alerts) > 0:
+            self.pendingAlerts.set(len(alerts))
             self.pending.configure(state="normal")
+            self.activeAlerts = alerts
         else:
             self.pendingAlerts.set(0)
+            self.activeAlerts = []
             self.pending.configure(state="disabled")
 
     def textWindow(self, parent, title=None, prompt=None, opts=None, modal=True):

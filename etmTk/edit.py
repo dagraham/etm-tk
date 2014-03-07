@@ -407,13 +407,18 @@ class SimpleEditor(Toplevel):
 
         if self.options['auto_completions']:
             cf = self.options['auto_completions']
-            logger.debug("auto_completions: {0}".format(cf))
-            fe = self.options['encoding']['file']
-            completions = []
-            with codecs.open(cf, 'r', fe) as fo:
-                self.completions = [x.rstrip() for x in fo.readlines() if x
-                    .rstrip()]
-            logger.debug('completions: {0}'.format(self.completions))
+            if os.path.isfile(cf):
+                logger.debug("auto_completions: {0}".format(cf))
+                fe = self.options['encoding']['file']
+                completions = []
+                with codecs.open(cf, 'r', fe) as fo:
+                    self.completions = [x.rstrip() for x in fo.readlines() if x
+                        .rstrip() and x[0].strip() != "#"]
+                logger.info('Using completions file: {0}'.format(cf))
+            else:
+                logger.warn("Could not find completions file: {0}".format(cf))
+        else:
+            logger.info("auto_completions not specified in etmtk.cfg")
 
 
         if title is not None:
@@ -422,10 +427,13 @@ class SimpleEditor(Toplevel):
             # we're editing a file
             self.mode = 'file'
             inspect.configure(state="disabled")
-            logger.debug('file: {0}'.format(file))
-            with codecs.open(file, 'r',
+            if not os.path.isfile(file):
+                logger.warn('could not open: {0}'.format(file))
+                text = ""
+            else:
+                with codecs.open(file, 'r',
                              self.options['encoding']['file']) as f:
-                text = f.read()
+                    text = f.read()
         else:
             # we are creating a new item and/or replacing an item
             # mode:
@@ -531,8 +539,8 @@ class SimpleEditor(Toplevel):
                 self.match = match
                 self.autocompletewindow = acw = Toplevel(self)
                 self.scrollbar = scrollbar = ttk.Scrollbar(acw,
-                                                           orient="vertical",
-                                                           width=8)
+                                                           orient="vertical")
+                # self.scrollbar.configure(width=8)
                 self.listbox = listbox = Listbox(acw, yscrollcommand=scrollbar.set, exportselection=False, bg="white")
                 for item in matches:
                     listbox.insert(END, item)

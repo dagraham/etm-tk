@@ -1,12 +1,12 @@
-*etm* supports creating, printing and exporting reports. Either click on the report icon in the main window or press *Control-R* to open the report dialog.
+# Reports
 
 A *report specification* is created by entering a report *type character* followed by a *groupby setting* and, perhaps, by one or more *report options*. Together, the type character, groupby setting and options determine which items will appear in the report and how they will be organized and displayed.
 
-# Report types
+## Report types
 
 There are two possible report type characters, *a* and *c*:
 
-## **a**: action report.
+### **a**: action report.
 
 A report of expenditures of time and money recorded in actions with output formatted using `action_template` computations and expansions. See Help/Preferences for further details about the role of `action_template` in formatting action report output. E.g., with this setting in `etmtk.cfg`:
 
@@ -28,7 +28,7 @@ a report might appear as follows:
         2.1h) Project F (1)
         6.6h) Project G (1)
 
-## **c**: composite report.
+### **c**: composite report.
 
 Any item types but without `action_template` computations and expansions.
 
@@ -40,7 +40,7 @@ If the current specification has been modified, then deleting it by clicking on 
 
 When temporary changes have been made to the list, the *save* button will be enabled and you can either click on this button or press *Control-S* to save the changes. If you attempt to close the reports dialog while there are unsaved changes, you will be given the opportunity to save them.
 
-# groupby
+## groupby
 
 A semicolon separated list that determines how items will be grouped and sorted. Possible elements include *date specifications* and elements from
 
@@ -125,19 +125,19 @@ When a date specification is not included in `groupby`, undated notes and tasks 
 
 Within groups, items are automatically sorted by date, type and time.
 
-# options
+## options
 
 Report options are listed below. Report types `c` supports all options except `-d`. Report type `a` supports all options except `-o` and `-h`.
 
-## -b  BEGIN_DATE
+### -b  BEGIN_DATE
 
 Fuzzy parsed date. Limit the display of dated items to those with datetimes falling *on or after* this datetime. Relative day and month expressions can also be used so that, for example, `-b -14` would begin 14 days before the current date and `-b -1/1` would begin on the first day of the previous month. It is also possible to add (or subtract) a time period from the fuzzy date, e.g., `-b mon + 7d` would begin with the second Monday falling on or after today. Default: None.
 
-## -c CONTEXT
+### -c CONTEXT
 
 Regular expression. Limit the display to items with contexts matching CONTEXT (ignoring case). Prepend an exclamation mark, i.e., use !CONTEXT rather than CONTEXT, to limit the display to items which do NOT have contexts matching CONTEXT.
 
-## -d DEPTH
+### -d DEPTH
 
 The default, `-d 0`, includes all outline levels. Use `-d 1` to include only level 1, `-d 2` to include levels 1 and 2 and so forth.
 
@@ -154,35 +154,35 @@ following:
           2.2) client 1
           4.6) client 2
 
-## -e END_DATE
+### -e END_DATE
 
 Fuzzy parsed date. Limit the display of dated items to those with datetimes falling *before* this datetime. As with BEGIN_DATE relative month expressions can be used so that, for example, `-b -1/1  -e 1` would include all items from the previous month. As with `-b`, period strings can be appended, e.g., `-b mon -e mon + 7d` would include items from the week that begins with the first Monday falling on or after today. Default: None.
 
-## -f FILE
+### -f FILE
 
 Regular expression. Limit the display to items from files whose paths match FILE (ignoring case). Prepend an exclamation mark, i.e., use !FILE rather than FILE, to limit the display to items from files whose path does NOT match FILE.
 
-## -h HUE
+### -h HUE
 
 0, 1 or 2. `-h 2` uses all possible colors for leaf fonts, `-h 1` uses red for past due items and black for everything else and `-h 0` uses black for everything. The default is taken from the setting for `colors` in `emt.cfg`.
 
-## -k KEYWORD
+### -k KEYWORD
 
 Regular expression. Limit the display to items with contexts matching KEYWORD (ignoring case). Prepend an exclamation mark, i.e., use !KEYWORD rather than KEYWORD, to limit the display to items which do NOT have keywords matching KEYWORD.
 
-## -l LOCATION
+### -l LOCATION
 
 Regular expression. Limit the display to items with location matching LOCATION (ignoring case). Prepend an exclamation mark, i.e., use !LOCATION rather than LOCATION, to limit the display to items which do NOT have a location that matches LOCATION.
 
-## -o OMIT
+### -o OMIT
 
 String. Show/hide a)ctions, d)elegated tasks, e)vents, g)roup tasks, n)otes, o)ccasions and/or other t)asks. For example, `-o on` would show everything except occasions and notes and `-o !on` would show only occasions and notes.
 
-## -s SUMMARY
+### -s SUMMARY
 
 Regular expression. Limit the display to items containing SUMMARY (ignoring case) in the item summary. Prepend an exclamation mark, i.e., use !SUMMARY rather than SUMMARY, to limit the display to items which do NOT contain SUMMARY in the summary.
 
-## -t TAGS
+### -t TAGS
 
 Comma separated list of case insensitive regular expressions. E.g., use
 
@@ -190,14 +190,14 @@ Comma separated list of case insensitive regular expressions. E.g., use
 
 to display items with one or more tags that match 'tag1' but none that match 'tag2'.
 
-## -u USER
+### -u USER
 
 Regular expression. Limit the display to items with user matching USER (ignoring case). Prepend an exclamation mark, i.e., use !USER rather than USER, to limit the display to items which do NOT have a user that matches USER.
 
-## -w WIDTH1
+### -w WIDTH1
 
 Integer. Limit the first column display width to this number of characters. Default: `report_width1` in etm.cfg.
 
-## -W WIDTH2
+### -W WIDTH2
 
 Integer. Limit the second column display width to this number of characters. Default: `report_width2` in etm.cfg.

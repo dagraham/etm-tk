@@ -80,6 +80,87 @@ yearfirst = True
 # bgclr = "#e9e9e9"
 BGCOLOR = "#ebebeb"
 
+# this task will be created for first time users
+SAMPLE ="""\
+# Sample entries - this file can be edited or deleted at your pleasure
+
+* sales meeting @s +7 9a @e 1h @a 5 @a 2d: e; who@when.com, what@where.org
+- prepare report @s +7 @b 3
+- get haircut @s 24 @r d &i 14 @o r
+^ payday @s 1/1 @r m &w MO, TU, WE, TH, FR &m -1, -2, -3 &s -1
+* take Rx @s +0 @r d &h 10, 22 &u +2 @a 0
+
+^ Martin Luther King Day @s 2010-01-18 @r y &w 3MO &M 1
+^ Valentine's Day @s 2010-02-14 @r y &M 2 &m 14
+^ President's Day @s 2010-02-15 @c holiday @r y &w 3MO &M 2
+^ Daylight saving time begins @s 2010-03-14 @r y &w 2SU &M 3
+^ St Patrick's Day @s 2010-03-17 @r y &M 3 &m 17
+^ Mother's Day @s 2010-05-09 @r y &w 2SU &M 5
+^ Memorial Day @s 2010-05-31 @r y &w -1MO &M 5
+^ Father's Day @s 2010-06-20 @r y &w 3SU &M 6
+^ The !1776! Independence Day @s 2010-07-04 @r y &M 7 &m 4
+^ Labor Day @s 2010-09-06 @r y &w 1MO &M 9
+^ Daylight saving time ends @s 2010-11-01 @r y &w 1SU &M 11
+^ Thanksgiving @s 2010-11-26 @r y &w 4TH &M 11
+^ Christmas @s 2010-12-25 @r y &M 12 &m 25
+^ Presidential election day @s 2004-11-01 12am @r y &i 4 &m 2, 3, 4, 5, 6, 7, 8 &M 11 &w TU
+"""
+
+JOIN = "- join the etm discussion group @s +14 @b 10 @c computer @g http://groups.google.com/group/eventandtaskmanager/topics"
+
+COMPETIONS = """\
+# put completion phrases here, one per line. E.g.:
+@z US/Eastern
+@z US/Central
+@z US/Mountain
+@z US/Pacific
+
+@c errands
+@c phone
+@c home
+@c office
+
+jsmith@whatever.com
+
+# empty lines and lines that begin with '#' are ignored.
+"""
+
+REPORTS = """\
+# put report specifications here, one per line. E.g.:
+
+# scheduled items this week:
+c ddd, MMM d yyyy -b mon - 7d -e +7
+
+# this and next week:
+c ddd, MMM d yyyy -b mon - 7d -e +14
+
+# this month:
+c ddd, MMM d yyyy -b 1 -e +1/1
+
+# this and next month:
+c ddd, MMM d yyyy -b 1 -e +2/1
+
+# last month's actions:
+a MMM yyyy; u; k[0]; k[1:] -b -1/1 -e 1
+
+# this month's actions:
+a MMM yyyy; u; k[0]; k[1:] -b 1 -e +1/1
+
+# all items by folder:
+c f
+
+# all items by keyword:
+c k
+
+# all items by tag:
+c t
+
+# all items by user:
+c u
+
+# empty lines and lines that begin with '#' are ignored.
+"""
+
 # command line usage
 USAGE = """\
 Usage:
@@ -1000,6 +1081,23 @@ def get_options(d=''):
         term_print('creating datadir: {0}'.format(options['datadir']))
         # first use of this datadir - first use of new etm?
         os.makedirs(options['datadir'])
+        # create one task for new users to join the etm discussion group
+        currfile = ensureMonthly(options)
+        with open(currfile, 'w') as fo:
+            fo.write(JOIN)
+        sample = os.path.join(options['datadir'], 'sample.txt')
+        with open(sample, 'w') as fo:
+            fo.write(SAMPLE)
+
+    if not os.path.isfile(options['auto_completions']):
+        fo = open(options['auto_completions'], 'w')
+        fo.write(COMPETIONS)
+        fo.close()
+
+    if not os.path.isfile(options['report_specifications']):
+        fo = open(options['report_specifications'], 'w')
+        fo.write(REPORTS)
+        fo.close()
 
     if hg_init:
         hg_dir = os.path.join(options['datadir'], ".hg")
@@ -1156,25 +1254,26 @@ id2Type = {
 tstr2SCI = {
     #   TStr  TNum Forground Color   Icon         view
     "ac": [23, "darkorchid", "action", "day"],
-    "av": [16, "steelblue4", "task", "day"],
-    "by": [19, "steelblue3", "beginby", "now"],
+    "av": [16, "slateblue2", "task", "day"],
+    "by": [19, "gold3", "beginby", "now"],
     "cs": [18, "gray65", "child", "day"],
     "cu": [22, "gray65", "child", "day"],
     "dl": [28, "gray70", "delete", "folder"],
     "ds": [17, "darkslategray", "delegated", "day"],
     "du": [21, "darkslategrey", "delegated", "day"],
-    "ev": [12, "forestgreen", "event", "day"],
+    # "ev": [12, "forestgreen", "event", "day"],
+    "ev": [12, "springgreen4", "event", "day"],
     "fn": [27, "gray70", "finished", "day"],
     "ib": [10, "orangered", "inbox", "now"],
     "ns": [24, "saddlebrown", "note", "day"],
     "nu": [25, "saddlebrown", "note", "day"],
-    "oc": [11, "peachpuff3", "occasion", "day"],
+    "oc": [11, "peachpuff4", "occasion", "day"],
     "pc": [15, "firebrick3", "child", "now"],
     "pd": [14, "firebrick3", "delegated", "now"],
     "pt": [13, "firebrick3", "task", "now"],
     "rm": [12, "seagreen", "reminder", "day"],
-    "so": [26, "skyblue3", "someday", "now"],
-    "un": [20, "skyblue4", "task", "next"],
+    "so": [26, "slateblue1", "someday", "now"],
+    "un": [20, "slateblue2", "task", "next"],
 }
 
 
@@ -1757,6 +1856,7 @@ def load_data(options):
             inf.close()
             if version != last_version:
                 logger.info("version change: {0} to {1}. Removing '{2}'".format(last_version, version, options['datafile']))
+                # remove the pickle file
                 os.remove(options['datafile'])
                 last_version = version
             else:
@@ -3066,6 +3166,8 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
     beg + days * oneday
     day_count = 0
     last_day = ''
+    if not items:
+        return "no output"
     for item in items:
 
         # if cal_regex and not cal_regex.match(item[0][-1]):
@@ -4890,7 +4992,7 @@ def ensureMonthly(options, date=None):
             os.makedirs(curryear)
         currfile = os.path.join(curryear, "%02d.txt" % mn)
         if not os.path.isfile(currfile):
-            fo = codecs.open(currfile, 'w', file_encoding)
+            fo = codecs.open(currfile, 'w', options['encoding']['file'])
             fo.write("")
             fo.close()
         if os.path.isfile(currfile):
@@ -5030,6 +5132,8 @@ class ETMCmd():
                     f = arg_str[1:].strip()
                 else:
                     f = None
+                if not self.rows:
+                    return "no output"
                 return (makeTree(
                     self.rows,
                     view=view,
@@ -5043,9 +5147,10 @@ class ETMCmd():
                     self.options))
 
         except:
+            logger.exception("could not process '{0}'".format(arg_str))
             s = str(_('Could not process "{0}".')).format(arg_str)
-            p = str(_('Enter ? r or ? t for help.'))
-            ret.extend([s, p])
+            # p = str(_('Enter ? r or ? t for help.'))
+            ret.append(s)
         return '\n'.join(ret)
 
     def loadData(self):

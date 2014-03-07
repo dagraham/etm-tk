@@ -1,4 +1,6 @@
-# Fuzzy dates
+# Dates
+
+## Fuzzy dates
 
 When either a *datetime* or an *time period* is to be entered, special formats are used in *etm*. Examples include entering a starting datetime for an item using `@s`, jumping to a date using Ctrl-J and calculating a date using F5.
 
@@ -16,7 +18,7 @@ Note that 12am is the default time when a time is not explicity entered. E.g., `
 
 To avoid ambiguity, always append either 'a', 'p' or 'h' when entering an hourly time, e.g., use `1p` or `13h`.
 
-# Time periods
+## Time periods
 
 Time periods are entered using the format `DdHhMm` where D, H and M are integers and d, h and m refer to days, hours and minutes respectively. For example:
 
@@ -26,7 +28,7 @@ Time periods are entered using the format `DdHhMm` where D, H and M are integers
 
 As an example, if it is currently 8:50am on Friday February 15, 2013, then entering `now + 2d4h30m` into the date calculator would give `2013-02-17 1:20pm`.
 
-# Time zones
+## Time zones
 
 Dates and times are always stored in *etm* data files as times in the time zone given by the entry for `@z`. On the other hand, dates and times are always displayed in *etm* using the local time zone of the system.
 
@@ -40,7 +42,7 @@ then the data file would contain
 
 but this item would be displayed as starting at ` 8:50am 2013-02-15` on the system in the `US/Eastern` time zone.
 
-# Anniversary substitutions
+## Anniversary substitutions
 
 An anniversary substitution is an expression of the form `!YYYY!` that appears in an item summary. Consider, for example, the occassion
 

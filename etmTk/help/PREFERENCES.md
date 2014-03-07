@@ -1,42 +1,44 @@
+# Preferences
+
 Configuration options are stored in a file named `etmtk.cfg` which, by default, belongs to the folder `.etm` in your home directory. When this file is edited in *etm* (Shift Ctrl-P), your changes become effective as soon as they are saved --- you do not need to restart *etm*. These options are listed below with illustrative entries and brief descriptions.
 
-# Template expansions
+## Template expansions
 
 The following template expansions can be used in `alert_displaycmd`, `alert_template`, `alert_voicecmd`, `email_template`, `sms_message` and `sms_subject` below.
 
-## `!summary!`
+### `!summary!`
 
 the item's summary (this will be used as the subject of email and message alerts)
 
-## `!start_date!`
+### `!start_date!`
 
 the starting date of the event
 
-## `!start_time!`
+### `!start_time!`
 
 the starting time of the event
 
-## `!time_span!`
+### `!time_span!`
 
 the time span of the event (see below)
 
-## `!alert_time!`
+### `!alert_time!`
 
 the time the alert is triggered
 
-## `!time_left!`
+### `!time_left!`
 
 the time remaining until the event starts
 
-## `!when!`
+### `!when!`
 
 the time remaining until the event starts as a sentence (see below)
 
-## `!d!`
+### `!d!`
 
 the item's `@d` (description)
 
-## `!l!`
+### `!l!`
 
 the item's `@l` (location)
 
@@ -72,15 +74,15 @@ Here are values of `!time_left!` and `!when!` for some illustrative periods:
 
 Note that 'now', 'from now', 'days', 'day', 'hours' and so forth are determined by the translation file in use.
 
-# Options
+## Options
 
-## action_interval
+### action_interval
 
     action_interval: 1
 
 Every `action_interval` minutes, execute `action_timercmd` when the timer is running and `action_pausecmd` when the timer is paused. Choose zero to disable executing these commands.
 
-## action_markups
+### action_markups
 
     action_markups:
         default: 1.0
@@ -96,13 +98,13 @@ in an action would give this expansion in an action template:
     !expense! = 25.80
     !charge! = 38.70
 
-## action_minutes
+### action_minutes
 
     action_minutes: 6
 
 Round action times up to the nearest `action_minutes` in action reports. Possible choices are 1, 6, 12, 15, 30 and 60. With 1, no rounding is done and times are reported as integer minutes. Otherwise, the prescribed rounding is done and times are reported as floating point hours.
 
-## action_rates
+### action_rates
 
     action_rates:
         default: 30.0
@@ -130,7 +132,7 @@ would aggregate to
     !hours!  = 2.3     (= 1.3 + 1)
     !value! = 118.50   (= 1.3 * 45.0 + 1 * 60.0)
 
-## action_template
+### action_template
 
     action_template: '!hours!h) !label! (!count!)'
 
@@ -170,7 +172,7 @@ Available template expansions for `action_template` include:
 
 Note: when aggregating amounts in action reports, billing and markup rates are applied first to times and expenses for individual actions and the resulting amounts are then aggregated. Similarly, when times are rounded up, the rounding is done for individual actions and the results are then aggregated.
 
-## action_timer
+### action_timer
 
     action_timer:
         paused: 'play ~/.etm/sounds/timer_paused.wav'
@@ -179,18 +181,18 @@ Note: when aggregating amounts in action reports, billing and markup rates are a
 The command `running` is executed every `action_interval` minutes whenever the action timer is running and `paused` every minute when the action timer is paused.
 
 
-## agenda
+### agenda
 
-    agenda_colors: 2,
     agenda_days: 4,
+    agenda_colors: 2,
     agenda_indent: 2,
     agenda_width1: 43,
     agenda_width2: 17,
 
-Sets the number of active days to display in agenda view and other parameters affecting the display in the CLI.
+Sets the number of days with scheduled items to display in agenda view and other parameters affecting the display in the CLI.
 
 
-## alert_default
+### alert_default
 
     alert_default: [m]
 
@@ -201,43 +203,43 @@ The alert or list of alerts to be used when an alert is specified for an item bu
 - v: voice (requires `alert_voicecmd`)
 
 
-## alert_displaycmd
+### alert_displaycmd
 
     alert_displaycmd: growlnotify -t !summary! -m '!time_span!'
 
 The command to be executed when `d` is included in an alert. Possible template expansions are discussed at the beginning of this tab.
 
-## alert_soundcmd
+### alert_soundcmd
 
     alert_soundcmd: 'play ~/.etm/sounds/etm_alert.wav'
 
 The command to execute when `s` is included in an alert. Possible template expansions are discussed at the beginning of this tab.
 
-## alert_template
+### alert_template
 
     alert_template: '!time_span!\n!l!\n\n!d!'
 
 The template to use for the body of `m` (message) alerts. See the discussion of template expansions at the beginning of this tab for other possible expansion items.
 
-## alert_voicecmd
+### alert_voicecmd
 
     alert_voicecmd: say -v 'Alex' '!summary! begins !when!.'
 
 The command to be executed when `v` is included in an alert. Possible expansions are are discussed at the beginning of this tab.
 
-## alert_wakecmd
+### alert_wakecmd
 
     alert_wakecmd: ~/bin/SleepDisplay -w
 
 If given, this command will be issued to "wake up the display" before executing `alert_displaycmd`.
 
-## ampm
+### ampm
 
     ampm: true
 
 Use ampm times if true and twenty-four hour times if false. E.g., 2:30pm (true) or 14:30 (false).
 
-## auto_completions
+### auto_completions
 
         auto_completions: ~/.etm/completions.cfg
 
@@ -262,7 +264,7 @@ If you enter, for example, "@c" in the editor and press Ctrl-/, a list of possib
 
 Up and down arrow keys change the selection and either *Tab* or *Return* inserts the selection.
 
-## calendars
+### calendars
 
     calendars:
     - [dag, true, personal/dag]
@@ -279,7 +281,7 @@ When non-default calendars are selected, busy times in the "week view" will appe
 
 *Note that the calendar icon only appears in the main gui if this setting is provided.*
 
-## current files
+### current files
 
     current_htmlfile:  ''
     current_textfile:  ''
@@ -292,19 +294,19 @@ If absolute file paths are entered for `current_textfile` and/or `current_htmlfi
 
 Hint: fans of geektool can use the shell command `cat <current_textfile>` to have the current agenda displayed on their desktops.
 
-## datadir
+### datadir
 
     datadir: ~/.etm/data
 
 All etm data files are in this directory.
 
-## dayfirst
+### dayfirst
 
     dayfirst: false
 
 If dayfirst is False, the MM-DD-YYYY format will have precedence over DD-MM-YYYY in an ambiguous date. See also `yearfirst`.
 
-## edit_cmd
+### edit_cmd
 
     edit_cmd: ~/bin/vim !file! +!line!
 
@@ -317,7 +319,7 @@ or with sublime text:
     edit_cmd: ~/bin/subl -n -w !file!:!line!
 
 
-## email_template
+### email_template
 
     email_template: 'Time: !time_span!
     Locaton: !l!
@@ -334,42 +336,42 @@ Note that two newlines are required to get one empty line when the template is e
 
 See the discussion of template expansions at the beginning of this tab for other possible expansion items.
 
-## etmdir
+### etmdir
 
     etmdir: ~/.etm
 
 Absolute path to the directory for etm.cfg and other etm configuration files.
 
-## encoding
+### encoding
 
     encoding: {file: utf-8, gui: utf-8, term: utf-8}
 
 The encodings to be used for file IO, the GUI and terminal IO.
 
-## filechange_alert
+### filechange_alert
 
     filechange_alert: 'play ~/.etm/sounds/etm_alert.wav'
 
 The command to be executed when etm detects an external change in any of its data files. Leave this command empty to disable the notification.
 
-## fontsize
+### fontsize
 
     fontsize: 13
 
 Use this font size in the gui treeviews.
 
-## Mercurial commands
+### Mercurial commands
 
 If *Mercurial* is installed on your system, then the default versions of the `hg` commands given below should work without modification. If you want to use another version control system, then enter the commands for your version control system. `{repo}` will be replaced with the internally generated name of the repository in `hg_commit` and `hg_history`, `{file}` with the internally generated file name in `hg_history`, `{mesg}` with the internally generated commit message in `hg_commit` and `{0}` with the name of the repository in `hg_init`.
 
-### hg_commit
+#### hg_commit
 
 The command to commit changes to the repository.
 
     hg_commit: hg commit -A -R {repo} -m '{mesg}'
 
 
-### hg_history
+#### hg_history
 
 The command to show the history of changes for a particular data file.
 
@@ -377,33 +379,33 @@ The command to show the history of changes for a particular data file.
         --template `{rev}: {desc}\n` \
         -R {repo} -p -r `tip`:0 {file}'
 
-### hg_init
+#### hg_init
 
 The command to initialize or create a repository.
 
     hg_init: hg init {0}
 
-## iCalendar files
+### iCalendar files
 
-### icscal_file
+#### icscal_file
 
 Pressing F8 in the gui main window will export the selected calendars in iCalendar format to this file.
 
     icscal_file: ~/.etm/etmcal.ics
 
-### icsitem_file
+#### icsitem_file
 
 Pressing F8 in the gui detail view will export the selected item in iCalendar format to this file.
 
     icsitem_file: ~/.etm/etmitem.ics
 
-## local_timezone
+### local_timezone
 
     local_timezone: US/Eastern
 
 This timezone will be used as the default when a value for `@z` is not given in an item.
 
-## monthly
+### monthly
 
     monthly: monthly
 
@@ -413,7 +415,7 @@ Relative path from `datadir`. With the settings above and for `datadir` the sugg
 
 The directories `monthly` and `2012` and the file `10.txt` would, if necessary, be created. The user could either accept this default or choose a different file.
 
-## report
+### report
 
     report_begin:           '1'
     report_end:             '+1/1'
@@ -430,19 +432,19 @@ Report begin and end are fuzzy parsed dates specifying the default period for re
 
 In the reports dialog these appear in the report specifications pop-up list. A specification from the list can be selected and, perhaps, modified or an entirely new specification can be entered. See the *Reports* tab for details. See also the *agenda* settings above.
 
-## rowsize
+### rowsize
 
     rowsize: 18
 
 If positive, use this vertical size in GUI tree views.
 
-## show_finished
+### show_finished
 
     show_finished: 1
 
 Show this many of the most recent completions of repeated tasks or, if 0, show all completions.
 
-## smtp
+### smtp
 
     smtp_from: dnlgrhm@gmail.com
     smtp_id: dnlgrhm
@@ -451,7 +453,7 @@ Show this many of the most recent completions of repeated tasks or, if 0, show a
 
 Required settings for the smtp server to be used for email alerts.
 
-## sms
+### sms
 
     sms_message: '!summary!'
     sms_subject: '!time_span!'
@@ -471,13 +473,13 @@ Required settings for text messaging in alerts. Enter the 10-digit area code and
     VoiceStream     @voicestream.net
     Verizon         @vtext.com
 
-## sundayfirst
+### sundayfirst
 
     sundayfirst: false
 
 The setting affects only the twelve month calendar display.
 
-## sunmoon_location
+### sunmoon_location
 
     sunmoon_location: [Chapel Hill, NC]
 
@@ -485,7 +487,7 @@ The USNO location for sun/moon data. Either a US city-state 2-tuple such as `[Ch
 
 Enter a blank value to disable sunmoon information.
 
-## weather_location
+### weather_location
 
     weather_location: w=615702
 
@@ -502,13 +504,13 @@ Note that `p=` replaces `w=` when using a zip code instead of a WOEID. By defaul
 Enter a blank value to disable weather information.
 
 
-## weeks_after
+### weeks_after
 
     weeks_after: 52
 
 In the schedule view, all non-repeating, dated items are shown. Additionally all repetitions of repeating items with a finite number of repetitions are shown. This includes 'list-only' repeating items and items with `&u` (until) or `&t` (total number of repetitions) entries. For repeating items with an infinite number of repetitions, those repetitions that occur within the first `weeks_after` weeks after the current week are displayed along with the first repetition after this interval. This assures that for infrequently repeating items such as voting for president, at least one repetition will be displayed.
 
-## yearfirst
+### yearfirst
 
     yearfirst: true
 

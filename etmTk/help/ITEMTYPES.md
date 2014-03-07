@@ -1,6 +1,8 @@
+# Item types
+
 There are several types of items in etm. Each item begins with a type character such as an asterisk (event) and continues on one or more lines either until the end of the file is reached or another line is found that begins with a type character. The type character for each item is followed by the item summary and then, perhaps, by one or more `@key value` pairs - see Help/@Keys for details. The order in which such pairs are entered does not matter.
 
-# ~ Action
+## ~ Action
 
 A record of the expenditure of time (`@e`) and/or money (`@x`). Actions are not reminders, they are instead records of how time and/or money was actually spent. Action lines begin with a tilde, `~`.
 
@@ -8,7 +10,7 @@ A record of the expenditure of time (`@e`) and/or money (`@x`). Actions are not 
 
 Entries such as `@s mon 3p`, `@e 1h15m` and `@x 127.32` are discussed below under *Item details*. Action entries form the basis for time and expense billing using action reports - see *help/reports*.
 
-# * Event
+## * Event
 
 Something that will happen on particular day(s) and time(s).  Event lines begin with an asterick, `*`.
 
@@ -22,7 +24,7 @@ begins at 9am on Wednesday and ends at 5pm on Friday.
 
 An event without an `@e` entry or with `@e 0` is regarded as a *reminder* and, since there is no extent, will not be displayed in *busy times*.
 
-# ^ Occasion
+## ^ Occasion
 
 Holidays, anniversaries, birthdays and such. Similar to an event with a date but no starting time and no extent. Occasions begin with a caret sign, `^`.
 
@@ -30,13 +32,13 @@ Holidays, anniversaries, birthdays and such. Similar to an event with a date but
 
 On July 4, 2013, this would appear as `The 237th Independence Day`. Here !1776!` is an example of an *anniversary substitution* - see Help/Dates for details.
 
-# ! Note
+## ! Note
 
 A record of some useful information. Note lines begin with an exclamation point, `!`.
 
     ! xyz software @d user: dnlg, pw: abc123def
 
-# - Task
+## - Task
 
 Something that needs to be done. It may or may not have a due date. Task lines begin with a minus sign, `-`.
 
@@ -44,13 +46,13 @@ Something that needs to be done. It may or may not have a due date. Task lines b
 
 A task with an `@s` entry becomes due on that date and past due when that date has passed. If the task also has an `@b` begin-by entry, then advance warnings of the task will begin appearing the specified number of days before the task is due.  An `@e` entry in a task is interpreted as an estimate of the time required to finish the task.
 
-# % Delegated task
+## % Delegated task
 
 A task that is assigned to someone else, usually the person designated in an `@u` entry. Delegated tasks begin with a percent sign, `%`.
 
         % make reservations for trip @u joe @s fri
 
-# + Task group
+## + Task group
 
 A collection of related tasks, some of which may be prerequisite for others. Task groups begin with a plus sign, `+`.
 
@@ -65,7 +67,7 @@ Note that a task group is a single item and is treated as such. E.g., if any job
 Individual jobs are given by the `@j` entries. The *queue* entries, `&q`, set the order --- tasks with smaller &q values are prerequisites for subsequent tasks with larger &q values. In the example above, neither "pickup lumber" nor "pickup paint" have any prerequisites. "Pickup lumber", however, is a prerequisite for "cut pieces" which, in turn, is a prerequisite for "assemble". Both "assemble" and "pickup paint" are prerequisites for "paint".
 
 
-# $ In basket
+## $ In basket
 
 A quick, don't worry about the details item to be edited later when you have the time. In basket entries begin with a dollar sign, `$`.
 
@@ -74,17 +76,17 @@ A quick, don't worry about the details item to be edited later when you have the
 If you create an item using *etm* and forget to provide a type character, an `$` will automatically be inserted.
 
 
-# ? Someday maybe
+## ? Someday maybe
 
 Something are you don't want to forget about altogether but don't want to appear on your next or scheduled lists. Someday maybe items begin with a question mark, `?`.
 
         ? lose weight and exercise more
 
-# # Hidden
+## # Hidden
 
 Hidden items begin with a hash mark, `#`. Such items are ignored by etm save for appearing in the folder view.  Stick a hash mark in front of any item that you don't want to delete but don't want to see in your other views.
 
-# = Defaults
+## = Defaults
 
 Default entries begin with an equal sign, `=`. These entries consist of `@key value` pairs which then become the defaults for subsequent entries in the same file until another `=` entry is reached.
 

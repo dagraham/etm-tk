@@ -2,6 +2,8 @@
 yes=$1
 #tag=$1
 home=`pwd`
+plat=`uname`
+echo "home: $home; plat: $plat"
 # etm's version numbering now uses the `major.minor.patch` format where each of the three components is an integer:
 
 # - Major version numbers change whenever there is something significant, a large or potentially backward-incompatible change.
@@ -77,7 +79,7 @@ echo $tag > etmTk/v.txt
 
 # echo "RECENT CHANGES" > /Users/dag/etm-qt/CHANGES
 echo "RECENT CHANGES" > CHANGES
-hg log --template '{rev} {date|shortdate} [{tags}]\n\t{desc|fill68|tabindent}\n' -r tip:-30 >> /Users/dag/etm-qt/CHANGES
+hg log --template '{rev} {date|shortdate} [{tags}]\n\t{desc|fill68|tabindent}\n' -r tip:-30 >> "$home/CHANGES"
 cp CHANGES ./etmTk/CHANGES
 
 echo "Creating $tag from tip: $version - $change"
@@ -85,18 +87,18 @@ echo "Edit etmTk/v.py to change the major and minor numbers."
 echo
 
 # make sure the man file, docs and ui files are current
-#$home/mk_docs.sh
+#"$home"/mk_docs.sh
 # update the sample files
 # cp /Users/dag/etm-qt/etm-sample/data/shared/sample_datafile.txt.orig /Users/dag/etm-qt/etm-sample/data/shared/sample_datafile.txt
 echo "Updating etm-sample"
-cp $home/etm-sample/data/shared/sample_datafile.txt.orig $home/etm-sample/data/shared/sample_datafile.txt
+cp "$home/etm-sample/data/shared/sample_datafile.txt.orig" "$home/etm-sample/data/shared/sample_datafile.txt"
 # cd /Users/dag/etm-qt/etmQt/language
 
-cd $home/etmTk
-xgettext --omit-header --language=Python --keyword=_ --output=po/etm.pot --from-code=UTF-8 `find . -name "*.py"`
+cd "$home/etmTk"
+#xgettext --omit-header --language=Python --keyword=_ --output=po/etm.pot --from-code=UTF-8 `find . -name "*.py"`
 #xgettext --language=Python --keyword=_ --output=po/etm.pot --from-code=UTF-8 --copyright-holder="Daniel A Graham" --copyright-year="2009-2014"  --package-name="etm" --package-version="$vinfo" `find . -name "*.py"`
 
-cd $home
+cd "$home"
 
 #echo -n  "Continue?"
 #if asksure; then
@@ -113,40 +115,49 @@ echo "### processing $tag ###"
 
 # build
 # cd /Users/dag/etm-qt
-sudo rm -fR /Users/dag/etm-tk/build/*
-sudo rm -fR /Users/dag/etm-tk/dist/*
+sudo rm -fR "$home/build/*"
+sudo rm -fR "$home/dist/*"
 echo ""
 echo "Creating python sdist for $tag"
-python3 -O setup.py sdist --formats=gztar,zip
-echo ""
+if [ "$plat" = 'Darwin' ]; then
+    python3 -O setup.py sdist --formats=gztar
+else
+    python -O setup.py sdist --formats=gztar
+fi
 
-cd $home/dist
+echo "Finished making sdist for $tag"
+
+cd "$home/dist"
 echo
 echo "unpacking etmtk-${tag}.tar.gz"
 tar -xzf "etmtk-${tag}.tar.gz"
 echo
-echo "copying etmtk-${tag} to ../etmtk-current"
+#echo "copying etmtk-${tag} to ../etmtk-current"
 
 
 # rm -fR /Users/dag/etm_qt-current/*
-sudo rm -fR /Users/dag/etmtk-current/*
-sudo cp -fR "etmtk-${tag}/" /Users/dag/etmtk-current
-echo "home: $home"
-cd $home
+#sudo rm -fR /Users/dag/etmtk-current/*
+#sudo cp -fR "etmtk-${tag}/" /Users/dag/etmtk-current
+#echo "home: "$home""
+cd "$home"
 
 echo
 echo -n "Do system installation?"
 if asksure; then
+    echo "Building for $plat"
     echo
     echo "changing to etmtk-${tag} and running setup.py"
     cd "$home/dist/etmtk-${tag}"
     pwd
-    echo "installing etmtk for python 2" && sudo python2 setup.py install
-    pwd
-    echo "installing etmtk for python 3" && sudo python3 setup.py install
+    if [ "$plat" = 'Darwin' ]; then
+        echo "installing etmtk for python 2" && sudo python2 setup.py install
+        echo "installing etmtk for python 3" && sudo python3 setup.py install
+        echo "Doing system installation" >> $logfile
+    else
+        echo "installing etmtk for python 2" && sudo python setup.py install
+    fi
     echo "Finished system install of etmtk-${tag}"
-    cd $home
-    echo "Doing system installation" >> $logfile
+    cd "$home"
 else
     echo "Skipping system wide installaton"
 fi
@@ -156,30 +167,30 @@ pwd
 #echo
 #echo Removing etm-tk/dist/etmtk-$tag
 ## cd /Users/dag/etm-qt/dist && sudo rm -fdR etm_qt-${tag}
-#cd $home/dist
+#cd "$home"/dist
 #rm -fdR etmtk-${tag}
 
-cd $home
+cd "$home"
 
 # # for new pyinstaller???
 # pyinstaller  --runtime-hook rthook_pyqt4.py --clean -w --noupx etm_qt
 
 echo
-echo -n "Create OSX package?"
+echo -n "Create $plat package?"
 if asksure; then
 #    cxfreeze3 -OO etm --icon=etmTk/etmlogo.icns --target-dir releases/etmtk-${tag}-freeze-OSX
-    plat=`uname`
     echo "Building for $plat"
+    echo
     sudo rm -fR dist-$plat/*
     if [ "$plat" = 'Darwin' ]; then
         cxfreeze3 -s -c -OO etm --icon=etmTk/etmlogo.icns --target-dir dist-$plat/etmtk-${tag}-freeze-$plat
     else
-        cxfreeze -s -c -OO etm --icon=etmTk/etmlogo.icns --target-dir dist-$plat/etmtk-${tag}-freeze-$plat
+        cxfreeze -OO etm --target-dir dist-$plat/etmtk-${tag}-freeze-$plat
     fi
     cd dist-$plat
     tar czf etmtk-${tag}-freeze-$plat.tar.gz etmtk-${tag}-freeze-$plat
 #    zip -r etmtk-${tag}-freeze-UBUNTU.zip etmtk-${tag}-freeze-UBUNTU
-    cd $home
+    cd "$home"
 #    sudo rm -fR releases/etmtk-${tag}
     echo "Creating package" >> $logfile
 else

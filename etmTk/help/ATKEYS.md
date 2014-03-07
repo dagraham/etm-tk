@@ -1,4 +1,6 @@
-# @a alert
+# @Keys
+
+## @a alert
 
 The specification of the alert(s) to use with the item. One or more alerts can be specified in an item. E.g.,
 
@@ -56,23 +58,23 @@ In addition to the default action used when the optional `: action` is not given
 
 Note: either `e` or `p` can be combined with other actions in a single alert but not with one another.
 
-# @b beginby
+## @b beginby
 
 An integer number of days before the starting date time at which to begin displaying *begin by* notices. When notices are displayed they will be sorted by the item's starting datetime and then by the item's priority, if any.
 
-# @c context
+## @c context
 
 Intended primarily for tasks to indicate the context in which the task can be completed. Common contexts include home, office, phone, computer and errands. The "next view" supports this usage by showing undated tasks, grouped by context. If you're about to run errands, for example, you can open the "next view", look under "errands" and be sure that you will have no "wish I had remembered" regrets.
 
-# @d description
+## @d description
 
 An elaboration of the details of the item to complement the summary.
 
-# @e extent
+## @e extent
 
 A time period string such as `1d2h` (1 day 2 hours). For an action, this would be the elapsed time. For a task, this could be an estimate of the time required for completion. For an event, this would be the duration. The ending time of the event would be this much later than the starting datetime.
 
-# @f done[; due]
+## @f done[; due]
 
 Datetimes; tasks, delegated tasks and task groups only. When a task is completed an `@f done` entry is added to the task. When the task has a due date, `; due` is appended to the entry. Similarly, when a job from a task group is completed in etm,  an `&f done` or `&f done; due` entry is appended to the job and it is removed from the list of prerequisites for the other jobs. In both cases `done` is the completion datetime and `due`, if added, is the datetime that the task or job was due. The completed task or job is shown as finished on the completion date. When the last job in a task group is finished an `@f done` or `@f done; due` entry is added to the task group itself reflecting the datetime that the last job was done and, if the task group is repeating, the `&f` entries are removed from the individual jobs.
 
@@ -93,11 +95,11 @@ Here "organize bills" and "get stamps, envelopes, checkbook" have no prerequisit
 The repetition that was due on 10/25 was completed on 10/24. The next repetition was due on 11/23 and, since none of the jobs for this repetition have been completed, the completion of the group on 10/24 and the list of jobs due on 11/23 will be displayed initially. The following sequence of screen shots show the effect of completing the jobs for the 11/23 repetition one by one on 11/27.
 
 
-# @g goto
+## @g goto
 
 The path to a file or a URL to be opened using the system default application when the user presses *Control-G* in the GUI.
 
-# @j job
+## @j job
 
 Component tasks or jobs within a task group are given by `@j job` entries. `@key value` entries prior to the first `@j` become the defaults for the jobs that follow. `&key value` entries given in jobs use `&` rather than `@` and apply only to the specific job.
 
@@ -112,7 +114,7 @@ Many key-value pairs can be given either in the group task using `@` or in the c
 
 The key-value pair `&q` (queue position) can *only* be given in component jobs where it is required.  Key-values other than `&q` and those listed above, can *only* be given in the initial group task entry and their values are inherited by the component jobs.
 
-# @k keyword
+## @k keyword
 
 A heirarchical classifier for the item. Intended for actions to support time billing where a common format would be `client:job:category`. *etm* treats such a keyword as a heirarchy so that an action report grouped by month and then keyword might appear as follows
 
@@ -132,23 +134,23 @@ A heirarchical classifier for the item. Intended for actions to support time bil
 
 An arbitrary number of heirarchical levels in keywords is supported.
 
-# @l location
+## @l location
 
 The location at which, for example, an event will take place.
 
-# @m memo
+## @m memo
 
 Further information about the item not included in the summary or the description. Since the summary is used as the subject of an email alert and the descripton is commonly included in the body of an email alert, this field could be used for information not to be included in the email.
 
-# @o overdue
+## @o overdue
 
 Repeating tasks only. One of the following choices: k) keep, r) restart, or s) skip. Details below.
 
-# @p priority
+## @p priority
 
 Either 0 (no priority) or an intger between 1 (highest priority) and 9 (lowest priority). Primarily used with undated tasks.
 
-# @r repetition rule
+## @r repetition rule
 
 The specification of how an item is to repeat. Repeating items **must** have an `@s` entry as well as one or more `@r` entries. Generated datetimes are those satisfying any of the `@r` entries and falling **on or after** the datetime given in `@s`. Note that the datetime given in `@s` will only be included if it matches one of the datetimes generated by the `@r` entry.
 
@@ -211,19 +213,19 @@ A repeating *task* may optionally also include an `@o <k|s|r>` entry (default = 
 
 - `@o r`: Restart the repetitions based on the last completion date. Suppose you want to mow the grass once every ten days and that when you mowed yesterday, you were already nine days past due. Then you want the next due date to be ten days from yesterday and not today. Similarly, if you were one day early when you mowed yesterday, then you would want the next due date to be ten days from yesterday and not ten days from today.
 
-# @s starting datetime
+## @s starting datetime
 
 When an action is started, an event begins or a task is due.
 
-# @t tags
+## @t tags
 
 A tag or list of tags for the item.
 
-# @u user
+## @u user
 
 Intended to specify the person to whom a delegated task is assigned. Could also be used in actions to indicate the person performing the action.
 
-# @v action_rates key
+## @v action_rates key
 
 Actions only. A key from `action_rates` in your etm.cft to apply to the value of `@e`. Used in actions to apply a billing rate to time spent in an action. E.g., with
 
@@ -234,7 +236,7 @@ Actions only. A key from `action_rates` in your etm.cft to apply to the value of
 
 then entries of `@v br1` and `@e 2h25m` in an action would entail a value of `45.0 * 2.5 = 112.50`.
 
-# @w action_markups key
+## @w action_markups key
 
 A key from `action_markups` in your `etm.cfg` to apply to the value of `@x`. Used in actions to apply a markup rate to expense in an action. E.g., with
 
@@ -244,19 +246,19 @@ A key from `action_markups` in your `etm.cfg` to apply to the value of `@x`. Use
 
 then entries of `@w mr1` and `@x 27.50` in an action would entail a value of `27.50 * 1.5 = 41.25`.
 
-# @x expense
+## @x expense
 
 Actions only. A currency amount such as `27.50`. Used in conjunction with @w above to bill for action expenditures.
 
-# @z time zone
+## @z time zone
 
 The time zone of the item, e.g., US/Eastern. The starting and other datetimes in the item will be interpreted as belonging to this time zone.
 
-# @+ include
+## @+ include
 
 A datetime or list of datetimes to be added to the repetitions generated by the `@r rrule` entry. If only a date is provided, 12:00am is assumed.
 
-# @- exclude
+## @- exclude
 
 A datetime or list of datetimes to be removed from the repetitions generated by the `@r rrule` entry. If only a date is provided, 12:00am is assumed.
 

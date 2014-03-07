@@ -14,41 +14,53 @@ groff -t -e -mandoc -Tps etm.1 > etm-man.ps
 echo Creating pdf version of man file
 ps2pdf etm-man.ps etm-man.pdf
 
-cd /Users/dag/etm-tk/etmTk/help
-pwd
-#for file in HEADER overview data views reports shortcuts preferences using_mercurial; do
-#    pandoc -s --toc --toc-depth=4 -B style-before -f markdown -t html5 -o $file.html $file.md
-#done
 
+cd /Users/dag/etm-tk/etmTk/help
+echo Creating individual html files
+pwd
+for file in OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS; do
+    pandoc -s --toc --toc-depth=2 -B style-before -f markdown -t html5 -o $file.html $file.md
+done
+
+echo Creating help.py
 quotes='"""'
 echo "" > ../help.py
-for file in ATKEYS DATES ITEMTYPES OVERVIEW PREFERENCES REPORTS; do
-    pandoc -o $file.text -t plain --no-wrap $file.md
+for file in OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS; do
+    pandoc  -s --toc --toc-depth=2 -o $file.text -t plain --no-wrap $file.md
     echo "$file = $quotes\\" >> ../help.py
     cat $file.text >> ../help.py
     echo '"""' >> ../help.py
     echo '' >> ../help.py
 done
 
-exit
-
+echo Creating help.md
 echo "% ETM Users Manual" > help.md
-for file in overview.md data.md views.md reports.md shortcuts.md preferences.md; do
+for file in OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS; do
     echo "" >> help.md
-    sed '1 s/%/##/' <$file >> help.md
+    sed '1 s/%/##/' <$file.md >> help.md
 done
-pandoc -s --toc --toc-depth=3 -f markdown -t html5 -o help.html  help.md
+echo Creating help.html
+pandoc -s --toc --toc-depth=2 -f markdown -t html5 -o help.html  help.md
 
-pandoc -s --toc --toc-depth=3 -f markdown -t latex -o help.tex help.md
+echo Creating help.tex
+pandoc -s --toc --toc-depth=2 -f markdown -t latex -o help.tex help.md
+
+echo Creating help.pdf
 pdflatex help.tex
+
+echo Creating help.text
+pandoc -s --toc --toc-depth=2 -f markdown -t plain -o help.text  help.md
 
 # pandoc -s --toc --toc-depth=3 -f markdown -t html5 -o help.html  help.md overview.md data.md views.md reports.md shortcuts.md preferences.md
 # pdflatex help.tex
 
-cd /Users/dag/etm-tk/etmTk/language
+cd ~/etm-tk/etmTk
 for file in HEADER README; do
-    pandoc -s --toc -B style-before -f markdown -t html5 -o $file.html $file.md
+    pandoc -s --toc -B ./style-before -f markdown -t html5 -o $file.html $file.md
 done
+
+exit
+
 
 cd /Users/dag/etm-tk/etmTk
 file=HEADER

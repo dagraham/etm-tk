@@ -1,8 +1,10 @@
+# Overview
+
 In contrast to most calendar/todo applications, creating items (events, tasks, and so forth) in etm does not require filling out fields in a form. Instead, items are created as free-form text entries using a simple, intuitive format and stored in plain text files.
 
 Dates in the examples below are entered using *fuzzy parsing* - e.g., `+7` for seven days from today, `fri` for next Friday, `+1/1` for the first day of next month. See Help/Dates for details.
 
-# Sample entries
+## Sample entries
 
 * A sales meeting (an event) [s]tarting seven days from today at 9:00am with an [e]xtent of one hour and a default [a]lert 5 minutes before the start:
 
@@ -27,8 +29,8 @@ Dates in the examples below are entered using *fuzzy parsing* - e.g., `+7` for s
 
 * Payday (an occassion) on the last week day of each month. The `&s -1` part of the entry extracts the last date which is both a weekday and falls within the last three days of the month):
 
-        ^ payday @s 1/1 @r m &w (MO, TU, WE, TH, FR)
-          &m (-1, -2, -3) &s -1
+        ^ payday @s 1/1 @r m &w MO, TU, WE, TH, FR
+          &m -1, -2, -3 &s -1
 
 * Take a prescribed medication daily (a reminder) [s]tarting today and [r]epeating (d)aily at [h]ours 10am, 2pm, 6pm and 10pm [u]ntil (12am on) the fourth day from today. Trigger the default [a]lert zero minutes before each event:
 
@@ -37,18 +39,18 @@ Dates in the examples below are entered using *fuzzy parsing* - e.g., `+7` for s
 * Presidential election day (an occasion) every four years on the first Tuesday after a Monday in November:
 
         ^ Presidential Election Day @s 2012-11-06
-          @r y &i 4 &M 11 &m (2,3,4,5,6,7,8) &w TU
+          @r y &i 4 &M 11 &m 2, 3, 4, 5, 6, 7, 8 &w TU
 
-* Join the etm discussion group (a task) [s]tarting on the first day of the next month. Because of the @g (goto) link, pressing Ctrl-G when this item is selected in the gui would open the link using the system default application which, in this case, would be your default browser:
+* Join the etm discussion group (a task) [s]tarting 14 days from today. Because of the @g (goto) link, pressing Ctrl-G when this item is selected in the gui would open the link using the system default application which, in this case, would be your default browser:
 
-        - join the etm discussion group @s +1/1
+        - join the etm discussion group @s +14
           @g groups.google.com/group/eventandtaskmanager/topics
 
-# Views
+## Views
 
 Note: if a (case-insensitive) filter is entered then the display in all views will be limited to items that match somewhere in either the branch or the leaf.
 
-## Agenda
+### Agenda
 
 What you need to know now beginning with your schedule for the next few days and followed by items in these groups:
 
@@ -61,7 +63,7 @@ What you need to know now beginning with your schedule for the next few days and
 - **Someday**: Someday (maybe) items. Review these periodically.
 
 
-## Schedule
+### Schedule
 
 Scheduled (dated) items appear in this view, grouped by date and sorted by starting time and item type. This includes:
 
@@ -71,21 +73,21 @@ Scheduled (dated) items appear in this view, grouped by date and sorted by start
 
 - For repeating items with an infinite number of repetitions, those repetitions that occur within the first `weeks_after` weeks after the current week are displayed along with the first repetition after this interval. This assures that at least one repetition will be displayed for infrequently repeating items such as voting for president.
 
-## Tags
+### Tags
 
 All items with tag entries grouped by tag and sorted by type and *relevant datetime*. Note that items with multiple tags will be listed under each tag.
 
-## Keywords
+### Keywords
 
 All items grouped by keyword and sorted by type and *relevant datetime*.
 
-## Paths
+### Paths
 
 All items grouped by file path and sorted by type and *relevant datetime*. Use this view to review the status of your projects.
 
 The *relevant datetime* is the past due date for any past due task, the starting datetime for any non-repeating item and the datetime of the next instance for any repeating item.
 
-# Data Organization and Calendars
+## Data Organization and Calendars
 
 *etm* offers two hierarchical ways of organizing your data: by keyword and file path. There are no hard and fast rules about how to use these hierarchies but the goal is a system that makes complementary uses of folder and keyword and fits your needs. As with any filing system, planning and consistency are paramount.
 
