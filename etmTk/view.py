@@ -21,7 +21,7 @@ import platform
 
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas
     # from tkinter import messagebox as tkMessageBox
     from tkinter import ttk
     from tkinter import font as tkFont
@@ -31,7 +31,7 @@ if platform.python_version() >= '3':
     # from tkinter import simpledialog as tkSimpleDialog
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas
     # import tkMessageBox
     import ttk
     import tkFont
@@ -280,7 +280,7 @@ class MessageWindow():
 
 class Dialog(Toplevel):
 
-    def __init__(self, parent, title=None, prompt=None, opts=None, default=None, modal=True, xoffset=50, yoffset=50):
+    def __init__(self, parent, title=None, prompt=None, opts=None, default=None, modal=True, xoffset=50, yoffset=50, event=None):
 
         Toplevel.__init__(self, parent, highlightbackground=BGCOLOR,
                     background=BGCOLOR)
@@ -294,6 +294,7 @@ class Dialog(Toplevel):
             self.title(title)
 
         self.parent = parent
+        self.event = event
         logger.debug("parent: {0}".format(self.parent))
         self.prompt = prompt
         self.options = opts
@@ -307,10 +308,10 @@ class Dialog(Toplevel):
         body = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
         self.initial_focus = self.body(body)
 
-        # don't expand body or it will fill below the actual content
-        body.pack(side="top", fill=tkinter.BOTH, padx=0, pady=0, expand=0)
-
         self.buttonbox()
+        # don't expand body or it will fill below the actual content
+        body.pack(side="top", fill=tkinter.BOTH, padx=0, pady=0, expand=1)
+
 
         self.protocol("WM_DELETE_WINDOW", self.quit)
 
@@ -471,100 +472,6 @@ class HelpWindow(Dialog):
     def buttonbox(self):
         box = Frame(self, background=BGCOLOR, highlightbackground=BGCOLOR)
         box.pack(side='bottom', fill=X, expand=0)
-
-# class NotebookWindow(Dialog):
-#
-#     def body(self, master):
-#         self.currIndex = 0
-#         self.tabIndex = -1
-#         self.tabText = {}
-#         self.tkfixedfont = tkFont.nametofont("TkFixedFont")
-#         self.tkfixedfont.configure(size=self.options['fontsize'])
-#         # print(self.options['fontsize'], self.tkfixedfont.actual())
-#         self.nb = nb = ttk.Notebook(master, padding=0)
-#         self.nb.pack(side="top", fill=tkinter.BOTH, expand=1, padx=0, pady=0)
-#         self.nb.enable_traversal()
-#         self.nb.bind("<<NotebookTabChanged>>", self.tabChanged)
-#         l, c = commandShortcut('f')
-#         self.bind_all(c, lambda e: self.e.focus_set())
-#         l, c = commandShortcut('g')
-#         self.bind_all(c, lambda e: self.onFind())
-#         return self.nb
-#
-#     def addTab(self, label="", content=""):
-#         self.tabIndex += 1
-#         frame = Frame(self.nb, highlightbackground=BGCOLOR, background=BGCOLOR)
-#         # text = ReadOnlyText(
-#         text = Text(
-#             frame,
-#             wrap="word", padx=2, pady=2, bd=2, relief="sunken",
-#             font=self.tkfixedfont,
-#             height=30,
-#             width=64,
-#             takefocus=False)
-#         text.tag_configure(FOUND, background="lightskyblue")
-#         # text.insert("1.0", content)
-#         text.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0, pady=0)
-#         ysb = ttk.Scrollbar(frame, orient='vertical', command=text.yview)
-#         ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
-#         text.configure(yscroll=ysb.set)
-#         self.nb.add(frame, text=label)
-#         self.tabText[self.tabIndex] = text
-#         text.insert("1.0", content)
-#         logger.debug("tabIndex {0}: {1}".format(self.tabIndex, type(self.tabText[self.tabIndex])))
-#         # print(self.nb.tab("current"))
-#
-#     def buttonbox(self):
-#         # box = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
-#         box = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
-#         # find
-#         w = Button(box, text="OK", width=6, pady=0, relief="raised", command=self.cancel,
-#                    default=ACTIVE, highlightbackground=BGCOLOR)
-#         w.pack(side="right", padx=0, pady=0)
-#
-#         # separator = Frame(box, height=8, bd=0, relief='flat', highlightbackground=BGCOLOR, background=BGCOLOR)
-#         # separator.pack(side='right', fill="x", expand=1)
-#
-#         self.find_text = StringVar(box)
-#         Button(box, text='x', highlightbackground=BGCOLOR, command=self.clearFind, padx=8, pady=2).pack(side="left", padx=0, pady=0)
-#         self.e = Entry(box, textvariable=self.find_text, width=20, highlightbackground=BGCOLOR)
-#         self.e.pack(side="left", padx=0, pady=0, fill=X, expand=0)
-#         self.e.bind("<Return>", self.onFind)
-#         Button(box, text='>', command=self.onFind, padx=6, pady=2, highlightbackground=BGCOLOR).pack(side="left", padx=0, pady=0)
-#         self.bind("<Escape>", self.ok)
-#         # box.pack(side='bottom', pady=0, fill='x', expand=0)
-#         box.pack(side='bottom', padx=12, pady=0, fill="x", expand=0)
-#
-#     def tabChanged(self, e=None):
-#         self.currIndex = self.nb.index(self.nb.select())
-#         logger.debug("currIndex: {0}".format(self.currIndex))
-#
-#
-#     def clearFind(self, *args):
-#         self.tabText[self.currIndex].tag_remove(FOUND, "0.0", END)
-#         self.find_text.set("")
-#
-#     def onFind(self, *args):
-#         target = self.find_text.get()
-#         logger.debug('target {0}: {1}'.format(target, self.tabText[self.currIndex]))
-#         # self.tabText[self.currIndex].insert(INSERT, target)
-#         if target:
-#             where = self.tabText[self.currIndex].search(target, INSERT, nocase=1)
-#             if where:
-#                 pastit = where + ('+%dc' % len(target))
-#                 logger.debug('pastit: {0}'.format(pastit))
-#                 # self.text.tag_remove(SEL, '1.0', END)
-#                 self.tabText[self.currIndex].tag_add(FOUND, where, pastit)
-#                 self.tabText[self.currIndex].mark_set(INSERT, pastit)
-#                 self.tabText[self.currIndex].see(INSERT)
-#                 self.tabText[self.currIndex].focus()
-#
-#     def ok(self, event=None):
-#         if self.find_text.get():
-#             self.clearFind()
-#             return "break"
-#         self.withdraw()
-#         self.quit()
 
 class TextVariableWindow(Dialog):
     def body(self, master):
@@ -1013,7 +920,7 @@ class App(Tk):
         self.itemmenu = itemmenu = Menu(menubar, tearoff=0)
         path = ITEM
         self.add2menu(menu, (path, ))
-
+        # TODO: use ordereddict
         self.em_options = [
             [_('Copy'), 'c'],
             [_('Delete'), 'd'],
@@ -1021,6 +928,7 @@ class App(Tk):
             [_('Finish'), 'x'],
             [_('Reschedule'), 'r'],
             [_('Open link'), 'g'],
+            [_('Export item as ical'), 'v'],
         ]
         self.edit2cmd = {
             'c': self.copyItem,
@@ -1029,6 +937,8 @@ class App(Tk):
             'x': self.finishItem,
             'r': self.rescheduleItem,
             'g': self.openWithDefault,
+            # TODO: exportItemIcal options['icsitem_file']
+            'v': self.donothing,
         }
         self.em_opts = [x[0] for x in self.em_options]
         em_cmds = [x[1] for x in self.em_options]
@@ -1068,6 +978,13 @@ class App(Tk):
         self.bind_all(c, lambda event: self.after(AFTER, self.showBusyTimes))
         self.add2menu(path, (label, l))
 
+        l, c = commandShortcut('w')
+        label=_("Display weekly calendar")
+        toolsmenu.add_command(label=label, underline=1, accelerator=l,
+                             command=self.showWeekly)
+        self.bind_all(c, lambda event: self.after(AFTER, self.showWeekly()))
+        self.add2menu(path, (label, l))
+
         l, c = commandShortcut('y')
         label=_("Display yearly calendar")
         toolsmenu.add_command(label=label, underline=1, accelerator=l,
@@ -1104,9 +1021,10 @@ class App(Tk):
 
 
         ## export
-        l, c = commandShortcut('X')
+        l, c = commandShortcut('V')
         label = _("Export active calendars to iCal")
         toolsmenu.add_command(label=label, underline=1, command=self.donothing)
+        # TODO: exportActiveIcal options['icscal_file']
         self.bind_all(c, self.donothing)
         self.add2menu(path, (label, l))
 
@@ -1214,16 +1132,10 @@ class App(Tk):
 
         topbar.pack(side="top", fill="both", expand=0, padx=0, pady=0)
 
-
-        # labelframe = LabelFrame(self, labelwidget=self.currentView)
-
         self.panedwindow = panedwindow = PanedWindow(self, orient="vertical",
                          # showhandle=True,
                          sashwidth=6, sashrelief='flat',
         )
-
-        # self.labelframe = labelframe = LabelFrame(self, labelwidget=self.showing, highlightbackground=BGCOLOR, background=BGCOLOR
-        # )
 
         self.tree = ttk.Treeview(panedwindow, show='tree', columns=["#1"], selectmode='browse',
                                  # padding=(3, 2, 3, 2)
@@ -1249,18 +1161,6 @@ class App(Tk):
         self.filterValue = StringVar(self)
         self.filterValue.set('')
         self.filterValue.trace_variable("w", self.filterView)
-
-        # self.e = Entry(toolbar, width=8, textvariable=self.filterValue,
-        #                relief="groove",
-        #                highlightcolor=BGCOLOR,
-        #                bd=6
-        #               )
-        # self.e.bind('<Return>', self.showView)
-        # self.e.bind('<Escape>', self.cleartext)
-        # # self.e.bind('<Up>', self.prev_history)
-        # # self.e.bind('<Down>', self.next_history)
-        # self.e.pack(side="left", fill=tkinter.BOTH, expand=1, padx=2)
-        # self.e.configure(width=menuwidth, highlightthickness=0)
 
         self.tree.pack(fill="both", expand=1, padx=4, pady=4)
         # panedwindow.add(self.tree, padx=3, pady=0, stretch="first")
@@ -1886,6 +1786,95 @@ parsing are supported.""")
                 lines.append("%s: %s" % (weekdays[i], "; ".join(times)))
         s = "\n".join(lines)
         self.textWindow(parent=self, title=_('busy times'), prompt=s, opts=self.options)
+
+    def showWeekly(self, event=None, date=None):
+        win = Toplevel(self)
+        win.geometry("+%d+%d" % (self.winfo_rootx() + 50,
+                              self.winfo_rooty() + 50))
+        self.canvas = canvas = Canvas(win, width=400, height=360)
+        canvas.pack(side="top", fill="both", expand=1)
+        box = Frame(win, highlightbackground=BGCOLOR, background=BGCOLOR)
+        ok = Button(box, text="OK", width=6, command=win.destroy,
+                   default=ACTIVE, highlightbackground=BGCOLOR, pady=2)
+        ok.pack(padx=5, pady=0)
+        box.pack(side="bottom", fill="x")
+        self.canvas.bind("<Configure>", self.showWeek)
+        win.bind("<Return>", lambda e: win.destroy())
+        win.bind("<Escape>", lambda e: win.destroy())
+        # self.wait_window(win)
+
+    def showWeek(self, event=None, hours=None, weekdays=None, week=None):
+        if not self.canvas:
+            return "break"
+        self.hours = [
+            "7am",
+            "8am",
+            "9am",
+            "10am",
+            "11am",
+            "12pm",
+            "1pm",
+            "2pm",
+            "3pm",
+            "4pm",
+            "5pm",
+            "6pm",
+            "7pm",
+            "8pm",
+            "9pm",
+            "10pm",
+            "11pm"
+        ]
+
+        self.weekdays = [
+            "Mon 10",
+            "Tue 11",
+            "Wed 12",
+            "Thu 13",
+            "Fri 14",
+            "Sat 15",
+            "Sun 16",
+        ]
+
+        self.week = "Week 11: Mar 10 - 16, 2014"
+        self.canvas.delete("all")
+        linecolor="lightgrey"
+        # left, right, top and bottom margins
+        l = 50
+        r = 6
+        t = 56
+        b = 3
+        w, h = event.width, event.height
+        x = (w-1-l-r)//7
+        y = (h-1-t-b)//16
+        # xy = 0, 0, x*7, y*16
+        xy = l, t, l+x*7, t+y*16
+        self.canvas.create_rectangle(xy)
+        # week
+        p = l + (w-1-l-r)/2, 20
+        self.canvas.create_text(p, text=self.week)
+        # verticals
+        for i in range(1,7):
+            # xy = (w-1)//2, 0, (w-1)//2, h-1
+            xy = l+x*i, t, l+x*i, t+y*16
+            self.canvas.create_line(xy, fill=linecolor)
+        # horizontals
+        for j in range(1,16):
+            # xy = 0, (h-1)//2, w-1, (h-1)//2
+            xy = l, t+y*j, l+x*7, t+y*j
+            self.canvas.create_line(xy, fill=linecolor)
+
+        # hours
+        for j in range(17):
+            if j%2:
+                p = l-5, t+y*j
+                self.canvas.create_text(p, text=self.hours[j], anchor="e")
+
+        # days
+        for i in range(7):
+            p = l + x/2 + x*i, t-13
+            self.canvas.create_text(p, text="{0}".format(self.weekdays[i]))
+
 
     # noinspection PyShadowingNames
     def showCalendar(self, e=None):

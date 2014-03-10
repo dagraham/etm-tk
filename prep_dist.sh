@@ -95,34 +95,28 @@ cp "$home/etm-sample/data/shared/sample_datafile.txt.orig" "$home/etm-sample/dat
 # cd /Users/dag/etm-qt/etmQt/language
 
 cd "$home/etmTk"
+pwd
+# TODO: fix gettext stuff
 #xgettext --omit-header --language=Python --keyword=_ --output=po/etm.pot --from-code=UTF-8 `find . -name "*.py"`
 #xgettext --language=Python --keyword=_ --output=po/etm.pot --from-code=UTF-8 --copyright-holder="Daniel A Graham" --copyright-year="2009-2014"  --package-name="etm" --package-version="$vinfo" `find . -name "*.py"`
 
 cd "$home"
-
-#echo -n  "Continue?"
-#if asksure; then
-#    echo "### processing $tag ###"
-#else
-#    echo "Cancelled"
-#    exit
-#fi
+pwd
 
 echo "### processing $tag ###"
 
-# cd /Users/dag/etm-qt
-#cp -f one2two.py one2two.py.txt
+echo "Cleaning up build/ and dist/"
+sudo rm -fR build/*
+sudo rm -fR dist/*
 
-# build
-# cd /Users/dag/etm-qt
-sudo rm -fR "$home/build/*"
-sudo rm -fR "$home/dist/*"
-echo ""
+ls build
+ls dist
+
 echo "Creating python sdist for $tag"
 if [ "$plat" = 'Darwin' ]; then
-    python3 -O setup.py sdist --formats=gztar
+    python3 -O setup.py sdist --formats=gztar,zip
 else
-    python -O setup.py sdist --formats=gztar
+    python -O setup.py sdist --formats=gztar,zip
 fi
 
 echo "Finished making sdist for $tag"

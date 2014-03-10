@@ -35,7 +35,7 @@ setup(
     author_email='daniel.graham@duke.edu',
     # options=OPTIONS,
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 3 - Alpha',
         'Environment :: Console',
         'Environment :: MacOS X',
         'Environment :: Win32 (MS Windows)',
