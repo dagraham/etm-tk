@@ -4146,28 +4146,6 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
                                 (uid, typ, setSummary(hsh, ''), '', etmdt)]
                             add2list(items, item)
 
-                    # if 'e' in hsh and hsh['e'] is not None:
-                    #     extstr = fmt_period(hsh['e'])
-                    #     exttd = hsh['e']
-                    # else:
-                    #     extstr = ''
-                    #     exttd = 0 * oneday
-                    # if hsh['itemtype'] == '+':
-                    #     if 'prereqs' in hsh and hsh['prereqs']:
-                    #         typ = 'cu'
-                    #     else:
-                    #         typ = 'un'
-                    # elif hsh['itemtype'] == '%':
-                    #     typ = 'du'
-                    # else:
-                    #     typ = type2Str[hsh['itemtype']]
-                    #
-                    # item = [
-                    #     ('next', (1, hsh['c'], hsh['_p'], exttd),
-                    #      tstr2SCI[typ][0], hsh['_p'], hsh['_summary'], f),
-                    #     (hsh['c'],), (uid, typ, hsh['_summary'], extstr)]
-                    # add2list(items, item)
-
             else:  # not a task type
                 if 's' in hsh:
                     if 'rrule' in hsh:
@@ -4470,7 +4448,7 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
                     et = etl.time()
                     em = et.hour * 60 + et.minute
                     evnt_summary = "%s: %s" % (
-                        tmpl_hsh['busy_span'], tmpl_hsh['summary'])
+                         tmpl_hsh['summary'], tmpl_hsh['busy_span'])
                     if et != st:
                         et_fmt = " ~ %s" % fmt_time(et, options=options)
                     else:
@@ -4540,8 +4518,7 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
                                 st_fmt,
                                 et_fmt), etmdt)]
                         add2list(items, item)
-                        add_busytime(uid, sd, sm, em, evnt_summary, busytimes,
-                                     busydays, f)
+                        add_busytime(uid, sd, sm, em, evnt_summary, busytimes, busydays, f)
                         continue
                         #--------------- other dated items ---------------#
                 if hsh['itemtype'] in ['+', '-', '%']:

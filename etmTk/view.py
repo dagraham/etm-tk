@@ -51,7 +51,7 @@ import etmTk.data as data
 from dateutil.parser import parse
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, hsh2str, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, BGCOLOR, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator, AFTER)
+    init_localization, fmt_weekday, fmt_dt, zfmt, hsh2str, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, BGCOLOR, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator, AFTER)
 
 from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES, REPORTS)
 
@@ -71,6 +71,7 @@ from collections import OrderedDict
 
 ONEMINUTE = timedelta(minutes=1)
 ONEHOUR = timedelta(hours=1)
+
 ONEDAY = timedelta(days=1)
 ONEWEEK = timedelta(weeks=1)
 
@@ -100,7 +101,10 @@ CLOSE = _("Close")
 SEP = "----"
 
 BUSYFILL = "#D4DCFC"
-# BUSYOUTLINE = "#C5CDED"
+CONFLICTFILL = "#716DF7"
+# ACTIVEOUTLINE = "#7E96F7"
+ACTIVEOUTLINE = CONFLICTFILL
+# BUSYOUTLINE = BUSYFILL
 BUSYOUTLINE = ""
 LINECOLOR = "gray80"
 
@@ -734,6 +738,7 @@ class App(Tk):
         self.option_add('*tearOff', False)
         self.menu_lst = []
         self.menutree = MenuTree()
+        self.win = None # showWeekly
         root = "_"
 
         # create the root node for the menu tree
@@ -949,7 +954,7 @@ class App(Tk):
             'v': self.donothing,
         }
         self.em_opts = [x[0] for x in self.em_options]
-        em_cmds = [x[1] for x in self.em_options]
+        # em_cmds = [x[1] for x in self.em_options]
 
         for i in range(len(self.em_options)):
             label = self.em_options[i][0]
@@ -1085,6 +1090,7 @@ class App(Tk):
         self.options = loop.options
         tkfixedfont = tkFont.nametofont("TkFixedFont")
         tkfixedfont.configure(size=self.options['fontsize'])
+        self.tkfixedfont = tkfixedfont
         logger.debug("fixedfont: {0}".format(tkfixedfont.actual()))
         self.tkfixedfont = tkfixedfont
 
@@ -1151,9 +1157,8 @@ class App(Tk):
                          sashwidth=6, sashrelief='flat',
         )
 
-        self.tree = ttk.Treeview(panedwindow, show='tree', columns=["#1"], selectmode='browse',
-                                 # padding=(3, 2, 3, 2)
-        )
+        self.toppane = toppane = Frame(self.panedwindow, bd=0, highlightthickness=0, background=BGCOLOR)
+        self.tree = ttk.Treeview(toppane, show='tree', columns=["#1"], selectmode='browse')
         self.tree.column('#0', minwidth=200, width=260, stretch=1)
         self.tree.column('#1', minwidth=80, width=140, stretch=0, anchor='center')
         self.tree.bind('<<TreeviewSelect>>', self.OnSelect)
@@ -1178,11 +1183,11 @@ class App(Tk):
 
         self.tree.pack(fill="both", expand=1, padx=4, pady=4)
         # panedwindow.add(self.tree, padx=3, pady=0, stretch="first")
-        panedwindow.add(self.tree, padx=3, pady=0, stretch="first")
+        panedwindow.add(self.toppane, padx=0, pady=0, stretch="first")
 
         self.content = ReadOnlyText(panedwindow, wrap="word", padx=3, bd=2, relief="sunken",
                               # font=tkFont.Font(family="Lucida Sans Typewriter"), height=6,
-                              font=tkfixedfont, height=6,
+                              font=tkfixedfont, height=4,
                               width=46, takefocus=False)
         self.content.bind('<Escape>', self.cleartext)
         self.content.bind('<space>', self.goHome)
@@ -1190,11 +1195,7 @@ class App(Tk):
 
         panedwindow.add(self.content, padx=3, pady=0, stretch="never")
 
-        # panedwindow.grid(row=1, column=0, sticky="nsew", padx=0, pady=0)
-
-
         self.statusbar = Frame(self)
-
 
         self.timerStatus = StringVar(self)
         self.timerStatus.set("")
@@ -1359,8 +1360,9 @@ a time period if "+" is used."""
                 _("this and all subsequent instances"),
                 _("all instances")]
 
-        indx, value = OptionsDialog(parent=self, title=_("instance: {0}").format(instance), prompt=prompt, opts=opt_lst).getValue()
-        return indx, value
+        d = OptionsDialog(parent=self, title=_("instance: {0}").format(instance), prompt=prompt, opts=opt_lst)
+        index, value = d.getValue()
+        return index, value
 
     def copyItem(self, e=None):
         """
@@ -1465,9 +1467,8 @@ a time period if "+" is used."""
         if 'r' in self.itemSelected:
             choice, value = self.which(EDIT, self.dtSelected)
             logger.debug("{0}: {1}".format(choice, value))
-            if not choice:
-                self.tree.focus_set()
-                return
+            self.tree.focus_set()
+            return
             self.itemSelected['_dt'] = parse(self.dtSelected)
         hsh_rev = hsh_cpy = None
         self.mode = 2  # replace
@@ -1800,7 +1801,7 @@ parsing are supported.""")
         yend = weekend.year
         mbeg = weekbeg.month
         mend = weekend.month
-        # busy_lst: list of days 0 (monday) - 6 (sunday) where each day is a list of (start minute, end minute, id, time str, summary and file info) tuples
+        # busy_lst: list of days 0 (monday) - 6 (sunday) where each day is a list of (start minute, end minute, id, summary-time str and file info) tuples
 
         if mbeg == mend:
             header = "{0} - {1}".format(
@@ -1837,21 +1838,25 @@ parsing are supported.""")
         if chosen_day is None:
             return ()
         self.chosen_day = chosen_day
-        win = Toplevel(self)
+        self.win = win = Toplevel(self)
         self.canvas = canvas = Canvas(win, width=420, height=360)
         canvas.pack(side="top", fill="both", expand=1)
-        box = Frame(win,
-                    # highlightbackground=BGCOLOR, background=BGCOLOR
-        )
-        ok = Button(box, text="OK", width=6, command=win.destroy,
-                   # default=ACTIVE,
-                   # highlightbackground=BGCOLOR,
-                   pady=2)
-        ok.pack(padx=5, pady=0)
-        box.pack(side="bottom", fill="x")
+        # box = Frame(win,
+        #             # highlightbackground=BGCOLOR, background=BGCOLOR
+        # )
+        # ok = Button(box, text="OK", width=6, command=win.destroy,
+        #            # default=ACTIVE,
+        #            # highlightbackground=BGCOLOR,
+        #            pady=2)
+        # ok.pack(padx=5, pady=0)
+        # box.pack(side="bottom", fill="x")
 
-        self.detail = entry = Entry(win, text="")
-        self.detail.pack(side="bottom", fill="x", padx=8, pady=2)
+        self.detailVar = StringVar(self)
+        self.detailVar.set("")
+        self.detail = Label(win, textvariable=self.detailVar)
+        # self.detail = ReadOnlyText(win, height=1, wrap="word", padx=3, bd=2, width=44, relief="sunken", font=self.tkfixedfont)
+        # self.detail = entry = Entry(win, text="")
+        self.detail.pack(side="bottom", fill="x", padx=10, pady=2)
         self.canvas.bind("<Configure>", self.showWeek)
 
         win.bind("<Return>", lambda e: win.destroy())
@@ -1859,18 +1864,36 @@ parsing are supported.""")
         win.bind('<Left>', (lambda e: self.showWeek(event=e, week=-1)))
         win.bind('<Right>', (lambda e: self.showWeek(event=e, week=1)))
         win.bind('<space>', (lambda e: self.showWeek(event=e, week=0)))
+        win.bind('<Up>', (lambda e: self.selectId(event=e, d=-1)))
+        win.bind('<Down>', (lambda e: self.selectId(event=e, d=1)))
         if self.options['ampm']:
             self.hours = ["{0}am".format(i) for i in range(7,12)] + ['12pm'] + ["{0}pm".format(i) for i in range(1,12)]
         else:
             self.hours = ["{0}:00".format(i) for i in range(7, 24)]
-        win.geometry("+%d+%d" % (self.winfo_rootx() + 50,
+        win.geometry("+%d+%d" % (self.winfo_rootx() + 350,
                               self.winfo_rooty() + 50))
+        # create a menu
+        popup = Menu(canvas, tearoff=0)
+        for i in range(len(self.em_options)):
+            label = self.em_options[i][0]
+            k = self.em_options[i][1]
+            if k == 'delete':
+                l = "Delete"
+                c = "<BackSpace>"
+            elif k == 'x': # finish
+                continue
+            else:
+                l, c = commandShortcut(k)
+            logger.debug('binding {0} to {1}'.format(c, self.edit2cmd[k]))
+            popup.add_command(label=label, command=self.edit2cmd[k])
+        self.popup = popup
+
 
     def showWeek(self, event=None, week=None):
         if not self.canvas:
             return "break"
         if week == 0:
-            day = get_current_time().date()
+            day = get_current_time()
         elif week == 1:
             day = self.next_week
         elif week == -1:
@@ -1882,7 +1905,8 @@ parsing are supported.""")
             return "break"
 
         theweek, weekdays, busy_lst, occasion_lst = self.setWeek(day)
-        self.detail.delete(0, END)
+        # self.detail.delete(0, END)
+        self.detailVar.set("")
         self.canvas.delete("all")
         # left, right, top and bottom margins
         l = 50
@@ -1907,42 +1931,71 @@ parsing are supported.""")
         self.busyHsh = {}
 
         # occasions
+        occasion_ids = []
         for i in range(7):
+            day = (self.week_beg + i * ONEDAY).replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
             if not occasion_lst[i]:
                 continue
             # print(occasion_lst[i])
-            occasions = ("", ", ".join([x[1] for x in occasion_lst[i]]))
-            # print(occasions)
+            occasions = occasion_lst[i]
             start_x = l + i * x
             end_x = start_x + x
-            xy = start_x, t, end_x, t+y*16
-            id = self.canvas.create_rectangle(xy, fill="gray98", outline="")
-            self.busyHsh[id] = occasions
-            self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
-            self.canvas.tag_bind(id, '<Any-Leave>', self.on_leave_item)
+            for tup in occasions:
+                xy = start_x, t, end_x, t+y*16
+                id = self.canvas.create_rectangle(xy, fill="gray98", outline="", width=2)
+                tmp = list(tup)
+                tmp.append(day)
+                self.busyHsh[id] = tmp
+                occasion_ids.append(id)
 
         # busytimes
         startminutes = 7 * 60
         endminutes = 23 * 60
         y_per_minutes = (h-1-t-b)/(endminutes - startminutes)
+        busy_ids = []
         for i in range(7):
+            day = (self.week_beg + i * ONEDAY).replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
             busy_times = busy_lst[i]
             if not busy_times:
                 continue
             start_x = l + i * x
             end_x = start_x + x
             for tup in busy_times:
+                conf = None
+                # print('day', day, tup[0])
+                daytime = day + tup[0] * ONEMINUTE
                 t1 = t + (max(7 * 60, tup[0]) - 7 * 60 ) * y_per_minutes
                 t2 = t + min(23 * 60, max(7 * 60, tup[1]) - 7 * 60) * y_per_minutes
-                xy= start_x, t1, end_x, t2
-                id = self.canvas.create_rectangle(xy, fill=BUSYFILL, outline=BUSYOUTLINE)
+                xy = start_x, t1, end_x, t2
+                conf = self.canvas.find_overlapping(*xy)
+                id = self.canvas.create_rectangle(xy, fill=BUSYFILL, outline=BUSYOUTLINE, width=2)
+                busy_ids.append(id)
+                conf = [x for x in conf if x in busy_ids]
+                if conf:
+                    # print('conf', id, len(conf), conf)
+                    bb1 = self.canvas.bbox(id)
+                    bb2 = self.canvas.bbox(*conf)
+                    # print("bb", bb1, bb2)
+                    # bb1[0] = bb2[0], bb1[2] = bb2[2] - same day
+                    # we want the max of bb1[1], bb2[1]
+                    # and the min of bb1[4], bb2[4]
+                    ol = bb1[0], max(bb1[1], bb2[1]), bb1[2], min(bb1[3], bb2[3])
+                    # print('overlap', ol)
+                    self.canvas.create_rectangle(ol, fill=CONFLICTFILL, outline="")
                 # ids.append(id)
-                self.busyHsh[id] = tup[2:]
-        for id in self.busyHsh.keys():
+                tmp = list(tup[2:]) #id, time str, summary and file info
+                tmp.append(daytime)
+                # print("tmp", tmp)
+                self.busyHsh[id] = tmp
+        for id in occasion_ids + busy_ids:
             self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
             self.canvas.tag_bind(id, '<Any-Leave>', self.on_leave_item)
             self.canvas.tag_bind(id, '<Button-1>', self.on_select_item)
 
+        self.canvas_ids = [x for x in self.busyHsh.keys()]
+        # print(self.canvas_ids)
+        self.canvas_ids.sort()
+        self.canvas_idpos = None
         # border
         # xy = 0, 0, x*7, y*16
         xy = l, t, l+x*7, t+y*16
@@ -1968,18 +2021,90 @@ parsing are supported.""")
             p = l + x/2 + x*i, t-13
             self.canvas.create_text(p, text="{0}".format(weekdays[i]))
 
+    def selectId(self, event, d=1):
+        if self.canvas_idpos is None:
+            self.canvas_idpos = 0
+        else:
+            old_id = self.canvas_ids[self.canvas_idpos]
+            self.canvas.itemconfig(old_id, outline=BUSYOUTLINE)
+            if d == -1:
+                self.canvas_idpos = max(0, self.canvas_idpos -1)
+            elif d == 1:
+                self.canvas_idpos = min(len(self.canvas_ids) - 1, self.canvas_idpos + 1)
+        id = self.canvas_ids[self.canvas_idpos]
+        # print('moving to', id)
+        self.canvas.itemconfig(id, outline=ACTIVEOUTLINE)
+        self.detailVar.set(self.busyHsh[id][1])
+
+
     def on_enter_item(self, e):
+        if self.canvas_idpos is not None:
+            old_id = self.canvas_ids[self.canvas_idpos]
+            self.canvas.itemconfig(old_id, outline=BUSYOUTLINE)
+
         id = self.canvas.find_withtag(CURRENT)[0]
-        self.detail.insert(0, self.busyHsh[id][1])
+        # print("entering", id)
+        self.canvas.focus(id)
+        self.canvas_idpos = self.canvas_ids.index(id)
+        self.canvas.itemconfig(id, outline=ACTIVEOUTLINE)
+        self.detailVar.set(self.busyHsh[id][1])
 
     def on_leave_item(self, e):
         id = self.canvas.find_withtag(CURRENT)[0]
-        self.detail.delete(0, END)
+        # self.detail.delete("1.0", END)
+        self.detailVar.set("")
+        # self.canvas.itemconfig(id, fill=BUSYFILL)
+        self.canvas.itemconfig(id, outline=BUSYOUTLINE)
+        self.canvas.focus("")
 
-    def on_select_item(self, e):
+    def on_select_item(self, event):
         id = self.canvas.find_withtag(CURRENT)[0]
-        self.detail.delete(0, END)
-        self.detail.insert(0, self.busyHsh[id])
+        self.uuidSelected = uuid = self.busyHsh[id][0]
+        self.itemSelected = hsh = loop.uuid2hash[uuid]
+        self.dtSelected = dt = self.busyHsh[id][-1].strftime(zfmt)
+        # print(uuid, hsh['entry'], dt)
+        l1 = hsh['fileinfo'][1]
+        l2 = hsh['fileinfo'][2]
+        if l1 == l2:
+            lines = "{0} {1}".format(_('line'), l1)
+        else:
+            lines = "{0} {1}-{2}".format(_('lines'), l1, l2)
+        self.filetext = filetext = "{0}, {1}".format(hsh['fileinfo'][0], lines)
+        tmp = "{0}\n\n{1}: {2}".format(hsh['entry'], _("file"), filetext)
+        # self.detail.delete("1.0", END)
+        # self.detail.insert("1.0", tmp)
+        type_chr = hsh['entry'][0]
+
+        isRepeating = ('r' in hsh and dt)
+        if isRepeating:
+            item = "{0} {1}".format(_('selected'), dt)
+            self.popup.entryconfig(1, label="{0} ...".format(self.em_opts[1]))
+            self.popup.entryconfig(2, label="{0} ...".format(self.em_opts[2]))
+        else:
+            self.popup.entryconfig(1, label=self.em_opts[1])
+            self.popup.entryconfig(2, label=self.em_opts[2])
+            item = _('selected')
+        # isUnfinished = (type_chr in ['-', '+', '%'])
+        hasLink = ('g' in hsh and hsh['g'])
+        l1 = hsh['fileinfo'][1]
+        l2 = hsh['fileinfo'][2]
+        if 'errors' in hsh and hsh['errors']:
+            text = "{1}\n\n{2}: {3}\n\n{4}: {5}".format(item, hsh['entry'].lstrip(), _("Errors"), hsh['errors'],  _("file"), filetext)
+        else:
+            text = "{1}\n\n{2}: {3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
+        for i in [0, 1, 2, 3]:
+            self.popup.entryconfig(i, state='normal')
+        if hasLink:
+            self.popup.entryconfig(4, state='normal')
+        else:
+            self.popup.entryconfig(4, state='disabled')
+
+
+        try:
+            self.popup.tk_popup(event.x_root, event.y_root, 0)
+        finally:
+            # make sure to release the grab (Tk 8.0a1 only)
+            self.popup.grab_release()
 
     # noinspection PyShadowingNames
     def showCalendar(self, e=None):
@@ -2039,7 +2164,7 @@ parsing are supported.""")
     def newCommand(self, e=None):
         newcommand = self.newValue.get()
         self.newValue.set(self.newLabel)
-        print('newCommand', newcommand)
+        # print('newCommand', newcommand)
 
     # TODO: Speed up help display
     # def help(self, event=None):
@@ -2135,6 +2260,7 @@ or 0 to display all changes.""").format(title)
         Tree row has gained selection.
         """
         item = self.tree.selection()[0]
+        # print('item', item)
         self.rowSelected = int(item)
         type_chr = self.tree.item(item)['text'][0]
         uuid, dt, hsh = self.getInstance(item)
@@ -2741,6 +2867,7 @@ or 0 to expand all branches completely.""")
                         if d not in self.date2id:
                             self.date2id[d] = parent
                     except:
+                        # FIXME: use logger
                         print('could not parse', dt)
                         print(text)
 
