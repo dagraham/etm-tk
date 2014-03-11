@@ -21,8 +21,7 @@ import platform
 
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas
-    # from tkinter import messagebox as tkMessageBox
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas, CURRENT
     from tkinter import ttk
     from tkinter import font as tkFont
     from tkinter.messagebox import askokcancel
@@ -31,7 +30,7 @@ if platform.python_version() >= '3':
     # from tkinter import simpledialog as tkSimpleDialog
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas, CURRENT
     # import tkMessageBox
     import ttk
     import tkFont
@@ -84,6 +83,7 @@ SCHEDULE = _('Schedule')
 PATHS = _('Paths')
 KEYWORDS = _('Keywords')
 TAGS = _('Tags')
+NOTES = _('Notes')
 
 COPY = _("Copy")
 EDIT = _("Edit")
@@ -98,6 +98,11 @@ TOOLS = _("Tools")
 CLOSE = _("Close")
 
 SEP = "----"
+
+BUSYFILL = "#D4DCFC"
+# BUSYOUTLINE = "#C5CDED"
+BUSYOUTLINE = ""
+LINECOLOR = "gray80"
 
 LASTLTR = re.compile(r'([a-z])$')
 
@@ -306,7 +311,8 @@ class Dialog(Toplevel):
         # self.buttonbox()
 
         body = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
-        self.initial_focus = self.body(body)
+        # self.initial_focus = self.body(body)
+        self.body(body).focus_set()
 
         self.buttonbox()
         # don't expand body or it will fill below the actual content
@@ -338,15 +344,15 @@ class Dialog(Toplevel):
 
         box = Frame(self, background=BGCOLOR, highlightbackground=BGCOLOR)
 
-        w = Button(box, text="Cancel", width=10, command=self.cancel, highlightbackground=BGCOLOR)
-        w.pack(side=LEFT, padx=5, pady=5)
         w = Button(box, text="OK", width=10, command=self.ok, default=ACTIVE,  highlightbackground=BGCOLOR)
-        w.pack(side=LEFT, padx=5, pady=5)
+        w.pack(side="right", padx=5, pady=5)
+        w = Button(box, text="Cancel", width=10, command=self.cancel, highlightbackground=BGCOLOR)
+        w.pack(side="right", padx=5, pady=5)
 
         self.bind("<Return>", self.ok)
         self.bind("<Escape>", self.cancel)
 
-        box.pack(side='bottom', fill=X, expand=0)
+        box.pack(side='bottom')
 
     # standard button semantics
 
@@ -752,14 +758,14 @@ class App(Tk):
         path = NEW
 
         label = _("Item")
-        l, c = commandShortcut('n')
+        l, c = commandShortcut('i')
         logger.debug("{0}: {1}, {2}".format(label, l, c))
         newmenu.add_command(label=label, accelerator=l, command=self.newItem)
         self.bind_all(c, lambda e: self.after(AFTER, self.newItem))
         self.add2menu(path, (label, l))
 
         label = _("Timer")
-        l, c = commandShortcut('i')
+        l, c = commandShortcut('m')
         logger.debug("{0}: {1}, {2}".format(label, l, c))
         newmenu.add_command(label=label, accelerator=l, command=self.startActionTimer)
         self.bind_all(c, lambda e: self.after(AFTER, self.startActionTimer))
@@ -842,6 +848,7 @@ class App(Tk):
                            [SCHEDULE, 's'],
                            [TAGS, 't'],
                            [KEYWORDS, 'k'],
+                           [NOTES, 'n'],
                            [PATHS, 'p'],
         ]
 
@@ -849,6 +856,7 @@ class App(Tk):
                          's': self.scheduleView,
                          'p': self.pathView,
                          'k': self.keywordView,
+                         'n': self.noteView,
                          't': self.tagView}
 
         self.vm_opts = [x[0] for x in self.vm_options]
@@ -923,19 +931,19 @@ class App(Tk):
         # TODO: use ordereddict
         self.em_options = [
             [_('Copy'), 'c'],
-            [_('Delete'), 'd'],
+            [_('Delete'), 'delete'],
             [_('Edit'), 'e'],
             [_('Finish'), 'x'],
-            [_('Reschedule'), 'r'],
+            [_('Reschedule'), 'd'],
             [_('Open link'), 'g'],
             [_('Export item as ical'), 'v'],
         ]
         self.edit2cmd = {
             'c': self.copyItem,
-            'd': self.deleteItem,
+            'delete': self.deleteItem,
             'e': self.editItem,
             'x': self.finishItem,
-            'r': self.rescheduleItem,
+            'd': self.rescheduleItem,
             'g': self.openWithDefault,
             # TODO: exportItemIcal options['icsitem_file']
             'v': self.donothing,
@@ -946,7 +954,12 @@ class App(Tk):
         for i in range(len(self.em_options)):
             label = self.em_options[i][0]
             k = self.em_options[i][1]
-            l, c = commandShortcut(k)
+            if k == 'delete':
+                l = "Delete"
+                c = "<BackSpace>"
+            else:
+                l, c = commandShortcut(k)
+            logger.debug('binding {0} to {1}'.format(c, self.edit2cmd[k]))
             itemmenu.add_command(label=label, command=self.edit2cmd[k])
             self.bind_all(c, lambda e, x=k: self.after(AFTER, self.edit2cmd[x]))
             self.add2menu(path, (label, l))
@@ -980,7 +993,8 @@ class App(Tk):
 
         l, c = commandShortcut('w')
         label=_("Display weekly calendar")
-        toolsmenu.add_command(label=label, underline=1, accelerator=l,
+        toolsmenu.add_command(label=label, underline=1,
+                              # accelerator=l,
                              command=self.showWeekly)
         self.bind_all(c, lambda event: self.after(AFTER, self.showWeekly()))
         self.add2menu(path, (label, l))
@@ -1003,7 +1017,7 @@ class App(Tk):
         self.add2menu(path, (SEP, ))
 
         # report
-        l, c = commandShortcut('m')
+        l, c = commandShortcut('r')
         label=_("Make report")
         toolsmenu.add_command(label=label, accelerator=l,
                              underline=1,
@@ -1642,6 +1656,11 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
     def tagView(self, e=None):
         self.setView(TAGS)
 
+    def noteView(self, e=None):
+        # TODO; finish noteView
+        pass
+        # self.setView(NOTES)
+
     def setView(self, view, row=None):
         self.rowSelected = None
         logger.debug("view: {0}".format(view))
@@ -1692,6 +1711,47 @@ parsing are supported.""")
             return ()
             # chosen_day = self.today
 
+        theweek, weekdays, busy_lst, occasion_lst = self.setWeek(chosen_day)
+
+        lines = [theweek, '-'*len(theweek)]
+        ampm = loop.options['ampm']
+        s1 = s2 = ''
+        for i in range(7):
+            times = []
+            for tup in busy_lst[i]:
+                t1 = max(7 * 60, tup[0])
+                t2 = min(23 * 60, max(420, tup[1]))
+                if t1 != t2:
+                    t1h, t1m = (t1 // 60, t1 % 60)
+                    t2h, t2m = (t2 // 60, t2 % 60)
+                    if ampm:
+                        if t1h == 12:
+                            s1 = 'pm'
+                        elif t1h > 12:
+                            t1h -= 12
+                            s1 = 'pm'
+                        else:
+                            s1 = 'am'
+                        if t2h == 12:
+                            s2 = 'pm'
+                        elif t2h > 12:
+                            t2h -= 12
+                            s2 = 'pm'
+                        else:
+                            s2 = 'am'
+
+                    T1 = "%d:%02d%s" % (t1h, t1m, s1)
+                    T2 = "%d:%02d%s" % (t2h, t2m, s2)
+
+                    times.append("%s-%s" % (T1, T2))
+            if times:
+                lines.append("%s: %s" % (weekdays[i], "; ".join(times)))
+        s = "\n".join(lines)
+        self.textWindow(parent=self, title=_('busy times'), prompt=s, opts=self.options)
+
+    def setWeek(self, chosen_day=None):
+        if chosen_day is None:
+            chosen_day = get_current_time()
         yn, wn, dn = chosen_day.isocalendar()
         self.prev_week = chosen_day - 7 * ONEDAY
         self.next_week = chosen_day + 7 * ONEDAY
@@ -1740,6 +1800,8 @@ parsing are supported.""")
         yend = weekend.year
         mbeg = weekbeg.month
         mend = weekend.month
+        # busy_lst: list of days 0 (monday) - 6 (sunday) where each day is a list of (start minute, end minute, id, time str, summary and file info) tuples
+
         if mbeg == mend:
             header = "{0} - {1}".format(
                 fmt_dt(weekbeg, '%b %d'), fmt_dt(weekend, '%d, %Y'))
@@ -1750,131 +1812,174 @@ parsing are supported.""")
             header = "{0} - {1}".format(
                 fmt_dt(weekbeg, '%b %d, %Y'), fmt_dt(weekend, '%b %d, %Y'))
         header = leadingzero.sub('', header)
-        theweek = _("Scheduled times for week {0}: {1}").format(wn, header)
-        lines = [theweek, '-'*len(theweek)]
-        ampm = loop.options['ampm']
-        s1 = s2 = ''
-        for i in range(7):
-            times = []
-            for tup in busy_lst[i]:
-                t1 = max(7 * 60, tup[0])
-                t2 = min(23 * 60, max(420, tup[1]))
-                if t1 != t2:
-                    t1h, t1m = (t1 // 60, t1 % 60)
-                    t2h, t2m = (t2 // 60, t2 % 60)
-                    if ampm:
-                        if t1h == 12:
-                            s1 = 'pm'
-                        elif t1h > 12:
-                            t1h -= 12
-                            s1 = 'pm'
-                        else:
-                            s1 = 'am'
-                        if t2h == 12:
-                            s2 = 'pm'
-                        elif t2h > 12:
-                            t2h -= 12
-                            s2 = 'pm'
-                        else:
-                            s2 = 'am'
+        theweek = _("Week {0}: {1}").format(wn, header)
+        return(theweek, weekdays, busy_lst, occasion_lst)
 
-                    T1 = "%d:%02d%s" % (t1h, t1m, s1)
-                    T2 = "%d:%02d%s" % (t2h, t2m, s2)
 
-                    times.append("%s-%s" % (T1, T2))
-            if times:
-                lines.append("%s: %s" % (weekdays[i], "; ".join(times)))
-        s = "\n".join(lines)
-        self.textWindow(parent=self, title=_('busy times'), prompt=s, opts=self.options)
+    def showWeekly(self, event=None):
+        """
+        Open the canvas at the current week
+        """
+        prompt = _("""\
+Busy times will be shown for the week containing the date you select.
+Return an empty string for the current week. Relative dates and fuzzy
+parsing are supported.""")
+        d = GetDateTime(parent=self, title=_('date'), prompt=prompt)
+        chosen_day = d.value
+        logger.debug('chosen_day: {0}'.format(chosen_day))
+        # cal_regex = None
+        # # logger.debug('options: {0}'.format(loop.options))
+        # if loop.options['calendars']:
+        #     cal_pattern = r'^%s' % '|'.join([x[2] for x in self.options['calendars'] if x[1]])
+        #     cal_regex = re.compile(cal_pattern)
+        #     logger.debug('cal_pattern: {0}'.format(cal_pattern))
 
-    def showWeekly(self, event=None, date=None):
+        if chosen_day is None:
+            return ()
+        self.chosen_day = chosen_day
         win = Toplevel(self)
-        win.geometry("+%d+%d" % (self.winfo_rootx() + 50,
-                              self.winfo_rooty() + 50))
-        self.canvas = canvas = Canvas(win, width=400, height=360)
+        self.canvas = canvas = Canvas(win, width=420, height=360)
         canvas.pack(side="top", fill="both", expand=1)
-        box = Frame(win, highlightbackground=BGCOLOR, background=BGCOLOR)
+        box = Frame(win,
+                    # highlightbackground=BGCOLOR, background=BGCOLOR
+        )
         ok = Button(box, text="OK", width=6, command=win.destroy,
-                   default=ACTIVE, highlightbackground=BGCOLOR, pady=2)
+                   # default=ACTIVE,
+                   # highlightbackground=BGCOLOR,
+                   pady=2)
         ok.pack(padx=5, pady=0)
         box.pack(side="bottom", fill="x")
+
+        self.detail = entry = Entry(win, text="")
+        self.detail.pack(side="bottom", fill="x", padx=8, pady=2)
         self.canvas.bind("<Configure>", self.showWeek)
+
         win.bind("<Return>", lambda e: win.destroy())
         win.bind("<Escape>", lambda e: win.destroy())
-        # self.wait_window(win)
+        win.bind('<Left>', (lambda e: self.showWeek(event=e, week=-1)))
+        win.bind('<Right>', (lambda e: self.showWeek(event=e, week=1)))
+        win.bind('<space>', (lambda e: self.showWeek(event=e, week=0)))
+        if self.options['ampm']:
+            self.hours = ["{0}am".format(i) for i in range(7,12)] + ['12pm'] + ["{0}pm".format(i) for i in range(1,12)]
+        else:
+            self.hours = ["{0}:00".format(i) for i in range(7, 24)]
+        win.geometry("+%d+%d" % (self.winfo_rootx() + 50,
+                              self.winfo_rooty() + 50))
 
-    def showWeek(self, event=None, hours=None, weekdays=None, week=None):
+    def showWeek(self, event=None, week=None):
         if not self.canvas:
             return "break"
-        self.hours = [
-            "7am",
-            "8am",
-            "9am",
-            "10am",
-            "11am",
-            "12pm",
-            "1pm",
-            "2pm",
-            "3pm",
-            "4pm",
-            "5pm",
-            "6pm",
-            "7pm",
-            "8pm",
-            "9pm",
-            "10pm",
-            "11pm"
-        ]
+        if week == 0:
+            day = get_current_time().date()
+        elif week == 1:
+            day = self.next_week
+        elif week == -1:
+            day = self.prev_week
+        elif self.chosen_day:
+            day = self.chosen_day
+        else:
+            logger.warn('bad value for week: {0}'.format(week))
+            return "break"
 
-        self.weekdays = [
-            "Mon 10",
-            "Tue 11",
-            "Wed 12",
-            "Thu 13",
-            "Fri 14",
-            "Sat 15",
-            "Sun 16",
-        ]
-
-        self.week = "Week 11: Mar 10 - 16, 2014"
+        theweek, weekdays, busy_lst, occasion_lst = self.setWeek(day)
+        self.detail.delete(0, END)
         self.canvas.delete("all")
-        linecolor="lightgrey"
         # left, right, top and bottom margins
         l = 50
         r = 6
         t = 56
         b = 3
         w, h = event.width, event.height
+        if type(w) is int and type(h) is int:
+            self.canvas_width = w
+            self.canvas_height = h
+        else:
+            w = self.canvas_width
+            h = self.canvas_height
+
         x = (w-1-l-r)//7
         y = (h-1-t-b)//16
+
+        # week
+        p = l + (w-1-l-r)/2, 20
+        self.canvas.create_text(p, text=theweek)
+        # ids = []
+        self.busyHsh = {}
+
+        # occasions
+        for i in range(7):
+            if not occasion_lst[i]:
+                continue
+            # print(occasion_lst[i])
+            occasions = ("", ", ".join([x[1] for x in occasion_lst[i]]))
+            # print(occasions)
+            start_x = l + i * x
+            end_x = start_x + x
+            xy = start_x, t, end_x, t+y*16
+            id = self.canvas.create_rectangle(xy, fill="gray98", outline="")
+            self.busyHsh[id] = occasions
+            self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
+            self.canvas.tag_bind(id, '<Any-Leave>', self.on_leave_item)
+
+        # busytimes
+        startminutes = 7 * 60
+        endminutes = 23 * 60
+        y_per_minutes = (h-1-t-b)/(endminutes - startminutes)
+        for i in range(7):
+            busy_times = busy_lst[i]
+            if not busy_times:
+                continue
+            start_x = l + i * x
+            end_x = start_x + x
+            for tup in busy_times:
+                t1 = t + (max(7 * 60, tup[0]) - 7 * 60 ) * y_per_minutes
+                t2 = t + min(23 * 60, max(7 * 60, tup[1]) - 7 * 60) * y_per_minutes
+                xy= start_x, t1, end_x, t2
+                id = self.canvas.create_rectangle(xy, fill=BUSYFILL, outline=BUSYOUTLINE)
+                # ids.append(id)
+                self.busyHsh[id] = tup[2:]
+        for id in self.busyHsh.keys():
+            self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
+            self.canvas.tag_bind(id, '<Any-Leave>', self.on_leave_item)
+            self.canvas.tag_bind(id, '<Button-1>', self.on_select_item)
+
+        # border
         # xy = 0, 0, x*7, y*16
         xy = l, t, l+x*7, t+y*16
         self.canvas.create_rectangle(xy)
-        # week
-        p = l + (w-1-l-r)/2, 20
-        self.canvas.create_text(p, text=self.week)
+
         # verticals
         for i in range(1,7):
             # xy = (w-1)//2, 0, (w-1)//2, h-1
             xy = l+x*i, t, l+x*i, t+y*16
-            self.canvas.create_line(xy, fill=linecolor)
+            self.canvas.create_line(xy, fill=LINECOLOR)
         # horizontals
         for j in range(1,16):
             # xy = 0, (h-1)//2, w-1, (h-1)//2
             xy = l, t+y*j, l+x*7, t+y*j
-            self.canvas.create_line(xy, fill=linecolor)
-
+            self.canvas.create_line(xy, fill=LINECOLOR)
         # hours
         for j in range(17):
             if j%2:
                 p = l-5, t+y*j
                 self.canvas.create_text(p, text=self.hours[j], anchor="e")
-
         # days
         for i in range(7):
             p = l + x/2 + x*i, t-13
-            self.canvas.create_text(p, text="{0}".format(self.weekdays[i]))
+            self.canvas.create_text(p, text="{0}".format(weekdays[i]))
 
+    def on_enter_item(self, e):
+        id = self.canvas.find_withtag(CURRENT)[0]
+        self.detail.insert(0, self.busyHsh[id][1])
+
+    def on_leave_item(self, e):
+        id = self.canvas.find_withtag(CURRENT)[0]
+        self.detail.delete(0, END)
+
+    def on_select_item(self, e):
+        id = self.canvas.find_withtag(CURRENT)[0]
+        self.detail.delete(0, END)
+        self.detail.insert(0, self.busyHsh[id])
 
     # noinspection PyShadowingNames
     def showCalendar(self, e=None):
