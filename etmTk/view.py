@@ -51,7 +51,7 @@ import etmTk.data as data
 from dateutil.parser import parse
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, zfmt, hsh2str, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, BGCOLOR, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator, AFTER)
+    init_localization, fmt_weekday, fmt_dt, zfmt, hsh2str, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, BGCOLOR, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator, AFTER, export_ical_item, export_ical)
 
 from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES, REPORTS)
 
@@ -96,6 +96,9 @@ OPEN = _("Open")
 VIEW = _("View")
 ITEM = _("Item")
 TOOLS = _("Tools")
+WEEK = _("Week")
+HELP = _("Help")
+
 CLOSE = _("Close")
 
 SEP = "----"
@@ -115,6 +118,7 @@ def sanitize_id(id):
 
 (_ADD, _DELETE, _INSERT) = range(3)
 (_ROOT, _DEPTH, _WIDTH) = range(3)
+
 
 class Node:
 
@@ -293,6 +297,7 @@ class Dialog(Toplevel):
 
         Toplevel.__init__(self, parent, highlightbackground=BGCOLOR,
                     background=BGCOLOR)
+        self.protocol("WM_DELETE_WINDOW", self.quit)
         if modal:
             logger.debug('modal')
             self.transient(parent)
@@ -385,7 +390,8 @@ class Dialog(Toplevel):
         if self.parent:
             logger.debug("returning focus to parent: {0}".format(self.parent))
             self.parent.focus()
-            self.parent.tree.focus_set()
+            # self.parent.tree.focus_set()
+            self.parent.focus_set()
             # self.parent.focus_set()
         else:
             logger.debug("returning focus, no parent")
@@ -507,11 +513,24 @@ class TextVariableWindow(Dialog):
         self.bind("<Escape>", self.ok)
         box.pack(side='bottom')
 
-    def apply(self, e=None):
-        logger.debug("got here")
-        self.entry.delete(0, END)
-        self.parent.goHome()
+    # def apply(self, e=None):
+    #     logger.debug("got here")
+    #     self.options['textvariable'].set("")
+    #     self.entry.delete(0, END)
+    #     self.parent.goHome()
 
+    def quit(self, event=None):
+        if self.parent:
+            logger.debug("returning focus to parent: {0}".format(self.parent))
+            self.parent.focus()
+            # self.parent.tree.focus_set()
+            self.parent.focus_set()
+            # self.parent.focus_set()
+        else:
+            logger.debug("returning focus, no parent")
+        self.entry.delete(0, END)
+        self.options['textvariable'].set("")
+        self.destroy()
 
 class DialogWindow(Dialog):
     # master will be a frame in Dialog
@@ -647,7 +666,6 @@ class OptionsDialog():
 
 class GetInteger(DialogWindow):
     def validate(self):
-        # print('integer validate', self.options)
         minvalue = maxvalue = None
         if len(self.options) > 0:
             minvalue = self.options[0]
@@ -728,7 +746,7 @@ class App(Tk):
     def __init__(self, path=None):
         Tk.__init__(self)
         # minsize: width, height
-        self.minsize(430, 450)
+        self.minsize(430, 464)
         self.uuidSelected = None
         self.timerItem = None
         self.actionTimer = Timer()
@@ -738,6 +756,8 @@ class App(Tk):
         self.option_add('*tearOff', False)
         self.menu_lst = []
         self.menutree = MenuTree()
+        self.chosen_day = None
+        self.busy_info = None
         self.win = None # showWeekly
         root = "_"
 
@@ -766,14 +786,14 @@ class App(Tk):
         l, c = commandShortcut('i')
         logger.debug("{0}: {1}, {2}".format(label, l, c))
         newmenu.add_command(label=label, accelerator=l, command=self.newItem)
-        self.bind_all(c, lambda e: self.after(AFTER, self.newItem))
+        self.bind(c, lambda e: self.after(AFTER, self.newItem))
         self.add2menu(path, (label, l))
 
         label = _("Timer")
         l, c = commandShortcut('m')
         logger.debug("{0}: {1}, {2}".format(label, l, c))
         newmenu.add_command(label=label, accelerator=l, command=self.startActionTimer)
-        self.bind_all(c, lambda e: self.after(AFTER, self.startActionTimer))
+        self.bind(c, lambda e: self.after(AFTER, self.startActionTimer))
         self.add2menu(path, (label, l))
 
         filemenu.add_cascade(label=NEW, menu=newmenu)
@@ -786,7 +806,7 @@ class App(Tk):
         l, c = commandShortcut('D')
         label = _("Data file ...")
         openmenu.add_command(label=label, command=self.editData)
-        self.bind_all(c, lambda e: openmenu.invoke(0))
+        self.bind(c, lambda e: openmenu.invoke(0))
         self.add2menu(path, (label, l))
 
         l, c = commandShortcut('E')
@@ -795,7 +815,7 @@ class App(Tk):
         label = relpath(file, loop.options['etmdir'])
         # label = _("Preferences")
         openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x, config=True))
-        self.bind_all(c, lambda e: openmenu.invoke(1))
+        self.bind(c, lambda e: openmenu.invoke(1))
         self.add2menu(path, (label, l))
 
         l, c = commandShortcut('C')
@@ -803,7 +823,7 @@ class App(Tk):
         # label = _("Auto completions")
         label = relpath(file, loop.options['etmdir'])
         openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x))
-        self.bind_all(c, lambda e: openmenu.invoke(2))
+        self.bind(c, lambda e: openmenu.invoke(2))
         self.add2menu(path, (label, l))
 
         l, c = commandShortcut('R')
@@ -812,8 +832,8 @@ class App(Tk):
         label = relpath(file, loop.options['etmdir'])
         logger.debug("{0}: {1}, {2}".format(label, l, c))
         openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x))
-        # self.bind_all(c, lambda e, x=file: self.editFile(file=x))
-        self.bind_all(c, lambda e: openmenu.invoke(3))
+        # self.bind(c, lambda e, x=file: self.editFile(file=x))
+        self.bind(c, lambda e: openmenu.invoke(3))
         self.add2menu(path, (label, l))
 
         l, c = commandShortcut('S')
@@ -821,7 +841,7 @@ class App(Tk):
         label = relpath(file, loop.options['etmdir'])
         # label = _("Scratchpad")
         openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x))
-        self.bind_all(c, lambda e: openmenu.invoke(4))
+        self.bind(c, lambda e: openmenu.invoke(4))
         self.add2menu(path, (label, l))
 
         # filemenu.add_separator()
@@ -882,8 +902,99 @@ class App(Tk):
             self.bind(c, lambda e, x=k: self.after(AFTER, self.view2cmd[x]))
             self.add2menu(path, (label, l))
 
+        # week menu
+        self.weekmenu = weekmenu = Menu(viewmenu, tearoff=0)
+        self.add2menu(path, (WEEK, ))
+        path = WEEK
+
+        l, c = commandShortcut('w')
+        label=_("Display weekly calendar")
+        weekmenu.add_command(label=label, underline=1,
+                              accelerator=l,
+                             command=self.showWeekly)
+        self.bind(c, lambda event: self.after(AFTER, self.showWeekly()))
+        self.add2menu(path, (label, l))
+
+        l = "Space"
+        c = "<space>"
+        label=_("Display current week")
+        weekmenu.add_command(label=label, underline=1,
+                              accelerator=l,
+                             command=lambda e: self.showWeek(event=e, week=0))
+        # self.bind(c, lambda e: self.showWeek(event=e, week=0))
+        self.add2menu(path, (label, l))
+
+        l = "j"
+        label=_("Jump to week")
+        weekmenu.add_command(label=label, underline=1,
+                              accelerator=l,
+                             command=self.gotoWeek)
+        # self.bind(c, lambda event: self.after(AFTER, self.gotoWeek()))
+        self.add2menu(path, (label, l))
+
+        l = "Left"
+        label=_("Previous week")
+        weekmenu.add_command(label=label, underline=1,
+                              accelerator=l,
+                             command=lambda e=None: self.showWeek(event=e, week=-1))
+        self.add2menu(path, (label, l))
+
+        l = "Right"
+        label=_("Next week")
+        weekmenu.add_command(label=label, underline=1,
+                              accelerator=l,
+                             command=lambda e=None: self.showWeek(event=e, week=+1))
+        self.add2menu(path, (label, l))
+
+        l = "Up"
+        label=_("Previous item")
+        weekmenu.add_command(label=label, underline=1,
+                              accelerator=l,
+                             command=lambda e=None: self.selectId(event=e, d=-1))
+        self.add2menu(path, (label, l))
+
+        l = "Down"
+        label=_("Next item")
+        weekmenu.add_command(label=label, underline=1,
+                              accelerator=l,
+                             command=lambda e=None: self.selectId(event=e, d=1))
+        self.add2menu(path, (label, l))
+
+        l = "b"
+        label=_("Show busy times")
+        weekmenu.add_command(label=label, underline=1,
+                              accelerator=l,
+                             command=self.showBusyTimes)
+        # self.bind(c, lambda event: self.after(AFTER, self.showBusyTimes()))
+        self.add2menu(path, (label, l))
+
+        viewmenu.add_cascade(label=path, menu=weekmenu, underline=0)
+
+        self.weekmenu.entryconfig(0, state="normal")
+        for i in range(1,8):
+            self.weekmenu.entryconfig(i, state="disabled")
+
+        path = VIEW
+
         viewmenu.add_separator()
         self.add2menu(path, (SEP, ))
+
+        # go home
+        l = "Space"
+        c = "<space>"
+        label = _("Home")
+        viewmenu.add_command(label=label, accelerator=l, command=self.goHome)
+        self.add2menu(path, (label, l))
+
+        # go to date
+        l, c = commandShortcut('j')
+        label=_("Jump to date")
+        viewmenu.add_command(
+            label=label, underline=1, accelerator=l,
+            command=self.goToDate)
+        # needed for os x to prevent dialog hanging
+        self.bind(c, lambda event: self.after(AFTER, self.goToDate))
+        self.add2menu(path, (label, l))
 
         # apply filter
         l, c = commandShortcut('f')
@@ -892,7 +1003,7 @@ class App(Tk):
             label=label, underline=1, accelerator=l,
             command=self.setFilter)
         # needed for os x to prevent dialog hanging
-        self.bind_all(c, lambda event: self.after(AFTER, self.setFilter))
+        self.bind(c, lambda event: self.after(AFTER, self.setFilter))
         self.add2menu(path, (label, l))
 
         # expand to depth
@@ -902,7 +1013,7 @@ class App(Tk):
             label=label, underline=1, accelerator=l,
             command=self.expand2Depth)
         # needed for os x to prevent dialog hanging
-        self.bind_all(c, lambda event: self.after(AFTER, self.expand2Depth))
+        self.bind(c, lambda event: self.after(AFTER, self.expand2Depth))
         self.add2menu(path, (label, l))
 
         # calendars
@@ -933,7 +1044,6 @@ class App(Tk):
         self.itemmenu = itemmenu = Menu(menubar, tearoff=0)
         path = ITEM
         self.add2menu(menu, (path, ))
-        # TODO: use ordereddict
         self.em_options = [
             [_('Copy'), 'c'],
             [_('Delete'), 'delete'],
@@ -950,8 +1060,7 @@ class App(Tk):
             'x': self.finishItem,
             'd': self.rescheduleItem,
             'g': self.openWithDefault,
-            # TODO: exportItemIcal options['icsitem_file']
-            'v': self.donothing,
+            'v': self.exportItemToIcal,
         }
         self.em_opts = [x[0] for x in self.em_options]
         # em_cmds = [x[1] for x in self.em_options]
@@ -960,13 +1069,16 @@ class App(Tk):
             label = self.em_options[i][0]
             k = self.em_options[i][1]
             if k == 'delete':
-                l = "Delete"
-                c = "<BackSpace>"
+                l = "Ctrl-BackSpace"
+                c = "<Control-BackSpace>"
             else:
                 l, c = commandShortcut(k)
             logger.debug('binding {0} to {1}'.format(c, self.edit2cmd[k]))
-            itemmenu.add_command(label=label, command=self.edit2cmd[k])
-            self.bind_all(c, lambda e, x=k: self.after(AFTER, self.edit2cmd[x]))
+            itemmenu.add_command(label=label, accelerator=l, command=self.edit2cmd[k])
+            # ^Backspace is one of the few accelerators that works on osx
+            # TODO: accelerators on Linux?
+            if k != "delete":
+                self.bind(c, lambda e, x=k: self.after(AFTER, self.edit2cmd[x]))
             self.add2menu(path, (label, l))
 
         menubar.add_cascade(label=path, underline=0, menu=itemmenu)
@@ -976,39 +1088,11 @@ class App(Tk):
         self.add2menu(menu, (path, ))
         toolsmenu = Menu(menubar, tearoff=0)
 
-        # go to date
-        l, c = commandShortcut('j')
-        label=_("Jump to date")
-        toolsmenu.add_command(
-            label=label, underline=1, accelerator=l,
-            command=self.goToDate)
-        # needed for os x to prevent dialog hanging
-        self.bind_all(c, lambda event: self.after(AFTER, self.goToDate))
-        self.add2menu(path, (label, l))
-
-
-        # busy times
-        l, c = commandShortcut('b')
-        label = _("Show busy periods")
-        toolsmenu.add_command(label=label, underline=1,
-                             accelerator=l,
-                             command=self.showBusyTimes)
-        self.bind_all(c, lambda event: self.after(AFTER, self.showBusyTimes))
-        self.add2menu(path, (label, l))
-
-        l, c = commandShortcut('w')
-        label=_("Display weekly calendar")
-        toolsmenu.add_command(label=label, underline=1,
-                              # accelerator=l,
-                             command=self.showWeekly)
-        self.bind_all(c, lambda event: self.after(AFTER, self.showWeekly()))
-        self.add2menu(path, (label, l))
-
         l, c = commandShortcut('y')
         label=_("Display yearly calendar")
         toolsmenu.add_command(label=label, underline=1, accelerator=l,
                              command=self.showCalendar)
-        self.bind_all(c, lambda event: self.after(AFTER, self.showCalendar))
+        self.bind(c, lambda event: self.after(AFTER, self.showCalendar))
         self.add2menu(path, (label, l))
 
         # date calculator
@@ -1018,8 +1102,8 @@ class App(Tk):
         self.bind(c, lambda event: self.after(AFTER, self.dateCalculator))
         self.add2menu(path, (label, l))
 
-        toolsmenu.add_separator()
-        self.add2menu(path, (SEP, ))
+        # toolsmenu.add_separator()
+        # self.add2menu(path, (SEP, ))
 
         # report
         l, c = commandShortcut('r')
@@ -1035,24 +1119,22 @@ class App(Tk):
         label = _("Show changes")
         toolsmenu.add_command(label=label, underline=1,  accelerator=l, command=self
                              .showChanges)
-        self.bind_all(c, lambda event: self.after(AFTER, self.showChanges))
+        self.bind(c, lambda event: self.after(AFTER, self.showChanges))
         self.add2menu(path, (label, l))
 
 
         ## export
         l, c = commandShortcut('V')
         label = _("Export active calendars to iCal")
-        toolsmenu.add_command(label=label, underline=1, command=self.donothing)
-        # TODO: exportActiveIcal options['icscal_file']
-        self.bind_all(c, self.donothing)
+        toolsmenu.add_command(label=label, underline=1, command=self.exportActiveToIcal)
+        self.bind(c, self.exportActiveToIcal)
         self.add2menu(path, (label, l))
 
         menubar.add_cascade(label=path, menu=toolsmenu, underline=0)
 
-        # logger.debug('menu_tree:\n{0}'.format(self.menutree.showMenu(root)))
-
+        # help
         helpmenu = Menu(menubar, tearoff=0)
-        path = _("Help")
+        path = HELP
         self.add2menu(menu, (path, ))
 
         # search is built in
@@ -1061,13 +1143,13 @@ class App(Tk):
         label = _("Help")
         helpmenu.add_command(label=label, underline=1, accelerator="F1", command=self.help)
         self.add2menu(path, (label, "F1"))
-        self.bind_all("<F1>", lambda e: self.after(AFTER, self.help))
+        self.bind("<F1>", lambda e: self.after(AFTER, self.help))
 
 
         label = _("About")
         helpmenu.add_command(label="About", accelerator="F2", command=self\
             .about)
-        self.bind_all("<F2>", self.about)
+        self.bind("<F2>", self.about)
         self.add2menu(path, (label, "F2"))
 
         # check for updates
@@ -1075,7 +1157,10 @@ class App(Tk):
         label = _("Check for update")
         helpmenu.add_command(label=label, underline=1, accelerator="F3", command=self.checkForUpdate)
         self.add2menu(path, (label, "F3"))
-        self.bind_all("<F3>", lambda e: self.after(AFTER, self.checkForUpdate))
+        self.bind("<F3>", lambda e: self.after(AFTER, self.checkForUpdate))
+
+        # self.add2menu(root, ('Main Window', ))
+        # self.add2menu('Main Window', ("Go Home", "Space"))
 
         menubar.add_cascade(label="Help", menu=helpmenu)
 
@@ -1300,7 +1385,6 @@ class App(Tk):
         """For testing"""
         logger.debug('donothing')
 
-    # TODO: implement makeReport
     def makeReport(self, e=None):
         logger.debug('makeReport')
         ReportWindow(parent=self, options=self.options, title=_("report"))
@@ -1334,6 +1418,27 @@ a time period if "+" is used."""
         prompt = "{0}:\n\n{1}".format(value, res)
         MessageWindow(self, title=_("result"), prompt=prompt)
 
+    def exportItemToIcal(self):
+        if 'icsitem_file' in loop.options:
+            res = export_ical_item(self.itemSelected, loop.options['icsitem_file'])
+            if res:
+                prompt = _("Selected item successfully exported to {0}".format(loop.options['icsitem_file']))
+            else:
+                prompt = _("Could not export selected item.")
+        else:
+            prompt = "icsitem_file is not set in etmtk.cfg"
+        MessageWindow(self, 'Selected Item Export', prompt)
+
+    def exportActiveToIcal(self):
+        if 'icscal_file' in loop.options:
+            res = export_ical(loop.uuid2hash, loop.options['icscal_file'], self.calendars)
+            if res:
+                prompt = _("Active calendars successfully exported to {0}".format(loop.options['icscal_file']))
+            else:
+                prompt = _("Could not export active calendars.")
+        else:
+            prompt = "icscal_file is not set in etmtk.cfg"
+        MessageWindow(self, 'Active Calendar Export', prompt)
 
     def newItem(self, e=None):
         logger.debug('newItem')
@@ -1693,14 +1798,14 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         # else:
         #     self.goHome()
 
-    def showBusyTimes(self, event=None, chosen_day=None):
-        prompt = _("""\
-Busy times will be shown for the week containing the date you select.
-Return an empty string for the current week. Relative dates and fuzzy
-parsing are supported.""")
-        d = GetDateTime(parent=self, title=_('date'), prompt=prompt)
-        chosen_day = d.value
-        logger.debug('chosen_day: {0}'.format(chosen_day))
+    def showBusyTimes(self, event=None):
+#         prompt = _("""\
+# Busy times will be shown for the week containing the date you select.
+# Return an empty string for the current week. Relative dates and fuzzy
+# parsing are supported.""")
+#         d = GetDateTime(parent=self, title=_('date'), prompt=prompt)
+#         chosen_day = d.value
+#         logger.debug('chosen_day: {0}'.format(chosen_day))
         # cal_regex = None
         # # logger.debug('options: {0}'.format(loop.options))
         # if loop.options['calendars']:
@@ -1708,11 +1813,14 @@ parsing are supported.""")
         #     cal_regex = re.compile(cal_pattern)
         #     logger.debug('cal_pattern: {0}'.format(cal_pattern))
 
-        if chosen_day is None:
-            return ()
+        # if chosen_day is None:
+        #     return ()
             # chosen_day = self.today
+        if self.busy_info is None:
+            return()
 
-        theweek, weekdays, busy_lst, occasion_lst = self.setWeek(chosen_day)
+        # theweek, weekdays, busy_lst, occasion_lst = self.setWeek(event, chosen_day=self.chosen_day)
+        theweek, weekdays, busy_lst, occasion_lst = self.busy_info
 
         lines = [theweek, '-'*len(theweek)]
         ampm = loop.options['ampm']
@@ -1748,7 +1856,7 @@ parsing are supported.""")
             if times:
                 lines.append("%s: %s" % (weekdays[i], "; ".join(times)))
         s = "\n".join(lines)
-        self.textWindow(parent=self, title=_('busy times'), prompt=s, opts=self.options)
+        self.textWindow(parent=self.win, title=_('busy times'), prompt=s, opts=self.options)
 
     def setWeek(self, chosen_day=None):
         if chosen_day is None:
@@ -1814,51 +1922,34 @@ parsing are supported.""")
                 fmt_dt(weekbeg, '%b %d, %Y'), fmt_dt(weekend, '%b %d, %Y'))
         header = leadingzero.sub('', header)
         theweek = _("Week {0}: {1}").format(wn, header)
-        return(theweek, weekdays, busy_lst, occasion_lst)
+        self.busy_info = (theweek, weekdays, busy_lst, occasion_lst)
+        return self.busy_info
+
+    def closeWeekly(self, event=None):
+        self.weekmenu.entryconfig(0, state="normal")
+        for i in range(1,8):
+            self.weekmenu.entryconfig(i, state="disabled")
+        if self.win:
+            self.win.destroy()
 
 
     def showWeekly(self, event=None):
         """
         Open the canvas at the current week
         """
-        prompt = _("""\
-Busy times will be shown for the week containing the date you select.
-Return an empty string for the current week. Relative dates and fuzzy
-parsing are supported.""")
-        d = GetDateTime(parent=self, title=_('date'), prompt=prompt)
-        chosen_day = d.value
-        logger.debug('chosen_day: {0}'.format(chosen_day))
-        # cal_regex = None
-        # # logger.debug('options: {0}'.format(loop.options))
-        # if loop.options['calendars']:
-        #     cal_pattern = r'^%s' % '|'.join([x[2] for x in self.options['calendars'] if x[1]])
-        #     cal_regex = re.compile(cal_pattern)
-        #     logger.debug('cal_pattern: {0}'.format(cal_pattern))
-
-        if chosen_day is None:
-            return ()
-        self.chosen_day = chosen_day
+        self.chosen_day = get_current_time()
         self.win = win = Toplevel(self)
+        self.win.protocol("WM_DELETE_WINDOW", self.closeWeekly)
         self.canvas = canvas = Canvas(win, width=420, height=360)
-        canvas.pack(side="top", fill="both", expand=1)
-        # box = Frame(win,
-        #             # highlightbackground=BGCOLOR, background=BGCOLOR
-        # )
-        # ok = Button(box, text="OK", width=6, command=win.destroy,
-        #            # default=ACTIVE,
-        #            # highlightbackground=BGCOLOR,
-        #            pady=2)
-        # ok.pack(padx=5, pady=0)
-        # box.pack(side="bottom", fill="x")
-
+        canvas.pack(side="top", fill="both", expand=1, pady=0)
         self.detailVar = StringVar(self)
         self.detailVar.set("")
         self.detail = Label(win, textvariable=self.detailVar)
-        # self.detail = ReadOnlyText(win, height=1, wrap="word", padx=3, bd=2, width=44, relief="sunken", font=self.tkfixedfont)
-        # self.detail = entry = Entry(win, text="")
-        self.detail.pack(side="bottom", fill="x", padx=10, pady=2)
+        self.detail.pack(side="bottom", fill="x", padx=10, pady=4)
         self.canvas.bind("<Configure>", self.showWeek)
 
+        win.bind('b', lambda event: self.after(AFTER, self.showBusyTimes))
+        win.bind('j', lambda event: self.after(AFTER, self.gotoWeek(event=event)))
         win.bind("<Return>", lambda e: win.destroy())
         win.bind("<Escape>", lambda e: win.destroy())
         win.bind('<Left>', (lambda e: self.showWeek(event=e, week=-1)))
@@ -1878,8 +1969,8 @@ parsing are supported.""")
             label = self.em_options[i][0]
             k = self.em_options[i][1]
             if k == 'delete':
-                l = "Delete"
-                c = "<BackSpace>"
+                l = "Ctrl-Delete"
+                c = "<Control-BackSpace>"
             elif k == 'x': # finish
                 continue
             else:
@@ -1887,21 +1978,36 @@ parsing are supported.""")
             logger.debug('binding {0} to {1}'.format(c, self.edit2cmd[k]))
             popup.add_command(label=label, command=self.edit2cmd[k])
         self.popup = popup
+        self.weekmenu.entryconfig(0, state="disabled")
+        for i in range(1,8):
+            self.weekmenu.entryconfig(i, state="normal")
+
+    def gotoWeek(self, event=None):
+        prompt = _("""\
+Busy times will be shown for the week containing the date you select.
+Return an empty string for the current week. Relative dates and fuzzy
+parsing are supported.""")
+        d = GetDateTime(parent=self.win, title=_('date'), prompt=prompt)
+        day = d.value
+        logger.debug('day: {0}'.format(day))
+        self.chosen_day = day
+        self.showWeek(event=event, week=None)
 
 
     def showWeek(self, event=None, week=None):
+        logger.debug("event: {0}, week: {1}, chosen_day: {2}".format(event, week, self.chosen_day))
         if not self.canvas:
             return "break"
-        if week == 0:
-            day = get_current_time()
-        elif week == 1:
-            day = self.next_week
-        elif week == -1:
-            day = self.prev_week
+        if week in [-1, 0, 1]:
+            if week == 0:
+                day = get_current_time()
+            elif week == 1:
+                day = self.next_week
+            elif week == -1:
+                day = self.prev_week
         elif self.chosen_day:
             day = self.chosen_day
         else:
-            logger.warn('bad value for week: {0}'.format(week))
             return "break"
 
         theweek, weekdays, busy_lst, occasion_lst = self.setWeek(day)
@@ -1913,10 +2019,15 @@ parsing are supported.""")
         r = 6
         t = 56
         b = 3
-        w, h = event.width, event.height
-        if type(w) is int and type(h) is int:
-            self.canvas_width = w
-            self.canvas_height = h
+        if event:
+            logger.debug('event: {0}'.format(event))
+            w, h = event.width, event.height
+            if type(w) is int and type(h) is int:
+                self.canvas_width = w
+                self.canvas_height = h
+            else:
+                w = self.canvas_width
+                h = self.canvas_height
         else:
             w = self.canvas_width
             h = self.canvas_height
@@ -1936,7 +2047,6 @@ parsing are supported.""")
             day = (self.week_beg + i * ONEDAY).replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
             if not occasion_lst[i]:
                 continue
-            # print(occasion_lst[i])
             occasions = occasion_lst[i]
             start_x = l + i * x
             end_x = start_x + x
@@ -1972,7 +2082,6 @@ parsing are supported.""")
                 busy_ids.append(id)
                 conf = [x for x in conf if x in busy_ids]
                 if conf:
-                    # print('conf', id, len(conf), conf)
                     bb1 = self.canvas.bbox(id)
                     bb2 = self.canvas.bbox(*conf)
                     # print("bb", bb1, bb2)
@@ -1980,7 +2089,6 @@ parsing are supported.""")
                     # we want the max of bb1[1], bb2[1]
                     # and the min of bb1[4], bb2[4]
                     ol = bb1[0], max(bb1[1], bb2[1]), bb1[2], min(bb1[3], bb2[3])
-                    # print('overlap', ol)
                     self.canvas.create_rectangle(ol, fill=CONFLICTFILL, outline="")
                 # ids.append(id)
                 tmp = list(tup[2:]) #id, time str, summary and file info
@@ -1993,7 +2101,6 @@ parsing are supported.""")
             self.canvas.tag_bind(id, '<Button-1>', self.on_select_item)
 
         self.canvas_ids = [x for x in self.busyHsh.keys()]
-        # print(self.canvas_ids)
         self.canvas_ids.sort()
         self.canvas_idpos = None
         # border
@@ -2043,7 +2150,6 @@ parsing are supported.""")
             self.canvas.itemconfig(old_id, outline=BUSYOUTLINE)
 
         id = self.canvas.find_withtag(CURRENT)[0]
-        # print("entering", id)
         self.canvas.focus(id)
         self.canvas_idpos = self.canvas_ids.index(id)
         self.canvas.itemconfig(id, outline=ACTIVEOUTLINE)
@@ -2164,21 +2270,6 @@ parsing are supported.""")
     def newCommand(self, e=None):
         newcommand = self.newValue.get()
         self.newValue.set(self.newLabel)
-        # print('newCommand', newcommand)
-
-    # TODO: Speed up help display
-    # def help(self, event=None):
-    #     res = self.menutree.showMenu("_")
-    #     # self.textWindow(parent=self, title='etm', prompt=res, modal=False)
-    #     nb = NotebookWindow(self, title="etm Help", opts=self.options, modal=False)
-    #     nb.addTab(label=_("Shortcuts"), content=res)
-    #     # self.update_idletasks()
-    #     nb.addTab(label=_("Overview"), content=OVERVIEW)
-    #     nb.addTab(label=_("Types"), content=ITEMTYPES)
-    #     nb.addTab(label=_("@Keys"), content=ATKEYS)
-    #     nb.addTab(label=_("Dates"), content=DATES)
-    #     nb.addTab(label=_("Preferences"), content=PREFERENCES)
-    #     nb.addTab(label=_("Reports"), content=REPORTS)
 
     def help(self, event=None):
         res = self.menutree.showMenu("_")
@@ -2291,7 +2382,7 @@ or 0 to display all changes.""").format(title)
                 text = "{1}\n\n{2}: {3}\n\n{4}: {5}".format(item, hsh['entry'].lstrip(), _("Errors"), hsh['errors'],  _("file"), filetext)
             else:
                 text = "{1}\n\n{2}: {3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
-            for i in [0, 1, 2, 4]: # everything except finish
+            for i in [0, 1, 2, 4, 6]: # everything except finish
                 self.itemmenu.entryconfig(i, state='normal')
             if isUnfinished:
                 self.itemmenu.entryconfig(3, state='normal')
@@ -2307,7 +2398,7 @@ or 0 to display all changes.""").format(title)
             # logger.debug(('selected: {0}'.format(hsh)))
         else:
             text = ""
-            for i in range(6):
+            for i in range(7):
                 self.itemmenu.entryconfig(i, state='disabled')
             self.itemSelected = None
             self.uuidSelected = None
@@ -2355,7 +2446,6 @@ or 0 to display all changes.""").format(title)
         return uuid, dt, hsh
 
     def updateClock(self):
-        # print('updateClock', loop.options)
         self.now = get_current_time()
         nxt = (60 - self.now.second) * 1000 - self.now.microsecond // 1000
         self.after(nxt, self.updateClock)
@@ -2724,21 +2814,17 @@ limit the display to branches that match.\
                 return _('could not process command "{0}"').format(cmd)
 
         elif self.mode == 'edit':
-            print('edit', cmd)
             res = loop.cmd_do_edit(cmd)
 
         elif self.mode == 'delete':
-            print('deleted', cmd)
             loop.cmd_do_delete(cmd)
             res = ''
 
         elif self.mode == 'finish':
-            print('finish', cmd)
             loop.cmd_do_finish(cmd)
             res = ''
 
         elif self.mode == 'new_date':
-            print('date', cmd)
             res = loop.new_date(cmd)
 
         if not res:
@@ -2823,7 +2909,6 @@ or 0 to expand all branches completely.""")
         max_depth = 100
         for text in elements:
             self.count += 1
-            # print('text', text)
             # text is a key in the element (tree) hash
             # these keys are (parent, item) tuples
             if text in tree:
@@ -2857,8 +2942,6 @@ or 0 to expand all branches completely.""")
 
                 oid = self.tree.insert(parent, 'end', iid=self.count, text=col1, open=(depth <= max_depth), value=[col2], tags=(item_type))
                 # oid = self.tree.insert(parent, 'end', text=col1, open=True, value=[col2])
-                # print(self.count, oid)
-                # print(self.count, oid, depth, col1, depth<=max_depth)
                 self.count2id[oid] = "{0}::{1}".format(uuid, dt)
                 if dt:
                     # print('trying to parse', dt)
@@ -2867,10 +2950,7 @@ or 0 to expand all branches completely.""")
                         if d not in self.date2id:
                             self.date2id[d] = parent
                     except:
-                        # FIXME: use logger
-                        print('could not parse', dt)
-                        print(text)
-
+                        logger.warn('could not parse: {0}'.format(dt))
 
 loop = None
 

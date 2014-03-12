@@ -414,7 +414,7 @@ def term_print(s):
         try:
             print(unicode(s).encode(term_encoding))
         except Exception as e:
-            print(s, type(s), e)
+            logger.exception("s: {0}".format(s))
 
 # noinspection PyGlobalUndefined
 def setup_parse(day_first, year_first):
@@ -2114,7 +2114,7 @@ For editing one or more, but not all, instances of an item. Needed:
                 tmp = []
                 for h in value:
                     if unicode(keys[0]) not in h:
-                        print("error:", keys[0], "not in", h)
+                        logger.warning("{0} not in {1}".format(keys[0], h))
                         continue
                     tmp.append('%s@%s %s' % (prefix, at_key,
                                              lst2str(h[unicode(keys[0])])))
@@ -3104,8 +3104,7 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                                       or hsh['rrule'].before(
                                     today_datetime, inc=True))
                                 if dt is None:
-                                    print('Error: no valid datetimes for',
-                                          hsh['_summary'], hsh['fileinfo'])
+                                    logger.warning('No valid datetimes for {0}, {1}'.format(hsh['_summary'], hsh['fileinfo']))
                                     continue
                             else:
                                 dt = hsh['rrule'].after(hsh['s'], inc=True)
@@ -3206,7 +3205,6 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
             for key in update.keys():
                 tree.setdefault(key, []).extend(update[key])
     logger.debug("called makeTree for {0} views".format(nv))
-    logger.debug("returning tree: {0}".format(tree))
     return tree
 
 
@@ -3638,33 +3636,6 @@ def add2list(l, item, expand=True):
         i = bisect.bisect_left(l, item)
     except:
         logger.exception("error adding: {0}".format(item))
-        # count = 0
-        # for i in item:
-        #     count += 1
-        #     if type(i) == tuple:
-        #         subcount = 0
-        #         print('   %s tuple' % count)
-        #         for j in i:
-        #             subcount += 1
-        #             print("       %s.%s %s:" % (
-        #                 count, subcount, type(j)), j)
-        #     else:
-        #         print("   %s %s:" % (count, type(i)), i)
-        #
-        # print("last added")
-        # count = 0
-        # for i in last_added:
-        #     count += 1
-        #     if type(i) == tuple:
-        #         subcount = 0
-        #         print('   %s tuple' % count)
-        #         for j in i:
-        #             subcount += 1
-        #             print("       %s.%s %s:" % (
-        #                 count, subcount, type(j)), j)
-        #     else:
-        #         print("   %s %s:" % (count, type(i)), i)
-        # print(sys.exc_info())
         return ()
 
     if i != len(l) and l[i] == item:
@@ -4780,7 +4751,8 @@ def export_ical_item(hsh, vcal_file):
         Export a single item in iCalendar format
     """
     if not has_icalendar:
-        return False, 'Could not import icalendar'
+        logger.error("Could not import icalendar")
+        return False
 
     cal = Calendar()
     cal.add('prodid', '-//etm_qt %s//dgraham.us//' % version)
@@ -4788,7 +4760,7 @@ def export_ical_item(hsh, vcal_file):
 
     ok, element = hsh2ical(hsh)
     if not ok:
-        return False, 'Could not process', hsh
+        return False
     cal.add_component(element)
 
     (name, ext) = os.path.splitext(vcal_file)
@@ -4797,17 +4769,21 @@ def export_ical_item(hsh, vcal_file):
         cal_str = cal.to_ical()
     except Exception:
         f = StringIO()
-        logger.exception(f)
-        return False, "could not serialize the calendar\n%s" % f.getvalue()
-    fo = open(pname, 'wb')
+        logger.exception("could not serialize the calendar")
+        return False
+    try:
+        fo = open(pname, 'wb')
+    except:
+        logger.exception("Could not open {0}".format(pname))
+        return False
     try:
         fo.write(cal_str)
     except Exception:
         f = StringIO()
-        logger.exception(f)
-        return False, "Could not write to %s\n%s" % (pname, f.getvalue)
-    fo.close()
-    return True, ''
+        logger.exception("Could not write to {0}".format(pname))
+    finally:
+        fo.close()
+    return True
 
 
 def export_ical(uuid2hash, vcal_file, calendars=None):
@@ -4815,7 +4791,8 @@ def export_ical(uuid2hash, vcal_file, calendars=None):
         Return items in calendars as a list of icalendar items
     """
     if not has_icalendar:
-        return False, 'Could not import icalendar'
+        logger.error('Could not import icalendar')
+        return False
 
     cal = Calendar()
     cal.add('prodid', '-//etm_qt %s//dgraham.us//' % version)
@@ -4840,16 +4817,22 @@ def export_ical(uuid2hash, vcal_file, calendars=None):
     except Exception:
         f = StringIO()
         logger.exception(f)
-        return False, "could not serialize the calendar\n%s" % f.getvalue()
-    fo = open(pname, 'wb')
+        logger.exception("Could not serialize the calendar")
+        return False
+    try:
+        fo = open(pname, 'wb')
+    except:
+        logger.exception("Could not open {0}".format(pname))
+        return False
     try:
         fo.write(cal_str)
     except Exception:
         f = StringIO()
-        logger.exception(f)
-        return False, "Could not write to %s\n%s" % (pname, f.getvalue)
-    fo.close()
-    return True, ''
+        logger.exception("Could not write to {0}" .format(pname))
+        return False
+    finally:
+        fo.close()
+    return True
 
 
 def import_ical(fname):
@@ -5145,12 +5128,8 @@ class ETMCmd():
         self.options['bef'] = bef
         uuid2hash, file2uuids, self.file2lastmodified, bad_datafiles, messages = \
             get_data(options=self.options, use_pickle=True)
-        # if messages:
-        #     for msg in messages:
-        #         term_print(msg)
         (self.rows, self.busytimes, self.busydays, self.alerts, self.dates, self.occasions) = getViewData(
             bef, file2uuids, uuid2hash, options=self.options,
-            # calendars=self.calendars
         )
         updateCurrentFiles(
             self.rows, file2uuids, uuid2hash, self.options)
@@ -5931,6 +5910,3 @@ if __name__ == "__main__":
         if sys.argv[1] not in ['a', 'c']:
             etmdir = sys.argv.pop(1)
     main(etmdir, sys.argv)
-
-# if __name__ == "__main__":
-#     print('data.py should only be imported. Run etm instead.')

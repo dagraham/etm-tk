@@ -317,7 +317,6 @@ class ReportWindow(Toplevel):
         for row in self.csv:
             fo.write("{0}\n".format(",".join(row)))
         fo.close()
-        # print(self.csv)
 
     def emailReport(self):
         logger.debug("not implemented")

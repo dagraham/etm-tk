@@ -39,8 +39,8 @@ else
         echo "### copying version $version base files ###"
         cp -p version.txt ~/.TEMP/version.txt
         cp -p CHANGES dist/etmtk-$version.tar.gz dist/etm_tk-$version.zip  ~/.TEMP/
-        ln -sf ~/.TEMP/etm_tk-$version.tar.gz ~/.TEMP/etm_tk-current.tar.gz
-        ln -sf ~/.TEMP/etm_tk-$version.zip ~/.TEMP/etm_tk-current.zip
+#        ln -sf ~/.TEMP/etm_tk-$version.tar.gz ~/.TEMP/etm_tk-current.tar.gz
+#        ln -sf ~/.TEMP/etm_tk-$version.zip ~/.TEMP/etm_tk-current.zip
         copy=1
         ;;
         d)
