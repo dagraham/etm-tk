@@ -50,8 +50,10 @@ import etmTk.data as data
 
 from dateutil.parser import parse
 
+from decimal import Decimal
+
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, zfmt, hsh2str, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, BGCOLOR, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator, AFTER, export_ical_item, export_ical)
+    init_localization, fmt_weekday, fmt_dt, zfmt, rfmt, efmt, hsh2str, str2hsh, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, BGCOLOR, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator, AFTER, export_ical_item, export_ical)
 
 from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES, REPORTS)
 
@@ -106,11 +108,15 @@ SEP = "----"
 BUSYFILL = "#D4DCFC"
 CONFLICTFILL = "#716DF7"
 # ACTIVEOUTLINE = "#7E96F7"
-ACTIVEOUTLINE = CONFLICTFILL
+# ACTIVEOUTLINE = CONFLICTFILL
+ACTIVEOUTLINE = "gray40"
+ACTIVEFILL = "yellow"
 # BUSYOUTLINE = BUSYFILL
 BUSYOUTLINE = ""
 LINECOLOR = "gray80"
-
+OCCASIONFILL = "gray98"
+CURRENTLINE = "#FA8166"
+CURRENTFILL = "#FCF2F0"
 LASTLTR = re.compile(r'([a-z])$')
 
 def sanitize_id(id):
@@ -592,6 +598,9 @@ class OptionsDialog():
     def __init__(self, parent, title="", prompt="", opts=None):
         if not opts: opts = []
         self.win = Toplevel(parent)
+        if parent:
+            self.win.geometry("+%d+%d" % (parent.winfo_rootx() + 50,
+                                  parent.winfo_rooty() + 50))
         self.parent = parent
         self.options = opts
         self.win.title(title)
@@ -759,6 +768,7 @@ class App(Tk):
         self.chosen_day = None
         self.busy_info = None
         self.win = None # showWeekly
+        self.today_col = None
         root = "_"
 
         # create the root node for the menu tree
@@ -1348,7 +1358,7 @@ class App(Tk):
 
 
     def confirm(self, parent=None, title="", prompt="", instance="xyz"):
-        ok, value = OptionsDialog(parent=self, title=_("confirm").format(instance), prompt=prompt).getValue()
+        ok, value = OptionsDialog(parent=parent, title=_("confirm").format(instance), prompt=prompt).getValue()
         return ok
 
 
@@ -1573,7 +1583,6 @@ a time period if "+" is used."""
             choice, value = self.which(EDIT, self.dtSelected)
             logger.debug("{0}: {1}".format(choice, value))
             self.tree.focus_set()
-            return
             self.itemSelected['_dt'] = parse(self.dtSelected)
         hsh_rev = hsh_cpy = None
         self.mode = 2  # replace
@@ -1799,27 +1808,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         #     self.goHome()
 
     def showBusyTimes(self, event=None):
-#         prompt = _("""\
-# Busy times will be shown for the week containing the date you select.
-# Return an empty string for the current week. Relative dates and fuzzy
-# parsing are supported.""")
-#         d = GetDateTime(parent=self, title=_('date'), prompt=prompt)
-#         chosen_day = d.value
-#         logger.debug('chosen_day: {0}'.format(chosen_day))
-        # cal_regex = None
-        # # logger.debug('options: {0}'.format(loop.options))
-        # if loop.options['calendars']:
-        #     cal_pattern = r'^%s' % '|'.join([x[2] for x in self.options['calendars'] if x[1]])
-        #     cal_regex = re.compile(cal_pattern)
-        #     logger.debug('cal_pattern: {0}'.format(cal_pattern))
-
-        # if chosen_day is None:
-        #     return ()
-            # chosen_day = self.today
         if self.busy_info is None:
             return()
-
-        # theweek, weekdays, busy_lst, occasion_lst = self.setWeek(event, chosen_day=self.chosen_day)
         theweek, weekdays, busy_lst, occasion_lst = self.busy_info
 
         lines = [theweek, '-'*len(theweek)]
@@ -1927,30 +1917,40 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
     def closeWeekly(self, event=None):
         self.weekmenu.entryconfig(0, state="normal")
+        self.today_col = None
         for i in range(1,8):
             self.weekmenu.entryconfig(i, state="disabled")
         if self.win:
             self.win.destroy()
 
 
-    def showWeekly(self, event=None):
+    def showWeekly(self, event=None, chosen_day=None):
         """
         Open the canvas at the current week
         """
-        self.chosen_day = get_current_time()
         self.win = win = Toplevel(self)
         self.win.protocol("WM_DELETE_WINDOW", self.closeWeekly)
-        self.canvas = canvas = Canvas(win, width=420, height=360)
+        self.current_day = get_current_time().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
+        self.chosen_day = chosen_day
+        if chosen_day is None:
+            self.chosen_day = get_current_time()
+        else:
+            self.chosen_day = chosen_day
+        self.selectedId = None
+        # self.win.bind("<Key>", self.key)
+        self.win.bind("<Control-Button-1>", self.on_select_item)
+        self.canvas = canvas = Canvas(win, width=420, height=420)
         canvas.pack(side="top", fill="both", expand=1, pady=0)
         self.detailVar = StringVar(self)
         self.detailVar.set("")
         self.detail = Label(win, textvariable=self.detailVar)
         self.detail.pack(side="bottom", fill="x", padx=10, pady=4)
         self.canvas.bind("<Configure>", self.showWeek)
+        # self.win.bind("<Configure>", self.showWeek)
 
-        win.bind('b', lambda event: self.after(AFTER, self.showBusyTimes))
-        win.bind('j', lambda event: self.after(AFTER, self.gotoWeek(event=event)))
-        win.bind("<Return>", lambda e: win.destroy())
+        win.bind('b', lambda e: self.after(AFTER, self.showBusyTimes))
+        win.bind('j', lambda e: self.after(AFTER, self.gotoWeek(event=e)))
+        win.bind("<Return>", lambda e: self.on_activate_item(event=e))
         win.bind("<Escape>", lambda e: win.destroy())
         win.bind('<Left>', (lambda e: self.showWeek(event=e, week=-1)))
         win.bind('<Right>', (lambda e: self.showWeek(event=e, week=1)))
@@ -1981,6 +1981,10 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.weekmenu.entryconfig(0, state="disabled")
         for i in range(1,8):
             self.weekmenu.entryconfig(i, state="normal")
+        # self.showWeek()
+
+    # def key(self, event):
+    #     print("pressed", repr(event.char))
 
     def gotoWeek(self, event=None):
         prompt = _("""\
@@ -1993,8 +1997,11 @@ parsing are supported.""")
         self.chosen_day = day
         self.showWeek(event=event, week=None)
 
-
     def showWeek(self, event=None, week=None):
+        self.selectedId = None
+        self.x_win = self.win.winfo_rootx()
+        self.y_win = self.win.winfo_rooty()
+        # print(self.x_win, self.y_win)
         logger.debug("event: {0}, week: {1}, chosen_day: {2}".format(event, week, self.chosen_day))
         if not self.canvas:
             return "break"
@@ -2032,8 +2039,10 @@ parsing are supported.""")
             w = self.canvas_width
             h = self.canvas_height
 
-        x = (w-1-l-r)//7
-        y = (h-1-t-b)//16
+        self.margins = (w, h, l, r, t, b)
+
+        x = Decimal(w-1-l-r)/Decimal(7)
+        y = Decimal(h-1-t-b)/Decimal(16)
 
         # week
         p = l + (w-1-l-r)/2, 20
@@ -2052,7 +2061,7 @@ parsing are supported.""")
             end_x = start_x + x
             for tup in occasions:
                 xy = start_x, t, end_x, t+y*16
-                id = self.canvas.create_rectangle(xy, fill="gray98", outline="", width=2)
+                id = self.canvas.create_rectangle(xy, fill=OCCASIONFILL, outline="", width=0)
                 tmp = list(tup)
                 tmp.append(day)
                 self.busyHsh[id] = tmp
@@ -2061,24 +2070,35 @@ parsing are supported.""")
         # busytimes
         startminutes = 7 * 60
         endminutes = 23 * 60
-        y_per_minutes = (h-1-t-b)/(endminutes - startminutes)
+        # y_per_minutes = (h-1-t-b)/(endminutes - startminutes)
+        # y_per_minutes = (y*16.0)/float(60 * 16)
+        y_per_minute = y/Decimal(60)
         busy_ids = []
+        self.today_id = None
+        self.today_col = None
         for i in range(7):
             day = (self.week_beg + i * ONEDAY).replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
             busy_times = busy_lst[i]
-            if not busy_times:
-                continue
             start_x = l + i * x
             end_x = start_x + x
+            if day == self.current_day:
+                self.today_col = i
+                xy = start_x, t, end_x, t+y*16
+                self.today_id = self.canvas.create_rectangle(xy, fill=CURRENTFILL, outline="", width=0)
+            if not busy_times and self.today_col is None:
+                continue
             for tup in busy_times:
                 conf = None
                 # print('day', day, tup[0])
                 daytime = day + tup[0] * ONEMINUTE
-                t1 = t + (max(7 * 60, tup[0]) - 7 * 60 ) * y_per_minutes
-                t2 = t + min(23 * 60, max(7 * 60, tup[1]) - 7 * 60) * y_per_minutes
+                t1 = t + (max(7 * 60, tup[0]) - 7 * 60 ) * y_per_minute
+                t2 = t + min(23 * 60, max(7 * 60, tup[1]) - 7 * 60) * y_per_minute
                 xy = start_x, t1, end_x, t2
                 conf = self.canvas.find_overlapping(*xy)
-                id = self.canvas.create_rectangle(xy, fill=BUSYFILL, outline=BUSYOUTLINE, width=2)
+                id = self.canvas.create_rectangle(xy, fill=BUSYFILL,
+                    # outline=BUSYOUTLINE,
+                    width=0
+                )
                 busy_ids.append(id)
                 conf = [x for x in conf if x in busy_ids]
                 if conf:
@@ -2089,16 +2109,30 @@ parsing are supported.""")
                     # we want the max of bb1[1], bb2[1]
                     # and the min of bb1[4], bb2[4]
                     ol = bb1[0], max(bb1[1], bb2[1]), bb1[2], min(bb1[3], bb2[3])
-                    self.canvas.create_rectangle(ol, fill=CONFLICTFILL, outline="")
+                    self.canvas.create_rectangle(ol, fill=CONFLICTFILL, outline="", width=0)
                 # ids.append(id)
                 tmp = list(tup[2:]) #id, time str, summary and file info
                 tmp.append(daytime)
                 # print("tmp", tmp)
                 self.busyHsh[id] = tmp
+            if self.today_col:
+                if self.current_minutes < 7 * 60:
+                    current_minutes = 7 * 60
+                elif self.current_minutes > 23 * 60:
+                    current_minutes = 23 * 60
+                else:
+                    current_minutes = self.current_minutes
+                start_x = l
+                end_x = l + x * 7
+                t1 = t + (max(7 * 60, current_minutes) - 7 * 60 ) * y_per_minute
+                xy = start_x, t1, end_x, t1
+                self.canvas.create_line(xy, width=1, fill=CURRENTLINE)
+
+        self.busy_ids = busy_ids
         for id in occasion_ids + busy_ids:
             self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
             self.canvas.tag_bind(id, '<Any-Leave>', self.on_leave_item)
-            self.canvas.tag_bind(id, '<Button-1>', self.on_select_item)
+            # self.canvas.tag_bind(id, '<Control-Button-1>', self.on_select_item)
 
         self.canvas_ids = [x for x in self.busyHsh.keys()]
         self.canvas_ids.sort()
@@ -2110,6 +2144,10 @@ parsing are supported.""")
 
         # verticals
         for i in range(1,7):
+            # if self.today_col and i in [self.today_col, self.today_col + 1]:
+            #     fill = "red"
+            # else:
+            #     fill = LINECOLOR
             # xy = (w-1)//2, 0, (w-1)//2, h-1
             xy = l+x*i, t, l+x*i, t+y*16
             self.canvas.create_line(xy, fill=LINECOLOR)
@@ -2126,21 +2164,30 @@ parsing are supported.""")
         # days
         for i in range(7):
             p = l + x/2 + x*i, t-13
-            self.canvas.create_text(p, text="{0}".format(weekdays[i]))
+            if self.today_col and i == self.today_col:
+                self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill="red")
+            else:
+                self.canvas.create_text(p, text="{0}".format(weekdays[i]))
 
     def selectId(self, event, d=1):
         if self.canvas_idpos is None:
             self.canvas_idpos = 0
         else:
             old_id = self.canvas_ids[self.canvas_idpos]
-            self.canvas.itemconfig(old_id, outline=BUSYOUTLINE)
+            if old_id in self.busy_ids:
+                self.canvas.itemconfig(old_id, fill=BUSYFILL)
+            else:
+                self.canvas.itemconfig(old_id, fill=OCCASIONFILL)
+            self.canvas.tag_lower(old_id)
             if d == -1:
                 self.canvas_idpos = max(0, self.canvas_idpos -1)
             elif d == 1:
                 self.canvas_idpos = min(len(self.canvas_ids) - 1, self.canvas_idpos + 1)
-        id = self.canvas_ids[self.canvas_idpos]
-        # print('moving to', id)
-        self.canvas.itemconfig(id, outline=ACTIVEOUTLINE)
+        self.selectedId = id = self.canvas_ids[self.canvas_idpos]
+        self.canvas.itemconfig(id, fill=ACTIVEFILL)
+        self.canvas.tag_raise(id)
+        if self.today_id:
+            self.canvas.tag_lower(self.today_id)
         self.detailVar.set(self.busyHsh[id][1])
 
 
@@ -2149,26 +2196,99 @@ parsing are supported.""")
             old_id = self.canvas_ids[self.canvas_idpos]
             self.canvas.itemconfig(old_id, outline=BUSYOUTLINE)
 
-        id = self.canvas.find_withtag(CURRENT)[0]
+        self.selectedId = id = self.canvas.find_withtag(CURRENT)[0]
         self.canvas.focus(id)
         self.canvas_idpos = self.canvas_ids.index(id)
-        self.canvas.itemconfig(id, outline=ACTIVEOUTLINE)
+        # self.canvas.itemconfig(id, outline=ACTIVEOUTLINE)
+        self.canvas.itemconfig(id, fill=ACTIVEFILL)
         self.detailVar.set(self.busyHsh[id][1])
 
     def on_leave_item(self, e):
         id = self.canvas.find_withtag(CURRENT)[0]
         # self.detail.delete("1.0", END)
         self.detailVar.set("")
-        # self.canvas.itemconfig(id, fill=BUSYFILL)
-        self.canvas.itemconfig(id, outline=BUSYOUTLINE)
+        self.canvas.itemconfig(id, fill=BUSYFILL)
+        self.selectedId = None
+        # self.canvas.itemconfig(id, outline=BUSYOUTLINE)
         self.canvas.focus("")
 
     def on_select_item(self, event):
-        id = self.canvas.find_withtag(CURRENT)[0]
+        current = self.canvas.find_withtag(CURRENT)
+        if current:
+            self.selectedId = id = self.canvas.find_withtag(CURRENT)[0]
+            print('item selected')
+            self.activatePopup(id, event.x_root, event.y_root)
+        else:
+            print('no selection')
+            self.newEvent(event)
+        return "break"
+
+    def on_activate_item(self, event):
+        id = self.selectedId
+        x1, y1, x2, y2 = self.canvas.coords(id)
+        x = self.x_win + int(x1)
+        y = self.y_win + int(y1)
+        self.activatePopup(id, x, y)
+
+    def newEvent(self, event):
+        self.win.focus_set()
+        min_round = 15
+        px = event.x
+        py = event.y
+        (w, h, l, r, t, b) = self.margins
+        x = Decimal(w-1-l-r)/Decimal(7)        # x per day intervals
+        y = Decimal(h-1-t-b)/Decimal(16 * 60)       # y per minute intervals
+        print('l:', l, 't:', t, 'x:', x, 'y:', y)
+        # y_per_minutes = (y*16.0)/(endminutes - startminutes)
+        print('days', [round(l + i * x) for i in range(7)])
+        print('hours', [round(t + i * y * 60) for i in range(17)])
+        # y_per_minute = y/float(60)
+        if px < l:
+            px = l
+        elif px > l + 7 * x:
+            py = l + 7 * x
+        if py < t:
+            py = t
+        elif py > t + 16 * 60 * y:
+            py = t + 16 * 60 * y
+
+        rx = round(Decimal(px - l)/x - Decimal(0.5))  # number of days
+        ry = 7 * 60 + round(Decimal(py - t)/y)  # number of minutes
+        print('days:', rx, 'minutes:', ry)
+        ryr = round(ry/Decimal(min_round)) * min_round
+
+        hours = ryr//60
+        minutes = ryr % 60
+        time = "{0}:{1:02d}".format(hours, minutes)
+
+        print("clicked at", event.x, event.y, "day:", rx, "minutes", ry, ryr, "time:", time)
+        dt = (self.week_beg + rx * ONEDAY).replace(hour=hours, minute=minutes, second=0, microsecond=0, tzinfo=None)
+        dtfmt = dt.strftime(efmt)
+        ans = self.confirm(
+            title=_('New event'),
+            prompt=_("Create a new event for {0}").format(dtfmt),
+            parent=self.win)
+        if ans:
+            # self.chosen_day = dt
+            s = "* ? @s {0}".format(dtfmt)
+            hsh = str2hsh(s, options=loop.options)[0]
+            print(s, hsh)
+            self.closeWeekly()
+            changed = SimpleEditor(parent=self, newhsh=hsh, options=loop.options).changed
+            if changed:
+                logger.debug('changed, reloading data')
+                loop.loadData()
+                self.updateAlerts()
+                # self.showWeek()
+            self.showWeekly(chosen_day=dt)
+
+    def activatePopup(self, id, x, y):
+        # id = self.selectedId
+        if id is None:
+            return
         self.uuidSelected = uuid = self.busyHsh[id][0]
         self.itemSelected = hsh = loop.uuid2hash[uuid]
         self.dtSelected = dt = self.busyHsh[id][-1].strftime(zfmt)
-        # print(uuid, hsh['entry'], dt)
         l1 = hsh['fileinfo'][1]
         l2 = hsh['fileinfo'][2]
         if l1 == l2:
@@ -2177,8 +2297,6 @@ parsing are supported.""")
             lines = "{0} {1}-{2}".format(_('lines'), l1, l2)
         self.filetext = filetext = "{0}, {1}".format(hsh['fileinfo'][0], lines)
         tmp = "{0}\n\n{1}: {2}".format(hsh['entry'], _("file"), filetext)
-        # self.detail.delete("1.0", END)
-        # self.detail.insert("1.0", tmp)
         type_chr = hsh['entry'][0]
 
         isRepeating = ('r' in hsh and dt)
@@ -2190,7 +2308,6 @@ parsing are supported.""")
             self.popup.entryconfig(1, label=self.em_opts[1])
             self.popup.entryconfig(2, label=self.em_opts[2])
             item = _('selected')
-        # isUnfinished = (type_chr in ['-', '+', '%'])
         hasLink = ('g' in hsh and hsh['g'])
         l1 = hsh['fileinfo'][1]
         l2 = hsh['fileinfo'][2]
@@ -2204,13 +2321,12 @@ parsing are supported.""")
             self.popup.entryconfig(4, state='normal')
         else:
             self.popup.entryconfig(4, state='disabled')
-
-
         try:
-            self.popup.tk_popup(event.x_root, event.y_root, 0)
+            self.popup.tk_popup(x, y, 0)
         finally:
             # make sure to release the grab (Tk 8.0a1 only)
             self.popup.grab_release()
+        return "break"
 
     # noinspection PyShadowingNames
     def showCalendar(self, e=None):
@@ -2447,6 +2563,9 @@ or 0 to display all changes.""").format(title)
 
     def updateClock(self):
         self.now = get_current_time()
+        self.current_minutes = self.now.hour * 60 + self.now.minute
+        if self.win and self.today_col:
+            self.showWeek()
         nxt = (60 - self.now.second) * 1000 - self.now.microsecond // 1000
         self.after(nxt, self.updateClock)
         nowfmt = "{0} {1}".format(

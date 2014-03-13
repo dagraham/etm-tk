@@ -803,6 +803,7 @@ rel_month_regex = re.compile(r'(?<![0-9])([-+][0-9]+)/([0-9]+)')
 fmt = "%a %Y-%m-%d %H:%M %Z"
 
 rfmt = "%Y-%m-%d %H:%M%z"
+efmt = "%Y-%m-%d %H:%M"
 
 sfmt = "%Y%m%dT%H%M"
 
@@ -1059,7 +1060,7 @@ def get_options(d=''):
     # add derived options
     (options['daybegin_fmt'], options['dayend_fmt'], options['reprtimefmt'],
      options['reprdatetimefmt'], options['etmdatetimefmt'],
-     options['rfmt']) = get_fmts(options)
+     options['rfmt'], options['efmt']) = get_fmts(options)
     options['config'] = config
     options['datafile'] = datafile
     options['scratchpad'] = os.path.join(options['etmdir'], _("scratchpad"))
@@ -1121,7 +1122,7 @@ def get_options(d=''):
 
 
 def get_fmts(options):
-    global rfmt
+    global rfmt, efmt
     df = "%x"
 
     if 'ampm' in options and options['ampm']:
@@ -1129,17 +1130,19 @@ def get_fmts(options):
         daybegin_fmt = "12am"
         dayend_fmt = "11:59pm"
         rfmt = "{0} %I:%M%p %z".format(df)
+        efmt = "{0} %I:%M%p".format(df)
 
     else:
         reprtimefmt = "%H:%M"
         daybegin_fmt = "0:00"
         dayend_fmt = "23:59"
         rfmt = "{0} %H:%M%z".format(df)
+        efmt = "{0} %H:%M".format(df)
 
     reprdatetimefmt = "%s %s %%Z" % (reprdatefmt, reprtimefmt)
     etmdatetimefmt = "%s %s" % (etmdatefmt, reprtimefmt)
     return (daybegin_fmt, dayend_fmt, reprtimefmt, reprdatetimefmt,
-            etmdatetimefmt, rfmt)
+            etmdatetimefmt, rfmt, efmt)
 
 
 def checkForNewerVersion():
@@ -2064,6 +2067,7 @@ For editing one or more, but not all, instances of an item. Needed:
    @s datetime
 3. Add &f datetime to selected job.
     """
+    print('hsh2str', hsh)
     if not options: options = {}
     if '_summary' not in hsh:
         hsh['_summary'] = ''

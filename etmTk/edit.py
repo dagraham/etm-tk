@@ -145,7 +145,7 @@ class ReportWindow(Toplevel):
             else:
                 l, c = commandShortcut(k)
                 logger.debug("k: {0}; l: {1}; c: {2}".format(k, l, c))
-                print("rm2cmd", k, self.rm2cmd[k])
+                # print("rm2cmd", k, self.rm2cmd[k])
                 self.bind(c, lambda e, x=k: self.after(AFTER, self.rm2cmd[x]))
             self.rm["menu"].entryconfig(i, accelerator=l, command=lambda x=k: self.after(AFTER, self.rm2cmd[x]))
         self.rm.pack(side="left", padx=2)
