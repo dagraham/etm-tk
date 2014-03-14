@@ -328,7 +328,7 @@ class ReportWindow(Toplevel):
 
 class SimpleEditor(Toplevel):
 
-    def __init__(self, parent=None, file=None, newhsh=None, rephsh=None, options=None, title=None):
+    def __init__(self, parent=None, file=None, newhsh=None, rephsh=None, options=None, title=None, modified=False):
         """
         If file is given, open file for editing.
         Otherwise, we are creating a new item and/or replacing an item
@@ -387,7 +387,6 @@ class SimpleEditor(Toplevel):
         # check will evaluate the item entry and, if repeating, show reps
         inspect = Button(frame, text=_("Validate"), highlightbackground=BGCOLOR,  command=self.onCheck, pady=2)
         inspect.pack(side=LEFT, padx=4)
-
 
         # find
         Button(frame, text='x', command=self.clearFind, highlightbackground=BGCOLOR, padx=8, pady=2).pack(side=LEFT, padx=0)
@@ -449,7 +448,7 @@ class SimpleEditor(Toplevel):
                 self.edithsh = self.newhsh
                 initfile = ensureMonthly(options=self.options)
                 text = ''
-            elif rephsh is None:  # newhsh
+            elif rephsh is None:  # newhsh is not None
                 # we are creating a new item as a copy
                 self.mode = 1
                 self.edithsh = self.newhsh
@@ -457,6 +456,7 @@ class SimpleEditor(Toplevel):
                     initfile = newhsh['fileinfo'][0]
                 else:
                     initfile = ensureMonthly(options=self.options)
+                # print('SimpleEditor hsh:', self.edithsh)
                 text = hsh2str(self.edithsh, self.options)
             elif newhsh is None: # rephsh
                 # we are editing and replacing rephsh - no file prompt
@@ -485,8 +485,9 @@ class SimpleEditor(Toplevel):
         self.settext(text)
 
         # clear the undo buffer
-        self.text.edit_reset()
-        self.setmodified(False)
+        if not modified:
+            self.text.edit_reset()
+            self.setmodified(False)
         self.text.bind('<<Modified>>', self.updateSaveStatus)
 
         # if self.parent:

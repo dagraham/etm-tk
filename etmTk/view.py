@@ -202,35 +202,48 @@ class MenuTree:
 class Timer():
     def __init__(self):
         """
-
+            Methods providing the action timer
         """
+        self.timer_cancel()
+        self.starttime = datetime.now()
+
+    def timer_cancel(self):
         self.timer_delta = 0 * ONEMINUTE
         self.timer_active = False
         self.timer_status = STOPPED
+        self.stop_status = STOPPED
         self.timer_last = None
         self.timer_hsh = None
         self.timer_summary = None
 
 
-    def timer_start(self, hsh=None):
+    def timer_start(self, hsh=None, toggle=True):
         if not hsh: hsh = {}
         self.timer_hsh = hsh
         text = hsh['_summary']
-        if len(text) > 10:
-            self.timer_summary = "{0}~".format(text[:16])
+        if len(text) > 16:
+            self.timer_summary = "{0}~".format(text[:15])
         else:
             self.timer_summary = text
-        self.timer_toggle(self.timer_hsh)
+        if toggle:
+            self.timer_toggle(self.timer_hsh)
+        else:
+            self.timer_status = self.stop_status
 
-    def timer_finish(self, create=True):
+    def timer_stop(self, create=True):
         if self.timer_status == STOPPED:
             return ()
+        self.stop_status = self.timer_status
         if self.timer_status == RUNNING:
             self.timer_delta += datetime.now() - self.timer_last
+            self.timer_status = PAUSED
 
         self.timer_delta = max(self.timer_delta, ONEMINUTE)
-        self.timer_status = STOPPED
-        self.timer_last = None
+        # e = fmt_period(self.timer_delta)
+        self.timer_hsh['s'] = self.starttime
+        self.timer_hsh['e'] = self.timer_delta
+        self.timer_hsh['itemtype'] = '~'
+        # print('timer_stop hsh:', self.timer_hsh)
 
     def timer_toggle(self, hsh=None):
         if not hsh: hsh = {}
@@ -253,10 +266,10 @@ class Timer():
                        self.timer_last)
         else:
             elapsed_time = 0 * ONEMINUTE
-        plus = ""
+        plus = " ({0})".format(_("paused"))
         self.timer_minutes = elapsed_time.seconds//60
         if self.timer_status == RUNNING:
-            plus = "+"
+            plus = " ({0})".format(_("running"))
         # ret = "{0}  {1}{2}".format(self.timer_summary, self.timer_time, s)
         ret = "{0}  {1}{2}".format(self.timer_summary, fmt_period(elapsed_time), plus)
         logger.debug("timer: {0}; {1}; {2}".format(ret, self.timer_last, elapsed_time))
@@ -626,9 +639,9 @@ class OptionsDialog():
                     command=self.getValue,
                     value=val).pack(padx=10, anchor=W)
         box = Frame(self.win)
-        c = Button(box, text="Cancel", width=10, command=self.cancel)
+        c = Button(box, text=_("No"), width=10, command=self.cancel)
         c.pack(side=LEFT, padx=5, pady=5)
-        o = Button(box, text="OK", width=10, default='active', command=self.ok)
+        o = Button(box, text=_("Yes"), width=10, default='active', command=self.ok)
         o.pack(side=LEFT, padx=5, pady=5)
         box.pack()
         self.win.bind('<Return>', (lambda e, o=o: o.invoke()))
@@ -799,14 +812,21 @@ class App(Tk):
         self.bind(c, lambda e: self.after(AFTER, self.newItem))
         self.add2menu(path, (label, l))
 
-        label = _("Timer")
-        l, c = commandShortcut('m')
+        label = _("Begin/Pause Action Timer")
+        l, c = commandShortcut(',')
         logger.debug("{0}: {1}, {2}".format(label, l, c))
         newmenu.add_command(label=label, accelerator=l, command=self.startActionTimer)
         self.bind(c, lambda e: self.after(AFTER, self.startActionTimer))
         self.add2menu(path, (label, l))
 
+        label = _("Finish Action Timer")
+        l, c = commandShortcut('.')
+        logger.debug("{0}: {1}, {2}".format(label, l, c))
+        newmenu.add_command(label=label, accelerator=l, command=self.startActionTimer)
+        self.bind(c, lambda e: self.after(AFTER, self.finishActionTimer))
+        self.add2menu(path, (label, l))
         filemenu.add_cascade(label=NEW, menu=newmenu)
+        newmenu.entryconfig(2, state="disabled")
 
         path = FILE
         # Open
@@ -971,7 +991,7 @@ class App(Tk):
         self.add2menu(path, (label, l))
 
         l = "b"
-        label=_("Show busy times")
+        label=_("Show list of busy times")
         weekmenu.add_command(label=label, underline=1,
                               accelerator=l,
                              command=self.showBusyTimes)
@@ -1540,7 +1560,7 @@ a time period if "+" is used."""
                 # edit_str = hsh2str(hsh_cpy, loop.options)
 
         changed = SimpleEditor(parent=self, newhsh=hsh_cpy, rephsh=None,
-                         options=loop.options, title=title).changed
+                         options=loop.options, title=title, modified=True).changed
 
         if changed:
             loop.loadData()
@@ -2590,8 +2610,7 @@ or 0 to display all changes.""").format(title)
             cal_pattern = r'^%s' % '|'.join([x[2] for x in self.options['calendars'] if x[1]])
             cal_regex = re.compile(cal_pattern)
             logger.debug("cal_regex: {0}".format(self.cal_regex))
-            alerts = [x for x in alerts if
-                           self.cal_regex.match(x[-1])]
+            alerts = [x for x in alerts if cal_regex.match(x[-1])]
         if alerts:
             curr_minutes = datetime2minutes(self.now)
             td = -1
@@ -2782,11 +2801,9 @@ limit the display to branches that match.\
 
     def startActionTimer(self, event=None):
         """
-
-        :param event:
-        :return:
+        Prompt for a summary and start action timer.
         """
-        if self.actionTimer.timer_status == 'stopped':
+        if self.actionTimer.timer_status == STOPPED:
             if self.uuidSelected:
                 nullok = True
                 # options = {'nullok': True}
@@ -2819,7 +2836,8 @@ limit the display to branches that match.\
                 # shouldn't happen
                 return "break"
             logger.debug('item: {0}'.format(hsh))
-            self.newmenu.entryconfig(1, label=_("toggle timer"))
+            # self.newmenu.entryconfig(1, label=_("toggle timer"))
+
             self.actionTimer.timer_start(hsh)
             if ('running' in loop.options['action_timer'] and
                     loop.options['action_timer']['running']):
@@ -2841,13 +2859,42 @@ limit the display to branches that match.\
                 subprocess.call(tcmd, shell=True)
 
         self.timerStatus.set(self.actionTimer.get_time())
+        self.newmenu.entryconfig(2, state="normal")
         return "break"
 
-    def stopTimer(self, event=None):
+    def finishActionTimer(self, event=None):
         if self.actionTimer.timer_status not in [RUNNING, PAUSED]:
             logger.info('stopping already stopped timer')
             return "break"
+        self.actionTimer.timer_stop()
         self.timerStatus.set(self.actionTimer.get_time())
+        hsh = self.actionTimer.timer_hsh
+        # print('finishActionTimer hsh:', hsh)
+        changed = SimpleEditor(parent=self, newhsh=hsh, rephsh=None,
+                         options=loop.options, title=_("new action"), modified=True).changed
+
+        if changed:
+            # clear status and reload
+            self.timerStatus.set("")
+            loop.loadData()
+            self.updateAlerts()
+            self.showView(row=self.topSelected)
+            self.newmenu.entryconfig(2, state="disabled")
+        else:
+            # edit canceled
+            ans = self.confirm(
+                title=_('timer'),
+                prompt=_('Retain the timer for "{0}"').format(self.actionTimer.timer_hsh['_summary']),
+                parent=self)
+            if ans:
+                # restore timer with the old status
+                self.actionTimer.timer_start(hsh=hsh, toggle=False)
+                self.timerStatus.set(self.actionTimer.get_time())
+            else:
+                self.actionTimer.timer_cancel()
+                self.timerStatus.set("")
+                self.newmenu.entryconfig(2, state="disabled")
+        self.tree.focus_set()
 
 
     def gettext(self, event=None):

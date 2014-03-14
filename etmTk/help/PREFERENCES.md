@@ -279,7 +279,7 @@ These are (label, default, path relative to `datadir`) tuples to be interpreted 
 
 When non-default calendars are selected, busy times in the "week view" will appear in one color for events from default calendars and in another color for events from non-default calendars.
 
-*Note that the calendar icon only appears in the main gui if this setting is provided.*
+**Only data files that belong to one of the calendar directories or their subdirectories will be accessible within etm.**
 
 ### current files
 
