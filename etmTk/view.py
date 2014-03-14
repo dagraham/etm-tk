@@ -204,10 +204,10 @@ class Timer():
         """
             Methods providing the action timer
         """
-        self.timer_cancel()
+        self.timer_clear()
         self.starttime = datetime.now()
 
-    def timer_cancel(self):
+    def timer_clear(self):
         self.timer_delta = 0 * ONEMINUTE
         self.timer_active = False
         self.timer_status = STOPPED
@@ -221,6 +221,8 @@ class Timer():
         if not hsh: hsh = {}
         self.timer_hsh = hsh
         text = hsh['_summary']
+        if 'e' in hsh:
+            self.timer_delta = hsh['e']
         if len(text) > 16:
             self.timer_summary = "{0}~".format(text[:15])
         else:
@@ -243,7 +245,6 @@ class Timer():
         self.timer_hsh['s'] = self.starttime
         self.timer_hsh['e'] = self.timer_delta
         self.timer_hsh['itemtype'] = '~'
-        # print('timer_stop hsh:', self.timer_hsh)
 
     def timer_toggle(self, hsh=None):
         if not hsh: hsh = {}
@@ -265,7 +266,7 @@ class Timer():
             elapsed_time = (self.timer_delta + datetime.now() -
                        self.timer_last)
         else:
-            elapsed_time = 0 * ONEMINUTE
+            elapsed_time = self.timer_delta
         plus = " ({0})".format(_("paused"))
         self.timer_minutes = elapsed_time.seconds//60
         if self.timer_status == RUNNING:
@@ -1394,7 +1395,7 @@ class App(Tk):
             cal_pattern = ''
             self.cal_regex = None
             self.specialCalendars.set("")
-            # print('updateCalendars', loop.calendars, cal_pattern, self.cal_regex)
+            # ('updateCalendars', loop.calendars, cal_pattern, self.cal_regex)
         self.updateAlerts()
         self.showView()
 
@@ -2004,7 +2005,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         # self.showWeek()
 
     # def key(self, event):
-    #     print("pressed", repr(event.char))
+    #     ("pressed", repr(event.char))
 
     def gotoWeek(self, event=None):
         prompt = _("""\
@@ -2248,14 +2249,12 @@ parsing are supported.""")
 
         rx = round(Decimal(px - l)/x - Decimal(0.5))  # number of days
         ry = 7 * 60 + round(Decimal(py - t)/y)  # number of minutes
-        print('days:', rx, 'minutes:', ry)
         ryr = round(ry/Decimal(min_round)) * min_round
 
         hours = ryr//60
         minutes = ryr % 60
         time = "{0}:{1:02d}".format(hours, minutes)
 
-        # print("clicked at", event.x, event.y, "day:", rx, "minutes", ry, ryr, "time:", time)
         dt = (self.week_beg + rx * ONEDAY).replace(hour=hours, minute=minutes, second=0, microsecond=0, tzinfo=None)
         dtfmt = dt.strftime(efmt)
         ans = self.confirm(
@@ -2802,11 +2801,16 @@ limit the display to branches that match.\
     def startActionTimer(self, event=None):
         """
         Prompt for a summary and start action timer.
+        if uuid:
+            if ~
+                restart timer?
+            else:
+                enter summary or empty
         """
         if self.actionTimer.timer_status == STOPPED:
             if self.uuidSelected:
                 nullok = True
-                # options = {'nullok': True}
+                sel_hsh = loop.uuid2hash[self.uuidSelected]
                 prompt = _("""\
     Enter a summary for the new action timer or return an empty string
     to create a timer based on the selected item.""")
@@ -2818,20 +2822,21 @@ limit the display to branches that match.\
             options = {'nullok': nullok}
             value = GetString(parent=self, title=_('action timer'),  prompt=prompt, opts=options).value
             # value = d.value
+            self.tree.focus_set()
             logger.debug('value: {0}'.format(value))
             if value is None:
                 return "break"
-            # if nullok and not value:
-            #     return "break"
             if value:
                 self.timerItem = None
                 hsh = {'_summary': value}
             elif nullok:
                 self.timerItem = self.uuidSelected
                 # Based on item, 'entry' will be in hsh
-                hsh = loop.uuid2hash[self.uuidSelected]
-                if hsh['itemtype'] == '~' and hsh['s'].date() == datetime.today():
-                    logger.debug('an action recorded today')
+                hsh = sel_hsh
+                ('hsh', hsh)
+                for k in ['_r', 'o', '+', '-']:
+                    if k in hsh:
+                        del hsh[k]
             else:
                 # shouldn't happen
                 return "break"
@@ -2869,17 +2874,17 @@ limit the display to branches that match.\
         self.actionTimer.timer_stop()
         self.timerStatus.set(self.actionTimer.get_time())
         hsh = self.actionTimer.timer_hsh
-        # print('finishActionTimer hsh:', hsh)
         changed = SimpleEditor(parent=self, newhsh=hsh, rephsh=None,
                          options=loop.options, title=_("new action"), modified=True).changed
 
         if changed:
             # clear status and reload
+            self.actionTimer.timer_clear()
             self.timerStatus.set("")
+            self.newmenu.entryconfig(2, state="disabled")
             loop.loadData()
             self.updateAlerts()
             self.showView(row=self.topSelected)
-            self.newmenu.entryconfig(2, state="disabled")
         else:
             # edit canceled
             ans = self.confirm(
@@ -2891,7 +2896,7 @@ limit the display to branches that match.\
                 self.actionTimer.timer_start(hsh=hsh, toggle=False)
                 self.timerStatus.set(self.actionTimer.get_time())
             else:
-                self.actionTimer.timer_cancel()
+                self.actionTimer.timer_clear()
                 self.timerStatus.set("")
                 self.newmenu.entryconfig(2, state="disabled")
         self.tree.focus_set()
