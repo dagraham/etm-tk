@@ -2067,7 +2067,6 @@ For editing one or more, but not all, instances of an item. Needed:
    @s datetime
 3. Add &f datetime to selected job.
     """
-    print('hsh2str', hsh)
     if not options: options = {}
     if '_summary' not in hsh:
         hsh['_summary'] = ''
@@ -4209,6 +4208,20 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
                     (uid, 'so', setSummary(hsh, dt), sdt, etmdt)]
                 add2list(items, item)
                 continue
+            if hsh['itemtype'] == '!':
+                if not ('k' in hsh and hsh['k']):
+                    hsh['k'] = _("none")
+                keywords = [x.strip() for x in hsh['k'].split(':')]
+                item = [
+                    ('note', (hsh['k'], tstr2SCI[typ][0]), '',
+                     hsh['_summary'], f), tuple(keywords),
+                    (uid, typ, setSummary(hsh, ''), '', etmdt)]
+
+                # item = [
+                #     ('note', 2, (tstr2SCI['so'][0]), dt,
+                #      hsh['_summary'], f),
+                #     (uid, 'ns', setSummary(hsh, dt), sdt, etmdt)]
+                add2list(items, item)
             #--------- make entry for next view ----------#
             if 's' not in hsh and hsh['itemtype'] in [u'+', u'-', u'%']:
                 dts = "none"
@@ -5071,6 +5084,7 @@ class ETMCmd():
             's': 'day',  # schedule view in the GUI
             'p': 'folder',
             't': 'tag',
+            'n': 'note',
             'k': 'keyword'
         }
         try:
@@ -5555,18 +5569,21 @@ where N is the number of a report specification from the file {0}:\n """.format(
         # return(res)
 
     def do_n(self, arg_str='', itemstr=""):
-        logger.debug('arg_str: {0}'.format(arg_str))
-        if arg_str:
-            new_item = s2or3(arg_str)
-            new_hsh, msg = str2hsh(new_item, options=self.options)
-            logger.debug('new_hsh: {0}'.format(new_hsh))
-            if msg:
-                return "\n".join(msg)
-            if 's' not in new_hsh:
-                new_hsh['s'] = None
-            res = self.append_item(new_hsh, self.currfile)
-            if res:
-                return _("item saved")
+        return self.mk_rep('n {0}'.format(arg_str))
+
+    # def do_n(self, arg_str='', itemstr=""):
+    #     logger.debug('arg_str: {0}'.format(arg_str))
+    #     if arg_str:
+    #         new_item = s2or3(arg_str)
+    #         new_hsh, msg = str2hsh(new_item, options=self.options)
+    #         logger.debug('new_hsh: {0}'.format(new_hsh))
+    #         if msg:
+    #             return "\n".join(msg)
+    #         if 's' not in new_hsh:
+    #             new_hsh['s'] = None
+    #         res = self.append_item(new_hsh, self.currfile)
+    #         if res:
+    #             return _("item saved")
 
     @staticmethod
     def help_n():

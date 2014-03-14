@@ -105,19 +105,19 @@ CLOSE = _("Close")
 
 SEP = "----"
 
-BUSYFILL = "#D4DCFC"
-CONFLICTFILL = "#716DF7"
 # ACTIVEOUTLINE = "#7E96F7"
 # ACTIVEOUTLINE = CONFLICTFILL
-ACTIVEOUTLINE = "gray40"
-ACTIVEFILL = "yellow"
 # BUSYOUTLINE = BUSYFILL
+ACTIVEFILL = "#FAFCAC"
+ACTIVEOUTLINE = "gray40"
+BUSYFILL = "#D4DCFC"
 BUSYOUTLINE = ""
+CONFLICTFILL = "#716DF7"
+CURRENTFILL = "#FCF2F0"
+CURRENTLINE = "#E0535C"
+LASTLTR = re.compile(r'([a-z])$')
 LINECOLOR = "gray80"
 OCCASIONFILL = "gray98"
-CURRENTLINE = "#FA8166"
-CURRENTFILL = "#FCF2F0"
-LASTLTR = re.compile(r'([a-z])$')
 
 def sanitize_id(id):
     return id.strip().replace(" ", "")
@@ -1773,8 +1773,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
     def noteView(self, e=None):
         # TODO; finish noteView
-        pass
-        # self.setView(NOTES)
+        self.setView(NOTES)
 
     def setView(self, view, row=None):
         self.rowSelected = None
@@ -1794,7 +1793,6 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
     def showView(self, e=None, row=None):
         self.depth2id = {}
         self.currentView.set(self.view)
-        # self.viewValue.set(self.viewLabel)
         fltr = self.filterValue.get()
         cmd = "{0} {1}".format(
             self.vm_options[self.vm_opts.index(self.view)][1], fltr)
@@ -2001,7 +1999,6 @@ parsing are supported.""")
         self.selectedId = None
         self.x_win = self.win.winfo_rootx()
         self.y_win = self.win.winfo_rooty()
-        # print(self.x_win, self.y_win)
         logger.debug("event: {0}, week: {1}, chosen_day: {2}".format(event, week, self.chosen_day))
         if not self.canvas:
             return "break"
@@ -2047,7 +2044,6 @@ parsing are supported.""")
         # week
         p = l + (w-1-l-r)/2, 20
         self.canvas.create_text(p, text=theweek)
-        # ids = []
         self.busyHsh = {}
 
         # occasions
@@ -2067,11 +2063,6 @@ parsing are supported.""")
                 self.busyHsh[id] = tmp
                 occasion_ids.append(id)
 
-        # busytimes
-        startminutes = 7 * 60
-        endminutes = 23 * 60
-        # y_per_minutes = (h-1-t-b)/(endminutes - startminutes)
-        # y_per_minutes = (y*16.0)/float(60 * 16)
         y_per_minute = y/Decimal(60)
         busy_ids = []
         self.today_id = None
@@ -2089,31 +2080,24 @@ parsing are supported.""")
                 continue
             for tup in busy_times:
                 conf = None
-                # print('day', day, tup[0])
                 daytime = day + tup[0] * ONEMINUTE
                 t1 = t + (max(7 * 60, tup[0]) - 7 * 60 ) * y_per_minute
                 t2 = t + min(23 * 60, max(7 * 60, tup[1]) - 7 * 60) * y_per_minute
                 xy = start_x, t1, end_x, t2
                 conf = self.canvas.find_overlapping(*xy)
-                id = self.canvas.create_rectangle(xy, fill=BUSYFILL,
-                    # outline=BUSYOUTLINE,
-                    width=0
-                )
+                id = self.canvas.create_rectangle(xy, fill=BUSYFILL, width=0 )
                 busy_ids.append(id)
                 conf = [x for x in conf if x in busy_ids]
                 if conf:
                     bb1 = self.canvas.bbox(id)
                     bb2 = self.canvas.bbox(*conf)
-                    # print("bb", bb1, bb2)
                     # bb1[0] = bb2[0], bb1[2] = bb2[2] - same day
                     # we want the max of bb1[1], bb2[1]
                     # and the min of bb1[4], bb2[4]
                     ol = bb1[0], max(bb1[1], bb2[1]), bb1[2], min(bb1[3], bb2[3])
                     self.canvas.create_rectangle(ol, fill=CONFLICTFILL, outline="", width=0)
-                # ids.append(id)
                 tmp = list(tup[2:]) #id, time str, summary and file info
                 tmp.append(daytime)
-                # print("tmp", tmp)
                 self.busyHsh[id] = tmp
             if self.today_col:
                 if self.current_minutes < 7 * 60:
@@ -2132,28 +2116,20 @@ parsing are supported.""")
         for id in occasion_ids + busy_ids:
             self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
             self.canvas.tag_bind(id, '<Any-Leave>', self.on_leave_item)
-            # self.canvas.tag_bind(id, '<Control-Button-1>', self.on_select_item)
 
         self.canvas_ids = [x for x in self.busyHsh.keys()]
         self.canvas_ids.sort()
         self.canvas_idpos = None
         # border
-        # xy = 0, 0, x*7, y*16
         xy = l, t, l+x*7, t+y*16
         self.canvas.create_rectangle(xy)
 
         # verticals
         for i in range(1,7):
-            # if self.today_col and i in [self.today_col, self.today_col + 1]:
-            #     fill = "red"
-            # else:
-            #     fill = LINECOLOR
-            # xy = (w-1)//2, 0, (w-1)//2, h-1
             xy = l+x*i, t, l+x*i, t+y*16
             self.canvas.create_line(xy, fill=LINECOLOR)
         # horizontals
         for j in range(1,16):
-            # xy = 0, (h-1)//2, w-1, (h-1)//2
             xy = l, t+y*j, l+x*7, t+y*j
             self.canvas.create_line(xy, fill=LINECOLOR)
         # hours
@@ -2165,7 +2141,7 @@ parsing are supported.""")
         for i in range(7):
             p = l + x/2 + x*i, t-13
             if self.today_col and i == self.today_col:
-                self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill="red")
+                self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=CURRENTLINE)
             else:
                 self.canvas.create_text(p, text="{0}".format(weekdays[i]))
 
@@ -2207,19 +2183,19 @@ parsing are supported.""")
         id = self.canvas.find_withtag(CURRENT)[0]
         # self.detail.delete("1.0", END)
         self.detailVar.set("")
-        self.canvas.itemconfig(id, fill=BUSYFILL)
+        if id in self.busy_ids:
+            self.canvas.itemconfig(id, fill=BUSYFILL)
+        else:
+            self.canvas.itemconfig(id, fill=OCCASIONFILL)
         self.selectedId = None
-        # self.canvas.itemconfig(id, outline=BUSYOUTLINE)
         self.canvas.focus("")
 
     def on_select_item(self, event):
         current = self.canvas.find_withtag(CURRENT)
         if current:
             self.selectedId = id = self.canvas.find_withtag(CURRENT)[0]
-            print('item selected')
             self.activatePopup(id, event.x_root, event.y_root)
         else:
-            print('no selection')
             self.newEvent(event)
         return "break"
 
@@ -2238,11 +2214,6 @@ parsing are supported.""")
         (w, h, l, r, t, b) = self.margins
         x = Decimal(w-1-l-r)/Decimal(7)        # x per day intervals
         y = Decimal(h-1-t-b)/Decimal(16 * 60)       # y per minute intervals
-        print('l:', l, 't:', t, 'x:', x, 'y:', y)
-        # y_per_minutes = (y*16.0)/(endminutes - startminutes)
-        print('days', [round(l + i * x) for i in range(7)])
-        print('hours', [round(t + i * y * 60) for i in range(17)])
-        # y_per_minute = y/float(60)
         if px < l:
             px = l
         elif px > l + 7 * x:
@@ -2261,7 +2232,7 @@ parsing are supported.""")
         minutes = ryr % 60
         time = "{0}:{1:02d}".format(hours, minutes)
 
-        print("clicked at", event.x, event.y, "day:", rx, "minutes", ry, ryr, "time:", time)
+        # print("clicked at", event.x, event.y, "day:", rx, "minutes", ry, ryr, "time:", time)
         dt = (self.week_beg + rx * ONEDAY).replace(hour=hours, minute=minutes, second=0, microsecond=0, tzinfo=None)
         dtfmt = dt.strftime(efmt)
         ans = self.confirm(
@@ -2272,7 +2243,6 @@ parsing are supported.""")
             # self.chosen_day = dt
             s = "* ? @s {0}".format(dtfmt)
             hsh = str2hsh(s, options=loop.options)[0]
-            print(s, hsh)
             self.closeWeekly()
             changed = SimpleEditor(parent=self, newhsh=hsh, options=loop.options).changed
             if changed:
@@ -2467,7 +2437,6 @@ or 0 to display all changes.""").format(title)
         Tree row has gained selection.
         """
         item = self.tree.selection()[0]
-        # print('item', item)
         self.rowSelected = int(item)
         type_chr = self.tree.item(item)['text'][0]
         uuid, dt, hsh = self.getInstance(item)
@@ -2613,8 +2582,6 @@ or 0 to display all changes.""").format(title)
         self.update_idletasks()
         if loop.alerts:
             logger.debug('updateAlerts 1: {0}'.format(len(loop.alerts)))
-        # print(loop.alerts)
-        # cal_regex = None
         alerts = deepcopy(loop.alerts)
         if loop.options['calendars']:
             cal_pattern = r'^%s' % '|'.join([x[2] for x in self.options['calendars'] if x[1]])
@@ -2893,18 +2860,10 @@ limit the display to branches that match.\
 
     def process_input(self, event=None, cmd=None):
         """
-        This is called whenever enter is pressed in the input field.
-        Action depends upon comand_mode.
-        Append input to history, process it and show the result in output.
-        :param event:
-        :param cmd:
         """
-        # if not cmd:
-        #     cmd = self.e.get().strip()
         logger.debug('process_input cmd: {0}'.format(cmd))
         if not cmd:
             return True
-
         if self.mode == 'command':
             cmd = cmd.strip()
             if cmd[0] == 'w':
@@ -3036,8 +2995,6 @@ or 0 to expand all branches completely.""")
                 children = tree[text]  # this are the children tuples of item
                 oid = self.tree.insert(parent, 'end', iid=self.count, text=item,
                                        open=(depth <= max_depth))
-                # oid = self.tree.insert(parent, 'end', text=item, open=True)
-                # print(self.count, oid, depth, item)
                 self.depth2id.setdefault(depth, set([])).add(oid)
                 # recurse to get children
                 self.count2id[oid] = None
@@ -3063,7 +3020,6 @@ or 0 to expand all branches completely.""")
                 # oid = self.tree.insert(parent, 'end', text=col1, open=True, value=[col2])
                 self.count2id[oid] = "{0}::{1}".format(uuid, dt)
                 if dt:
-                    # print('trying to parse', dt)
                     try:
                         d = parse(dt[:10]).date()
                         if d not in self.date2id:
