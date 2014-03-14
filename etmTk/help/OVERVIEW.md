@@ -81,11 +81,21 @@ All items with tag entries grouped by tag and sorted by type and *relevant datet
 
 All items grouped by keyword and sorted by type and *relevant datetime*.
 
+### Notes
+
+All notes grouped and sorted by keyword and summary.
+
 ### Paths
 
 All items grouped by file path and sorted by type and *relevant datetime*. Use this view to review the status of your projects.
 
 The *relevant datetime* is the past due date for any past due task, the starting datetime for any non-repeating item and the datetime of the next instance for any repeating item.
+
+### Week
+
+Events and occasions displayed graphically by week. Left and right cursor keys change, respectively, to the previous and next week. Up and down cursor keys select, respectively, the previous and next items within the given week. Items can also be selected by moving the mouse over the item. The summary and time period for the selected item is displayed at the bottom of the screen. Pressing return with an item selected or control-clicking an item opens a context menu. Control-clicking an unscheduled time opens a dialog to create an event for that date and time.
+
+Pressing "j" opens a dialog to jump to the week containing a fuzzy parsed date. Pressing "b" displays a list of busy times for the active week.
 
 ## Data Organization and Calendars
 

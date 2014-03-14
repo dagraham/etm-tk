@@ -60,6 +60,8 @@ This version has not been released. I'm providing this information here in the h
 
 There are no longer separate views for Now and Next. The Monthly view from etm-qt has been removed and the Weekly view is being prepared.
 
+**Notes view** is also new and shows notes grouped and sorted by keyword.
+
 ### Comands and Shortcuts
 
     Menubar

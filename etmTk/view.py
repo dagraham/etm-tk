@@ -1793,7 +1793,6 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.setView(TAGS)
 
     def noteView(self, e=None):
-        # TODO; finish noteView
         self.setView(NOTES)
 
     def setView(self, view, row=None):
