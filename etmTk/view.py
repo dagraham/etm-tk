@@ -1524,7 +1524,7 @@ a time period if "+" is used."""
             elif choice == 2:
                 # this and all subsequent instances
                 tmp = []
-                if u'+' in hsh:
+                if u'+' in hsh_cpy:
                     tmp_cpy = []
                     for d in hsh_cpy['+']:
                         if d >= dtn:
@@ -1802,6 +1802,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             logger.debug("row: {0}".format(row))
             # self.tree.see(max(0, self.rowSelected))
             self.tree.yview(max(0, row - 1))
+        if self.win:
+            self.showWeek()
         # else:
         #     self.goHome()
 
@@ -2194,7 +2196,8 @@ parsing are supported.""")
         current = self.canvas.find_withtag(CURRENT)
         if current:
             self.selectedId = id = self.canvas.find_withtag(CURRENT)[0]
-            self.activatePopup(id, event.x_root, event.y_root)
+            if id in self.busyHsh:
+                self.activatePopup(id, event.x_root, event.y_root)
         else:
             self.newEvent(event)
         return "break"
