@@ -1752,7 +1752,6 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
         self.updateAlerts()
         self.showView(row=self.topSelected)
 
-    # TODO: rescheduling a repeating item before the starting datetime
     def rescheduleItem(self, e=None):
         if not self.itemSelected:
             return
@@ -1833,7 +1832,6 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.mode = 'command'
         self.process_input(event=e, cmd=cmd)
 
-
     def showView(self, e=None, row=None):
         self.depth2id = {}
         self.currentView.set(self.view)
@@ -1847,6 +1845,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             # self.tree.see(max(0, self.rowSelected))
             self.tree.yview(max(0, row - 1))
         if self.win:
+            print('self.win', self.win)
             self.showWeek()
         # else:
         #     self.goHome()
@@ -1966,6 +1965,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             self.weekmenu.entryconfig(i, state="disabled")
         if self.win:
             self.win.destroy()
+            self.win = None
 
 
     def showWeekly(self, event=None, chosen_day=None):
@@ -2001,7 +2001,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         # disable ^J calling gotoDate
         win.bind('<Control-j>', self.donothing())
         win.bind("<Return>", lambda e: self.on_activate_item(event=e))
-        win.bind("<Escape>", lambda e: win.destroy())
+        win.bind("<Escape>", lambda e: self.closeWeekly(e))
         win.bind('<Left>', (lambda e: self.showWeek(event=e, week=-1)))
         win.bind('<Right>', (lambda e: self.showWeek(event=e, week=1)))
         win.bind('<space>', (lambda e: self.showWeek(event=e, week=0)))
