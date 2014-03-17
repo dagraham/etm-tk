@@ -328,7 +328,7 @@ class ReportWindow(Toplevel):
 
 class SimpleEditor(Toplevel):
 
-    def __init__(self, parent=None, file=None, newhsh=None, rephsh=None, options=None, title=None, modified=False):
+    def __init__(self, parent=None, master=None, file=None, newhsh=None, rephsh=None, options=None, title=None, modified=False):
         """
         If file is given, open file for editing.
         Otherwise, we are creating a new item and/or replacing an item
@@ -341,13 +341,18 @@ class SimpleEditor(Toplevel):
         :param file: path to file to be edited
         """
         # self.frame = frame = Frame(parent)
-        Toplevel.__init__(self, parent)
+        if master is None:
+            master = parent
+        self.master = master
+        Toplevel.__init__(self, master)
         self.minsize(400, 300)
         self.geometry('500x200')
         self.transient(parent)
         self.configure(background=BGCOLOR, highlightbackground=BGCOLOR)
         self.parent = parent
         self.loop = parent.loop
+        self.messages = self.loop.messages
+        self.messages = []
         self.changed = False
 
         self.scrollbar = None
@@ -537,10 +542,10 @@ class SimpleEditor(Toplevel):
                 logger.debug("{0} items in completions matching '{1}'".format(len(matches), match))
                 # self.line = line
                 self.match = match
+
                 self.autocompletewindow = acw = Toplevel(self)
                 self.scrollbar = scrollbar = ttk.Scrollbar(acw,
                                                            orient="vertical")
-                # self.scrollbar.configure(width=8)
                 self.listbox = listbox = Listbox(acw, yscrollcommand=scrollbar.set, exportselection=False, bg="white")
                 for item in matches:
                     listbox.insert(END, item)
@@ -550,6 +555,7 @@ class SimpleEditor(Toplevel):
                 self.listbox.select_set(0)
                 self.listbox.see(0)
                 self.listbox.focus_set()
+                self.listbox.bind("<Double-1>", self.completionSelected)
                 self.listbox.bind("<Return>", self.completionSelected)
                 self.listbox.bind("<Escape>", self.hideCompletions)
                 self.listbox.bind("Up", self.cursorUp)
@@ -558,7 +564,6 @@ class SimpleEditor(Toplevel):
             else:
                 relfile = relpath(self.options['auto_completions'], self.options['etmdir'])
                 self.messageWindow(title='etm', prompt=_("No matches for '{0}'\nin '{1}'.").format(match, relfile), opts=self.options)
-                # logger.debug("nothing in completions matching '{0}'.".format(match))
                 return "break"
         else:
             # return
@@ -691,23 +696,18 @@ class SimpleEditor(Toplevel):
             return "break"
 
     def onCheck(self, event=None, showreps=True):
+        self.loop.messages = []
         text = self.gettext()
         logger.debug("text: {0}".format(text))
         msg = []
         reps = []
         error = False
-        try:
-            hsh, msg = str2hsh(text, options=self.options)
-        except Exception as e:
-            logger.exception('could not process: {0}'.format(text))
-            error = True
-        if msg:
-            messages = "{0}".format("\n".join(msg))
+        hsh, msg = str2hsh(text, options=self.options)
+        self.loop.messages.extend(msg)
+        if self.loop.messages:
+            messages = "{0}".format("\n".join(self.loop.messages))
             logger.debug("messages: {0}".format(messages))
             self.messageWindow(MESSAGES, messages, opts=self.options)
-        if error or msg:
-            self.newhsh = None
-            logger.debug('returning ok False')
             return False
 
         # we have a good hsh
@@ -772,8 +772,8 @@ class SimpleEditor(Toplevel):
         if ans:
             if self.parent:
                 logger.debug('focus set')
-                self.parent.focus()
-                self.parent.tree.focus_set()
+                self.master.focus()
+                self.master.focus_set()
             self.destroy()
         return "break"
 

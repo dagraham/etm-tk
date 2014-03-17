@@ -23,6 +23,7 @@ pandoc -s --toc --toc-depth=2 -B ~/etm-tk/etmTk/style-before -f markdown -t html
 #    pandoc -s --toc --toc-depth=2 -B ~/etm-tk/etmTk/style-before -f markdown -t html -o $file.html $file.md
 #done
 
+cd etmTk/help
 echo Creating help.py
 quotes='"""'
 echo "" > ../help.py
@@ -55,6 +56,7 @@ pdflatex help.tex
 # pandoc -s --toc --toc-depth=3 -f markdown -t html -o help.html  help.md overview.md data.md views.md reports.md shortcuts.md preferences.md
 # pdflatex help.tex
 
+cd ..
 echo Creating HEADER and README
 cd ~/etm-tk/etmTk
 for file in HEADER README; do

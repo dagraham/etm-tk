@@ -644,21 +644,21 @@ def date_calculator(s, options=None):
     date_calc_regex = re.compile(r'^\s*(.+)([+-])(.*)$')
     m = date_calc_regex.match(s)
     if not m:
-        return 'error: could not parse "%s"' % s
+        return "", 'error: could not parse "%s"' % s
     x, pm, y = [z.strip() for z in m.groups()]
     try:
         dt_x = parse(parse_dtstr(x))
         pmy = "%s%s" % (pm, y)
         if period_string_regex.match(pmy):
-            return fmt_datetime(dt_x + parse_period(pmy), options)
+            return fmt_datetime(dt_x + parse_period(pmy), options), ""
         else:
             dt_y = parse(parse_dtstr(y))
             if pm == '-':
-                return fmt_period(dt_x - dt_y)
+                return fmt_period(dt_x - dt_y), ""
             else:
-                return 'error: datetimes cannot be added'
+                return "", 'error: datetimes cannot be added'
     except ValueError:
-        return 'error parsing "%s"' % s
+        return "", 'error parsing "%s"' % s
 
 
 def mail_report(message, smtp_from=None, smtp_server=None,
@@ -803,7 +803,7 @@ rel_month_regex = re.compile(r'(?<![0-9])([-+][0-9]+)/([0-9]+)')
 fmt = "%a %Y-%m-%d %H:%M %Z"
 
 rfmt = "%Y-%m-%d %H:%M%z"
-efmt = "%Y-%m-%d %H:%M"
+efmt = "%H:%M %a %b %d"
 
 sfmt = "%Y%m%dT%H%M"
 
@@ -1124,20 +1124,20 @@ def get_options(d=''):
 def get_fmts(options):
     global rfmt, efmt
     df = "%x"
-
+    ef = "%a %b %d"
     if 'ampm' in options and options['ampm']:
         reprtimefmt = "%I:%M%p"
         daybegin_fmt = "12am"
         dayend_fmt = "11:59pm"
         rfmt = "{0} %I:%M%p %z".format(df)
-        efmt = "{0} %I:%M%p".format(df)
+        efmt = "%I:%M%p {0}".format(ef)
 
     else:
         reprtimefmt = "%H:%M"
         daybegin_fmt = "0:00"
         dayend_fmt = "23:59"
         rfmt = "{0} %H:%M%z".format(df)
-        efmt = "{0} %H:%M".format(df)
+        efmt = "%H:%M {0}".format(ef)
 
     reprdatetimefmt = "%s %s %%Z" % (reprdatefmt, reprtimefmt)
     etmdatetimefmt = "%s %s" % (etmdatefmt, reprtimefmt)
@@ -1280,7 +1280,9 @@ tstr2SCI = {
 }
 
 
-def fmt_period(td):
+def fmt_period(td, parent=None):
+    # logger.debug('td: {0}, {1}'.format(td, type(td)))
+    msg = ""
     if td < oneminute * 0:
         return '0m'
     if td == oneminute * 0:
@@ -1968,13 +1970,13 @@ def parse_date_period(s):
         try:
             pr = parse_period(parts[1])
         except Exception:
-            return 'error: could not parse period "{0}"'.format(parts[1])
+            return '', 'error: could not parse period "{0}"'.format(parts[1])
         if ' + ' in s:
-            return dt + pr
+            return dt + pr, ''
         else:
-            return dt - pr
+            return dt - pr, ''
     else:
-        return dt
+        return dt, ''
 
 
 def parse_period(s, minutes=True):
@@ -2001,16 +2003,17 @@ def parse_period(s, minutes=True):
         unitperiod = oneday
     try:
         m = int(s)
-        return m * unitperiod
+        return m * unitperiod, ""
     except Exception:
         m = int_regex.match(s)
         if m:
-            return td + int(m.group(1)) * unitperiod
+            return td + int(m.group(1)) * unitperiod, ""
             # if we get here we should have a period string
     m = period_string_regex.match(s)
     if not m:
         logger.error("Invalid period string: '{0}'".format(s))
-        return "Invalid period string: '{0}'".format(s)
+        msg = "Invalid period string: '{0}'".format(s)
+        return "", "Invalid period string: '{0}'".format(s)
     m = week_regex.search(s)
     if m:
         td += int(m.group(1)) * oneweek
@@ -2025,9 +2028,9 @@ def parse_period(s, minutes=True):
         td += int(m.group(1)) * oneminute
     m = sign_regex.match(s)
     if m and m.group(1) == '-':
-        return -1 * td
+        return -1 * td, ""
     else:
-        return td
+        return td, ""
 
 
 def year2string(startyear, endyear):
@@ -3371,7 +3374,9 @@ def str2hsh(s, uid=None, options=None):
                 arguments = []
                 alert_parts = at_val.split(':')
                 t_lst = alert_parts.pop(0).split(',')
-                triggers = tuple([parse_period(x) for x in t_lst])
+                periods = tuple([parse_period(x) for x in t_lst])
+                triggers = [x[0] for x in periods]
+                msg.extend([x[1] for x in periods if x[1]])
                 if alert_parts:
                     action_parts = [
                         x.strip() for x in alert_parts[0].split(';')]
@@ -3402,17 +3407,15 @@ def str2hsh(s, uid=None, options=None):
                     if amp_key == 'q':
                         part_hsh[amp_key] = int(amp_val)
                     elif amp_key == 'u':
-                        part_hsh[amp_key] = parse(
-                            parse_datetime(amp_val)).replace(tzinfo=None)
+                        try:
+                            part_hsh[amp_key] = parse(
+                                parse_datetime(amp_val)).replace(tzinfo=None)
+                        except:
+                            msg.append(_("could not parse: {0}").format(amp_val))
 
                     elif amp_key == 'e':
-                        try:
-                            part_hsh['e'] = parse_period(amp_val)
-                        except:
-                            msg.append(
-                                "error: could not parse hsh['e']: '%s'" %
-                                amp_val)
-
+                        part_hsh['e'], m = parse_period(amp_val)
+                        if m: msg.append(m)
                     else:
                         m = range_regex.search(amp_val)
                         if m:
@@ -3447,12 +3450,8 @@ def str2hsh(s, uid=None, options=None):
                 elif at_key == 'k':
                     hsh['k'] = ":".join([x.strip() for x in at_val.split(':')])
                 elif at_key == 'e':
-                    try:
-                        hsh['e'] = parse_period(at_val)
-                    except:
-                        msg.append(
-                            "error: could not parse hsh['e']: '%s'" %
-                            at_val)
+                    hsh['e'], m = parse_period(at_val)
+                    if m: msg.append(m)
                 elif at_key == 'p':
                     hsh['p'] = int(at_val)
                     if hsh['p'] <= 0 or hsh['p'] >= 10:
@@ -3578,7 +3577,7 @@ def str2hsh(s, uid=None, options=None):
         hsh['i'] = unicode(uuid.uuid4())
     except:
         fio = StringIO()
-        logger.exception(fio)
+        logger.exception('exception procsessing "{0}"'.format(s))
         traceback.print_exc(file=fio)
         msg.append(fio.getvalue())
     return hsh, msg
@@ -4989,6 +4988,7 @@ class ETMCmd():
         self.calendars = deepcopy(options['calendars'])
         # logger.debug('Calendars: {0}'.format(self.calendars))
         self.cal_regex = None
+        self.messages = []
         self.cmdDict = {
             '?': self.do_help,
             'a': self.do_a,
@@ -5371,6 +5371,12 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
                 else:
                     hsh_rev.setdefault('-', []).append(old_dtn)
                 hsh_rev.setdefault('+', []).append(new_dtn)
+                # check starting time
+                if new_dtn < hsh_rev['s']:
+                    olds = hsh_rev['s']
+                    d = (hsh_rev['s'] - new_dtn).days
+                    hsh_rev['s'] = hsh_rev['s'] - (d+1) * oneday
+                    print('old, new', olds, d, hsh_rev['s'])
             else: # dated but not repeating
                 hsh_rev['s'] = new_dtn
         else: # either undated or not repeating
