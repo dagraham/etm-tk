@@ -110,9 +110,19 @@ SEP = "----"
 # BUSYOUTLINE = BUSYFILL
 ACTIVEFILL = "#FAFCAC"
 ACTIVEOUTLINE = "gray40"
-BUSYFILL = "#D4DCFC"
+
+# BUSYFILL = "#D4DCFC" # blue
+DEFAULTFILL = "#D4DCFC" # blue
+# BUSYFILL = "#CAECED" # cyan
+# BUSYFILL = "#F8D7FA" # magenta
+# BUSYFILL = "#C7EDC8" # green
+OTHERFILL = "#C7EDC8" # green
+
 BUSYOUTLINE = ""
-CONFLICTFILL = "#716DF7"
+# CONFLICTFILL = "#716DF7"
+# CONFLICTFILL = "#9BAEFA"
+# CONFLICTFILL = "#FAC2B6"
+CONFLICTFILL = "#C1C4C9"
 CURRENTFILL = "#FCF2F0"
 CURRENTLINE = "#E0535C"
 LASTLTR = re.compile(r'([a-z])$')
@@ -1373,6 +1383,13 @@ class App(Tk):
             self.cal_regex = re.compile(cal_pattern)
             logger.debug("cal_pattern: {0}".format(cal_pattern))
 
+        self.default_regex = None
+        if 'calendars' in loop.options and loop.options['calendars']:
+            calendars = loop.options['calendars']
+            default_pattern = r'^%s' % '|'.join(
+                [x[2] for x in calendars if x[1]])
+            self.default_regex = re.compile(default_pattern)
+
         # start clock
         self.updateClock()
 
@@ -1408,17 +1425,17 @@ class App(Tk):
         for i in range(len(loop.calendars)):
             loop.calendars[i][1] = self.calendarValues[i].get()
         if loop.calendars != loop.options['calendars']:
-            cal_pattern = r'^%s' % '|'.join(
-                [x[2] for x in loop.calendars if x[1]])
-            self.cal_regex = re.compile(cal_pattern)
             self.specialCalendars.set(_("not default calendars"))
         else:
-            cal_pattern = ''
-            self.cal_regex = None
             self.specialCalendars.set("")
-            # ('updateCalendars', loop.calendars, cal_pattern, self.cal_regex)
+        cal_pattern = r'^%s' % '|'.join(
+            [x[2] for x in loop.calendars if x[1]])
+        self.cal_regex = re.compile(cal_pattern)
+
         self.updateAlerts()
         self.showView()
+        if self.win:
+            self.showWeek()
 
 
     def quit(self, e=None):
@@ -1845,10 +1862,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             # self.tree.see(max(0, self.rowSelected))
             self.tree.yview(max(0, row - 1))
         if self.win:
-            print('self.win', self.win)
             self.showWeek()
-        # else:
-        #     self.goHome()
 
     def showBusyTimes(self, event=None):
         if self.busy_info is None:
@@ -1909,6 +1923,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         day = weekbeg
         busy_lst = []
         occasion_lst = []
+        matching = self.cal_regex is not None and self.default_regex is not None
         while day <= weekend:
             weekdays.append(fmt_weekday(day))
             isokey = day.isocalendar()
@@ -1917,8 +1932,13 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
                 bt = []
                 for item in loop.occasions[isokey]:
                     it = list(item)
-                    if self.cal_regex and not self.cal_regex.match(it[-1]):
-                        continue
+                    if matching:
+                        if not self.cal_regex.match(it[-1]):
+                            continue
+                        mtch = (self.default_regex.match(it[-1]) is not None)
+                    else:
+                        mtch = True
+                    it.append(mtch)
                     item = tuple(it)
                     bt.append(item)
                 occasion_lst.append(bt)
@@ -1929,8 +1949,16 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
                 bt = []
                 for item in loop.busytimes[isokey][1]:
                     it = list(item)
-                    if self.cal_regex and not self.cal_regex.match(it[-1]):
+                    if it[0] == it[1]:
+                        # skip reminders
                         continue
+                    if matching:
+                        if not self.cal_regex.match(it[-1]):
+                            continue
+                        mtch = (self.default_regex.match(it[-1]) is not None)
+                    else:
+                        mtch = True
+                    it.append(mtch)
                     item = tuple(it)
                     bt.append(item)
                 busy_lst.append(bt)
@@ -1993,6 +2021,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.canvas = canvas = Canvas(win, width=420, height=420, background="white", bd=0)
         canvas.pack(side="top", fill="both", expand=1, pady=0)
         self.win.bind("<Control-Button-1>", self.on_select_item)
+        self.win.bind("<Double-1>", self.on_select_item)
+        # self.win.bind("<Button-1>", self.on_lower_item)
         self.canvas.bind("<Configure>", self.showWeek)
         # self.win.bind("<Configure>", self.showWeek)
 
@@ -2119,7 +2149,7 @@ parsing are supported.""")
             end_x = start_x + x
             for tup in occasions:
                 xy = start_x, t, end_x, t+y*16
-                id = self.canvas.create_rectangle(xy, fill=OCCASIONFILL, outline="", width=0)
+                id = self.canvas.create_rectangle(xy, fill=OCCASIONFILL, outline="", width=0, tag='occasion')
                 tmp = list(tup)
                 tmp.append(day)
                 self.busyHsh[id] = tmp
@@ -2139,11 +2169,18 @@ parsing are supported.""")
             if day == self.current_day:
                 self.today_col = i
                 xy = start_x, t, end_x, t+y*16
-                self.today_id = self.canvas.create_rectangle(xy, fill=CURRENTFILL, outline="", width=0)
+                self.canvas.create_rectangle(xy, fill=CURRENTFILL, outline="", width=0, tag='current_day')
             if not busy_times and self.today_col is None:
                 continue
             for tup in busy_times:
                 conf = None
+                mtch = tup[5]
+                if mtch:
+                    busyColor = DEFAULTFILL
+                    ttag = 'default'
+                else:
+                    busyColor = OTHERFILL
+                    ttag = 'other'
                 daytime = day + tup[0] * ONEMINUTE
                 t1 = t + (max(7 * 60, tup[0]) - 7 * 60 ) * y_per_minute
                 # t1 = t + tup[0] * y_per_minute
@@ -2151,9 +2188,10 @@ parsing are supported.""")
                 # t2 = t + tup[1] * y_per_minute
                 xy = start_x, max(t, t1), end_x, min(t2, t+y*16)
                 conf = self.canvas.find_overlapping(*xy)
-                id = self.canvas.create_rectangle(xy, fill=BUSYFILL, width=0 )
-                busy_ids.append(id)
+                id = self.canvas.create_rectangle(xy, fill=busyColor, width=0, tag=ttag)
                 conf = [z for z in conf if z in busy_ids]
+                busy_ids.append(id)
+                conf_ids.extend(conf)
                 if conf:
                     bb1 = self.canvas.bbox(id)
                     bb2 = self.canvas.bbox(*conf)
@@ -2161,8 +2199,9 @@ parsing are supported.""")
                     # we want the max of bb1[1], bb2[1]
                     # and the min of bb1[4], bb2[4]
                     ol = bb1[0], max(bb1[1], bb2[1]), bb1[2], min(bb1[3], bb2[3])
-                    id = self.canvas.create_rectangle(ol, fill=CONFLICTFILL, outline="", width=0)
-                    conf_ids.append(id)
+                    self.canvas.create_rectangle(ol, fill=CONFLICTFILL, outline="", width=0, tag="conflict")
+
+                    # conf_ids.append(id)
                 tmp = list(tup[2:]) #id, time str, summary and file info
                 tmp.append(daytime)
                 self.busyHsh[id] = tmp
@@ -2177,11 +2216,11 @@ parsing are supported.""")
                 end_x = l + x * 7
                 t1 = t + (max(7 * 60, current_minutes) - 7 * 60 ) * y_per_minute
                 xy = start_x, t1, end_x, t1
-                self.canvas.create_line(xy, width=1, fill=CURRENTLINE)
+                self.canvas.create_line(xy, width=1, fill=CURRENTLINE, tag='current_time')
 
         self.busy_ids = busy_ids
         self.conf_ids = conf_ids
-        for id in occasion_ids + busy_ids + conf_ids:
+        for id in occasion_ids + busy_ids + conf_ids: #  + conf_ids:
             self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
             self.canvas.tag_bind(id, '<Any-Leave>', self.on_leave_item)
 
@@ -2212,21 +2251,21 @@ parsing are supported.""")
             p = l + x/2 + x*i, t-13
             logger.debug("x: {0}, i: {1}, p: {2}".format(x, i, p))
             if self.today_col and i == self.today_col:
-                self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=CURRENTLINE)
+                self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=CURRENTLINE, tag='current_time')
             else:
                 self.canvas.create_text(p, text="{0}".format(weekdays[i]))
 
     def selectId(self, event, d=1):
-        conf = False
         if self.canvas_idpos is None:
             self.canvas_idpos = 0
         else:
             old_id = self.canvas_ids[self.canvas_idpos]
             if old_id in self.busy_ids:
-                self.canvas.itemconfig(old_id, fill=BUSYFILL)
-            elif old_id in self.conf_ids:
-                self.canvas.itemconfig(old_id, fill=CONFLICTFILL)
-                conf = True
+                tags = self.canvas.gettags(old_id)
+                if 'other' in tags:
+                    self.canvas.itemconfig(old_id, fill=OTHERFILL)
+                else:
+                    self.canvas.itemconfig(old_id, fill=DEFAULTFILL)
             else:
                 self.canvas.itemconfig(old_id, fill=OCCASIONFILL)
                 self.canvas.tag_lower(old_id)
@@ -2234,51 +2273,73 @@ parsing are supported.""")
                 self.canvas_idpos -= 1
                 if self.canvas_idpos < 0:
                     self.canvas_idpos = len(self.canvas_ids) - 1
-                # self.canvas_idpos = max(0, self.canvas_idpos -1)
             elif d == 1:
                 self.canvas_idpos += 1
                 if self.canvas_idpos > len(self.canvas_ids) - 1:
                     self.canvas_idpos = 0
         self.selectedId = id = self.canvas_ids[self.canvas_idpos]
         self.canvas.itemconfig(id, fill=ACTIVEFILL)
+        self.canvas.tag_raise('conflict')
         self.canvas.tag_raise(id)
-        if conf:
-            self.canvas.tag_raise(old_id)
-        if self.today_id:
-            self.canvas.tag_lower(self.today_id)
-        self.detailVar.set(self.busyHsh[id][1])
+        self.canvas.tag_lower('occasion')
+        self.canvas.tag_lower('current_day')
+        self.canvas.tag_raise('current_time')
+        if id in self.busyHsh:
+            self.detailVar.set(self.busyHsh[id][1])
 
+    def setFocus(self, e):
+        self.win.focus()
+        self.canvas.focus_set()
 
     def on_enter_item(self, e):
+        old_id = None
         if self.canvas_idpos is not None:
             old_id = self.canvas_ids[self.canvas_idpos]
             if old_id in self.busy_ids:
-                self.canvas.itemconfig(old_id, fill=BUSYFILL)
-            elif old_id in self.conf_ids:
-                self.canvas.itemconfig(old_id, fill=CONFLICTFILL)
+                tags = self.canvas.gettags(old_id)
+                if 'other' in tags:
+                    self.canvas.itemconfig(old_id, fill=OTHERFILL)
+                else:
+                    self.canvas.itemconfig(old_id, fill=DEFAULTFILL)
+
+                # self.canvas.itemconfig(old_id, fill=BUSYFILL)
+            # elif old_id in self.conf_ids:
+            #     self.canvas.itemconfig('conflict', fill=CONFLICTFILL)
+            #     # self.canvas.itemconfig('conflict', fill=ACTIVEFILL)
+            #     self.canvas.tag_raise('conflict')
             else:
                 self.canvas.itemconfig(old_id, fill=OCCASIONFILL)
+                self.canvas.tag_lower(old_id)
 
-            self.canvas.itemconfig(old_id, outline=BUSYOUTLINE)
+            # self.canvas.itemconfig(old_id, outline=BUSYOUTLINE)
 
         self.selectedId = id = self.canvas.find_withtag(CURRENT)[0]
-        self.canvas.focus(id)
-        self.canvas_idpos = self.canvas_ids.index(id)
-        # self.canvas.itemconfig(id, outline=ACTIVEOUTLINE)
-
         self.canvas.itemconfig(id, fill=ACTIVEFILL)
-        self.detailVar.set(self.busyHsh[id][1])
+        self.canvas.tag_raise('conflict')
+        self.canvas.tag_raise(id)
+        self.canvas.tag_lower('occasion')
+        self.canvas.tag_lower('current_day')
+        self.canvas.tag_raise('current_time')
+
+        if id in self.busy_ids: # and id in self.canvas_ids:
+            self.detailVar.set(self.busyHsh[id][1])
+            self.canvas_idpos = self.canvas_ids.index(id)
 
     def on_leave_item(self, e):
         id = self.canvas.find_withtag(CURRENT)[0]
         # self.detail.delete("1.0", END)
         self.detailVar.set("")
+
         if id in self.busy_ids:
-            self.canvas.itemconfig(id, fill=BUSYFILL)
-        elif id in self.conf_ids:
-            self.canvas.itemconfig(old_id, fill=CONFLICTFILL)
+            tags = self.canvas.gettags(id)
+            if 'other' in tags:
+                self.canvas.itemconfig(id, fill=OTHERFILL)
+            else:
+                self.canvas.itemconfig(id, fill=DEFAULTFILL)
         else:
             self.canvas.itemconfig(id, fill=OCCASIONFILL)
+        self.canvas.tag_raise('conflict')
+        self.canvas.tag_lower('occasion')
         self.selectedId = None
         self.canvas.focus("")
 
@@ -2688,10 +2749,10 @@ or 0 to display all changes.""").format(title)
             logger.debug('updateAlerts 1: {0}'.format(len(loop.alerts)))
         alerts = deepcopy(loop.alerts)
         if loop.options['calendars']:
-            cal_pattern = r'^%s' % '|'.join([x[2] for x in self.options['calendars'] if x[1]])
-            cal_regex = re.compile(cal_pattern)
+            # cal_pattern = r'^%s' % '|'.join([x[2] for x in self.options['calendars'] if x[1]])
+            # cal_regex = re.compile(cal_pattern)
             logger.debug("cal_regex: {0}".format(self.cal_regex))
-            alerts = [x for x in alerts if cal_regex.match(x[-1])]
+            alerts = [x for x in alerts if self.cal_regex.match(x[-1])]
         if alerts:
             curr_minutes = datetime2minutes(self.now)
             td = -1
