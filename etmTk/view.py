@@ -111,24 +111,26 @@ SEP = "----"
 ACTIVEFILL = "#FAFCAC"
 ACTIVEOUTLINE = "gray40"
 
-# BUSYFILL = "#D4DCFC" # blue
 DEFAULTFILL = "#D4DCFC" # blue
+OTHERFILL = "#C7EDC8" # green
+# BUSYFILL = "#D4DCFC" # blue
 # BUSYFILL = "#CAECED" # cyan
 # BUSYFILL = "#F8D7FA" # magenta
 # BUSYFILL = "#C7EDC8" # green
-OTHERFILL = "#C7EDC8" # green
 
 BUSYOUTLINE = ""
-# CONFLICTFILL = "#716DF7"
-# CONFLICTFILL = "#9BAEFA"
-# CONFLICTFILL = "#FAC2B6"
+
 CONFLICTFILL = "#C1C4C9"
 CURRENTFILL = "#FCF2F0"
 CURRENTLINE = "#E0535C"
 LASTLTR = re.compile(r'([a-z])$')
 LINECOLOR = "gray80"
-# OCCASIONFILL = "gray98"
+# CONFLICTFILL = "#716DF7"
+# CONFLICTFILL = "#9BAEFA"
+# CONFLICTFILL = "#FAC2B6"
+
 OCCASIONFILL = "gray96"
+# OCCASIONFILL = "gray98"
 
 def sanitize_id(id):
     return id.strip().replace(" ", "")
@@ -2220,6 +2222,7 @@ parsing are supported.""")
 
         self.busy_ids = busy_ids
         self.conf_ids = conf_ids
+        # self.occasion_ids = occasion_ids
         for id in occasion_ids + busy_ids + conf_ids: #  + conf_ids:
             self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
             self.canvas.tag_bind(id, '<Any-Leave>', self.on_leave_item)
@@ -2321,7 +2324,7 @@ parsing are supported.""")
         self.canvas.tag_lower('current_day')
         self.canvas.tag_raise('current_time')
 
-        if id in self.busy_ids: # and id in self.canvas_ids:
+        if id in self.busyHsh: # and id in self.canvas_ids:
             self.detailVar.set(self.busyHsh[id][1])
             self.canvas_idpos = self.canvas_ids.index(id)
 
