@@ -87,6 +87,7 @@ PATHS = _('Paths')
 KEYWORDS = _('Keywords')
 TAGS = _('Tags')
 NOTES = _('Notes')
+WEEK = _("Week")
 
 COPY = _("Copy")
 EDIT = _("Edit")
@@ -98,7 +99,6 @@ OPEN = _("Open")
 VIEW = _("View")
 ITEM = _("Item")
 TOOLS = _("Tools")
-WEEK = _("Week")
 HELP = _("Help")
 
 CLOSE = _("Close")
@@ -178,7 +178,7 @@ class MenuTree:
         return index
 
     def create_node(self, name, identifier=None, parent=None):
-        logger.debug("name: {0},identifier: {1}; parent: {2}".format(name, identifier, parent))
+        logger.debug("name: {0}, identifier: {1}; parent: {2}".format(name, identifier, parent))
 
         node = Node(name, identifier)
         self.nodes.append(node)
@@ -187,7 +187,6 @@ class MenuTree:
         return node
 
     def showMenu(self, position, level=_ROOT):
-        logger.debug("position: {0}, level: {1}".format(position, level))
         queue = self[position].fpointer
         if level == _ROOT:
             self.lst = []
@@ -196,6 +195,7 @@ class MenuTree:
             name = "{0}{1}".format("    "*(level-1), name.strip())
             s = "{0:<49} {1:^11}".format(name, key.strip())
             self.lst.append(s)
+            logger.debug("position: {0}, level: {1}, name: {2}, key: {3}".format(position, level, name, key))
         if self[position].expanded:
             level += 1
             for element in queue:
@@ -1098,7 +1098,7 @@ class App(Tk):
 
         menubar.add_cascade(label=path, underline=0, menu=viewmenu)
 
-        # View menu
+        # Item menu
         self.itemmenu = itemmenu = Menu(menubar, tearoff=0)
         path = ITEM
         self.add2menu(menu, (path, ))
@@ -1132,6 +1132,9 @@ class App(Tk):
             elif k == "/":
                 l = "Ctrl-slash"
                 c = "<Control-slash>"
+            elif k == "e":
+                l, c  = commandShortcut(k)
+                l = "{0}, Return".format(l)
             else:
                 l, c = commandShortcut(k)
             logger.debug('binding {0} to {1}'.format(c, self.edit2cmd[k]))
@@ -1177,7 +1180,7 @@ class App(Tk):
 
         # changes
         l, c = commandShortcut('h')
-        label = _("Show changes")
+        label = _("Show history of changes")
         toolsmenu.add_command(label=label, underline=1, command=self.showChanges)
         self.bind(c, lambda event: self.after(AFTER, self.showChanges))
         if not mac:
@@ -1239,7 +1242,6 @@ class App(Tk):
         self.options = loop.options
         tkfixedfont = tkFont.nametofont("TkFixedFont")
         tkfixedfont.configure(size=self.options['fontsize'])
-        self.tkfixedfont = tkfixedfont
         logger.debug("fixedfont: {0}".format(tkfixedfont.actual()))
         self.tkfixedfont = tkfixedfont
 
@@ -1414,7 +1416,7 @@ class App(Tk):
             leaf = "{0}::{1}".format(child[0], child[1])
         else:
             leaf = "{0}::".format(child[0])
-        logger.debug('create_node: {0}, {1}, parent = {2}'.format(leaf, id,  parent))
+        logger.debug('calling create_node. leaf: {0}, id: {1}, parent: {2}'.format(leaf, id,  parent))
         self.menutree.create_node(leaf, id, parent=parent)
 
 
@@ -1427,7 +1429,7 @@ class App(Tk):
         for i in range(len(loop.calendars)):
             loop.calendars[i][1] = self.calendarValues[i].get()
         if loop.calendars != loop.options['calendars']:
-            self.specialCalendars.set(_("not default calendars"))
+            self.specialCalendars.set("*")
         else:
             self.specialCalendars.set("")
         cal_pattern = r'^%s' % '|'.join(
@@ -1995,7 +1997,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             self.weekmenu.entryconfig(i, state="disabled")
         if self.win:
             self.win.destroy()
-            self.win = None
+        self.win = None
+        logger.debug('self.win: {0}'.format(self.win))
 
 
     def showWeekly(self, event=None, chosen_day=None):
@@ -2013,7 +2016,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.selectedId = None
         # self.win.bind("<Key>", self.key)
         bf = Frame(win, background="white", highlightbackground='white', bd=0, highlightthickness=0)
-        self.ok = Button(bf, text=_("Close"), height=1, pady=1, command=self.win.destroy)
+        self.ok = Button(bf, text=_("Close"), height=1, pady=1, command=self.closeWeekly)
         self.ok.pack(side="right", padx=8, pady=0)
         self.detailVar = StringVar(self)
         self.detailVar.set("")
@@ -2051,9 +2054,9 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             label = self.em_options[i][0]
             k = self.em_options[i][1]
             if k == 'delete':
-                l = "Ctrl-Delete"
+                l = "Ctrl-BackSpace"
                 c = "<Control-BackSpace>"
-            elif k == 'x': # finish
+            elif k == '/': # finish
                 continue
             else:
                 l, c = commandShortcut(k)
@@ -2085,6 +2088,7 @@ parsing are supported.""")
 
 
     def showWeek(self, event=None, week=None):
+        logger.debug('self.win: {0}'.format(self.win))
         if not self.win:
             return
         self.selectedId = None

@@ -26,13 +26,22 @@ else
     mkdir ~/.TEMP/sample
     mkdir ~/.TEMP/sounds
 
-    while getopts "abdeilps" Option
+    while getopts "DLWbdeilps" Option
     do
       case $Option in
-        a)
-        echo "### copying etmtk-$version.dmg ###"
+        D)
+        echo "### copying etmtk-$version-freeze-Darwin.tar.gz ###"
         cp -p dist-Darwin/etmtk-$version-freeze-Darwin.tar.gz ~/.TEMP/
+        copy=1
+        ;;
+        L)
+        echo "### copying etmtk-$version-freeze-Linux.tar.gz ###"
         cp -p dist-Linux/etmtk-$version-freeze-Linux.tar.gz ~/.TEMP/
+        copy=1
+        ;;
+        W)
+        echo "### copying etmtk-$version-freeze-Windows.tar.gz ###"
+        cp -p dist-Windows/etmtk-$version-freeze-Windows.tar.gz ~/.TEMP/
         copy=1
         ;;
         b)

@@ -173,8 +173,8 @@ the configuration file ~/.etm/etmtk.cfg, and open the GUI.
 If the first argument is an integer not less than 1 (debug) and not greater
 than 5 (critical), then set that logging level and remove the argument.
 
-If the first (remaining) argument is the path to a directory which contains
-a file named etm.cfg, then use that configuration file and remove the
+If the first (remaining) argument is the path to a directory that contains
+a file named etmtk.cfg, then use that configuration file and remove the
 argument.
 
 If the first (remaining) argument is one of the commands listed below, then
@@ -183,14 +183,16 @@ execute the remaining arguments without opening the GUI.
     a ARG   display the agenda view using ARG, if given, as a filter.
     k ARG   display the keywords view using ARG, if given, as a filter.
     n ARGS  Create a new item using the remaining arguments as the item
-            specification.
+            specification. (Enclose ARGS in quotes to prevent shell
+            expansion.)
     m INT   display a report using the remaining argument, which must be a
             positive integer, to display a report using the corresponding
             entry from the file given by report_specifications in etmtk.cfg.
             Use ? m to display the numbered list of entries from this file.
     p ARG   display the path view using ARG, if given, as a filter.
     r ARGS  display a report using the remaining arguments as the report
-            specification.
+            specification. (Enclose ARGS in quotes to prevent shell
+            expansion.)
     s ARG   display the schedule view using ARG, if given, as a filter.
     t ARG   display the tags view using ARG, if given, as a filter.
     v       display information about etm and the operating system.
