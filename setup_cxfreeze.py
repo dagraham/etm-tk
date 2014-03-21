@@ -17,25 +17,27 @@ from etmTk.v import version
 import glob
 
 import platform
+plat = platform.uname()[0]
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W
-    # from tkinter import messagebox as tkMessageBox
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas, CURRENT
     from tkinter import ttk
     from tkinter import font as tkFont
     from tkinter.messagebox import askokcancel
     from tkinter.filedialog import askopenfilename
+    utf8 = lambda x: x
     # from tkinter import simpledialog as tkSimpleDialog
-    # import tkFont
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas, CURRENT
     # import tkMessageBox
     import ttk
     import tkFont
     from tkMessageBox import askokcancel
     from tkFileDialog import askopenfilename
     # import tkSimpleDialog
+    def utf8(s):
+        return(s)
 
 
 BASE = None
@@ -43,14 +45,14 @@ if sys.platform == 'win32':
     BASE = 'Win32GUI'
 
 EXECUTABLES = [
-    Executable('etm', base=BASE)
+    Executable(script='etm', base=BASE, targetDir="dist-{0}/etmtk-{1}-freeze-{0}".format(plat, version), icon='etmTk/etmlogo.icns')
 ]
 
 OPTIONS = {
-    'build': {'build_exe': 'releases/etmtk-{0}'.format(version)},
-    'build_exe': {'icon':'etmTk/etmlogo.icns', 'optimize':'2', 'compressed': 1},
-    'build_mac': {'iconfile':'etmTk/etmlogo.icns', 'bundle_name':'etm'},
-    'Executable': {'targetDir':'releases/etmtk-{0}'.format(version)}
+    'build': {'build_exe': 'dist-{0}/etmtk-{1}-freeze-{0}'.format(plat, version)},
+    'build_exe': {'optimize':'2', 'compressed': 1},
+    'build_mac': {'bundle_name':'etm'},
+    'Executable': {'targetDir':'dist-{0}/etmtk-{1}-freeze-{0}'.format(plat, version)}
 }
 
 setup(name='etm',
@@ -64,6 +66,6 @@ setup(name='etm',
     author='Daniel A Graham',
     author_email='daniel.graham@duke.edu',
     options=OPTIONS,
-    package_data={'etmTk': ['etmlogo.*', 'version.txt', 'CHANGES', 'logging'
+    package_data={'etmTk': ['etmlogo.*', 'etmtk.xpm', 'version.txt', 'CHANGES', 'logging'
                                                                '.yaml']},
 )

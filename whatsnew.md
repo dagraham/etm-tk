@@ -2,6 +2,7 @@
 
 A new version of etm based on Tk instead of Qt is in the early stages of development. Screenshots and files can be found at [etmtk][].
 
+
 This version has not been released. I'm providing this information here in the hopes that members of this group will give me some feedback. Are there aspects of the new interface that you prefer? Do you have suggestions for improvements? As always, your feedback is greatly appreciated.
 
 [etmtk]: http://people.duke.edu/~dgraham/etmtk
@@ -28,9 +29,9 @@ This version has not been released. I'm providing this information here in the h
 
 - File sizes are smaller:
 
-    - source tarball: Tk 254k vs. Qt 20.5mb
+    - source tarball: Tk 260k vs. Qt 20.5mb
 
-    - Darwin: Tk 8.2md freeze tarball vs. Qt 23mb app dmg
+    - Darwin: Tk 8.5mb freeze tarball vs. Qt 23mb app dmg
 
     - Linux: Tk 3.7mb freeze tarball vs. Qt NA
 

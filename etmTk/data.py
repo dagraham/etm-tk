@@ -78,7 +78,7 @@ else:
 dayfirst = False
 yearfirst = True
 # bgclr = "#e9e9e9"
-BGCOLOR = "#ebebeb"
+# BGCOLOR = "#ebebeb"
 
 # this task will be created for first time users
 SAMPLE ="""\
@@ -652,15 +652,15 @@ def date_calculator(s, options=None):
         dt_x = parse(parse_dtstr(x))
         pmy = "%s%s" % (pm, y)
         if period_string_regex.match(pmy):
-            return fmt_datetime(dt_x + parse_period(pmy), options), ""
+            return fmt_datetime(dt_x + parse_period(pmy), options)
         else:
             dt_y = parse(parse_dtstr(y))
             if pm == '-':
-                return fmt_period(dt_x - dt_y), ""
+                return fmt_period(dt_x - dt_y)
             else:
                 return "", 'error: datetimes cannot be added'
     except ValueError:
-        return "", 'error parsing "%s"' % s
+        return 'error parsing "%s"' % s
 
 
 def mail_report(message, smtp_from=None, smtp_server=None,
@@ -1972,13 +1972,13 @@ def parse_date_period(s):
         try:
             pr = parse_period(parts[1])
         except Exception:
-            return '', 'error: could not parse period "{0}"'.format(parts[1])
+            return 'error: could not parse period "{0}"'.format(parts[1])
         if ' + ' in s:
-            return dt + pr, ''
+            return dt + pr
         else:
-            return dt - pr, ''
+            return dt - pr
     else:
-        return dt, ''
+        return dt
 
 
 def parse_period(s, minutes=True):
@@ -2005,7 +2005,7 @@ def parse_period(s, minutes=True):
         unitperiod = oneday
     try:
         m = int(s)
-        return m * unitperiod, ""
+        return m * unitperiod
     except Exception:
         m = int_regex.match(s)
         if m:
@@ -2015,7 +2015,7 @@ def parse_period(s, minutes=True):
     if not m:
         logger.error("Invalid period string: '{0}'".format(s))
         msg = "Invalid period string: '{0}'".format(s)
-        return "", "Invalid period string: '{0}'".format(s)
+        return "Invalid period string: '{0}'".format(s)
     m = week_regex.search(s)
     if m:
         td += int(m.group(1)) * oneweek
@@ -2030,9 +2030,9 @@ def parse_period(s, minutes=True):
         td += int(m.group(1)) * oneminute
     m = sign_regex.match(s)
     if m and m.group(1) == '-':
-        return -1 * td, ""
+        return -1 * td
     else:
-        return td, ""
+        return td
 
 
 def year2string(startyear, endyear):
@@ -2819,6 +2819,7 @@ def str2opts(s, options=None):
         key = unicode(part[0])
         if key in ['b', 'e']:
             dt = parse_date_period(part[1:])
+            print('dt', dt)
             dated[key] = dt.replace(tzinfo=None)
 
         elif key == 'f':
@@ -3452,8 +3453,7 @@ def str2hsh(s, uid=None, options=None):
                 elif at_key == 'k':
                     hsh['k'] = ":".join([x.strip() for x in at_val.split(':')])
                 elif at_key == 'e':
-                    hsh['e'], m = parse_period(at_val)
-                    if m: msg.append(m)
+                    hsh['e'] = parse_period(at_val)
                 elif at_key == 'p':
                     hsh['p'] = int(at_val)
                     if hsh['p'] <= 0 or hsh['p'] >= 10:
@@ -5378,7 +5378,6 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
                     olds = hsh_rev['s']
                     d = (hsh_rev['s'] - new_dtn).days
                     hsh_rev['s'] = hsh_rev['s'] - (d+1) * oneday
-                    print('old, new', olds, d, hsh_rev['s'])
             else: # dated but not repeating
                 hsh_rev['s'] = new_dtn
         else: # either undated or not repeating

@@ -16,9 +16,9 @@ if platform.python_version() >= '3':
     from tkinter import ttk
     # from ttk import Button, Style
     from tkinter import font as tkFont
-    from tkinter import simpledialog as tkSimpleDialog
-    from tkinter.simpledialog import askstring
-    from tkinter.messagebox import askokcancel
+    # from tkinter import simpledialog as tkSimpleDialog
+    # from tkinter.simpledialog import askstring
+    # from tkinter.messagebox import askokcancel
     from tkinter.filedialog import asksaveasfilename
     from tkinter.filedialog import askopenfilename
 else:
@@ -27,8 +27,8 @@ else:
     import ttk
     # from ttk import Button, Style
     import tkFont
-    import tkSimpleDialog
-    from tkSimpleDialog import askstring
+    # import tkSimpleDialog
+    # from tkSimpleDialog import askstring
     from tkFileDialog import asksaveasfilename
     from tkFileDialog import askopenfilename
     from tkMessageBox import askokcancel
@@ -64,29 +64,31 @@ SAVESPECS = _("Save changes to report specifications")
 CLOSE = _("Close")
 
 
-from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, optionShortcut, BGCOLOR, CMD, relpath, completion_regex, getReportData, tree2Text, AFTER
+from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, optionShortcut, CMD, relpath, completion_regex, getReportData, tree2Text, AFTER
 
+from etmTk.dialog import BGCOLOR, OptionsDialog, ReadOnlyText
 
-from idlelib.WidgetRedirector import WidgetRedirector
-
-class ReadOnlyText(Text):
-    # noinspection PyShadowingNames
-    def __init__(self, *args, **kwargs):
-        Text.__init__(self, *args, **kwargs)
-        self.redirector = WidgetRedirector(self)
-        self.insert = self.redirector.register("insert", lambda *args, **kw: "break")
-        self.delete = self.redirector.register("delete", lambda *args, **kw: "break")
+# from idlelib.WidgetRedirector import WidgetRedirector
+#
+# class ReadOnlyText(Text):
+#     # noinspection PyShadowingNames
+#     def __init__(self, *args, **kwargs):
+#         Text.__init__(self, *args, **kwargs)
+#         self.redirector = WidgetRedirector(self)
+#         self.insert = self.redirector.register("insert", lambda *args, **kw: "break")
+#         self.delete = self.redirector.register("delete", lambda *args, **kw: "break")
 
 class ReportWindow(Toplevel):
     def __init__(self, parent=None, options=None, title=None):
         Toplevel.__init__(self, parent)
+        self.protocol("WM_DELETE_WINDOW", self.quit)
         self.configure(background=BGCOLOR)
         self.minsize(400, 300)
         self.geometry('500x200')
         self.transient(parent)
         self.parent = parent
         self.loop = parent.loop
-        self.changed = False
+        # self.changed = False
         self.options = options
         self.modified = False
         self.tkfixedfont = tkFont.nametofont("TkFixedFont")
@@ -112,7 +114,7 @@ class ReportWindow(Toplevel):
 
         # topbar components
         # report menu
-        self.reportLabel = _("Report")
+        self.reportLabel = _("Report Commands")
         self.rm_options = [[MAKE, 'm'],
                            [SAVEAS, 's'],
                            [EXPORTCSV, 'x'],
@@ -176,6 +178,7 @@ class ReportWindow(Toplevel):
         self.box = ttk.Combobox(botbar, textvariable=self.box_value, font=tkFont.Font(family="Lucida Sans Typewriter"))
         self.box.bind("<<ComboboxSelected>>", self.newselection)
         self.bind("<Return>", self.makeReport)
+        self.bind("<Escape>", self.quit)
         self.specs = ['']
         if ('report_specifications' in self.options and os.path.isfile(self.options['report_specifications'])):
             with open(self.options['report_specifications']) as fo:
@@ -217,10 +220,10 @@ class ReportWindow(Toplevel):
 
     def quit(self, e=None):
         if self.modified:
-            ans = askokcancel(
-                _('Quit'),
-                _("There are unsaved changes to your report specifications.\nDo you really want to quit?"),
-                parent=self)
+
+            ans = self.confirm(parent=self,
+                title=_('Quit'),
+                prompt=_("There are unsaved changes to your report specifications.\nDo you really want to quit?"))
         else:
             ans = True
         if ans:
@@ -290,8 +293,7 @@ class ReportWindow(Toplevel):
         self.value_of_combo = self.box.get()
 
     def reportHelp(self):
-        logger.debug("not implemented")
-        pass
+        logger.warn("not implemented")
 
     def saveReportAs(self):
         logger.debug("not implemented")
@@ -325,6 +327,11 @@ class ReportWindow(Toplevel):
     def saveSpecs(self):
         logger.debug("not implemented")
         pass
+
+    def confirm(self, parent=None, title="", prompt="", instance="xyz"):
+        ok, value = OptionsDialog(parent=parent, title=_("confirm").format(instance), prompt=prompt).getValue()
+        return ok
+
 
 class SimpleEditor(Toplevel):
 
@@ -763,10 +770,9 @@ class SimpleEditor(Toplevel):
 
     def quit(self, e=None):
         if self.checkmodified():
-            ans = askokcancel(
-                _('Quit'),
-                _("There are unsaved changes.\nDo you really want to quit?"),
-                parent=self)
+            ans = self.confirm(parent=self,
+                title=_('Quit'),
+                prompt=_("There are unsaved changes.\nDo you really want to quit?"))
         else:
             ans = True
         if ans:
@@ -807,6 +813,11 @@ class SimpleEditor(Toplevel):
         win.grab_set()
         win.transient(self)
         win.wait_window(win)
+
+    def confirm(self, parent=None, title="", prompt="", instance="xyz"):
+        ok, value = OptionsDialog(parent=parent, title=_("confirm").format(instance), prompt=prompt).getValue()
+        return ok
+
 
 if __name__ == '__main__':
     print('edit.py should only be imported. Run etm or view.py instead.')
