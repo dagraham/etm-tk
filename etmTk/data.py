@@ -3378,8 +3378,7 @@ def str2hsh(s, uid=None, options=None):
                 alert_parts = at_val.split(':')
                 t_lst = alert_parts.pop(0).split(',')
                 periods = tuple([parse_period(x) for x in t_lst])
-                triggers = [x[0] for x in periods]
-                msg.extend([x[1] for x in periods if x[1]])
+                triggers = [x for x in periods]
                 if alert_parts:
                     action_parts = [
                         x.strip() for x in alert_parts[0].split(';')]
@@ -3417,8 +3416,7 @@ def str2hsh(s, uid=None, options=None):
                             msg.append(_("could not parse: {0}").format(amp_val))
 
                     elif amp_key == 'e':
-                        part_hsh['e'], m = parse_period(amp_val)
-                        if m: msg.append(m)
+                        part_hsh['e'] = parse_period(amp_val)
                     else:
                         m = range_regex.search(amp_val)
                         if m:
