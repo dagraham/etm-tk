@@ -37,7 +37,7 @@ from datetime import datetime, timedelta
 
 from collections import OrderedDict
 
-from etmTk.data import fmt_period
+from etmTk.data import fmt_period, parse_dt
 
 import gettext
 
@@ -331,7 +331,8 @@ class Dialog(Toplevel):
         if not res:
             if self.error_message:
                 self.messageWindow('error', self.error_message)
-            self.initial_focus.focus_set()  # put focus back
+
+            # self.initial_focus.focus_set()  # put focus back
             return "break"
 
         self.withdraw()
@@ -670,6 +671,7 @@ class GetInteger(DialogWindow):
 class GetDateTime(DialogWindow):
     def validate(self):
         res = self.entry.get()
+        logger.debug('res: {0}'.format(res))
         ok = False
         if not res.strip():
             # return the current time if ok is pressed with no entry
@@ -677,7 +679,10 @@ class GetDateTime(DialogWindow):
             ok = True
         else:
             try:
-                val = parse(parse_datetime(res))
+                print('calling parse')
+                # val = parse(parse_datetime(res))
+                val = parse_dt(res)
+                print('back from parse')
                 ok = True
             except:
                 val = None

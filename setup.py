@@ -5,11 +5,9 @@ import glob
 
 import sys
 if sys.version_info >= (3, 2):
-    REQUIRES = ["python-dateutil>=1.5", "PyYaml>=3.10"]
-    EXTRAS = ["icalendar>=3.6", "pytz"]
+    REQUIRES = ["python-dateutil>=1.5", "PyYaml>=3.10","icalendar>=3.6", "pytz"]
 else:
-    REQUIRES = ["python>=2.7,<3.0", "python-dateutil>=1.5", "PyYaml>=3.10", "icalendar>=3.5"]
-    EXTRAS = ["icalendar>=3.5", "pytz"]
+    REQUIRES = ["python>=2.7,<3.0", "python-dateutil>=1.5", "PyYaml>=3.10", "icalendar>=3.5", "pytz"]
 
 APP = ['etm']
 
@@ -58,7 +56,7 @@ setup(
     packages=['etmTk'],
     scripts=['etm'],
     install_requires=REQUIRES,
-    extras_require={"icalendar": EXTRAS},
+    # extras_require={"icalendar": EXTRAS},
     package_data={'etmTk': ['etmlogo.*', 'CHANGES', 'etmtk.desktop', 'etmtk.1', 'etmtk.xpm']},
     # TODO: fix man, icon, desktop, docs
     data_files=[

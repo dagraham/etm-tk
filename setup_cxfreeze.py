@@ -66,6 +66,5 @@ setup(name='etm',
     author='Daniel A Graham',
     author_email='daniel.graham@duke.edu',
     options=OPTIONS,
-    package_data={'etmTk': ['etmlogo.*', 'etmtk.xpm', 'version.txt', 'CHANGES', 'logging'
-                                                               '.yaml']},
+    package_data={'etmTk': ['etmlogo.*', 'etmtk.xpm', 'version.txt', 'CHANGES', 'logging.yaml']},
 )

@@ -6,7 +6,6 @@ lib_path = os.path.relpath('etmTk/')
 sys.path.append(lib_path)
 
 from etmTk import view
-from etmTk.data import USAGE
 from etmTk.data import setup_logging
 
 import logging

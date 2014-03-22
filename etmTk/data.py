@@ -1895,6 +1895,7 @@ def datetime2minutes(dt):
 
 def parse_datetime(dt, timezone='', f=rfmt):
     # relative date and month parsing for user input
+    logger.debug('dt: {0}, tz: {1}, f: {2}'.format(dt, timezone, f))
     if not dt:
         return ''
     if type(dt) is datetime:
@@ -1925,10 +1926,11 @@ def parse_datetime(dt, timezone='', f=rfmt):
             new_date = (now + days * oneday).strftime("%Y-%m-%d")
             new_dt = rel_date_regex.sub(new_date, dt)
             return parse_dtstr(new_dt, timezone=timezone, f=f)
+
         return parse_dtstr(dt, timezone=timezone, f=f)
 
     except Exception:
-        logger.error('Could not parse "{0}"'.format(dt))
+        logger.exception('Could not parse "{0}"'.format(dt))
         return None
 
 
@@ -1957,6 +1959,9 @@ def parse_dtstr(dtstr, timezone="", f=rfmt):
         dtz = dt.replace(tzinfo=tzlocal())
     return dtz.strftime(f)
 
+def parse_dt(s, timezone='', f=rfmt):
+    dt = parse(parse_datetime(s, timezone, ))
+    return(dt)
 
 def parse_date_period(s):
     """

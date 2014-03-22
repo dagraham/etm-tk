@@ -55,7 +55,7 @@ from etmTk.data import (
 
 from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES, REPORTS)
 
-from etmTk.dialog import Node, MenuTree, Timer, ReadOnlyText, MessageWindow, HelpWindow, TextVariableWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, STOPPED, PAUSED, RUNNING,  BGCOLOR
+from etmTk.dialog import Node, MenuTree, Timer, ReadOnlyText, MessageWindow, HelpWindow, TextVariableWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, STOPPED, PAUSED, RUNNING,  BGCOLOR, ONEDAY, ONEMINUTE
 
 from etmTk.edit import SimpleEditor, ReportWindow
 
@@ -263,116 +263,9 @@ class App(Tk):
         menubar.add_cascade(label=path, underline=0, menu=filemenu)
 
         # View menu
-        viewmenu = Menu(menubar, tearoff=0)
+        self.viewmenu = viewmenu = Menu(menubar, tearoff=0)
         path = VIEW
         self.add2menu(menu, (path, ))
-
-        self.vm_options = [[AGENDA, 'a'],
-                           [SCHEDULE, 's'],
-                           [TAGS, 't'],
-                           [KEYWORDS, 'k'],
-                           [NOTES, 'n'],
-                           [PATHS, 'p'],
-                           ]
-
-        self.view2cmd = {'a': self.agendaView,
-                         's': self.scheduleView,
-                         'p': self.pathView,
-                         'k': self.keywordView,
-                         'n': self.noteView,
-                         't': self.tagView}
-
-        self.vm_opts = [x[0] for x in self.vm_options]
-        self.view = self.vm_options[0][0]
-        # self.viewValue = StringVar(self)
-        self.currentView = StringVar(self)
-        self.currentView.set(self.view)
-        # self.viewValue.set(self.viewLabel)
-
-        for i in range(len(self.vm_options)):
-            label = self.vm_options[i][0]
-            k = self.vm_options[i][1]
-            l, c = commandShortcut(k)
-            logger.debug("{0} ({1}): {2}, {3}".format(label, k, l, c))
-            viewmenu.add_command(label=label, command=self.view2cmd[k])
-            self.bind(c, lambda e, x=k: self.after(AFTER, self.view2cmd[x]))
-            if not mac:
-                viewmenu.entryconfig(i, accelerator=l)
-            self.add2menu(path, (label, l))
-
-        # week menu
-        self.weekmenu = weekmenu = Menu(viewmenu, tearoff=0)
-        self.add2menu(path, (WEEK, ))
-        path = WEEK
-
-        l, c = commandShortcut('w')
-        label=_("Display weekly calendar")
-        weekmenu.add_command(label=label, underline=1, command=self.showWeekly)
-        self.bind(c, lambda event: self.after(AFTER, self.showWeekly()))
-        if not mac:
-            weekmenu.entryconfig(0, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        l = "Space"
-        c = "<space>"
-        label=_("Display current week")
-        weekmenu.add_command(label=label, underline=1, command=lambda e: self.showWeek(event=e, week=0))
-        if not mac:
-            weekmenu.entryconfig(1, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        l = "j"
-        label=_("Jump to week")
-        weekmenu.add_command(label=label, underline=1, command=self.gotoWeek)
-        if not mac:
-            weekmenu.entryconfig(2, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        l = "Left"
-        label=_("intevious week")
-        weekmenu.add_command(label=label, underline=1, command=lambda e=None: self.showWeek(event=e, week=-1))
-        if not mac:
-            weekmenu.entryconfig(3, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        l = "Right"
-        label=_("Next week")
-        weekmenu.add_command(label=label, underline=1, command=lambda e=None: self.showWeek(event=e, week=+1))
-        if not mac:
-            weekmenu.entryconfig(4, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        l = "Up"
-        label=_("Previous item")
-        weekmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=-1))
-        if not mac:
-            weekmenu.entryconfig(5, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        l = "Down"
-        label=_("Next item")
-        weekmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=1))
-        if not mac:
-            weekmenu.entryconfig(6, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        l = "b"
-        label=_("Show list of busy times")
-        weekmenu.add_command(label=label, underline=1, command=self.showBusyTimes)
-        if not mac:
-            weekmenu.entryconfig(7, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        viewmenu.add_cascade(label=path, menu=weekmenu, underline=0)
-
-        self.weekmenu.entryconfig(0, state="normal")
-        for i in range(1,8):
-            self.weekmenu.entryconfig(i, state="disabled")
-
-        path = VIEW
-
-        viewmenu.add_separator()
-        self.add2menu(path, (SEP, ))
 
         # go home
         l = "Space"
@@ -431,6 +324,66 @@ class App(Tk):
                                  menu=calendarmenu,
                                  state="disabled")
         self.add2menu(path, (label, ))
+
+        viewmenu.add_separator()
+        self.add2menu(path, (SEP, ))
+
+        l = "Space"
+        c = "<space>"
+        label=_("Show current week")
+        viewmenu.add_command(label=label, underline=1, command=lambda e: self.showWeek(event=e, week=0))
+        if not mac:
+            viewmenu.entryconfig(1, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        l = "j"
+        label=_("Jump to week ...")
+        viewmenu.add_command(label=label, underline=1, command=self.gotoWeek)
+        if not mac:
+            viewmenu.entryconfig(2, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        l = "Left"
+        label=_("Previous week")
+        viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.showWeek(event=e, week=-1))
+        if not mac:
+            viewmenu.entryconfig(3, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        l = "Right"
+        label=_("Next week")
+        viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.showWeek(event=e, week=+1))
+        if not mac:
+            viewmenu.entryconfig(4, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        l = "Up"
+        label=_("Previous item in week")
+        viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=-1))
+        if not mac:
+            viewmenu.entryconfig(5, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        l = "Down"
+        label=_("Next item in week")
+        viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=1))
+        if not mac:
+            viewmenu.entryconfig(6, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        l = "b"
+        label=_("List busy times in week")
+        viewmenu.add_command(label=label, underline=1, command=self.showBusyTimes)
+        if not mac:
+            viewmenu.entryconfig(7, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        # viewmenu.add_cascade(label=path, menu=viewmenu, underline=0)
+
+        # self.viewmenu.entryconfig(0, state="normal")
+        for i in range(6, 13):
+            self.viewmenu.entryconfig(i, state="disabled")
+
 
         menubar.add_cascade(label=path, underline=0, menu=viewmenu)
 
@@ -620,12 +573,55 @@ class App(Tk):
         self.columnconfigure(0, minsize=300, weight=1)
         self.rowconfigure(1, weight=2)
 
-        topbar = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
+        topbar = Frame(self, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR)
+        # topbar.pack(side="top", fill=X, padx=0, pady=4)
+        # topbar.configure(background=BGCOLOR)
 
-        # viewbar = Frame(self)
+        self.vm_options = [[AGENDA, 'a'],
+                           [SCHEDULE, 's'],
+                           [TAGS, 't'],
+                           [KEYWORDS, 'k'],
+                           [NOTES, 'n'],
+                           [PATHS, 'p'],
+                           [WEEK, 'w'],
+                           ]
 
-        self.showing = showing = Label(topbar, textvariable=self.currentView, bd=1, relief="flat", anchor="w", padx=0, pady=0, highlightbackground=BGCOLOR, background=BGCOLOR)
-        self.showing.pack(side="left", padx=8, pady=0)
+        self.view2cmd = {'a': self.agendaView,
+                         's': self.scheduleView,
+                         'p': self.pathView,
+                         'k': self.keywordView,
+                         'n': self.noteView,
+                         't': self.tagView,
+                         'w': self.showWeekly}
+
+        self.view = self.vm_options[0][0]
+        self.currentView = StringVar(self)
+        self.currentView.set(self.view)
+
+        self.vm_opts = [x[0] for x in self.vm_options]
+        self.vm = OptionMenu(topbar, self.currentView, *self.vm_opts)
+        for i in range(len(self.vm_options)):
+            label = self.vm_options[i][0]
+            k = self.vm_options[i][1]
+            l, c = commandShortcut(k)
+            logger.debug("k: {0}; l: {1}; c: {2}".format(k, l, c))
+            # print("rm2cmd", k, self.rm2cmd[k])
+            self.bind(c, lambda e, x=k: self.after(AFTER, self.view2cmd[x]))
+            self.vm["menu"].entryconfig(i, command=lambda x=k: self.after(AFTER, self.view2cmd[x]))
+        self.vm.pack(side="left", padx=2)
+        self.vm.configure(background=BGCOLOR, takefocus=False)
+
+        # l, c = commandShortcut('w')
+        # label=_("Display weekly calendar")
+        # weekmenu.add_command(label=label, underline=1, command=self.showWeekly)
+        # self.bind(c, lambda event: self.after(AFTER, self.showWeekly()))
+        # if not mac:
+        #     weekmenu.entryconfig(0, accelerator=l)
+        # self.add2menu(path, (label, l))
+        #
+
+        self.showing = showing = Label(topbar, textvariable=self.currentView, bd=1, relief="flat", anchor="w", padx=0, pady=2, highlightbackground=BGCOLOR, background=BGCOLOR)
+        # self.showing.pack(side="left", padx=8, pady=0)
 
         self.matchingFilter = StringVar(self)
         self.matchingFilter.set("")
@@ -765,9 +761,11 @@ class App(Tk):
         for i in range(len(loop.calendars)):
             loop.calendars[i][1] = self.calendarValues[i].get()
         if loop.calendars != loop.options['calendars']:
-            self.specialCalendars.set("*")
+            # self.specialCalendars.set("*")
+            self.showing.configure(fg="plum3")
         else:
-            self.specialCalendars.set("")
+            # self.specialCalendars.set("")
+            self.showing.configure(fg="black")
         cal_pattern = r'^%s' % '|'.join(
             [x[2] for x in loop.calendars if x[1]])
         self.cal_regex = re.compile(cal_pattern)
@@ -1327,10 +1325,10 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         return self.busy_info
 
     def closeWeekly(self, event=None):
-        self.weekmenu.entryconfig(0, state="normal")
+        # self.weekmenu.entryconfig(0, state="normal")
         self.today_col = None
-        for i in range(1,8):
-            self.weekmenu.entryconfig(i, state="disabled")
+        for i in range(6, 13):
+            self.viewmenu.entryconfig(i, state="disabled")
         if self.win:
             self.win.destroy()
         self.win = None
@@ -1399,9 +1397,9 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             logger.debug('binding {0} to {1}'.format(c, self.edit2cmd[k]))
             popup.add_command(label=label, command=self.edit2cmd[k])
         self.popup = popup
-        self.weekmenu.entryconfig(0, state="disabled")
-        for i in range(1,8):
-            self.weekmenu.entryconfig(i, state="normal")
+        # self.weekmenu.entryconfig(0, state="disabled")
+        for i in range(6, 13):
+            self.viewmenu.entryconfig(i, state="normal")
         # self.showWeek()
 
     # def key(self, event):
