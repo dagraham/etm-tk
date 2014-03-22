@@ -679,10 +679,8 @@ class GetDateTime(DialogWindow):
             ok = True
         else:
             try:
-                print('calling parse')
                 # val = parse(parse_datetime(res))
                 val = parse_dt(res)
-                print('back from parse')
                 ok = True
             except:
                 val = None

@@ -2824,7 +2824,6 @@ def str2opts(s, options=None):
         key = unicode(part[0])
         if key in ['b', 'e']:
             dt = parse_date_period(part[1:])
-            print('dt', dt)
             dated[key] = dt.replace(tzinfo=None)
 
         elif key == 'f':

@@ -146,7 +146,7 @@ class App(Tk):
         self.menutree.create_node(root, root)
         # branch: (parent, child)
         # leaf: (parent, (option, [accelerator])
-        menuwidth = 9
+        # menuwidth = 9
 
         # main menu
         menubar = Menu(self)
@@ -421,9 +421,9 @@ class App(Tk):
             elif k == "/":
                 l = "Ctrl-slash"
                 c = "<Control-slash>"
-            elif k == "e":
-                l, c  = commandShortcut(k)
-                l = "{0}, Return".format(l)
+            # elif k == "e":
+            #     l, c  = commandShortcut(k)
+            #     l = "{0}, Return".format(l)
             else:
                 l, c = commandShortcut(k)
             logger.debug('binding {0} to {1}'.format(c, self.edit2cmd[k]))
@@ -574,8 +574,6 @@ class App(Tk):
         self.rowconfigure(1, weight=2)
 
         topbar = Frame(self, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR)
-        # topbar.pack(side="top", fill=X, padx=0, pady=4)
-        # topbar.configure(background=BGCOLOR)
 
         self.vm_options = [[AGENDA, 'a'],
                            [SCHEDULE, 's'],
@@ -605,20 +603,10 @@ class App(Tk):
             k = self.vm_options[i][1]
             l, c = commandShortcut(k)
             logger.debug("k: {0}; l: {1}; c: {2}".format(k, l, c))
-            # print("rm2cmd", k, self.rm2cmd[k])
             self.bind(c, lambda e, x=k: self.after(AFTER, self.view2cmd[x]))
             self.vm["menu"].entryconfig(i, command=lambda x=k: self.after(AFTER, self.view2cmd[x]))
         self.vm.pack(side="left", padx=2)
         self.vm.configure(background=BGCOLOR, takefocus=False)
-
-        # l, c = commandShortcut('w')
-        # label=_("Display weekly calendar")
-        # weekmenu.add_command(label=label, underline=1, command=self.showWeekly)
-        # self.bind(c, lambda event: self.after(AFTER, self.showWeekly()))
-        # if not mac:
-        #     weekmenu.entryconfig(0, accelerator=l)
-        # self.add2menu(path, (label, l))
-        #
 
         self.showing = showing = Label(topbar, textvariable=self.currentView, bd=1, relief="flat", anchor="w", padx=0, pady=2, highlightbackground=BGCOLOR, background=BGCOLOR)
         # self.showing.pack(side="left", padx=8, pady=0)
@@ -641,6 +629,7 @@ class App(Tk):
                                                      )
 
         self.toppane = toppane = Frame(self.panedwindow, bd=0, highlightthickness=0, background=BGCOLOR)
+        self.weekly = False
         self.tree = ttk.Treeview(toppane, show='tree', columns=["#1"], selectmode='browse')
         self.tree.column('#0', minwidth=200, width=260, stretch=1)
         self.tree.column('#1', minwidth=80, width=140, stretch=0, anchor='center')
@@ -664,8 +653,7 @@ class App(Tk):
         self.filterValue.set('')
         self.filterValue.trace_variable("w", self.filterView)
 
-        self.tree.pack(fill="both", expand=1, padx=4, pady=4)
-        # panedwindow.add(self.tree, padx=3, pady=0, stretch="first")
+        self.tree.pack(fill="both", expand=1, padx=4, pady=0)
         panedwindow.add(self.toppane, padx=0, pady=0, stretch="first")
 
         self.content = ReadOnlyText(panedwindow, wrap="word", padx=3, bd=2, relief="sunken",
@@ -979,7 +967,11 @@ a time period if "+" is used."""
         if 'r' in self.itemSelected:
             choice, value = self.which(EDIT, self.dtSelected)
             logger.debug("{0}: {1}".format(choice, value))
-            self.tree.focus_set()
+            if self.weekly:
+                self.canvas.focus_set()
+            else:
+                self.tree.focus_set()
+            logger.debug(('dtSelected: {0}, {1}'.format(type(self.dtSelected), self.dtSelected)))
             self.itemSelected['_dt'] = parse(self.dtSelected)
             if not choice:
                 self.tree.focus_set()
@@ -992,7 +984,6 @@ a time period if "+" is used."""
             hsh_cpy = deepcopy(self.itemSelected)
             hsh_rev = deepcopy(self.itemSelected)
             # we will be editing and adding hsh_cpy and replacing hsh_rev
-            # hsh_cpy['i'] = uniqueId()
 
             dt = hsh_cpy['_dt'].replace(
                 tzinfo=tzlocal()).astimezone(gettz(hsh_cpy['z']))
@@ -1054,7 +1045,10 @@ a time period if "+" is used."""
             self.updateAlerts()
             self.showView(row=self.topSelected)
         else:
-            self.tree.focus_set()
+            if self.weekly:
+                self.canvas.focus_set()
+            else:
+                self.tree.focus_set()
 
     def editFile(self, e=None, file=None, config=False):
         if e is not None:
@@ -1176,6 +1170,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
     def setView(self, view, row=None):
         self.rowSelected = None
         logger.debug("view: {0}".format(view))
+        if view != WEEK and self.weekly:
+            self.closeWeekly()
         self.view = view
         self.showView(row=row)
 
@@ -1188,6 +1184,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.process_input(event=e, cmd=cmd)
 
     def showView(self, e=None, row=None):
+        logger.debug("view: {0}".format(self.view))
         self.depth2id = {}
         self.currentView.set(self.view)
         fltr = self.filterValue.get()
@@ -1199,8 +1196,6 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             logger.debug("row: {0}".format(row))
             # self.tree.see(max(0, self.rowSelected))
             self.tree.yview(max(0, row - 1))
-        if self.win:
-            self.showWeek()
 
     def showBusyTimes(self, event=None):
         if self.busy_info is None:
@@ -1325,22 +1320,22 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         return self.busy_info
 
     def closeWeekly(self, event=None):
-        # self.weekmenu.entryconfig(0, state="normal")
         self.today_col = None
         for i in range(6, 13):
             self.viewmenu.entryconfig(i, state="disabled")
-        if self.win:
-            self.win.destroy()
-        self.win = None
-        logger.debug('self.win: {0}'.format(self.win))
-
+        self.canvas.pack_forget()
+        self.weekly = False
+        self.tree.pack(fill="both", expand=1, padx=4, pady=0)
 
     def showWeekly(self, event=None, chosen_day=None):
         """
         Open the canvas at the current week
         """
-        self.win = win = Toplevel(self)
-        self.win.protocol("WM_DELETE_WINDOW", self.closeWeekly)
+        self.weekly = True
+        self.tree.pack_forget()
+        self.view = WEEK
+        self.currentView.set(WEEK)
+
         self.current_day = get_current_time().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
         self.chosen_day = chosen_day
         if chosen_day is None:
@@ -1348,62 +1343,34 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         else:
             self.chosen_day = chosen_day
         self.selectedId = None
-        # self.win.bind("<Key>", self.key)
-        bf = Frame(win, background="white", highlightbackground='white', bd=0, highlightthickness=0)
-        self.ok = Button(bf, text=_("Close"), height=1, pady=1, command=self.closeWeekly)
-        self.ok.pack(side="right", padx=8, pady=0)
-        self.detailVar = StringVar(self)
-        self.detailVar.set("")
-        self.detail = Label(bf, textvariable=self.detailVar, bg="white")
-        self.detail.pack(fill="x", anchor="e", padx=10, pady=4)
-        bf.pack(side="bottom", fill="x", expand=0)
-        self.canvas = canvas = Canvas(win, width=420, height=420, background="white", bd=0)
-        canvas.pack(side="top", fill="both", expand=1, pady=0)
-        self.win.bind("<Control-Button-1>", self.on_select_item)
-        self.win.bind("<Double-1>", self.on_select_item)
-        # self.win.bind("<Button-1>", self.on_lower_item)
-        self.canvas.bind("<Configure>", self.showWeek)
-        # self.win.bind("<Configure>", self.showWeek)
 
-        win.bind('b', lambda e=event: self.after(AFTER, self.showBusyTimes))
-        win.bind('j', lambda e=event: self.after(AFTER, self.gotoWeek(event=e)))
+        self.canvas = canvas = Canvas(self.toppane, background="white", bd=2, relief="sunken")
+        canvas.configure(highlightthickness=0)
+        canvas.pack(side="top", fill="both", expand=1, padx=4, pady=0)
+
+        self.canvas.bind("<Control-Button-1>", self.on_select_item)
+        self.canvas.bind("<Double-1>", self.on_select_item)
+        self.canvas.bind("<Configure>", self.showWeek)
+
+        canvas.bind('b', lambda e=event: self.after(AFTER, self.showBusyTimes))
+        canvas.bind('j', lambda e=event: self.after(AFTER, self.gotoWeek(event=e)))
         # disable ^J calling gotoDate
-        win.bind('<Control-j>', self.donothing())
-        win.bind("<Return>", lambda e: self.on_activate_item(event=e))
-        win.bind("<Escape>", lambda e: self.closeWeekly(e))
-        win.bind('<Left>', (lambda e: self.showWeek(event=e, week=-1)))
-        win.bind('<Right>', (lambda e: self.showWeek(event=e, week=1)))
-        win.bind('<space>', (lambda e: self.showWeek(event=e, week=0)))
-        win.bind('<Up>', (lambda e: self.selectId(event=e, d=-1)))
-        win.bind('<Down>', (lambda e: self.selectId(event=e, d=1)))
+        canvas.bind('<Control-j>', self.donothing())
+        canvas.bind("<Return>", lambda e: self.on_activate_item(event=e))
+        canvas.bind('<Left>', (lambda e: self.showWeek(event=e, week=-1)))
+        canvas.bind('<Right>', (lambda e: self.showWeek(event=e, week=1)))
+        canvas.bind('<space>', (lambda e: self.showWeek(event=e, week=0)))
+        canvas.bind('<Up>', (lambda e: self.selectId(event=e, d=-1)))
+        canvas.bind('<Down>', (lambda e: self.selectId(event=e, d=1)))
+
         if self.options['ampm']:
             self.hours = ["{0}am".format(i) for i in range(7,12)] + ['12pm'] + ["{0}pm".format(i) for i in range(1,12)]
         else:
             self.hours = ["{0}:00".format(i) for i in range(7, 24)]
-        win.geometry("+%d+%d" % (self.winfo_rootx() + 350,
-                              self.winfo_rooty() + 50))
-        # create a menu
-        popup = Menu(canvas, tearoff=0)
-        for i in range(len(self.em_options)):
-            label = self.em_options[i][0]
-            k = self.em_options[i][1]
-            if k == 'delete':
-                l = "Ctrl-BackSpace"
-                c = "<Control-BackSpace>"
-            elif k == '/': # finish
-                continue
-            else:
-                l, c = commandShortcut(k)
-            logger.debug('binding {0} to {1}'.format(c, self.edit2cmd[k]))
-            popup.add_command(label=label, command=self.edit2cmd[k])
-        self.popup = popup
-        # self.weekmenu.entryconfig(0, state="disabled")
         for i in range(6, 13):
             self.viewmenu.entryconfig(i, state="normal")
-        # self.showWeek()
-
-    # def key(self, event):
-    #     ("pressed", repr(event.char))
+        self.canvas.focus_set()
+        self.showWeek()
 
     def gotoWeek(self, event=None):
         prompt = _("""\
@@ -1423,11 +1390,9 @@ parsing are supported.""")
 
     def showWeek(self, event=None, week=None):
         logger.debug('self.win: {0}'.format(self.win))
-        if not self.win:
-            return
         self.selectedId = None
-        self.x_win = self.win.winfo_rootx()
-        self.y_win = self.win.winfo_rooty()
+        self.x_win = self.canvas.winfo_width()
+        self.y_win = self.canvas.winfo_height()
         logger.debug("win: {0}, {1}".format(self.x_win, self.y_win))
         logger.debug("event: {0}, week: {1}, chosen_day: {2}".format(event, week, self.chosen_day))
         if week in [-1, 0, 1]:
@@ -1443,15 +1408,12 @@ parsing are supported.""")
             return "break"
 
         theweek, weekdays, busy_lst, occasion_lst = self.setWeek(day)
-        # self.detail.delete(0, END)
-        # self.detailVar.set(_("Escape closes"))
-        self.detailVar.set("")
+        self.content.delete("0.0", END)
         self.canvas.delete("all")
-        # left, right, top and bottom margins
         l = 50
         r = 8
         t = 56
-        b = 4
+        b = 8
         if event:
             logger.debug('event: {0}'.format(event))
             w, h = event.width, event.height
@@ -1459,11 +1421,11 @@ parsing are supported.""")
                 self.canvas_width = w
                 self.canvas_height = h
             else:
-                w = self.canvas_width
-                h = self.canvas_height
+                w = self.canvas.winfo_width()
+                h = self.canvas.winfo_height()
         else:
-            w = self.canvas_width
-            h = self.canvas_height
+            w = self.canvas.winfo_width()
+            h = self.canvas.winfo_height()
         logger.debug("w: {0}, h: {1}, l: {2}, t: {3}".format(w, h, l, t))
 
         self.margins = (w, h, l, r, t, b)
@@ -1541,7 +1503,6 @@ parsing are supported.""")
                     ol = bb1[0], max(bb1[1], bb2[1]), bb1[2], min(bb1[3], bb2[3])
                     self.canvas.create_rectangle(ol, fill=CONFLICTFILL, outline="", width=0, tag="conflict")
 
-                    # conf_ids.append(id)
                 tmp = list(tup[2:]) #id, time str, summary and file info
                 tmp.append(daytime)
                 self.busyHsh[id] = tmp
@@ -1560,7 +1521,6 @@ parsing are supported.""")
 
         self.busy_ids = busy_ids
         self.conf_ids = conf_ids
-        # self.occasion_ids = occasion_ids
         for id in occasion_ids + busy_ids + conf_ids: #  + conf_ids:
             self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
             self.canvas.tag_bind(id, '<Any-Leave>', self.on_leave_item)
@@ -1626,7 +1586,8 @@ parsing are supported.""")
         self.canvas.tag_lower('current_day')
         self.canvas.tag_raise('current_time')
         if id in self.busyHsh:
-            self.detailVar.set(self.busyHsh[id][1])
+            self.content.delete("0.0", END)
+            self.OnSelect(uuid=self.busyHsh[id][0], dt=self.busyHsh[id][-1])
 
     def setFocus(self, e):
         self.win.focus()
@@ -1642,17 +1603,9 @@ parsing are supported.""")
                     self.canvas.itemconfig(old_id, fill=OTHERFILL)
                 else:
                     self.canvas.itemconfig(old_id, fill=DEFAULTFILL)
-
-                # self.canvas.itemconfig(old_id, fill=BUSYFILL)
-            # elif old_id in self.conf_ids:
-            #     self.canvas.itemconfig('conflict', fill=CONFLICTFILL)
-            #     # self.canvas.itemconfig('conflict', fill=ACTIVEFILL)
-            #     self.canvas.tag_raise('conflict')
             else:
                 self.canvas.itemconfig(old_id, fill=OCCASIONFILL)
                 self.canvas.tag_lower(old_id)
-
-            # self.canvas.itemconfig(old_id, outline=BUSYOUTLINE)
 
         self.selectedId = id = self.canvas.find_withtag(CURRENT)[0]
         self.canvas.itemconfig(id, fill=ACTIVEFILL)
@@ -1662,14 +1615,14 @@ parsing are supported.""")
         self.canvas.tag_lower('current_day')
         self.canvas.tag_raise('current_time')
 
-        if id in self.busyHsh: # and id in self.canvas_ids:
-            self.detailVar.set(self.busyHsh[id][1])
+        if id in self.busyHsh:
             self.canvas_idpos = self.canvas_ids.index(id)
+            self.content.delete("0.0", END)
+            self.OnSelect(uuid=self.busyHsh[id][0], dt=self.busyHsh[id][-1])
 
     def on_leave_item(self, e):
         id = self.canvas.find_withtag(CURRENT)[0]
-        # self.detail.delete("1.0", END)
-        self.detailVar.set("")
+        self.content.delete("0.0", END)
 
         if id in self.busy_ids:
             tags = self.canvas.gettags(id)
@@ -1689,17 +1642,21 @@ parsing are supported.""")
         logger.debug('current: {0}'.format(current))
         if current and current[0] in self.busy_ids:
             self.selectedId = id = current[0]
-            self.activatePopup(id, event.x_root, event.y_root)
         else:
             self.newEvent(event)
         return "break"
 
     def on_activate_item(self, event):
+        x = self.winfo_rootx() + 350
+        y = self.winfo_rooty() + 50
         id = self.selectedId
-        x1, y1, x2, y2 = self.canvas.coords(id)
-        x = self.x_win + int(x1)
-        y = self.y_win + int(y1)
-        self.activatePopup(id, x, y)
+        # x1, y1, x2, y2 = self.canvas.coords(id)
+        logger.debug("id: {0}, coords: {1}, {2}".format(id, x, y))
+        self.uuidSelected = uuid = self.busyHsh[id][0]
+        self.itemSelected = hsh = loop.uuid2hash[uuid]
+        self.dtSelected = dt = self.busyHsh[id][-1].strftime(zfmt)
+        self.itemmenu.post(x, y)
+
 
     def newEvent(self, event):
         logger.debug("event: {0}".format(event))
@@ -1732,19 +1689,14 @@ parsing are supported.""")
         tfmt = fmt_time(dt, options=loop.options)
         dfmt = dt.strftime("%a %b %d")
         dtfmt = "{0} {1}".format(tfmt, dfmt)
-        # dtfmt = dt.strftime(fmt_datetime(dt, loop.options))
         ans = self.confirm(
             title=_('New event'),
             prompt=_("Create a new event for {0}?").format(dtfmt),
             parent=self.win)
         if ans:
 
-            # self.chosen_day = dt
-
             s = "* ? @s {0} @e 1h".format(dtfmt)
             hsh, msg = str2hsh(s, options=loop.options)
-
-            # self.closeWeekly()
 
             changed = SimpleEditor(parent=self, master=self.win, newhsh=hsh, options=loop.options).changed
 
@@ -1754,53 +1706,6 @@ parsing are supported.""")
                 self.updateAlerts()
                 self.showView()
                 self.showWeek()
-            # self.showWeekly(chosen_day=dt)
-
-    def activatePopup(self, id, x, y):
-        # id = self.selectedId
-        if id is None:
-            return
-        self.uuidSelected = uuid = self.busyHsh[id][0]
-        self.itemSelected = hsh = loop.uuid2hash[uuid]
-        self.dtSelected = dt = self.busyHsh[id][-1].strftime(zfmt)
-        l1 = hsh['fileinfo'][1]
-        l2 = hsh['fileinfo'][2]
-        if l1 == l2:
-            lines = "{0} {1}".format(_('line'), l1)
-        else:
-            lines = "{0} {1}-{2}".format(_('lines'), l1, l2)
-        self.filetext = filetext = "{0}, {1}".format(hsh['fileinfo'][0], lines)
-        tmp = "{0}\n\n{1}: {2}".format(hsh['entry'], _("file"), filetext)
-        type_chr = hsh['entry'][0]
-
-        isRepeating = ('r' in hsh and dt)
-        if isRepeating:
-            item = "{0} {1}".format(_('selected'), dt)
-            self.popup.entryconfig(1, label="{0} ...".format(self.em_opts[1]))
-            self.popup.entryconfig(2, label="{0} ...".format(self.em_opts[2]))
-        else:
-            self.popup.entryconfig(1, label=self.em_opts[1])
-            self.popup.entryconfig(2, label=self.em_opts[2])
-            item = _('selected')
-        hasLink = ('g' in hsh and hsh['g'])
-        l1 = hsh['fileinfo'][1]
-        l2 = hsh['fileinfo'][2]
-        if 'errors' in hsh and hsh['errors']:
-            text = "{1}\n\n{2}: {3}\n\n{4}: {5}".format(item, hsh['entry'].lstrip(), _("Errors"), hsh['errors'],  _("file"), filetext)
-        else:
-            text = "{1}\n\n{2}: {3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
-        for i in [0, 1, 2, 3]:
-            self.popup.entryconfig(i, state='normal')
-        if hasLink:
-            self.popup.entryconfig(4, state='normal')
-        else:
-            self.popup.entryconfig(4, state='disabled')
-        try:
-            self.popup.tk_popup(x, y, 0)
-        finally:
-            # make sure to release the grab (Tk 8.0a1 only)
-            self.popup.grab_release()
-        return "break"
 
     # noinspection PyShadowingNames
     def showCalendar(self, e=None):
@@ -1936,14 +1841,18 @@ or 0 to display all changes.""").format(title)
             self.tree.yview(0)
         return 'break'
 
-    def OnSelect(self, event=None):
+    def OnSelect(self, event=None, uuid=None, dt=None):
         """
         Tree row has gained selection.
         """
-        item = self.tree.selection()[0]
-        self.rowSelected = int(item)
-        type_chr = self.tree.item(item)['text'][0]
-        uuid, dt, hsh = self.getInstance(item)
+        if uuid is None: # tree view
+            item = self.tree.selection()[0]
+            self.rowSelected = int(item)
+            type_chr = self.tree.item(item)['text'][0]
+            uuid, dt, hsh = self.getInstance(item)
+        else: # week vie
+            hsh = loop.uuid2hash[uuid]
+            type_chr = hsh['itemtype']
         # self.l.configure(state="normal")
         self.content.delete("0.0", END)
         if uuid is not None:
@@ -2009,9 +1918,10 @@ or 0 to display all changes.""").format(title)
         """
         item = self.tree.selection()[0]
         uuid, dt, hsh = self.getInstance(item)
-        if uuid is not None:
-            self.editItem()
-        return "break"
+        x = self.winfo_rootx() + 350
+        y = self.winfo_rooty() + 50
+        logger.debug("id: {0}, coords: {1}, {2}".format(id, x, y))
+        self.itemmenu.post(x, y)
 
     def OnDoubleClick(self, event):
         """
@@ -2090,8 +2000,6 @@ or 0 to display all changes.""").format(title)
             logger.debug('updateAlerts 1: {0}'.format(len(loop.alerts)))
         alerts = deepcopy(loop.alerts)
         if loop.options['calendars']:
-            # cal_pattern = r'^%s' % '|'.join([x[2] for x in self.options['calendars'] if x[1]])
-            # cal_regex = re.compile(cal_pattern)
             logger.debug("cal_regex: {0}".format(self.cal_regex))
             alerts = [x for x in alerts if self.cal_regex.match(x[-1])]
         if alerts:
