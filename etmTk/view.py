@@ -303,27 +303,27 @@ class App(Tk):
             viewmenu.entryconfig(11, accelerator=l)
         self.add2menu(path, (label, l))
 
-        # calendars
-        label = _("Choose active calendars")
-        calendarmenu = Menu(filemenu, tearoff=0)
-        self.calendars = deepcopy(loop.options['calendars'])
-        logger.debug('{0}: {1}'.format(label, [x[:2] for x in self.calendars]))
-        self.calendarValues = []
-        for i in range(len(self.calendars)):
-            # logger.debug('Adding calendar: {0}'.format(self.calendars[i][:2]))
-            self.calendarValues.append(BooleanVar())
-            self.calendarValues[i].set(self.calendars[i][1])
-            self.calendarValues[i].trace_variable("w", self.updateCalendars)
-            calendarmenu.add_checkbutton(label=self.calendars[i][0], onvalue=True, offvalue=False, variable=self.calendarValues[i])
-
-        if self.calendars:
-            viewmenu.add_cascade(label=label,
-                                 menu=calendarmenu)
-        else:
-            viewmenu.add_cascade(label=label,
-                                 menu=calendarmenu,
-                                 state="disabled")
-        self.add2menu(path, (label, ))
+        # # calendars
+        # label = _("Choose active calendars")
+        # calendarmenu = Menu(filemenu, tearoff=0)
+        # self.calendars = deepcopy(loop.options['calendars'])
+        # logger.debug('{0}: {1}'.format(label, [x[:2] for x in self.calendars]))
+        # self.calendarValues = []
+        # for i in range(len(self.calendars)):
+        #     # logger.debug('Adding calendar: {0}'.format(self.calendars[i][:2]))
+        #     self.calendarValues.append(BooleanVar())
+        #     self.calendarValues[i].set(self.calendars[i][1])
+        #     self.calendarValues[i].trace_variable("w", self.updateCalendars)
+        #     calendarmenu.add_checkbutton(label=self.calendars[i][0], onvalue=True, offvalue=False, variable=self.calendarValues[i])
+        #
+        # if self.calendars:
+        #     viewmenu.add_cascade(label=label,
+        #                          menu=calendarmenu)
+        # else:
+        #     viewmenu.add_cascade(label=label,
+        #                          menu=calendarmenu,
+        #                          state="disabled")
+        # self.add2menu(path, (label, ))
 
         viewmenu.add_separator()
         self.add2menu(path, (SEP, ))
@@ -331,17 +331,17 @@ class App(Tk):
         l = "Space"
         c = "<space>"
         label=_("Show current week")
-        viewmenu.add_command(label=label, underline=1, command=lambda e: self.showWeek(event=e, week=0))
-        if not mac:
-            viewmenu.entryconfig(1, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        l = "j"
-        label=_("Jump to week ...")
-        viewmenu.add_command(label=label, underline=1, command=self.gotoWeek)
-        if not mac:
-            viewmenu.entryconfig(2, accelerator=l)
-        self.add2menu(path, (label, l))
+        # viewmenu.add_command(label=label, underline=1, command=lambda e: self.showWeek(event=e, week=0))
+        # if not mac:
+        #     viewmenu.entryconfig(1, accelerator=l)
+        # self.add2menu(path, (label, l))
+        #
+        # l = "j"
+        # label=_("Jump to week ...")
+        # viewmenu.add_command(label=label, underline=1, command=self.gotoWeek)
+        # if not mac:
+        #     viewmenu.entryconfig(2, accelerator=l)
+        # self.add2menu(path, (label, l))
 
         l = "Left"
         label=_("Previous week")
@@ -371,17 +371,18 @@ class App(Tk):
             viewmenu.entryconfig(6, accelerator=l)
         self.add2menu(path, (label, l))
 
-        l = "b"
+        l, c = commandShortcut("b")
         label=_("List busy times in week")
-        viewmenu.add_command(label=label, underline=1, command=self.showBusyTimes)
+        viewmenu.add_command(label=label, underline=5, command=self.showBusyTimes)
         if not mac:
             viewmenu.entryconfig(7, accelerator=l)
+        self.bind(c, lambda event: self.after(AFTER, self.showBusyTimes))
         self.add2menu(path, (label, l))
 
         # viewmenu.add_cascade(label=path, menu=viewmenu, underline=0)
 
         # self.viewmenu.entryconfig(0, state="normal")
-        for i in range(6, 13):
+        for i in range(5, 12):
             self.viewmenu.entryconfig(i, state="disabled")
 
 
@@ -608,13 +609,39 @@ class App(Tk):
         self.vm.pack(side="left", padx=2)
         self.vm.configure(background=BGCOLOR, takefocus=False)
 
-        self.showing = showing = Label(topbar, textvariable=self.currentView, bd=1, relief="flat", anchor="w", padx=0, pady=2, highlightbackground=BGCOLOR, background=BGCOLOR)
+        # self.showing = showing = Label(topbar, textvariable=self.currentView, bd=1, relief="flat", anchor="w", padx=0, pady=2, highlightbackground=BGCOLOR, background=BGCOLOR)
         # self.showing.pack(side="left", padx=8, pady=0)
 
         self.matchingFilter = StringVar(self)
         self.matchingFilter.set("")
         matching = Label(topbar, textvariable=self.matchingFilter, bd=1, relief="flat", anchor="w", padx=0, pady=0, highlightbackground=BGCOLOR, background=BGCOLOR)
         matching.pack(side="right", padx=2, pady=2)
+
+        # calendars
+        label = _("Calendars")
+        self.calendars = deepcopy(loop.options['calendars'])
+        # if self.calendars:
+        if False:
+            self.calendarmenu = calendarmenu = Menu(topbar, tearoff=0)
+            logger.debug('{0}: {1}'.format(label, [x[:2] for x in self.calendars]))
+            self.calendarValues = []
+            for i in range(len(self.calendars)):
+                # logger.debug('Adding calendar: {0}'.format(self.calendars[i][:2]))
+                self.calendarValues.append(BooleanVar())
+                self.calendarValues[i].set(self.calendars[i][1])
+                self.calendarValues[i].trace_variable("w", self.updateCalendars)
+                calendarmenu.add_checkbutton(label=self.calendars[i][0], onvalue=True, offvalue=False, variable=self.calendarValues[i])
+            calendarmenu.pack(side="right")
+
+        # if self.calendars:
+        #     viewmenu.add_cascade(label=label,
+        #                          menu=calendarmenu)
+        # else:
+        #     viewmenu.add_cascade(label=label,
+        #                          menu=calendarmenu,
+        #                          state="disabled")
+        # self.add2menu(path, (label, ))
+
 
         self.specialCalendars = StringVar(self)
         self.specialCalendars.set("")
@@ -744,31 +771,23 @@ class App(Tk):
         ok, value = OptionsDialog(parent=parent, title=_("confirm").format(instance), prompt=prompt).getValue()
         return ok
 
-
     def updateCalendars(self, *args):
         for i in range(len(loop.calendars)):
             loop.calendars[i][1] = self.calendarValues[i].get()
-        if loop.calendars != loop.options['calendars']:
-            # self.specialCalendars.set("*")
-            self.showing.configure(fg="plum3")
-        else:
-            # self.specialCalendars.set("")
-            self.showing.configure(fg="black")
+        # if loop.calendars != loop.options['calendars']:
+        #     # self.specialCalendars.set("*")
+        #     self.showing.configure(fg="plum3")
+        # else:
+        #     # self.specialCalendars.set("")
+        #     self.showing.configure(fg="black")
         cal_pattern = r'^%s' % '|'.join(
             [x[2] for x in loop.calendars if x[1]])
         self.cal_regex = re.compile(cal_pattern)
 
         self.updateAlerts()
         self.showView()
-        if self.win:
-            self.showWeek()
-
 
     def quit(self, e=None):
-        # ans = askokcancel(
-        #     _('Quit'),
-        #     _("Do you really want to quit?"),
-        #     parent=self)
         ans = self.confirm(
             title=_('Quit'),
             prompt=_("Do you really want to quit?"),
@@ -1321,7 +1340,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
     def closeWeekly(self, event=None):
         self.today_col = None
-        for i in range(6, 13):
+        for i in range(5, 12):
             self.viewmenu.entryconfig(i, state="disabled")
         self.canvas.pack_forget()
         self.weekly = False
@@ -1352,10 +1371,10 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.canvas.bind("<Double-1>", self.on_select_item)
         self.canvas.bind("<Configure>", self.showWeek)
 
-        canvas.bind('b', lambda e=event: self.after(AFTER, self.showBusyTimes))
-        canvas.bind('j', lambda e=event: self.after(AFTER, self.gotoWeek(event=e)))
+        # canvas.bind('b', lambda e=event: self.after(AFTER, self.showBusyTimes))
+        # canvas.bind('j', lambda e=event: self.after(AFTER, self.gotoWeek(event=e)))
         # disable ^J calling gotoDate
-        canvas.bind('<Control-j>', self.donothing())
+        # canvas.bind('<Control-j>', self.gotoWeek)
         canvas.bind("<Return>", lambda e: self.on_activate_item(event=e))
         canvas.bind('<Left>', (lambda e: self.showWeek(event=e, week=-1)))
         canvas.bind('<Right>', (lambda e: self.showWeek(event=e, week=1)))
@@ -1367,25 +1386,25 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             self.hours = ["{0}am".format(i) for i in range(7,12)] + ['12pm'] + ["{0}pm".format(i) for i in range(1,12)]
         else:
             self.hours = ["{0}:00".format(i) for i in range(7, 24)]
-        for i in range(6, 13):
+        for i in range(5, 12):
             self.viewmenu.entryconfig(i, state="normal")
         self.canvas.focus_set()
         self.showWeek()
 
-    def gotoWeek(self, event=None):
-        prompt = _("""\
-Busy times will be shown for the week containing the date you select.
-Return an empty string for the current week. Relative dates and fuzzy
-parsing are supported.""")
-        d = GetDateTime(parent=self.win, title=_('date'), prompt=prompt)
-        day = d.value
-        if day is not None:
-            logger.debug('day: {0}'.format(day))
-            self.chosen_day = day
-            self.showWeek(event=event, week=None)
-            if self.view == SCHEDULE:
-                self.scrollToDate(day.date())
-        # return
+#     def gotoWeek(self, event=None):
+#         prompt = _("""\
+# Busy times will be shown for the week containing the date you select.
+# Return an empty string for the current week. Relative dates and fuzzy
+# parsing are supported.""")
+#         d = GetDateTime(parent=self.win, title=_('date'), prompt=prompt)
+#         day = d.value
+#         if day is not None:
+#             logger.debug('day: {0}'.format(day))
+#             self.chosen_day = day
+#             self.showWeek(event=event, week=None)
+#             if self.view == SCHEDULE:
+#                 self.scrollToDate(day.date())
+#         # return
 
 
     def showWeek(self, event=None, week=None):
@@ -2167,17 +2186,18 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
         prompt = _("""\
 Return an empty string for the current date or a date to be parsed.
 Relative dates and fuzzy parsing are supported.""")
-        if self.view != self.vm_options[1][0]:
-            self.view = self.vm_options[1][0]
+        if self.view not in [SCHEDULE, WEEK]:
+            self.view = SCHEDULE
             self.showView()
         d = GetDateTime(parent=self, title=_('date'), prompt=prompt)
         day = d.value
         logger.debug('day: {0}'.format(day))
         if day is not None:
-            self.scrollToDate(day.date())
             self.chosen_day = day
-            if self.win:
-                self.showWeek()
+            if self.weekly:
+                self.showWeek(event=e, week=None)
+            else:
+                self.scrollToDate(day.date())
         return "break"
 
     def setFilter(self, e=None):
@@ -2400,6 +2420,7 @@ or 0 to expand all branches completely.""")
             return ()
         active_date = loop.prevnext[date][1]
         if active_date not in self.date2id:
+            # print(active_date, type(active_date), 'not in', self.date2id.keys())
             return ()
         uid = self.date2id[active_date]
         self.scrollToId(uid)
@@ -2470,7 +2491,11 @@ or 0 to expand all branches completely.""")
                 self.count2id[oid] = "{0}::{1}".format(uuid, dt)
                 if dt:
                     try:
-                        d = parse(dt[:10]).date()
+                        if item_type == 'by':
+                            # we want today, not the starting date for this
+                            d = get_current_time().date()
+                        else:
+                            d = parse(dt[:10]).date()
                         if d not in self.date2id:
                             self.date2id[d] = parent
                     except:
