@@ -1152,10 +1152,14 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
             loop.old_dt = None
             title = _('scheduling an undated item')
         logger.debug('dtSelected: {0}'.format(self.dtSelected))
+        if self.weekly:
+            master = self.canvas
+        else:
+            master = self.tree
         prompt = _("""\
 Enter the new date and time for the item or return an empty string to
 use the current time. Relative dates and fuzzy parsing are supported.""")
-        dt = GetDateTime(parent=self, title=title,
+        dt = GetDateTime(parent=self, master=master, title=title,
                          prompt=prompt)
         new_dt = dt.value
         if new_dt is None:

@@ -253,7 +253,7 @@ class MessageWindow():
 
 class Dialog(Toplevel):
 
-    def __init__(self, parent, title=None, prompt=None, opts=None, default=None, modal=True, xoffset=50, yoffset=50, event=None):
+    def __init__(self, parent, master=None, title=None, prompt=None, opts=None, default=None, modal=True, xoffset=50, yoffset=50, event=None):
 
         Toplevel.__init__(self, parent, highlightbackground=BGCOLOR,
                     background=BGCOLOR)
@@ -268,6 +268,7 @@ class Dialog(Toplevel):
             self.title(title)
 
         self.parent = parent
+        self.master = master
         self.event = event
         logger.debug("parent: {0}".format(self.parent))
         self.prompt = prompt
@@ -352,8 +353,10 @@ class Dialog(Toplevel):
             logger.debug("returning focus to parent: {0}".format(self.parent))
             self.parent.focus()
             # self.parent.tree.focus_set()
-            self.parent.focus_set()
-            # self.parent.focus_set()
+            if self.master:
+                self.master.focus_set()
+            elif self.parent:
+                self.parent.focus_set()
         else:
             logger.debug("returning focus, no parent")
         self.destroy()
