@@ -650,7 +650,7 @@ class App(Tk):
         self.tree.column('#0', minwidth=200, width=260, stretch=1)
         self.tree.column('#1', minwidth=80, width=140, stretch=0, anchor='center')
         self.tree.bind('<<TreeviewSelect>>', self.OnSelect)
-        self.tree.bind('<Double-1>', self.OnDoubleClick)
+        self.tree.bind('<Double-1>', self.OnActivate)
         self.tree.bind('<Return>', self.OnActivate)
         # self.tree.bind('<Escape>', self.cleartext)
         self.tree.bind('<space>', self.goHome)
@@ -864,7 +864,10 @@ a time period if "+" is used."""
             logger.debug('changed, reloading data')
             loop.loadData()
             self.updateAlerts()
-            self.showView()
+            if self.weekly:
+                self.showWeek()
+            else:
+                self.showView()
 
     def which(self, act, instance="xyz"):
         prompt = "\n".join([
@@ -882,7 +885,11 @@ a time period if "+" is used."""
                 _("this and all subsequent instances"),
                 _("all instances")]
 
-        index, value = OptionsDialog(parent=self, title=_("instance: {0}").format(instance), prompt=prompt, opts=opt_lst, yesno=False).getValue()
+        if self.weekly:
+            master = self.canvas
+        else:
+            master = self.tree
+        index, value = OptionsDialog(parent=self, master=master, title=_("instance: {0}").format(instance), prompt=prompt, opts=opt_lst, yesno=False).getValue()
         return index, value
 
     def copyItem(self, e=None):
@@ -947,11 +954,13 @@ a time period if "+" is used."""
 
         changed = SimpleEditor(parent=self, newhsh=hsh_cpy, rephsh=None,
                          options=loop.options, title=title, modified=True).changed
-
         if changed:
             loop.loadData()
             self.updateAlerts()
-            self.showView(row=self.topSelected)
+            if self.weekly:
+                self.showWeek()
+            else:
+                self.showView(row=self.topSelected)
         else:
             self.tree.focus_set()
 
@@ -978,7 +987,10 @@ a time period if "+" is used."""
         loop.cmd_do_delete(indx)
         loop.loadData()
         self.updateAlerts()
-        self.showView(row=self.topSelected)
+        if self.weekly:
+            self.showWeek()
+        else:
+            self.showView(row=self.topSelected)
 
 
     def editItem(self, e=None):
@@ -1064,7 +1076,10 @@ a time period if "+" is used."""
         if changed:
             loop.loadData()
             self.updateAlerts()
-            self.showView(row=self.topSelected)
+            if self.weekly:
+                self.showWeek()
+            else:
+                self.showView(row=self.topSelected)
         else:
             if self.weekly:
                 self.canvas.focus_set()
@@ -1120,7 +1135,10 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
         loop.cmd_do_finish(chosen_day)
         loop.loadData()
         self.updateAlerts()
-        self.showView(row=self.topSelected)
+        if self.weekly:
+            self.showWeek()
+        else:
+            self.showView(row=self.topSelected)
 
     def rescheduleItem(self, e=None):
         if not self.itemSelected:
@@ -1147,7 +1165,10 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         loop.cmd_do_reschedule(new_dtn)
         loop.loadData()
         self.updateAlerts()
-        self.showView(row=self.topSelected)
+        if self.weekly:
+            self.showWeek()
+        else:
+            self.showView(row=self.topSelected)
 
 
     def showAlerts(self, e=None):
@@ -1355,6 +1376,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         """
         Open the canvas at the current week
         """
+        if self.weekly:
+            return
         self.weekly = True
         self.fltr.pack_forget()
         self.tree.pack_forget()
