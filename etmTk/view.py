@@ -70,6 +70,9 @@ STOPPED = _('stopped')
 PAUSED = _('paused')
 RUNNING = _('running')
 
+FILTER = _("filter")
+FILTERCOLOR = "gray"
+
 AGENDA = _('Agenda')
 SCHEDULE = _('Schedule')
 PATHS = _('Paths')
@@ -298,6 +301,14 @@ class App(Tk):
             viewmenu.entryconfig(10, accelerator=l)
         self.add2menu(path, (label, l))
 
+        # clear filter
+        l = "Escape"
+        label=_("Clear filter")
+        viewmenu.add_command( label=label, underline=1, command=self.clearFilter)
+        if not mac:
+            viewmenu.entryconfig(10, accelerator=l)
+        self.add2menu(path, (label, l))
+
         # expand to depth
         l, c = commandShortcut('o')
         label=_("Set outline depth")
@@ -307,45 +318,12 @@ class App(Tk):
             viewmenu.entryconfig(11, accelerator=l)
         self.add2menu(path, (label, l))
 
-        # # calendars
-        # label = _("Choose active calendars")
-        # calendarmenu = Menu(filemenu, tearoff=0)
-        # self.calendars = deepcopy(loop.options['calendars'])
-        # logger.debug('{0}: {1}'.format(label, [x[:2] for x in self.calendars]))
-        # self.calendarValues = []
-        # for i in range(len(self.calendars)):
-        #     # logger.debug('Adding calendar: {0}'.format(self.calendars[i][:2]))
-        #     self.calendarValues.append(BooleanVar())
-        #     self.calendarValues[i].set(self.calendars[i][1])
-        #     self.calendarValues[i].trace_variable("w", self.updateCalendars)
-        #     calendarmenu.add_checkbutton(label=self.calendars[i][0], onvalue=True, offvalue=False, variable=self.calendarValues[i])
-        #
-        # if self.calendars:
-        #     viewmenu.add_cascade(label=label,
-        #                          menu=calendarmenu)
-        # else:
-        #     viewmenu.add_cascade(label=label,
-        #                          menu=calendarmenu,
-        #                          state="disabled")
-        # self.add2menu(path, (label, ))
-
         viewmenu.add_separator()
         self.add2menu(path, (SEP, ))
 
         l = "Space"
         c = "<space>"
         label=_("Show current week")
-        # viewmenu.add_command(label=label, underline=1, command=lambda e: self.showWeek(event=e, week=0))
-        # if not mac:
-        #     viewmenu.entryconfig(1, accelerator=l)
-        # self.add2menu(path, (label, l))
-        #
-        # l = "j"
-        # label=_("Jump to week ...")
-        # viewmenu.add_command(label=label, underline=1, command=self.gotoWeek)
-        # if not mac:
-        #     viewmenu.entryconfig(2, accelerator=l)
-        # self.add2menu(path, (label, l))
 
         l = "Left"
         label=_("Previous week")
@@ -386,7 +364,7 @@ class App(Tk):
         # viewmenu.add_cascade(label=path, menu=viewmenu, underline=0)
 
         # self.viewmenu.entryconfig(0, state="normal")
-        for i in range(5, 12):
+        for i in range(6, 13):
             self.viewmenu.entryconfig(i, state="disabled")
 
 
@@ -601,6 +579,11 @@ class App(Tk):
         self.currentView = StringVar(self)
         self.currentView.set(self.view)
 
+        MAIN = _("Main")
+        self.add2menu(root, (MAIN, ))
+        VIEWS = _("Views")
+        self.add2menu(MAIN, (VIEWS, ))
+
         self.vm_opts = [x[0] for x in self.vm_options]
         self.vm = OptionMenu(topbar, self.currentView, *self.vm_opts)
         for i in range(len(self.vm_options)):
@@ -610,32 +593,38 @@ class App(Tk):
             logger.debug("k: {0}; l: {1}; c: {2}".format(k, l, c))
             self.bind(c, lambda e, x=k: self.after(AFTER, self.view2cmd[x]))
             self.vm["menu"].entryconfig(i, command=lambda x=k: self.after(AFTER, self.view2cmd[x]))
+            self.add2menu(VIEWS, (self.vm_opts[i], l))
         self.vm.pack(side="left", padx=2)
         self.vm.configure(background=BGCOLOR, takefocus=False)
-
-        # self.showing = showing = Label(topbar, textvariable=self.currentView, bd=1, relief="flat", anchor="w", padx=0, pady=2, highlightbackground=BGCOLOR, background=BGCOLOR)
-        # self.showing.pack(side="left", padx=8, pady=0)
-
-        # self.matchingFilter = StringVar(self)
-        # self.matchingFilter.set("")
-        # matching = Label(topbar, textvariable=self.matchingFilter, bd=1, relief="flat", anchor="w", padx=0, pady=0, highlightbackground=BGCOLOR, background=BGCOLOR)
-        # matching.pack(side="right", padx=2, pady=2)
 
         # calendars
         self.calbutton = Button(topbar, text=CALENDARS, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, width=8)
         # self.calbutton.pack(side="right", padx=0)
-        self.calbutton.pack(side="left", padx=6)
+        self.calbutton.pack(side="right", padx=6)
         if not self.default_calendars:
             self.calbutton.configure(state="disabled")
 
         # filter
+        self.fltrbox = fltrbox = Frame(topbar, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR)
         self.filterValue = StringVar(self)
         self.filterValue.set('')
         self.filterValue.trace_variable("w", self.filterView)
+        # self.dummyValue = StringVar(self)
+        # self.dummyValue.set(FILTER)
+        # self.dummyValue.trace_variable("w", self.setFilter)
 
-        self.fltr = Entry(topbar, textvariable=self.filterValue, width=10, highlightbackground=BGCOLOR)
-        self.fltr.pack(side=LEFT, padx=6, expand=1, fill=X)
+        self.fltr = Entry(fltrbox, textvariable=self.filterValue, width=14, highlightbackground=BGCOLOR, bg=BGCOLOR)
+        # self.fltr.configure(fg=FILTERCOLOR)
+        self.fltr.pack(side="left", padx=0) #, expand=1, fill=X)
         self.bind("<Escape>", self.clearFilter)
+        self.fltr.bind("<FocusIn>", self.setFilter)
+        self.fltrbtn = Button(fltrbox, text='x', command=self.clearFilter, highlightbackground=BGCOLOR)
+        self.fltrbtn.configure(state="disabled")
+        self.filter_active = False
+        self.viewmenu.entryconfig(2, state="normal")
+        self.viewmenu.entryconfig(3, state="disabled")
+        self.fltrbtn.pack(side=LEFT, padx=0)
+        self.fltrbox.pack(side=LEFT, padx=0, pady=0)
 
         topbar.pack(side="top", fill="both", expand=0, padx=0, pady=0)
 
@@ -782,7 +771,6 @@ class App(Tk):
         else:
             self.calbutton.configure(text=CALENDARS)
         self.update()
-        print(self.calbutton.cget("fg"))
         self.updateAlerts()
         if self.weekly:
             self.showWeek()
@@ -1371,12 +1359,27 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
     def closeWeekly(self, event=None):
         self.today_col = None
-        for i in range(5, 12):
+        for i in range(6, 13):
             self.viewmenu.entryconfig(i, state="disabled")
         self.canvas.pack_forget()
         self.weekly = False
-        self.fltr.pack(side=LEFT, padx=6, expand=1, fill=X)
+        self.fltrbox.pack(side=LEFT, padx=0, pady=0)
         self.tree.pack(fill="both", expand=1, padx=4, pady=0)
+        self.update_idletasks()
+        if self.filter_active:
+            self.viewmenu.entryconfig(2, state="disabled")
+            self.viewmenu.entryconfig(3, state="normal")
+        else:
+            self.viewmenu.entryconfig(2, state="normal")
+            self.viewmenu.entryconfig(3, state="disabled")
+
+        self.viewmenu.entryconfig(4, state="normal")
+
+        # self.fltr.configure(state="normal")
+        # self.fltrbtn.configure(state="normal")
+        # if self.filter_active:
+        #     self.fltr.configure(bg="white")
+
 
     def showWeekly(self, event=None, chosen_day=None):
         """
@@ -1386,8 +1389,11 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             # we're in weekview already
             return
         self.weekly = True
-        self.fltr.pack_forget()
         self.tree.pack_forget()
+        self.fltrbox.pack_forget()
+        for i in range(2, 5):
+            self.viewmenu.entryconfig(i, state="disabled")
+
         self.view = WEEK
         self.currentView.set(WEEK)
 
@@ -1422,7 +1428,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             self.hours = ["{0}am".format(i) for i in range(7,12)] + ['12pm'] + ["{0}pm".format(i) for i in range(1,12)]
         else:
             self.hours = ["{0}:00".format(i) for i in range(7, 24)]
-        for i in range(5, 12):
+        for i in range(6, 13):
             self.viewmenu.entryconfig(i, state="normal")
         self.canvas.focus_set()
         self.showWeek()
@@ -2228,25 +2234,25 @@ Relative dates and fuzzy parsing are supported.""")
                 self.scrollToDate(day.date())
         return "break"
 
-    def setFilter(self, e=None):
+    def setFilter(self, *args):
+        if self.weekly:
+            return
+        self.filter_active = True
+        self.viewmenu.entryconfig(2, state="disabled")
+        self.viewmenu.entryconfig(3, state="normal")
+        self.fltr.configure(bg="white", state="normal")
+        self.fltrbtn.configure(state="normal")
         self.fltr.focus_set()
 
     def clearFilter(self, e=None):
+        self.filter_active = False
+        self.viewmenu.entryconfig(2, state="normal")
+        self.viewmenu.entryconfig(3, state="disabled")
         self.filterValue.set('')
+        self.fltr.configure(bg=BGCOLOR)
+        self.fltrbtn.configure(state="disabled")
         self.tree.focus_set()
 
-#     def setFilter(self, e=None):
-#         """
-#         :param e:
-#         :return:
-#         """
-#         prompt = _("""\
-# Enter a case insensitive regular expression to
-# limit the display to branches that match.\
-# """)
-#         v = TextVariableWindow(parent=self, title=_('filter'), prompt=prompt, opts={'textvariable': self.filterValue}, modal=False, xoffset=200).value
-#         logger.debug("setting tree focus: {0}".format(v))
-#         # self.tree.focus_set()
 
     def startActionTimer(self, event=None):
         """
@@ -2452,7 +2458,6 @@ or 0 to expand all branches completely.""")
             return ()
         active_date = loop.prevnext[date][1]
         if active_date not in self.date2id:
-            # print(active_date, type(active_date), 'not in', self.date2id.keys())
             return ()
         uid = self.date2id[active_date]
         self.scrollToId(uid)
