@@ -1628,7 +1628,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
         if id in self.busyHsh:
             self.canvas_idpos = self.canvas_ids.index(id)
-            self.content.delete("0.0", END)
+            self.content.delete("1.0", END)
             self.OnSelect(uuid=self.busyHsh[id][0], dt=self.busyHsh[id][-1])
 
     def on_leave_item(self, e):
@@ -1653,6 +1653,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         logger.debug('current: {0}'.format(current))
         if current and current[0] in self.busy_ids:
             self.selectedId = id = current[0]
+            self.on_activate_item(event)
         else:
             self.newEvent(event)
         return "break"
@@ -1671,7 +1672,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
     def newEvent(self, event):
         logger.debug("event: {0}".format(event))
-        self.win.focus_set()
+        self.canvas.focus_set()
         min_round = 15
         px = event.x
         py = event.y
@@ -1865,7 +1866,7 @@ or 0 to display all changes.""").format(title)
             hsh = loop.uuid2hash[uuid]
             type_chr = hsh['itemtype']
         # self.l.configure(state="normal")
-        self.content.delete("0.0", END)
+        self.content.delete("1.0", END)
         if uuid is not None:
             # self.itemmenu.configure(state="normal")
             isRepeating = ('r' in hsh and dt)

@@ -654,7 +654,7 @@ class OptionsDialog():
         # put focus back to the parent window
         if self.master:
             self.master.focus_set()
-        else:
+        elif self.parent:
             self.parent.focus_set()
         self.win.destroy()
 
