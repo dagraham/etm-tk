@@ -161,8 +161,8 @@ class ReportWindow(Toplevel):
         self.e.bind("<Return>", self.onFind)
         Button(topbar, text='>', command=self.onFind, highlightbackground=BGCOLOR,  padx=8).pack(side=LEFT, padx=0)
 
-        # help
-        Button(topbar, text="?", command=self.reportHelp, highlightbackground=BGCOLOR).pack(side=LEFT, padx=4)
+        # # help
+        # Button(topbar, text="?", command=self.reportHelp, highlightbackground=BGCOLOR).pack(side=LEFT, padx=4)
 
         # botbar components
         # Button(botbar, text=CLOSE, highlightbackground=BGCOLOR, width=btnwdth, command=self.cancel).pack(side=LEFT, padx=4)

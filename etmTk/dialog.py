@@ -12,7 +12,7 @@ import platform
 
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas, CURRENT
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, Checkbutton, W, X, LabelFrame, Canvas, CURRENT
     from tkinter import ttk
     from tkinter import font as tkFont
     from tkinter.messagebox import askokcancel
@@ -21,7 +21,7 @@ if platform.python_version() >= '3':
     # from tkinter import simpledialog as tkSimpleDialog
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas, CURRENT
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, Checkbutton, W, X, LabelFrame, Canvas, CURRENT
     # import tkMessageBox
     import ttk
     import tkFont
@@ -550,7 +550,7 @@ class TextDialog(Dialog):
 
 class OptionsDialog():
     # noinspection PyShadowingNames
-    def __init__(self, parent, title="", prompt="", opts=None, yesno=True):
+    def __init__(self, parent, master=None, title="", prompt="", opts=None, radio=True, yesno=True):
         if not opts: opts = []
         self.win = Toplevel(parent)
         self.win.protocol("WM_DELETE_WINDOW", self.quit)
@@ -558,7 +558,9 @@ class OptionsDialog():
             self.win.geometry("+%d+%d" % (parent.winfo_rootx() + 50,
                                   parent.winfo_rooty() + 50))
         self.parent = parent
+        self.master = master
         self.options = opts
+        self.radio = radio
         self.win.title(title)
         Label(self.win, text=prompt, justify='left').pack(fill=tkinter.BOTH, expand=1, padx=10, pady=5)
         # self.sv = StringVar(parent)
@@ -567,20 +569,32 @@ class OptionsDialog():
         self.sv.set(1)
         # logger.debug('sv: {0}'.format(self.sv.get()))
         if self.options:
-            self.value = opts[0]
-            for i in range(min(9, len(self.options))):
-                txt = self.options[i]
-                val = i + 1
-                # bind keyboard numbers 1-9 (at most) to options selection, i.e., press 1
-                # to select option 1, 2 to select 2, etc.
-                self.win.bind(str(val), (lambda e, x=val: self.sv.set(x)))
-                Radiobutton(self.win,
-                    text="{0}: {1}".format(val, txt),
-                    padx=20,
-                    indicatoron=True,
-                    variable=self.sv,
-                    command=self.getValue,
-                    value=val).pack(padx=10, anchor=W)
+            if radio:
+                self.value = opts[0]
+                for i in range(min(9, len(self.options))):
+                    txt = self.options[i]
+                    val = i + 1
+                    # bind keyboard numbers 1-9 (at most) to options selection, i.e., press 1
+                    # to select option 1, 2 to select 2, etc.
+                    self.win.bind(str(val), (lambda e, x=val: self.sv.set(x)))
+                    Radiobutton(self.win,
+                        text="{0}: {1}".format(val, txt),
+                        padx=20,
+                        indicatoron=True,
+                        variable=self.sv,
+                        command=self.getValue,
+                        value=val).pack(padx=10, anchor=W)
+            else:
+                self.check_values = {}
+                # show 0, check 1, return 2
+                for i in range(min(9, len(self.options))):
+                    txt = self.options[i][0]
+                    self.check_values[i] = BooleanVar(self.parent)
+                    self.check_values[i].set(self.options[i][1])
+                    Checkbutton(self.win,
+                        text=self.options[i][0],
+                        padx=20,
+                        variable=self.check_values[i]).pack(padx=10, anchor=W)
         box = Frame(self.win)
         if yesno:
             YES = _("Yes")
@@ -606,16 +620,23 @@ class OptionsDialog():
         v = self.sv.get()
         logger.debug("sv: {0}".format(v))
         if self.options:
-            if v-1 in range(len(self.options)):
-                o = self.options[v-1]
-                logger.debug(
-                    'OptionsDialog returning {0}: {1}'.format(v, o))
-                return v, o
-                # return o, v
-            else:
-                logger.debug(
-                    'OptionsDialog returning {0}: {1}'.format(v,  None))
-                return 0, None
+            if self.radio:
+                if v-1 in range(len(self.options)):
+                    o = self.options[v-1]
+                    logger.debug(
+                        'OptionsDialog returning {0}: {1}'.format(v, o))
+                    return v, o
+                    # return o, v
+                else:
+                    logger.debug(
+                        'OptionsDialog returning {0}: {1}'.format(v,  None))
+                    return 0, None
+            else: # checkbutton
+                values = []
+                for i in range(len(self.options)):
+                    bool = self.check_values[i].get() > 0
+                    values.append([self.options[i][0], bool, self.options[i][2]])
+                return values
         else: # askokcancel type dialog
             logger.debug(
                 'OptionsDialog returning {0}: {1}'.format(v, None))
@@ -631,7 +652,10 @@ class OptionsDialog():
 
     def quit(self, event=None):
         # put focus back to the parent window
-        self.parent.focus_set()
+        if self.master:
+            self.master.focus_set()
+        else:
+            self.parent.focus_set()
         self.win.destroy()
 
 

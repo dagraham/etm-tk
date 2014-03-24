@@ -78,6 +78,8 @@ TAGS = _('Tags')
 NOTES = _('Notes')
 WEEK = _("Week")
 
+CALENDARS = _("Calendars")
+
 COPY = _("Copy")
 EDIT = _("Edit")
 DELETE = _("Delete")
@@ -141,6 +143,8 @@ class App(Tk):
         self.win = None # showWeekly
         self.today_col = None
         root = "_"
+        # self.default_calendars = []
+        self.default_calendars = deepcopy(loop.options['calendars'])
 
         # create the root node for the menu tree
         self.menutree.create_node(root, root)
@@ -612,41 +616,26 @@ class App(Tk):
         # self.showing = showing = Label(topbar, textvariable=self.currentView, bd=1, relief="flat", anchor="w", padx=0, pady=2, highlightbackground=BGCOLOR, background=BGCOLOR)
         # self.showing.pack(side="left", padx=8, pady=0)
 
-        self.matchingFilter = StringVar(self)
-        self.matchingFilter.set("")
-        matching = Label(topbar, textvariable=self.matchingFilter, bd=1, relief="flat", anchor="w", padx=0, pady=0, highlightbackground=BGCOLOR, background=BGCOLOR)
-        matching.pack(side="right", padx=2, pady=2)
+        # self.matchingFilter = StringVar(self)
+        # self.matchingFilter.set("")
+        # matching = Label(topbar, textvariable=self.matchingFilter, bd=1, relief="flat", anchor="w", padx=0, pady=0, highlightbackground=BGCOLOR, background=BGCOLOR)
+        # matching.pack(side="right", padx=2, pady=2)
 
         # calendars
-        label = _("Calendars")
-        self.calendars = deepcopy(loop.options['calendars'])
-        # if self.calendars:
-        if False:
-            self.calendarmenu = calendarmenu = Menu(topbar, tearoff=0)
-            logger.debug('{0}: {1}'.format(label, [x[:2] for x in self.calendars]))
-            self.calendarValues = []
-            for i in range(len(self.calendars)):
-                # logger.debug('Adding calendar: {0}'.format(self.calendars[i][:2]))
-                self.calendarValues.append(BooleanVar())
-                self.calendarValues[i].set(self.calendars[i][1])
-                self.calendarValues[i].trace_variable("w", self.updateCalendars)
-                calendarmenu.add_checkbutton(label=self.calendars[i][0], onvalue=True, offvalue=False, variable=self.calendarValues[i])
-            calendarmenu.pack(side="right")
+        self.calbutton = Button(topbar, text=CALENDARS, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, width=8)
+        # self.calbutton.pack(side="right", padx=0)
+        self.calbutton.pack(side="left", padx=6)
+        if not self.default_calendars:
+            self.calbutton.configure(state="disabled")
 
-        # if self.calendars:
-        #     viewmenu.add_cascade(label=label,
-        #                          menu=calendarmenu)
-        # else:
-        #     viewmenu.add_cascade(label=label,
-        #                          menu=calendarmenu,
-        #                          state="disabled")
-        # self.add2menu(path, (label, ))
+        # filter
+        self.filterValue = StringVar(self)
+        self.filterValue.set('')
+        self.filterValue.trace_variable("w", self.filterView)
 
-
-        self.specialCalendars = StringVar(self)
-        self.specialCalendars.set("")
-        nonDefCal = Label(topbar, textvariable=self.specialCalendars, bd=1, relief="flat", anchor="w", padx=0, pady=0, highlightbackground=BGCOLOR, background=BGCOLOR)
-        nonDefCal.pack(side="right", padx=2, pady=2)
+        self.fltr = Entry(topbar, textvariable=self.filterValue, width=10, highlightbackground=BGCOLOR)
+        self.fltr.pack(side=LEFT, padx=6, expand=1, fill=X)
+        self.bind("<Escape>", self.clearFilter)
 
         topbar.pack(side="top", fill="both", expand=0, padx=0, pady=0)
 
@@ -674,11 +663,6 @@ class App(Tk):
         # padx = 2
 
         self.root = ('', '_')
-
-        # filter
-        self.filterValue = StringVar(self)
-        self.filterValue.set('')
-        self.filterValue.trace_variable("w", self.filterView)
 
         self.tree.pack(fill="both", expand=1, padx=4, pady=0)
         panedwindow.add(self.toppane, padx=0, pady=0, stretch="first")
@@ -771,21 +755,39 @@ class App(Tk):
         ok, value = OptionsDialog(parent=parent, title=_("confirm").format(instance), prompt=prompt).getValue()
         return ok
 
+    def selectCalendars(self):
+        if self.default_calendars:
+            prompt = _("Choose calendars to display.")
+            title = CALENDARS
+            if self.weekly:
+                master = self.canvas
+            else:
+                master = self.tree
+
+            values = OptionsDialog(parent=self, master=master, title=title, prompt=prompt, opts=loop.calendars, radio=False, yesno=False).getValue()
+            if values != loop.calendars:
+                loop.calendars = values
+                self.updateCalendars()
+        else:
+            prompt = _("No calendars have been specified in etmtk.cfg.")
+            self.textWindow(self, CALENDARS, prompt, opts=self.options)
+
+
     def updateCalendars(self, *args):
-        for i in range(len(loop.calendars)):
-            loop.calendars[i][1] = self.calendarValues[i].get()
-        # if loop.calendars != loop.options['calendars']:
-        #     # self.specialCalendars.set("*")
-        #     self.showing.configure(fg="plum3")
-        # else:
-        #     # self.specialCalendars.set("")
-        #     self.showing.configure(fg="black")
         cal_pattern = r'^%s' % '|'.join(
             [x[2] for x in loop.calendars if x[1]])
         self.cal_regex = re.compile(cal_pattern)
-
+        if loop.calendars != self.default_calendars:
+            self.calbutton.configure(text="{0}*".format(CALENDARS))
+        else:
+            self.calbutton.configure(text=CALENDARS)
+        self.update()
+        print(self.calbutton.cget("fg"))
         self.updateAlerts()
-        self.showView()
+        if self.weekly:
+            self.showWeek()
+        else:
+            self.showView()
 
     def quit(self, e=None):
         ans = self.confirm(
@@ -846,7 +848,7 @@ a time period if "+" is used."""
 
     def exportActiveToIcal(self):
         if 'icscal_file' in loop.options:
-            res = export_ical(loop.uuid2hash, loop.options['icscal_file'], self.calendars)
+            res = export_ical(loop.uuid2hash, loop.options['icscal_file'], loop.calendars)
             if res:
                 prompt = _("Active calendars successfully exported to {0}".format(loop.options['icscal_file']))
             else:
@@ -1195,6 +1197,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.showView(row=row)
 
     def filterView(self, e, *args):
+        if self.weekly:
+            return
         self.depth2id = {}
         fltr = self.filterValue.get()
         cmd = "{0} {1}".format(
@@ -1344,6 +1348,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             self.viewmenu.entryconfig(i, state="disabled")
         self.canvas.pack_forget()
         self.weekly = False
+        self.fltr.pack(side=LEFT, padx=6, expand=1, fill=X)
         self.tree.pack(fill="both", expand=1, padx=4, pady=0)
 
     def showWeekly(self, event=None, chosen_day=None):
@@ -1351,6 +1356,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         Open the canvas at the current week
         """
         self.weekly = True
+        self.fltr.pack_forget()
         self.tree.pack_forget()
         self.view = WEEK
         self.currentView.set(WEEK)
@@ -1391,21 +1397,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.canvas.focus_set()
         self.showWeek()
 
-#     def gotoWeek(self, event=None):
-#         prompt = _("""\
-# Busy times will be shown for the week containing the date you select.
-# Return an empty string for the current week. Relative dates and fuzzy
-# parsing are supported.""")
-#         d = GetDateTime(parent=self.win, title=_('date'), prompt=prompt)
-#         day = d.value
-#         if day is not None:
-#             logger.debug('day: {0}'.format(day))
-#             self.chosen_day = day
-#             self.showWeek(event=event, week=None)
-#             if self.view == SCHEDULE:
-#                 self.scrollToDate(day.date())
-#         # return
-
+    # TODO: mouseover enter: summary and time, mouseover leave: nothing, button-1 on busy: details, button-1 on empty: clear
 
     def showWeek(self, event=None, week=None):
         logger.debug('self.win: {0}'.format(self.win))
@@ -2201,17 +2193,24 @@ Relative dates and fuzzy parsing are supported.""")
         return "break"
 
     def setFilter(self, e=None):
-        """
-        :param e:
-        :return:
-        """
-        prompt = _("""\
-Enter a case insensitive regular expression to
-limit the display to branches that match.\
-""")
-        v = TextVariableWindow(parent=self, title=_('filter'), prompt=prompt, opts={'textvariable': self.filterValue}, modal=False, xoffset=200).value
-        logger.debug("setting tree focus: {0}".format(v))
-        # self.tree.focus_set()
+        self.fltr.focus_set()
+
+    def clearFilter(self, e=None):
+        self.filterValue.set('')
+        self.tree.focus_set()
+
+#     def setFilter(self, e=None):
+#         """
+#         :param e:
+#         :return:
+#         """
+#         prompt = _("""\
+# Enter a case insensitive regular expression to
+# limit the display to branches that match.\
+# """)
+#         v = TextVariableWindow(parent=self, title=_('filter'), prompt=prompt, opts={'textvariable': self.filterValue}, modal=False, xoffset=200).value
+#         logger.debug("setting tree focus: {0}".format(v))
+#         # self.tree.focus_set()
 
     def startActionTimer(self, event=None):
         """
