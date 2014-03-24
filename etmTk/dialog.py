@@ -37,7 +37,7 @@ from datetime import datetime, timedelta
 
 from collections import OrderedDict
 
-from etmTk.data import fmt_period, parse_dt
+from etmTk.data import fmt_period, parse_dt, get_current_time
 
 import gettext
 
@@ -643,7 +643,7 @@ class OptionsDialog():
             return v, None
 
     def ok(self, event=None):
-        self.parent.update_idletasks()
+        # self.parent.update_idletasks()
         self.quit()
 
     def cancel(self, event=None):
