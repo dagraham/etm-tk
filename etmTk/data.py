@@ -786,7 +786,7 @@ group_regex = re.compile(r'^\s*(.*)\s+(\d+)/(\d+):\s*(.*)')
 groupdate_regex = re.compile(r'\by{2}\b|\by{4}\b|\b[dM]{1,4}\b')
 options_regex = re.compile(r'^\s*(!?[fk](\[[:\d]+\])?)|(!?[clostu])\s*$')
 # completion_regex = re.compile(r'(?:^.*?)((?:\@[a-zA-Z] ?)?\b\S*)$')
-completion_regex = re.compile(r'((?:\@[a-zA-Z]? ?)?(?:\b[a-zA-Z0-9_/]+)?)$')
+completion_regex = re.compile(r'((?:\@[a-zA-Z]? ?)?(?:\b[a-zA-Z0-9_/:]+)?)$')
 
 # what about other languages?
 # lun mar mer jeu ven sam dim
@@ -1482,7 +1482,6 @@ def makeTree(list_of_lists, view=None, calendars=None, sort=True, fltr=None):
     if calendars:
         cal_pattern = r'^%s' % '|'.join([x[2] for x in calendars if x[1]])
         cal_regex = re.compile(cal_pattern)
-        logger.debug('cal_pattern: {0}'.format(cal_pattern))
     if fltr is not None:
         mtch = True
         if fltr[0] == '!':

@@ -1514,7 +1514,6 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             end_x = start_x + x
             if day == self.current_day:
                 self.today_col = i
-                logger.debug('self.today_col: {0}'.format(self.today_col))
                 xy = start_x, t, end_x, t+y*16
                 self.canvas.create_rectangle(xy, fill=CURRENTFILL, outline="", width=0, tag='current_day')
             if not busy_times and self.today_col is None:
@@ -1552,7 +1551,6 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
                 tmp.append(daytime)
                 self.busyHsh[id] = tmp
             if self.today_col is not None:
-                logger.debug("creating time line")
                 if self.current_minutes < 7 * 60:
                     current_minutes = 7 * 60
                 elif self.current_minutes > 23 * 60:
@@ -1565,7 +1563,6 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
                 t1 = t + (current_minutes - 7 * 60 ) * y_per_minute
                 xy = start_x, t1, end_x, t1
                 self.canvas.create_line(xy, width=1, fill=CURRENTLINE, tag='current_time')
-                logger.debug('current_time line at {0}'.format(xy))
 
         self.busy_ids = busy_ids
         self.conf_ids = conf_ids
@@ -1598,7 +1595,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         for i in range(7):
             # x = X
             p = l + x/2 + x*i, t-13
-            logger.debug("x: {0}, i: {1}, p: {2}".format(x, i, p))
+            # logger.debug("x: {0}, i: {1}, p: {2}".format(x, i, p))
             if self.today_col and i == self.today_col:
                 self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=CURRENTLINE, tag='current_time')
             else:
