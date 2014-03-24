@@ -38,7 +38,7 @@ else:
     from tkFileDialog import askopenfilename
     # import tkSimpleDialog
     def utf8(s):
-        return(s)
+        return s
 
 tkversion = tkinter.Tcl().eval('info patchlevel')
 
@@ -140,7 +140,7 @@ class App(Tk):
         self.menutree = MenuTree()
         self.chosen_day = None
         self.busy_info = None
-        self.win = None # showWeekly
+        self.weekly = False # showWeekly
         self.today_col = None
         root = "_"
         # self.default_calendars = []
@@ -945,7 +945,7 @@ a time period if "+" is used."""
                     hsh_cpy['+'] = tmp_cpy
                 if u'-' in hsh_cpy:
                     tmp_cpy = []
-                    for d in hsh_rev['-']:
+                    for d in hsh_cpy['-']:
                         if d >= dtn:
                             tmp_cpy.append(d)
                     hsh_cpy['-'] = tmp_cpy
@@ -1233,6 +1233,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
     def showView(self, e=None, row=None):
         logger.debug("view: {0}".format(self.view))
+        if self.weekly:
+            return
         self.depth2id = {}
         self.currentView.set(self.view)
         fltr = self.filterValue.get()
@@ -1284,7 +1286,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             if times:
                 lines.append("%s: %s" % (weekdays[i], "; ".join(times)))
         s = "\n".join(lines)
-        self.textWindow(parent=self.win, title=_('busy times'), prompt=s, opts=self.options)
+        self.textWindow(parent=self.canvas, title=_('busy times'), prompt=s, opts=self.options)
 
     def setWeek(self, chosen_day=None):
         if chosen_day is None:
@@ -1381,6 +1383,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         Open the canvas at the current week
         """
         if self.weekly:
+            # we're in weekview already
             return
         self.weekly = True
         self.fltr.pack_forget()
@@ -1388,13 +1391,13 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.view = WEEK
         self.currentView.set(WEEK)
 
-        self.current_day = get_current_time().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
+        # self.current_day = get_current_time().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
         self.chosen_day = chosen_day
         if chosen_day is None:
             self.chosen_day = get_current_time()
         else:
             self.chosen_day = chosen_day
-        self.selectedId = None
+        # self.selectedId = None
 
         self.canvas = canvas = Canvas(self.toppane, background="white", bd=2, relief="sunken")
         canvas.configure(highlightthickness=0)
@@ -1427,8 +1430,11 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
     # TODO: mouseover enter: summary and time, mouseover leave: nothing, button-1 on busy: details, button-1 on empty: clear
 
     def showWeek(self, event=None, week=None):
-        logger.debug('self.win: {0}'.format(self.win))
         self.selectedId = None
+
+        self.current_day = get_current_time().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
+
+        logger.debug('self.current_day: {0}, minutes: {1}'.format(self.current_day, self.current_minutes))
         self.x_win = self.canvas.winfo_width()
         self.y_win = self.canvas.winfo_height()
         logger.debug("win: {0}, {1}".format(self.x_win, self.y_win))
@@ -1508,6 +1514,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             end_x = start_x + x
             if day == self.current_day:
                 self.today_col = i
+                logger.debug('self.today_col: {0}'.format(self.today_col))
                 xy = start_x, t, end_x, t+y*16
                 self.canvas.create_rectangle(xy, fill=CURRENTFILL, outline="", width=0, tag='current_day')
             if not busy_times and self.today_col is None:
@@ -1544,7 +1551,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
                 tmp = list(tup[2:]) #id, time str, summary and file info
                 tmp.append(daytime)
                 self.busyHsh[id] = tmp
-            if self.today_col:
+            if self.today_col is not None:
+                logger.debug("creating time line")
                 if self.current_minutes < 7 * 60:
                     current_minutes = 7 * 60
                 elif self.current_minutes > 23 * 60:
@@ -1553,9 +1561,11 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
                     current_minutes = self.current_minutes
                 start_x = l
                 end_x = l + x * 7
-                t1 = t + (max(7 * 60, current_minutes) - 7 * 60 ) * y_per_minute
+                # t1 = t + (max(7 * 60, current_minutes) - 7 * 60 ) * y_per_minute
+                t1 = t + (current_minutes - 7 * 60 ) * y_per_minute
                 xy = start_x, t1, end_x, t1
                 self.canvas.create_line(xy, width=1, fill=CURRENTLINE, tag='current_time')
+                logger.debug('current_time line at {0}'.format(xy))
 
         self.busy_ids = busy_ids
         self.conf_ids = conf_ids
@@ -1628,7 +1638,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             self.OnSelect(uuid=self.busyHsh[id][0], dt=self.busyHsh[id][-1])
 
     def setFocus(self, e):
-        self.win.focus()
+        self.canvas.focus()
         self.canvas.focus_set()
 
     def on_enter_item(self, e):
@@ -1731,13 +1741,13 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         ans = self.confirm(
             title=_('New event'),
             prompt=_("Create a new event for {0}?").format(dtfmt),
-            parent=self.win)
+            parent=self.canvas)
         if ans:
 
             s = "* ? @s {0} @e 1h".format(dtfmt)
             hsh, msg = str2hsh(s, options=loop.options)
 
-            changed = SimpleEditor(parent=self, master=self.win, newhsh=hsh, options=loop.options).changed
+            changed = SimpleEditor(parent=self, master=self.canvas, newhsh=hsh, options=loop.options).changed
 
             if changed:
                 logger.debug('changed, reloading data')
@@ -1986,7 +1996,7 @@ or 0 to display all changes.""").format(title)
     def updateClock(self):
         self.now = get_current_time()
         self.current_minutes = self.now.hour * 60 + self.now.minute
-        if self.win and self.today_col:
+        if self.weekly: # and self.today_col:
             self.showWeek()
         nxt = (60 - self.now.second) * 1000 - self.now.microsecond // 1000
         self.after(nxt, self.updateClock)
@@ -2004,9 +2014,10 @@ or 0 to display all changes.""").format(title)
         if newday or new or modified or deleted:
             logger.debug('refreshing view: newday or changed')
             loop.loadData()
-            self.showView()
-            if self.win:
+            if self.weekly:
                 self.showWeek()
+            else:
+                self.showView()
 
         self.updateAlerts()
 
@@ -2362,10 +2373,7 @@ Relative dates and fuzzy parsing are supported.""")
             return True
         if self.mode == 'command':
             cmd = cmd.strip()
-            if cmd[0] == 'w':
-                self.editWhich()
-                return ()
-            elif cmd[0] in ['a', 'c']:
+            if cmd[0] in ['a', 'c']:
                 # simple command history for report commands
                 if cmd in self.history:
                     self.history.remove(cmd)

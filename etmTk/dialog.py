@@ -5,6 +5,7 @@ from __future__ import (absolute_import, division, print_function,
 
 import logging
 import logging.config
+import uuid
 
 logger = logging.getLogger()
 
@@ -29,7 +30,7 @@ else:
     from tkFileDialog import askopenfilename
     # import tkSimpleDialog
     def utf8(s):
-        return(s)
+        return s
 
 from idlelib.WidgetRedirector import WidgetRedirector
 
@@ -253,7 +254,7 @@ class MessageWindow():
 
 class Dialog(Toplevel):
 
-    def __init__(self, parent, master=None, title=None, prompt=None, opts=None, default=None, modal=True, xoffset=50, yoffset=50, event=None):
+    def __init__(self, parent, title=None, prompt=None, opts=None, default=None, modal=True, xoffset=50, yoffset=50, event=None):
 
         Toplevel.__init__(self, parent, highlightbackground=BGCOLOR,
                     background=BGCOLOR)
@@ -268,7 +269,7 @@ class Dialog(Toplevel):
             self.title(title)
 
         self.parent = parent
-        self.master = master
+
         self.event = event
         logger.debug("parent: {0}".format(self.parent))
         self.prompt = prompt
@@ -353,10 +354,10 @@ class Dialog(Toplevel):
             logger.debug("returning focus to parent: {0}".format(self.parent))
             self.parent.focus()
             # self.parent.tree.focus_set()
-            if self.master:
-                self.master.focus_set()
-            elif self.parent:
-                self.parent.focus_set()
+            if self.parent.weekly:
+                self.parent.canvas.focus_set()
+            else:
+                self.parent.tree.focus_set()
         else:
             logger.debug("returning focus, no parent")
         self.destroy()
@@ -378,8 +379,6 @@ class Dialog(Toplevel):
 class HelpWindow(Dialog):
 
     def body(self, master):
-        # self.tkfixedfont = tkFont.nametofont("TkFixedFont")
-        # self.tkfixedfont.configure(size=self.options['fontsize'])
         PADY = 2
 
         toolbar = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
