@@ -408,19 +408,19 @@ class App(Tk):
             [_('Copy'), 'c'],
             [_('Delete'), 'delete'],
             [_('Edit'), 'e'],
-            [_('Finish'), '/'],
+            [_('Finish'), 'x'],
             [_('Reschedule'), 'd'],
             [_('Open link'), 'g'],
-            [_('Export item as ical'), 'x'],
+            [_('Export item as ical'), 'f4'],
             ]
         self.edit2cmd = {
             'c': self.copyItem,
             'delete': self.deleteItem,
             'e': self.editItem,
-            '/': self.finishItem,
+            'x': self.finishItem,
             'd': self.rescheduleItem,
             'g': self.openWithDefault,
-            'x': self.exportItemToIcal,
+            'f4': self.exportItemToIcal,
             }
         self.em_opts = [x[0] for x in self.em_options]
         # em_cmds = [x[1] for x in self.em_options]
@@ -431,16 +431,16 @@ class App(Tk):
             if k == 'delete':
                 l = "Ctrl-BackSpace"
                 c = "<Control-BackSpace>"
-            elif k == "/":
-                l = "Ctrl-slash"
-                c = "<Control-slash>"
+            elif k == "f4":
+                l = "F4"
+                c = "<F4>"
             # elif k == "e":
             #     l, c  = commandShortcut(k)
             #     l = "{0}, Return".format(l)
             else:
                 l, c = commandShortcut(k)
             logger.debug('binding {0} to {1}'.format(c, self.edit2cmd[k]))
-            itemmenu.add_command(label=label,  command=self.edit2cmd[k])
+            itemmenu.add_command(label=label, command=self.edit2cmd[k])
             # if k != "delete":
             self.bind(c, lambda e, x=k: self.after(AFTER, self.edit2cmd[x]))
             if not mac:
@@ -491,7 +491,8 @@ class App(Tk):
 
 
         ## export
-        l, c = commandShortcut('X')
+        l = "Ctrl-F4"
+        c = "<Control-F4>"
         label = _("Export active calendars to iCal")
         toolsmenu.add_command(label=label, underline=1, command=self.exportActiveToIcal)
         self.bind(c, self.exportActiveToIcal)
