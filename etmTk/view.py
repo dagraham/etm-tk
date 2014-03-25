@@ -51,7 +51,7 @@ from dateutil.parser import parse
 from decimal import Decimal
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, zfmt, rfmt, efmt, hsh2str, str2hsh, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator, AFTER, export_ical_item, export_ical, fmt_time)
+    init_localization, fmt_weekday, fmt_dt, zfmt, rfmt, efmt, hsh2str, str2hsh, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, fmt_datetime, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator, AFTER, export_ical_item, export_ical, fmt_time)
 
 from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES, REPORTS)
 
@@ -65,6 +65,8 @@ _ = gettext.gettext
 
 
 from datetime import datetime, timedelta
+
+ETM = "etm"
 
 STOPPED = _('stopped')
 PAUSED = _('paused')
@@ -146,6 +148,17 @@ class App(Tk):
         self.weekly = False # showWeekly
         self.today_col = None
         root = "_"
+
+        ef = "%a %b %d"
+        if 'ampm' in loop.options and loop.options['ampm']:
+            reprtimefmt = "%I:%M%p"
+            # self.rfmt = "{0} %I:%M%p".format(df)
+            self.efmt = "%I:%M%p {0}".format(ef)
+        else:
+            reprtimefmt = "%H:%M"
+            # self.rfmt = "{0} %H:%M%z".format(df)
+            self.efmt = "%H:%M {0}".format(ef)
+
         # self.default_calendars = []
         self.default_calendars = deepcopy(loop.options['calendars'])
 
@@ -294,7 +307,7 @@ class App(Tk):
 
         # apply filter
         l, c = commandShortcut('f')
-        label=_("Apply filter")
+        label=_("Set outline filter")
         viewmenu.add_command( label=label, underline=1,  command=self.setFilter)
         self.bind(c, lambda event: self.after(AFTER, self.setFilter))
         if not mac:
@@ -303,7 +316,7 @@ class App(Tk):
 
         # clear filter
         l = "Escape"
-        label=_("Clear filter")
+        label=_("Clear outline filter")
         viewmenu.add_command( label=label, underline=1, command=self.clearFilter)
         if not mac:
             viewmenu.entryconfig(10, accelerator=l)
@@ -532,7 +545,7 @@ class App(Tk):
         self.dtSelected = None
         self.rowSelected = None
 
-        self.title("etm")
+        self.title(ETM)
 
         # self.wm_iconbitmap(bitmap='etmlogo.gif')
         # self.wm_iconbitmap('etmlogo-4.xbm')
@@ -746,7 +759,7 @@ class App(Tk):
 
     def selectCalendars(self):
         if self.default_calendars:
-            prompt = _("Choose calendars to display.")
+            prompt = _("Only items from selected calendars will be displayed.")
             title = CALENDARS
             if self.weekly:
                 master = self.canvas
@@ -957,9 +970,12 @@ a time period if "+" is used."""
         indx = 3
         if 'r' in self.itemSelected:
             indx, value = self.which(DELETE, self.dtSelected)
-            logger.debug("{0}: {1}".format(indx, value))
+            logger.debug("{0}: {1}/{2}".format(self.dtSelected, indx, value))
             if not indx:
-                self.tree.focus_set()
+                if self.weekly:
+                    self.canvas.focus_set()
+                else:
+                    self.tree.focus_set()
                 return
             self.itemSelected['_dt'] = parse(self.dtSelected)
         else:
@@ -1452,6 +1468,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
                 day = self.next_week
             elif week == -1:
                 day = self.prev_week
+            self.chosen_day = day
         elif self.chosen_day:
             day = self.chosen_day
         else:
@@ -1706,7 +1723,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         logger.debug("id: {0}, coords: {1}, {2}".format(id, x, y))
         self.uuidSelected = uuid = self.busyHsh[id][0]
         self.itemSelected = hsh = loop.uuid2hash[uuid]
-        self.dtSelected = dt = self.busyHsh[id][-1].strftime(zfmt)
+        self.dtSelected = dt = fmt_datetime(self.busyHsh[id][-1], options=loop.options)
         self.itemmenu.post(x, y)
 
 
@@ -1944,7 +1961,8 @@ or 0 to display all changes.""").format(title)
                 self.itemmenu.entryconfig(5, state='disabled')
             self.uuidSelected = uuid
             self.itemSelected = hsh
-            self.dtSelected = dt
+            # self.dtSelected = dt.strftime(rfmt)
+            self.dtSelected = fmt_datetime(dt, options=loop.options)
             # logger.debug(('selected: {0}'.format(hsh)))
         else:
             text = ""
@@ -1999,8 +2017,6 @@ or 0 to display all changes.""").format(title)
     def updateClock(self):
         self.now = get_current_time()
         self.current_minutes = self.now.hour * 60 + self.now.minute
-        if self.weekly: # and self.today_col:
-            self.showWeek()
         nxt = (60 - self.now.second) * 1000 - self.now.microsecond // 1000
         self.after(nxt, self.updateClock)
         nowfmt = "{0} {1}".format(
@@ -2021,6 +2037,8 @@ or 0 to display all changes.""").format(title)
                 self.showWeek()
             else:
                 self.showView()
+        elif self.weekly and self.today_col:
+            self.showWeek()
 
         self.updateAlerts()
 
