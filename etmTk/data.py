@@ -5844,38 +5844,6 @@ Display information about etm and the operating system.""")
     @staticmethod
     def help_help():
         return (USAGE)
-#             _("""\
-# Enter a CMD from list below in the command entry field (top) and press <Return> to execute it.
-#
-#  ?  CMD   Display details about CMD.
-#  c        Edit a COPY of the selected item.
-#  d        Delete the selected item.
-#  e        Edit the selected item.
-#  f        Mark the selected task finished.
-#  h  ARGS  Execute 'hg_command' + ARGS.
-#  l  ARGS  Display a ledger using ARGS.
-#  m  INT   Display report number INT from the
-#           file 'report_specifications'.
-#  n  ARGS  Create a new item from ARGS.
-#  O        Edit etmtk.cfg.
-#  r  ARGS  Display a report using ARGS.
-#  s  REGX  Limit the display to items with summaries
-#           matching the case-insensitive regular
-#           expression REGX.
-#  R        Edit 'report_specifications'.
-#  v        Display system and etm information.
-#
-# Keyboard Shortcuts:
-# <Escape> Clear the command entry field.
-# <Tab>    Toggle the focus between the command
-#          field and the display panel.
-# <Space>  When the display panel has focus, scroll
-#          to the current date in day view or to the
-#          top element in other views.
-# j        When the day view is displayed, select the
-#          date to display.\
-# """))
-
 
     def replace_lines(self, fp, oldlines, begline, endline, newlines):
         lines = oldlines

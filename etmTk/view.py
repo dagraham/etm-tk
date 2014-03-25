@@ -7,7 +7,7 @@ import os
 import sys
 import re
 import uuid
-from copy import deepcopy
+from copy import deepcopy, t
 import subprocess
 from dateutil.tz import tzlocal
 import codecs
@@ -289,12 +289,13 @@ class App(Tk):
 
         # go home
         l = "Space"
-        c = "<space>"
         label = _("Home")
-        viewmenu.add_command(label=label, command=self.goHome)
+        viewmenu.add_command(label=label, command=lambda: self.goHome())
         if not mac:
-            viewmenu.entryconfig(8, accelerator=l)
+            viewmenu.entryconfig(0, accelerator=l)
         self.add2menu(path, (label, l))
+        self.bind('<space>', self.goHome)
+
 
         # go to date
         l, c = commandShortcut('j')
@@ -302,7 +303,20 @@ class App(Tk):
         viewmenu.add_command(label=label, command=self.goToDate)
         self.bind(c, lambda event: self.after(AFTER, self.goToDate))
         if not mac:
-            viewmenu.entryconfig(9, accelerator=l)
+            viewmenu.entryconfig(1, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        viewmenu.add_separator()
+        self.add2menu(path, (SEP, ))
+
+        l = "Control-Down"
+        label = _("Next sibling")
+        viewmenu.add_command( label=label, underline=1,  command=self.nextItem)
+        self.add2menu(path, (label, l))
+
+        l = "Control-Up"
+        label = _("Previous sibling")
+        viewmenu.add_command( label=label, underline=1,  command=self.prevItem)
         self.add2menu(path, (label, l))
 
         # apply filter
@@ -311,7 +325,7 @@ class App(Tk):
         viewmenu.add_command( label=label, underline=1,  command=self.setFilter)
         self.bind(c, lambda event: self.after(AFTER, self.setFilter))
         if not mac:
-            viewmenu.entryconfig(10, accelerator=l)
+            viewmenu.entryconfig(5, accelerator=l)
         self.add2menu(path, (label, l))
 
         # clear filter
@@ -319,7 +333,7 @@ class App(Tk):
         label=_("Clear outline filter")
         viewmenu.add_command( label=label, underline=1, command=self.clearFilter)
         if not mac:
-            viewmenu.entryconfig(10, accelerator=l)
+            viewmenu.entryconfig(6, accelerator=l)
         self.add2menu(path, (label, l))
 
         # expand to depth
@@ -328,56 +342,59 @@ class App(Tk):
         viewmenu.add_command( label=label, underline=1, command=self.expand2Depth)
         self.bind(c, lambda event: self.after(AFTER, self.expand2Depth))
         if not mac:
-            viewmenu.entryconfig(11, accelerator=l)
+            viewmenu.entryconfig(7, accelerator=l)
         self.add2menu(path, (label, l))
 
         viewmenu.add_separator()
         self.add2menu(path, (SEP, ))
 
-        l = "Space"
-        c = "<space>"
-        label=_("Show current week")
-
         l = "Left"
         label=_("Previous week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.showWeek(event=e, week=-1))
         if not mac:
-            viewmenu.entryconfig(3, accelerator=l)
+            viewmenu.entryconfig(9, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Right"
         label=_("Next week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.showWeek(event=e, week=+1))
         if not mac:
-            viewmenu.entryconfig(4, accelerator=l)
+            viewmenu.entryconfig(10, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Up"
         label=_("Previous item in week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=-1))
         if not mac:
-            viewmenu.entryconfig(5, accelerator=l)
+            viewmenu.entryconfig(11, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Down"
         label=_("Next item in week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=1))
         if not mac:
-            viewmenu.entryconfig(6, accelerator=l)
+            viewmenu.entryconfig(12, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        l = "Escape"
+        label=_("Clear selection")
+        viewmenu.add_command(label=label, underline=1, command=self.on_clear_item)
+        if not mac:
+            viewmenu.entryconfig(13, accelerator=l)
         self.add2menu(path, (label, l))
 
         l, c = commandShortcut("b")
         label=_("List busy times in week")
         viewmenu.add_command(label=label, underline=5, command=self.showBusyTimes)
         if not mac:
-            viewmenu.entryconfig(7, accelerator=l)
+            viewmenu.entryconfig(14, accelerator=l)
         self.bind(c, lambda event: self.after(AFTER, self.showBusyTimes))
         self.add2menu(path, (label, l))
 
         # viewmenu.add_cascade(label=path, menu=viewmenu, underline=0)
 
         # self.viewmenu.entryconfig(0, state="normal")
-        for i in range(6, 13):
+        for i in range(9, 15):
             self.viewmenu.entryconfig(i, state="disabled")
 
 
@@ -511,9 +528,6 @@ class App(Tk):
         self.add2menu(path, (label, "F3"))
         self.bind("<F3>", lambda e: self.after(AFTER, self.checkForUpdate))
 
-        # self.add2menu(root, ('Main Window', ))
-        # self.add2menu('Main Window', ("Go Home", "Space"))
-
         menubar.add_cascade(label="Help", menu=helpmenu)
 
         self.config(menu=menubar)
@@ -634,8 +648,8 @@ class App(Tk):
         self.fltrbtn = Button(fltrbox, text='x', command=self.clearFilter, highlightbackground=BGCOLOR)
         self.fltrbtn.configure(state="disabled")
         self.filter_active = False
-        self.viewmenu.entryconfig(2, state="normal")
-        self.viewmenu.entryconfig(3, state="disabled")
+        self.viewmenu.entryconfig(5, state="normal")
+        self.viewmenu.entryconfig(6, state="disabled")
         self.fltrbtn.pack(side=LEFT, padx=0)
         self.fltrbox.pack(side=LEFT, padx=0, pady=0)
 
@@ -654,8 +668,9 @@ class App(Tk):
         self.tree.bind('<<TreeviewSelect>>', self.OnSelect)
         self.tree.bind('<Double-1>', self.OnActivate)
         self.tree.bind('<Return>', self.OnActivate)
+        self.tree.bind('<Control-Down>', self.nextItem)
+        self.tree.bind('<Control-Up>', self.prevItem)
         # self.tree.bind('<Escape>', self.cleartext)
-        self.tree.bind('<space>', self.goHome)
         # self.tree.bind('<j>', self.jumpToDate)
 
         for t in tstr2SCI:
@@ -674,7 +689,7 @@ class App(Tk):
                                     font=tkfixedfont, height=4,
                                     width=46, takefocus=False)
         self.content.bind('<Escape>', self.cleartext)
-        self.content.bind('<space>', self.goHome)
+        # self.content.bind('<space>', self.goHome)
         self.content.bind('<Tab>', self.focus_next_window)
 
         panedwindow.add(self.content, padx=3, pady=0, stretch="never")
@@ -1375,7 +1390,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
     def closeWeekly(self, event=None):
         self.today_col = None
-        for i in range(6, 13):
+        for i in range(9, 15):
             self.viewmenu.entryconfig(i, state="disabled")
         self.canvas.pack_forget()
         self.weekly = False
@@ -1383,13 +1398,14 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.tree.pack(fill="both", expand=1, padx=4, pady=0)
         self.update_idletasks()
         if self.filter_active:
-            self.viewmenu.entryconfig(2, state="disabled")
-            self.viewmenu.entryconfig(3, state="normal")
+            self.viewmenu.entryconfig(5, state="disabled")
+            self.viewmenu.entryconfig(6, state="normal")
         else:
-            self.viewmenu.entryconfig(2, state="normal")
-            self.viewmenu.entryconfig(3, state="disabled")
+            self.viewmenu.entryconfig(5, state="normal")
+            self.viewmenu.entryconfig(6, state="disabled")
 
-        self.viewmenu.entryconfig(4, state="normal")
+        for i in [3, 4, 5, 7]:
+            self.viewmenu.entryconfig(i, state="normal")
 
         # self.fltr.configure(state="normal")
         # self.fltrbtn.configure(state="normal")
@@ -1407,7 +1423,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.weekly = True
         self.tree.pack_forget()
         self.fltrbox.pack_forget()
-        for i in range(2, 5):
+        for i in range(3, 8):
             self.viewmenu.entryconfig(i, state="disabled")
 
         self.view = WEEK
@@ -1436,7 +1452,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         canvas.bind("<Return>", lambda e: self.on_activate_item(event=e))
         canvas.bind('<Left>', (lambda e: self.showWeek(event=e, week=-1)))
         canvas.bind('<Right>', (lambda e: self.showWeek(event=e, week=1)))
-        canvas.bind('<space>', (lambda e: self.showWeek(event=e, week=0)))
+        # canvas.bind('<space>', (lambda e: self.showWeek(event=e, week=0)))
         canvas.bind('<Up>', (lambda e: self.selectId(event=e, d=-1)))
         canvas.bind('<Down>', (lambda e: self.selectId(event=e, d=1)))
 
@@ -1444,12 +1460,10 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             self.hours = ["{0}am".format(i) for i in range(7,12)] + ['12pm'] + ["{0}pm".format(i) for i in range(1,12)]
         else:
             self.hours = ["{0}:00".format(i) for i in range(7, 24)]
-        for i in range(6, 13):
+        for i in [9, 10, 11, 12, 13, 15]:
             self.viewmenu.entryconfig(i, state="normal")
         self.canvas.focus_set()
         self.showWeek()
-
-    # TODO: mouseover enter: summary and time, mouseover leave: nothing, button-1 on busy: details, button-1 on empty: clear
 
     def showWeek(self, event=None, week=None):
         self.selectedId = None
@@ -1475,7 +1489,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             return "break"
 
         theweek, weekdays, busy_lst, occasion_lst = self.setWeek(day)
-        self.content.delete("0.0", END)
+        self.OnSelect()
+        # self.content.delete("0.0", END)
         self.canvas.delete("all")
         l = 50
         r = 8
@@ -1497,8 +1512,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
         self.margins = (w, h, l, r, t, b)
 
-        X = x = Decimal(w-1-l-r)/Decimal(7)
-        Y = y = Decimal(h-1-t-b)/Decimal(16)
+        self.week_x = x = Decimal(w-1-l-r)/Decimal(7)
+        self.week_y = y = Decimal(h-1-t-b)/Decimal(16)
 
         logger.debug("x: {0}, y: {1}".format(x, y))
 
@@ -1524,11 +1539,13 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
                 self.busyHsh[id] = tmp
                 occasion_ids.append(id)
 
-        y_per_minute = y/Decimal(60)
+        self.y_per_minute = y_per_minute = y/Decimal(60)
         busy_ids = []
         conf_ids = []
         self.today_id = None
         self.today_col = None
+        self.timeline = None
+        self.last_minutes = None
         for i in range(7):
             # x = X
             day = (self.week_beg + i * ONEDAY).replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
@@ -1574,24 +1591,16 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
                 tmp.append(daytime)
                 self.busyHsh[id] = tmp
             if self.today_col is not None:
-                if self.current_minutes < 7 * 60:
-                    current_minutes = 7 * 60
-                elif self.current_minutes > 23 * 60:
-                    current_minutes = 23 * 60
-                else:
-                    current_minutes = self.current_minutes
-                start_x = l
-                end_x = l + x * 7
-                # t1 = t + (max(7 * 60, current_minutes) - 7 * 60 ) * y_per_minute
-                t1 = t + (current_minutes - 7 * 60 ) * y_per_minute
-                xy = start_x, t1, end_x, t1
+                xy = self.get_timeline()
+                self.canvas.delete('current_time')
                 self.canvas.create_line(xy, width=1, fill=CURRENTLINE, tag='current_time')
 
         self.busy_ids = busy_ids
         self.conf_ids = conf_ids
         for id in occasion_ids + busy_ids + conf_ids: #  + conf_ids:
             self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
-            self.canvas.tag_bind(id, '<Any-Leave>', self.on_leave_item)
+            # self.canvas.tag_bind(id, '<Any-Leave>', self.on_leave_item)
+        self.canvas.bind('<Escape>', self.on_clear_item)
 
         self.canvas_ids = [z for z in self.busyHsh.keys()]
         self.canvas_ids.sort()
@@ -1624,6 +1633,24 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             else:
                 self.canvas.create_text(p, text="{0}".format(weekdays[i]))
 
+    def get_timeline(self):
+        if not (self.weekly and self.today_col):
+            return
+        (w, h, l, r, t, b) = self.margins
+        x = self.week_x
+        if self.current_minutes < 7 * 60:
+            current_minutes = 7 * 60
+        elif self.current_minutes > 23 * 60:
+            current_minutes = 23 * 60
+        else:
+            current_minutes = self.current_minutes
+        start_x = l
+        end_x = l + x * 7
+        # t1 = t + (max(7 * 60, current_minutes) - 7 * 60 ) * y_per_minute
+        t1 = t + (current_minutes - 7 * 60 ) * self.y_per_minute
+        xy = start_x, t1, end_x, t1
+        return xy
+
     def selectId(self, event, d=1):
         if self.canvas_idpos is None:
             self.canvas_idpos = 0
@@ -1654,7 +1681,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.canvas.tag_lower('current_day')
         self.canvas.tag_raise('current_time')
         if id in self.busyHsh:
-            self.content.delete("0.0", END)
+            # self.content.delete("0.0", END)
             self.OnSelect(uuid=self.busyHsh[id][0], dt=self.busyHsh[id][-1])
 
     def setFocus(self, e):
@@ -1685,7 +1712,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
         if id in self.busyHsh:
             self.canvas_idpos = self.canvas_ids.index(id)
-            self.content.delete("1.0", END)
+            # self.content.delete("1.0", END)
             self.OnSelect(uuid=self.busyHsh[id][0], dt=self.busyHsh[id][-1])
 
     def on_leave_item(self, e):
@@ -1705,6 +1732,27 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.selectedId = None
         self.canvas.focus("")
 
+    def on_clear_item(self, e=None):
+        # id = self.canvas.find_withtag(CURRENT)[0]
+        # self.content.delete("0.0", END)
+
+        if self.selectedId:
+            id = self.selectedId
+            if id in self.busy_ids:
+                tags = self.canvas.gettags(id)
+                if 'other' in tags:
+                    self.canvas.itemconfig(id, fill=OTHERFILL)
+                else:
+                    self.canvas.itemconfig(id, fill=DEFAULTFILL)
+            else:
+                self.canvas.itemconfig(id, fill=OCCASIONFILL)
+        self.canvas.tag_raise('conflict')
+        self.canvas.tag_lower('occasion')
+        self.selectedId = None
+        self.OnSelect()
+        self.canvas.focus("")
+        # self.update_idletasks()
+
     def on_select_item(self, event):
         current = self.canvas.find_withtag(CURRENT)
         logger.debug('current: {0}'.format(current))
@@ -1719,6 +1767,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         x = self.winfo_rootx() + 350
         y = self.winfo_rooty() + 50
         id = self.selectedId
+        if not id:
+            return
         # x1, y1, x2, y2 = self.canvas.coords(id)
         logger.debug("id: {0}, coords: {1}, {2}".format(id, x, y))
         self.uuidSelected = uuid = self.busyHsh[id][0]
@@ -1900,7 +1950,9 @@ or 0 to display all changes.""").format(title)
         return "break"
 
     def goHome(self, event=None):
-        if self.view == SCHEDULE:
+        if self.weekly:
+            self.showWeek(week=0)
+        elif self.view == SCHEDULE:
             today = get_current_time().date()
             self.scrollToDate(today)
         else:
@@ -1910,20 +1962,46 @@ or 0 to display all changes.""").format(title)
             self.tree.yview(0)
         return 'break'
 
+    def nextItem(self, e=None):
+        item = self.tree.selection()[0]
+        if item:
+            next = self.tree.next(item)
+            if next:
+                # self.tree.see(next)
+                next = str(int(next) - 1)
+                self.tree.focus(next)
+                self.tree.selection_set(next)
+
+    def prevItem(self, e=None):
+        item = self.tree.selection()[0]
+        if item:
+            prev = self.tree.prev(item)
+            if prev:
+                # self.tree.see(prev)
+                prev = str(int(prev) + 1)
+                self.tree.focus(prev)
+                self.tree.selection_set(prev)
+
     def OnSelect(self, event=None, uuid=None, dt=None):
         """
         Tree row has gained selection.
         """
-        if uuid is None: # tree view
+        self.content.delete("1.0", END)
+        if self.weekly: # week view
+            if uuid is None:
+                # disable clear selection
+                self.viewmenu.entryconfig(13, state="disabled")
+            else:
+                # an item is selected, enable clear selection
+                hsh = loop.uuid2hash[uuid]
+                type_chr = hsh['itemtype']
+                self.viewmenu.entryconfig(13, state="normal")
+        elif uuid is None: # tree view
             item = self.tree.selection()[0]
             self.rowSelected = int(item)
             type_chr = self.tree.item(item)['text'][0]
             uuid, dt, hsh = self.getInstance(item)
-        else: # week vie
-            hsh = loop.uuid2hash[uuid]
-            type_chr = hsh['itemtype']
-        # self.l.configure(state="normal")
-        self.content.delete("1.0", END)
+
         if uuid is not None:
             # self.itemmenu.configure(state="normal")
             isRepeating = ('r' in hsh and dt)
@@ -1962,6 +2040,8 @@ or 0 to display all changes.""").format(title)
             self.uuidSelected = uuid
             self.itemSelected = hsh
             # self.dtSelected = dt.strftime(rfmt)
+            if type(dt) is str:
+                dt = parse(dt)
             self.dtSelected = fmt_datetime(dt, options=loop.options)
             # logger.debug(('selected: {0}'.format(hsh)))
         else:
@@ -1979,6 +2059,7 @@ or 0 to display all changes.""").format(title)
             self.topSelected = 1
 
         logger.debug("top: {3}; row: '{0}'; uuid: '{1}'; instance: '{2}'".format(self.rowSelected, self.uuidSelected, self.dtSelected,  self.topSelected));
+        self.content.delete("1.0", END)
         self.insert = self.content.insert(INSERT, text)
         return "break"
 
@@ -2037,8 +2118,11 @@ or 0 to display all changes.""").format(title)
                 self.showWeek()
             else:
                 self.showView()
-        elif self.weekly and self.today_col:
-            self.showWeek()
+        elif self.today_col is not None:
+            xy = self.get_timeline()
+            self.canvas.delete('current_time')
+            self.canvas.create_line(xy, width=1, fill=CURRENTLINE, tag='current_time')
+            self.update_idletasks()
 
         self.updateAlerts()
 
@@ -2256,16 +2340,16 @@ Relative dates and fuzzy parsing are supported.""")
         if self.weekly:
             return
         self.filter_active = True
-        self.viewmenu.entryconfig(2, state="disabled")
-        self.viewmenu.entryconfig(3, state="normal")
+        self.viewmenu.entryconfig(5, state="disabled")
+        self.viewmenu.entryconfig(6, state="normal")
         self.fltr.configure(bg="white", state="normal")
         self.fltrbtn.configure(state="normal")
         self.fltr.focus_set()
 
     def clearFilter(self, e=None):
         self.filter_active = False
-        self.viewmenu.entryconfig(2, state="normal")
-        self.viewmenu.entryconfig(3, state="disabled")
+        self.viewmenu.entryconfig(5, state="normal")
+        self.viewmenu.entryconfig(6, state="disabled")
         self.filterValue.set('')
         self.fltr.configure(bg=BGCOLOR)
         self.fltrbtn.configure(state="disabled")
