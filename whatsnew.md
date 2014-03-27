@@ -104,7 +104,7 @@ There are no longer separate views for Now and Next and the Monthly view from et
 
 **Week view** is similar to the week view from etm-qt with the following differences.
 
-- Mouse over displays the item information at the bottom of the screen rather than in a tooltip.
+- Mouse over displays the item information at the bottom of the screen rather than a summary in a tooltip.
 
 - Items can be selected using either the mouse, as in etm-qt, or using the up and down cursor keys. In contrast to the mouse, cursor keys can be used to select an item that is underneath another scheduled item.
 
@@ -127,43 +127,46 @@ There are no longer separate views for Now and Next and the Monthly view from et
             ----
             Quit                                        Ctrl-Q
         View
+            Home                                         Space
+            Jump to date                                Ctrl-J
+            ----
+            Next sibling                              Control-Down
+            Previous sibling                          Control-Up
+            Set outline filter                          Ctrl-F
+            Clear outline filter                        Escape
+            Set outline depth                           Ctrl-O
+            ----
+            Previous week                                Left
+            Next week                                    Right
+            Previous item in week                         Up
+            Next item in week                            Down
+            Clear selection                             Escape
+            List busy times in week                     Ctrl-B
+        Item
+            Copy                                        Ctrl-C
+            Delete                                    Ctrl-BackSpace
+            Edit                                        Ctrl-E
+            Finish                                      Ctrl-X
+            Reschedule                                  Ctrl-D
+            Open link                                   Ctrl-G
+            Export item as ical                           F4
+        Tools
+            Display yearly calendar                     Ctrl-Y
+            Open date calculator                        Ctrl-L
+            Make report                                 Ctrl-R
+            Show history of changes                     Ctrl-H
+            Export active calendars to iCal             Ctrl-F4
+        Help
+            Search
+            Help                                          F1
+            About                                         F2
+            Check for update                              F3
+    Main
+        Views
             Agenda                                      Ctrl-A
             Schedule                                    Ctrl-S
             Tags                                        Ctrl-T
             Keywords                                    Ctrl-K
             Notes                                       Ctrl-N
             Paths                                       Ctrl-P
-            Week
-                Display weekly calendar                 Ctrl-W
-                Display current week                     Space
-                Jump to week                               j
-                Previous week                            Left
-                Next week                                Right
-                Previous item                             Up
-                Next item                                Down
-                Show list of busy times                    b
-            ----
-            Home                                         Space
-            Jump to date                                Ctrl-J
-            Apply filter                                Ctrl-F
-            Set outline depth                           Ctrl-O
-            Choose active calendars
-        Item
-            Copy                                        Ctrl-C
-            Delete                                    Ctrl-BackSpace
-            Edit                                        Ctrl-E
-            Finish                                    Ctrl-slash
-            Reschedule                                  Ctrl-D
-            Open link                                   Ctrl-G
-            Export item as ical                         Ctrl-X
-        Tools
-            Display yearly calendar                     Ctrl-Y
-            Open date calculator                        Ctrl-L
-            Make report                                 Ctrl-R
-            Show history of changes                     Ctrl-H
-            Export active calendars to iCal           Shift-Ctrl-X
-        Help
-            Search
-            Help                                          F1
-            About                                         F2
-            Check for update                              F3
+            Week                                        Ctrl-W

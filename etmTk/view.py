@@ -133,7 +133,7 @@ class App(Tk):
     def __init__(self, path=None):
         Tk.__init__(self)
         # minsize: width, height
-        self.minsize(430, 464)
+        self.minsize(460, 440)
         self.uuidSelected = None
         self.timerItem = None
         self.actionTimer = Timer()
@@ -1608,17 +1608,17 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.canvas_idpos = None
         # border
         xy = l, t, l+x*7, t+y*16
-        self.canvas.create_rectangle(xy)
+        self.canvas.create_rectangle(xy, tag="grid")
 
         # verticals
         for i in range(1,7):
             # x = X
             xy = l+x*i, t, l+x*i, t+y*16
-            self.canvas.create_line(xy, fill=LINECOLOR)
+            self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
         # horizontals
         for j in range(1,16):
             xy = l, t+y*j, l+x*7, t+y*j
-            self.canvas.create_line(xy, fill=LINECOLOR)
+            self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
         # hours
         for j in range(17):
             if j%2:
@@ -1706,6 +1706,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.selectedId = id = self.canvas.find_withtag(CURRENT)[0]
         self.canvas.itemconfig(id, fill=ACTIVEFILL)
         self.canvas.tag_raise('conflict')
+        self.canvas.tag_raise('grid')
         self.canvas.tag_raise(id)
         self.canvas.tag_lower('occasion')
         self.canvas.tag_lower('current_day')
@@ -1748,6 +1749,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             else:
                 self.canvas.itemconfig(id, fill=OCCASIONFILL)
         self.canvas.tag_raise('conflict')
+        self.canvas.tag_raise('grid')
         self.canvas.tag_lower('occasion')
         self.selectedId = None
         self.OnSelect()
