@@ -15,10 +15,6 @@ import codecs
 import logging
 import logging.config
 
-# TODO: prevent space from expanding and collapsing outline
-
-# TODO: prevent context popup in outline when item is not selected
-
 logger = logging.getLogger()
 
 import platform
@@ -681,6 +677,7 @@ class App(Tk):
         self.tree.bind('<Control-Up>', self.prevItem)
         # self.tree.bind('<Escape>', self.cleartext)
         # self.tree.bind('<j>', self.jumpToDate)
+        self.tree.bind('<space>', self.goHome)
 
         for t in tstr2SCI:
             self.tree.tag_configure(t, foreground=tstr2SCI[t][1])
@@ -2079,6 +2076,8 @@ or 0 to display all changes.""").format(title)
         """
         Return pressed with tree row selected
         """
+        if not self.itemSelected:
+            return "break"
         item = self.tree.selection()[0]
         uuid, dt, hsh = self.getInstance(item)
         x = self.winfo_rootx() + 350
