@@ -21,7 +21,7 @@ import platform
 
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas, CURRENT
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas, CURRENT, PhotoImage
     from tkinter import ttk
     from tkinter import font as tkFont
     from tkinter.messagebox import askokcancel
@@ -30,7 +30,7 @@ if platform.python_version() >= '3':
     # from tkinter import simpledialog as tkSimpleDialog
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas, CURRENT
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas, CURRENT, PhotoImage
     # import tkMessageBox
     import ttk
     import tkFont
@@ -406,6 +406,8 @@ class App(Tk):
 
         # Item menu
         self.itemmenu = itemmenu = Menu(menubar, tearoff=0)
+        self.itemmenu.bind("<Escape>", self.closeItemMenu)
+        self.itemmenu.bind("<FocusOut>", self.closeItemMenu)
         path = ITEM
         self.add2menu(menu, (path, ))
         self.em_options = [
@@ -569,7 +571,8 @@ class App(Tk):
         # self.wm_iconbitmap(bitmap='etmlogo.gif')
         # self.wm_iconbitmap('etmlogo-4.xbm')
         # self.call('wm', 'iconbitmap', self._w, '/Users/dag/etm-tk/etmTk/etmlogo.gif')
-
+        img = PhotoImage(file='etmlogo.gif')
+        self.call('wm', 'iconphoto', self._w, img)
         # if sys_platform == 'Linux':
         #     logger.debug('using linux icon')
         #     self.wm_iconbitmap('@' + 'etmlogo.gif')
@@ -754,6 +757,13 @@ class App(Tk):
         # show default view
         self.updateAlerts()
         self.showView()
+
+    def closeItemMenu(self, event=None):
+        if self.weekly:
+            self.canvas.focus_set()
+        else:
+            self.tree.focus_set()
+        self.itemmenu.unpost()
 
     def add2menu(self, parent, child):
         if child == (SEP, ):
@@ -1782,6 +1792,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.itemSelected = hsh = loop.uuid2hash[uuid]
         self.dtSelected = dt = fmt_datetime(self.busyHsh[id][-1], options=loop.options)
         self.itemmenu.post(x, y)
+        self.itemmenu.focus_set()
 
 
     def newEvent(self, event):
@@ -2084,6 +2095,7 @@ or 0 to display all changes.""").format(title)
         y = self.winfo_rooty() + 50
         logger.debug("id: {0}, coords: {1}, {2}".format(id, x, y))
         self.itemmenu.post(x, y)
+        self.itemmenu.focus_set()
 
     def OnDoubleClick(self, event):
         """

@@ -11,9 +11,10 @@ else:
 
 APP = ['etm']
 
-# FIXME: for py2app and cxfreeze - not yet usable
+includefiles = ["etmTk/etmlogo.gif", "etmTk/etmlogo.icns", "etmTk/etmlogo.ico"]
+
 OPTIONS = {'build': {'build_exe': 'releases/etmtk-{0}'.format(version)},
-              'build_exe': {'icon': 'etmTk/etmlogo.icns', 'optimize': '2',
+              'build_exe': {'icon': 'etmTk/etmlogo.gif', 'optimize': '2',
                             'compressed': 1},
               'build_mac': {'iconfile': 'etmTk/etmlogo.icns',
                             'bundle_name': 'etm'},
