@@ -106,8 +106,9 @@ For example, one pattern of use for a business would be to use folders for peopl
 Similarly, a family could use folders to separate personal and shared items for family members, for example:
 
     root etm data directory
-        dag
-        erp
+        personal
+            dag
+            erp
         shared
             holidays
             birthdays
@@ -122,16 +123,24 @@ would both contain `datadir` entries specifying the common root data directory. 
 
     ~dag/.etm/etm.cfg
         calendars
-        - [dag, true, dag]
-        - [erp, false, erp]
+        - [dag, true, personal/dag]
+        - [erp, false, personal/erp]
         - [shared, true, shared]
 
 and
 
     ~erp/.etm/etm.cfg
         calendars
-        - [erp, true, erp]
-        - [dag, false, dag]
+        - [erp, true, personal/erp]
+        - [dag, false, personal/dag]
         - [shared, true, shared]
 
 then, by default, both dag and erp would see the entries from their personal files as well as the shared entries and each could optionally view the entries from the other's personal files as well.  See the Help/Preferences for details on the `calendars` entry.
+
+Note for Windows users. The path separator needs to be "escaped" in the calendar paths, e.g., you should enter
+
+     - [dag, true, personal\\dag]
+
+instead of
+
+     - [dag, true, personal\dag]

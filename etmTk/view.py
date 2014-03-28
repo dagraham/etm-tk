@@ -15,6 +15,10 @@ import codecs
 import logging
 import logging.config
 
+# TODO: prevent space from expanding and collapsing outline
+
+# TODO: prevent context popup in outline when item is not selected
+
 logger = logging.getLogger()
 
 import platform
@@ -312,11 +316,15 @@ class App(Tk):
         l = "Control-Down"
         label = _("Next sibling")
         viewmenu.add_command( label=label, underline=1,  command=self.nextItem)
+        if not mac:
+            viewmenu.entryconfig(3, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Control-Up"
         label = _("Previous sibling")
         viewmenu.add_command( label=label, underline=1,  command=self.prevItem)
+        if not mac:
+            viewmenu.entryconfig(4, accelerator=l)
         self.add2menu(path, (label, l))
 
         # apply filter
@@ -493,7 +501,7 @@ class App(Tk):
         ## export
         l = "Ctrl-F4"
         c = "<Control-F4>"
-        label = _("Export active calendars to iCal")
+        label = _("Export active calendars as iCal")
         toolsmenu.add_command(label=label, underline=1, command=self.exportActiveToIcal)
         self.bind(c, self.exportActiveToIcal)
         if not mac:
@@ -579,12 +587,11 @@ class App(Tk):
         #     logger.debug('using windows icon')
         #     self.wm_iconbitmap('etmlogo.ico')
 
-        # TODO: add next(), prev() navigation to trees bound to right and left cursor keys
-
         self.columnconfigure(0, minsize=300, weight=1)
         self.rowconfigure(1, weight=2)
 
         topbar = Frame(self, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR)
+        topbar.pack(side="top", fill="x", expand=0, padx=0, pady=0)
 
         self.vm_options = [[AGENDA, 'a'],
                            [SCHEDULE, 's'],
@@ -614,6 +621,7 @@ class App(Tk):
 
         self.vm_opts = [x[0] for x in self.vm_options]
         self.vm = OptionMenu(topbar, self.currentView, *self.vm_opts)
+        self.vm.configure(pady=2)
         for i in range(len(self.vm_options)):
             label = self.vm_options[i][0]
             k = self.vm_options[i][1]
@@ -626,7 +634,7 @@ class App(Tk):
         self.vm.configure(background=BGCOLOR, takefocus=False)
 
         # calendars
-        self.calbutton = Button(topbar, text=CALENDARS, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, width=8)
+        self.calbutton = Button(topbar, text=CALENDARS, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, width=8, pady=2)
         # self.calbutton.pack(side="right", padx=0)
         self.calbutton.pack(side="right", padx=6)
         if not self.default_calendars:
@@ -646,7 +654,7 @@ class App(Tk):
         self.fltr.pack(side="left", padx=0) #, expand=1, fill=X)
         self.bind("<Escape>", self.clearFilter)
         self.fltr.bind("<FocusIn>", self.setFilter)
-        self.fltrbtn = Button(fltrbox, text='x', command=self.clearFilter, highlightbackground=BGCOLOR)
+        self.fltrbtn = Button(fltrbox, text='x', command=self.clearFilter, highlightbackground=BGCOLOR, pady=2)
         self.fltrbtn.configure(state="disabled")
         self.filter_active = False
         self.viewmenu.entryconfig(5, state="normal")
@@ -654,7 +662,7 @@ class App(Tk):
         self.fltrbtn.pack(side=LEFT, padx=0)
         self.fltrbox.pack(side=LEFT, padx=0, pady=0)
 
-        topbar.pack(side="top", fill="both", expand=0, padx=0, pady=0)
+        # topbar.pack(side="top", fill="both", expand=0, padx=0, pady=0)
 
         self.panedwindow = panedwindow = PanedWindow(self, orient="vertical",
                                                      # showhandle=True,
@@ -1682,7 +1690,6 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.canvas.tag_lower('current_day')
         self.canvas.tag_raise('current_time')
         if id in self.busyHsh:
-            # self.content.delete("0.0", END)
             self.OnSelect(uuid=self.busyHsh[id][0], dt=self.busyHsh[id][-1])
 
     def setFocus(self, e):
@@ -1971,7 +1978,8 @@ or 0 to display all changes.""").format(title)
             next = self.tree.next(item)
             if next:
                 # self.tree.see(next)
-                next = str(int(next) - 1)
+                next = int(next)
+                next -= 1
                 self.tree.focus(next)
                 self.tree.selection_set(next)
 
@@ -1981,7 +1989,8 @@ or 0 to display all changes.""").format(title)
             prev = self.tree.prev(item)
             if prev:
                 # self.tree.see(prev)
-                prev = str(int(prev) + 1)
+                prev = int(prev)
+                prev += 1
                 self.tree.focus(prev)
                 self.tree.selection_set(prev)
 
@@ -2043,7 +2052,7 @@ or 0 to display all changes.""").format(title)
             self.uuidSelected = uuid
             self.itemSelected = hsh
             # self.dtSelected = dt.strftime(rfmt)
-            if type(dt) is str:
+            if type(dt) is not datetime:
                 dt = parse(dt)
             self.dtSelected = fmt_datetime(dt, options=loop.options)
             # logger.debug(('selected: {0}'.format(hsh)))

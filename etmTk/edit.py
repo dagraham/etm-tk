@@ -136,6 +136,7 @@ class ReportWindow(Toplevel):
         self.currentReport.set(self.report)
         self.reportValue.set(self.reportLabel)
         self.rm = OptionMenu(topbar, self.reportValue, *self.rm_opts)
+        self.rm.configure(pady=2)
 
 
         for i in range(len(self.rm_options)):
@@ -154,12 +155,12 @@ class ReportWindow(Toplevel):
         self.rm.configure(background=BGCOLOR, takefocus=False)
 
         # find group
-        Button(topbar, text='x', command=self.clearFind, highlightbackground=BGCOLOR, padx=8).pack(side=LEFT, padx=0)
+        Button(topbar, text='x', command=self.clearFind, highlightbackground=BGCOLOR, padx=8, pady=2).pack(side=LEFT, padx=0)
         self.find_text = StringVar(topbar)
         self.e = Entry(topbar, textvariable=self.find_text, width=10, highlightbackground=BGCOLOR)
         self.e.pack(side=LEFT, padx=0, expand=1, fill=X)
         self.e.bind("<Return>", self.onFind)
-        Button(topbar, text='>', command=self.onFind, highlightbackground=BGCOLOR,  padx=8).pack(side=LEFT, padx=0)
+        Button(topbar, text='>', command=self.onFind, highlightbackground=BGCOLOR,  padx=8, pady=2).pack(side=LEFT, padx=0)
 
         # # help
         # Button(topbar, text="?", command=self.reportHelp, highlightbackground=BGCOLOR).pack(side=LEFT, padx=4)
@@ -175,7 +176,7 @@ class ReportWindow(Toplevel):
         # reportspec
 
         self.box_value = StringVar()
-        self.box = ttk.Combobox(botbar, textvariable=self.box_value, font=tkFont.Font(family="Lucida Sans Typewriter"))
+        self.box = ttk.Combobox(botbar, textvariable=self.box_value, font=self.tkfixedfont)
         self.box.bind("<<ComboboxSelected>>", self.newselection)
         self.bind("<Return>", self.makeReport)
         self.bind("<Escape>", self.quit)

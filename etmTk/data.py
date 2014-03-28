@@ -1339,8 +1339,8 @@ def fmt_date(dt, short=False):
 
 def fmt_datetime(dt, options=None):
     if not options: options = {}
-    if type(dt) in [unicode, str]:
-        dt = parse_dtstr(dt)
+    # if type(dt) in [unicode, str]:
+    #     dt = parse_dtstr(dt)
     t_fmt = fmt_time(dt, options=options)
     dt_fmt = "%s %s" % (dt.strftime(etmdatefmt), t_fmt)
     return s2or3(dt_fmt)
@@ -3640,7 +3640,7 @@ def add2list(l, item, expand=True):
     try:
         i = bisect.bisect_left(l, item)
     except:
-        logger.exception("error adding: {0}".format(item))
+        logger.exception("error adding:\n{0}\n\n    last added:\n{1}".format(item, last_added))
         return ()
 
     if i != len(l) and l[i] == item:
@@ -3997,6 +3997,7 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
     busydays = {}   # date -> totalminutes
     occasions = {}  # isodate -> [(uuid, subject)]
     alerts = []  # today only [(start_minutes, alert_minutes, action, uuid, f)]
+    alert_minutes = {}
     for f in file2uuids:
         folders = expandPath(f)
         for uid in file2uuids[f]:
@@ -4333,7 +4334,14 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
                                     this_hsh['_event_time'] = fmt_time(
                                         dtl, True, options=options)
                                 amn = adt.hour * 60 + adt.minute
-                                add2list(alerts, (amn, this_hsh, f), False)
+                                # we don't want ties in amn else add2list will try to sort on the hash and fail
+                                if amn in alert_minutes:
+                                    # add 6 seconds to avoid the tie
+                                    alert_minutes[amn] += .1
+                                else:
+                                    alert_minutes[amn] = amn
+                                # add2list(alerts, (amn, this_hsh, f), False)
+                                add2list(alerts, (alert_minutes[amn], this_hsh, f), False)
                 if (hsh['itemtype'] in ['+', '-', '%'] and
                             dtl < today_datetime):
                     time_diff = (dtl - today_datetime).days

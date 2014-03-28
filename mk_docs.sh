@@ -2,6 +2,12 @@
 # FiXME: This needs work - not ready to run
 # Update the man file
 cd /Users/dag/etm-tk
+
+echo "Processing what's new"
+pandoc -s --toc --toc-depth=2 -B ~/etm-tk/etmTk/style-before -f markdown -t html -o whatsnew.html whatsnew.md
+
+pandoc -s -f markdown -t plain -o whatsnew.txt whatsnew.md
+
 echo Making the man file
 vinfo=`cat etmTk/v.py | head -1 | sed 's/\"//g' | sed 's/^.*= *//g'`
 txt2man -t etm -s 1 -r "version $vinfo" -v "Unix user's manual" etmtk_man.text | sed '1 s/\.\"/\.\\\"/' > etm.1
@@ -13,8 +19,6 @@ groff -t -e -mandoc -Tps etm.1 > etm-man.ps
 
 echo Creating pdf version of man file
 ps2pdf etm-man.ps etm-man.pdf
-
-pandoc -s --toc --toc-depth=2 -B ~/etm-tk/etmTk/style-before -f markdown -t html -o whatsnew.html whatsnew.md
 
 #cd /Users/dag/etm-tk/etmTk/help
 #echo Creating individual html files
