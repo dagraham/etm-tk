@@ -1269,13 +1269,15 @@ tstr2SCI = {
     # "ev": [12, "forestgreen", "event", "day"],
     "ev": [12, "springgreen4", "event", "day"],
     "fn": [27, "gray70", "finished", "day"],
-    "ib": [10, "orangered", "inbox", "now"],
+
+    "ib": [10, "firebrick3", "inbox", "now"],
     "ns": [24, "saddlebrown", "note", "day"],
     "nu": [25, "saddlebrown", "note", "day"],
     "oc": [11, "peachpuff4", "occasion", "day"],
     "pc": [15, "firebrick3", "child", "now"],
-    "pd": [14, "firebrick3", "delegated", "now"],
-    "pt": [13, "firebrick3", "task", "now"],
+
+    "pd": [14, "orangered", "delegated", "now"],
+    "pt": [13, "orangered", "task", "now"],
     "rm": [12, "seagreen", "reminder", "day"],
     "so": [26, "slateblue1", "someday", "now"],
     "un": [20, "slateblue2", "task", "next"],
@@ -4957,10 +4959,6 @@ def import_ical(fname):
 
 def ensureMonthly(options, date=None):
     """
-
-    :param options:
-    :param date:
-    :return: filepath to current monthly file
     """
     retval = None
     if ('monthly' in options and

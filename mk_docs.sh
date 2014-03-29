@@ -4,7 +4,7 @@
 cd /Users/dag/etm-tk
 
 echo "Processing what's new"
-pandoc -s --toc --toc-depth=2 -B ~/etm-tk/etmTk/style-before -f markdown -t html -o whatsnew.html whatsnew.md
+pandoc -s -B ~/etm-tk/etmTk/style-before -f markdown -t html -o whatsnew.html whatsnew.md
 
 pandoc -s -f markdown -t plain -o whatsnew.txt whatsnew.md
 
@@ -48,11 +48,11 @@ done
 echo Creating help.html
 pandoc -s --toc --toc-depth=2 -B ~/etm-tk/etmTk/style-before -f markdown -t html -o help.html  help.md
 
-echo Creating help.tex
-pandoc -s --toc --toc-depth=2 -f markdown -t latex -o help.tex help.md
-
-echo Creating help.pdf
-pdflatex help.tex
+#echo Creating help.tex
+#pandoc -s --toc --toc-depth=2 -f markdown -t latex -o help.tex help.md
+#
+#echo Creating help.pdf
+#pdflatex help.tex
 
 #echo Creating help.text
 #pandoc -s --toc --toc-depth=2 -f markdown -t plain -o help.text  help.md

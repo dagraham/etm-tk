@@ -56,12 +56,13 @@ else
         echo "### copying html and pdf documentation files ###"
         cp -p etm_tk-man.pdf ~/.TEMP/help/
         cp -p etmTk/help/*.html ~/.TEMP/help/
-        cp -p etmTk/help/help.pdf ~/.TEMP/help/
-        cp -p cheatsheet.tex ~/.TEMP/help/
-        cp -p cheatsheet.pdf ~/.TEMP/help/
+#        cp -p etmTk/help/help.pdf ~/.TEMP/help/
+#        cp -p cheatsheet.tex ~/.TEMP/help/
+#        cp -p cheatsheet.pdf ~/.TEMP/help/
+        cp -p whatsnew.html ~/.TEMP
 
         # cp -p etm-empty/data/sample/*.txt ~/.TEMP/sample/
-        cp -p etmTk/language/*.html ~/.TEMP/language/
+#        cp -p etmTk/language/*.html ~/.TEMP/language/
         # careful that the following doesn't overwrite modified files
         cp -p etmTk/HEADER.html etmTk/README.html etmTk/INSTALL.html ~/.TEMP
         copy=1

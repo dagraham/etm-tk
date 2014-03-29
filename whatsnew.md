@@ -4,22 +4,27 @@ A new version of etm based on Tk instead of Qt is in the early stages of develop
 
 The goals and initial results for this version:
 
-- an easier installation process with no requirements for Sip, Qt, PyQt or any python modules that cannot be installed using either pip or easy_install.
+- easier installation
 
     - The only requirement for the nrew GUI is tkinter and Tcl/Tk which are often already available and, if not, easily installed. *Sip, Qt and PyQt are not used.*
 
     - Completely self contained packages made using cx_freeze are available for both Darwin (OSX Mavericks) and Linux (Ubuntu 12.04 - 32bit). A package for Windows may be available soon.
 
 
-- a "leaner and meaner" version with smaller files, less memory usage and faster performance. File size comparisons for the new Tk version versus the old Qt version:
+- leaner and meaner
 
-    - source tarball: 260k for Tk vs. 20.5mb for Qt
+    - snappier performance
 
-    - Darwin: 8.5mb freeze tarball for Tk vs. 23mb app dmg for Qt
+    - smaller files
 
-    - Linux: 3.7mb freeze tarball for Tk (nothing comparable was available for Qt)
+        - source tarball: 260k for Tk vs. 20.5mb for Qt
 
-- a more informative display that shows item details without needing to open any additional windows.
+        - Darwin: 9.6mb freeze tarball for Tk vs. 23mb app dmg for Qt
+
+        - Linux: 3.7mb freeze tarball for Tk (nothing comparable was available for Qt)
+
+
+- more informative display
 
     - The display area of the main window is split into two panes. The top pane shows the selected view either as a tree or, for week view, as a graph and, if an item is selected, the bottom pane shows the details of the selected item.
 
@@ -48,7 +53,7 @@ The goals and initial results for this version:
     See Views under Main below for a complete list of the available views.
 
 
-- a more intuitive user interface that places less burden on the user to remember shortcuts.
+- more intuitive interface
 
     - The tool bar and icons have been replaced by a menubar where all the operational commands are easy to find and understand. See "Commands and Shortcuts" below for a complete listing.
 
@@ -63,7 +68,6 @@ The goals and initial results for this version:
     - The editor now has a validate button that will check the item being edited and report any problems and also, for repeating items, show a list of the repetitions that will be generated.
 
     - Completion in the editor is now triggered by pressing Control-Space instead of being automatic after a third matching character is entered.
-
 
 
 [etmtk]: http://people.duke.edu/~dgraham/etmtk
@@ -123,7 +127,7 @@ The goals and initial results for this version:
         Tools
             Display yearly calendar                     Ctrl-Y
             Open date calculator                        Ctrl-L
-            Make report                                 Ctrl-R
+            Create report                               Ctrl-R
             Show history of changes                     Ctrl-H
             Export active calendars as iCal             Ctrl-F4
         Help

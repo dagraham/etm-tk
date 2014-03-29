@@ -16,7 +16,7 @@ includefiles = ["etmTk/etmlogo.gif", "etmTk/etmlogo.icns", "etmTk/etmlogo.ico"]
 OPTIONS = {'build': {'build_exe': 'releases/etmtk-{0}'.format(version)},
               'build_exe': {'icon': 'etmTk/etmlogo.gif', 'optimize': '2',
                             'compressed': 1},
-              'build_mac': {'iconfile': 'etmTk/etmlogo.icns',
+              'build_mac': {'iconfile': 'etmTk/etmlogo.gif',
                             'bundle_name': 'etm'},
               'Executable': {'targetDir': 'releases/etmtk-{0}'.format(version)}
             }

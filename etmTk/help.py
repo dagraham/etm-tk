@@ -116,8 +116,9 @@ For example, one pattern of use for a business would be to use folders for peopl
 Similarly, a family could use folders to separate personal and shared items for family members, for example:
 
     root etm data directory
-        dag
-        erp
+        personal
+            dag
+            erp
         shared
             holidays
             birthdays
@@ -132,19 +133,27 @@ would both contain datadir entries specifying the common root data directory. Ad
 
     ~dag/.etm/etm.cfg
         calendars
-        - [dag, true, dag]
-        - [erp, false, erp]
+        - [dag, true, personal/dag]
+        - [erp, false, personal/erp]
         - [shared, true, shared]
 
 and
 
     ~erp/.etm/etm.cfg
         calendars
-        - [erp, true, erp]
-        - [dag, false, dag]
+        - [erp, true, personal/erp]
+        - [dag, false, personal/dag]
         - [shared, true, shared]
 
 then, by default, both dag and erp would see the entries from their personal files as well as the shared entries and each could optionally view the entries from the other's personal files as well. See the Help/Preferences for details on the calendars entry.
+
+Note for Windows users. The path separator needs to be "escaped" in the calendar paths, e.g., you should enter
+
+     - [dag, true, personal\\dag]
+
+instead of
+
+     - [dag, true, personal\dag]
 """
 
 ITEMTYPES = """\
@@ -1386,48 +1395,63 @@ SHORTCUTS = """\
 Menu Shortcuts
 ==============
 
-    File
-        New
-            Item                                    Ctrl-N
-            Timer                                   Ctrl-I
-        Open
-            Data file ...                         Shift-Ctrl-D
-            etmtk.cfg                             Shift-Ctrl-E
-            completions.cfg                       Shift-Ctrl-C
-            reports.cfg                           Shift-Ctrl-R
-            scratchpad                            Shift-Ctrl-S
-        ----
-        Quit
-    View
-        Agenda                                      Ctrl-A
-        Schedule                                    Ctrl-S
-        Tags                                        Ctrl-T
-        Keywords                                    Ctrl-K
-        Paths                                       Ctrl-P
-        ----
-        Apply filter                                Ctrl-F
-        Set outline depth                           Ctrl-O
-        Choose active calendars
-    Item
-        Copy                                        Ctrl-C
-        Delete                                      Ctrl-D
-        Edit                                        Ctrl-E
-        Finish                                      Ctrl-X
-        Reschedule                                  Ctrl-R
-        Open link                                   Ctrl-G
-    Tools
-        Jump to date                                Ctrl-J
-        Show busy periods                           Ctrl-B
-        Display yearly calendar                     Ctrl-Y
-        Open date calculator                        Ctrl-L
-        ----
-        Make report                                 Ctrl-M
-        Show changes                                Ctrl-H
-        Export active calendars to iCal           Shift-Ctrl-X
-    Help
-        Search
-        Help                                          F1
-        About                                         F2
-        Check for update                              F3
+    Menubar
+        File
+            New
+                Item                                    Ctrl-I
+                Begin/Pause Action Timer                Ctrl-,
+                Finish Action Timer                     Ctrl-.
+            Open
+                Data file ...                         Shift-Ctrl-D
+                etmtk.cfg                             Shift-Ctrl-E
+                completions.cfg                       Shift-Ctrl-C
+                reports.cfg                           Shift-Ctrl-R
+                scratchpad                            Shift-Ctrl-S
+            ----
+            Quit                                        Ctrl-Q
+        View
+            Home                                         Space
+            Jump to date                                Ctrl-J
+            ----
+            Next sibling                              Control-Down
+            Previous sibling                          Control-Up
+            Set outline filter                          Ctrl-F
+            Clear outline filter                        Escape
+            Set outline depth                           Ctrl-O
+            ----
+            Previous week                                Left
+            Next week                                    Right
+            Previous item in week                         Up
+            Next item in week                            Down
+            Clear selection                             Escape
+            List busy times in week                     Ctrl-B
+        Item
+            Copy                                        Ctrl-C
+            Delete                                    Ctrl-BackSpace
+            Edit                                        Ctrl-E
+            Finish                                      Ctrl-X
+            Reschedule                                  Ctrl-D
+            Open link                                   Ctrl-G
+            Export item as ical                           F4
+        Tools
+            Display yearly calendar                     Ctrl-Y
+            Open date calculator                        Ctrl-L
+            Make report                                 Ctrl-R
+            Show history of changes                     Ctrl-H
+            Export active calendars as iCal             Ctrl-F4
+        Help
+            Search
+            Help                                          F1
+            About                                         F2
+            Check for update                              F3
+    Main
+        Views
+            Agenda                                      Ctrl-A
+            Schedule                                    Ctrl-S
+            Tags                                        Ctrl-T
+            Keywords                                    Ctrl-K
+            Notes                                       Ctrl-N
+            Paths                                       Ctrl-P
+            Week                                        Ctrl-W
 """
 

@@ -21,7 +21,8 @@ import platform
 
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas, CURRENT, PhotoImage
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas, CURRENT
+    #, PhotoImage
     from tkinter import ttk
     from tkinter import font as tkFont
     from tkinter.messagebox import askokcancel
@@ -30,7 +31,8 @@ if platform.python_version() >= '3':
     # from tkinter import simpledialog as tkSimpleDialog
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas, CURRENT, PhotoImage
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas, CURRENT
+    # PhotoImage
     # import tkMessageBox
     import ttk
     import tkFont
@@ -446,7 +448,7 @@ class App(Tk):
             else:
                 l, c = commandShortcut(k)
             logger.debug('binding {0} to {1}'.format(c, self.edit2cmd[k]))
-            itemmenu.add_command(label=label, command=self.edit2cmd[k])
+            itemmenu.add_command(label=label, underline=0, command=self.edit2cmd[k])
             # if k != "delete":
             self.bind(c, lambda e, x=k: self.after(AFTER, self.edit2cmd[x]))
             if not mac:
@@ -479,7 +481,7 @@ class App(Tk):
 
         # report
         l, c = commandShortcut('r')
-        label=_("Make report")
+        label=_("Create report")
         toolsmenu.add_command(label=label, underline=5, command=self.makeReport)
         self.bind(c, self.makeReport)
         if not mac:
@@ -571,8 +573,11 @@ class App(Tk):
         # self.wm_iconbitmap(bitmap='etmlogo.gif')
         # self.wm_iconbitmap('etmlogo-4.xbm')
         # self.call('wm', 'iconbitmap', self._w, '/Users/dag/etm-tk/etmTk/etmlogo.gif')
-        img = PhotoImage(file='etmlogo.gif')
-        self.call('wm', 'iconphoto', self._w, img)
+
+        # if not mac:
+        #     img = PhotoImage(file='etmlogo.gif')
+        #     self.call('wm', 'iconphoto', self._w, img)
+
         # if sys_platform == 'Linux':
         #     logger.debug('using linux icon')
         #     self.wm_iconbitmap('@' + 'etmlogo.gif')
@@ -1023,8 +1028,10 @@ a time period if "+" is used."""
         loop.loadData()
         self.updateAlerts()
         if self.weekly:
+            self.canvas.focus_set()
             self.showWeek()
         else:
+            self.tree.focus_set()
             self.showView(row=self.topSelected)
 
 
@@ -1482,6 +1489,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.showWeek()
 
     def showWeek(self, event=None, week=None):
+        self.canvas.focus_set()
         self.selectedId = None
 
         self.current_day = get_current_time().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
@@ -2209,8 +2217,8 @@ or 0 to display all changes.""").format(title)
                                 self.options['alert_soundcmd'], hsh)
                             subprocess.call(scmd, shell=True)
                         else:
-                            self.textWindow(self,
-                                "etm", _("""\
+                            self.textWindow(parent=self,
+                                title="etm", prompt=_("""\
 A sound alert failed. The setting for 'alert_soundcmd' is missing from \
 your etmtk.cfg.""", opts=self.options))
                     if 'd' in actions:
@@ -2220,8 +2228,8 @@ your etmtk.cfg.""", opts=self.options))
                                 self.options['alert_displaycmd'], hsh)
                             subprocess.call(dcmd, shell=True)
                         else:
-                            self.textWindow(self,
-                                "etm", _("""\
+                            self.textWindow(parent=self,
+                                title="etm", prompt=_("""\
 A display alert failed. The setting for 'alert_displaycmd' is missing \
 from your etmtk.cfg.""", opts=self.options))
                     if 'v' in actions:
@@ -2231,8 +2239,8 @@ from your etmtk.cfg.""", opts=self.options))
                                 self.options['alert_voicecmd'], hsh)
                             subprocess.call(vcmd, shell=True)
                         else:
-                            self.textWindow(self,
-                                "etm", _("""\
+                            self.textWindow(parent=self,
+                                title="etm", prompt=_("""\
 An email alert failed. The setting for 'alert_voicecmd' is missing from \
 your etmtk.cfg.""", opts=self.options))
                     if 'e' in actions:
@@ -2246,8 +2254,8 @@ your etmtk.cfg.""", opts=self.options))
                             if not self.options[field]:
                                 missing.append(field)
                         if missing:
-                            self.textWindow(self,
-                                "etm", _("""\
+                            self.textWindow(parent=self,
+                                title="etm", prompt=_("""\
 An email alert failed. Settings for the following variables are missing \
 from your etmtk.cfg: %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=self.options)
                         else:
@@ -2290,8 +2298,8 @@ from your etmtk.cfg: %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
                             if not self.options[field]:
                                 missing.append(field)
                         if missing:
-                            self.textWindow(self,
-                                "etm", _("""\
+                            self.textWindow(parent=self,
+                                title="etm", prompt=_("""\
 A text alert failed. Settings for the following variables are missing \
 from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=self.options)
                         else:

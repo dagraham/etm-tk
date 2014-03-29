@@ -175,13 +175,13 @@ if asksure; then
 #    cxfreeze3 -OO etm --icon=etmTk/etmlogo.icns --target-dir releases/etmtk-${tag}-freeze-OSX
     echo "Building for $plat"
     echo
-    sudo rm -fR dist-$plat/*
-    python3 setup_cxfreeze.py build
-#    if [ "$plat" = 'Darwin' ]; then
-#        cxfreeze3 -s -c -OO etm --icon=etmTk/etmlogo.icns --target-dir dist-$plat/etmtk-${tag}-freeze-$plat
-#    else
-#        cxfreeze -OO etm --target-dir dist-$plat/etmtk-${tag}-freeze-$plat
-#    fi
+#    sudo rm -fR dist-$plat/*
+#    python3 setup_cxfreeze.py build
+    if [ "$plat" = 'Darwin' ]; then
+        cxfreeze3 -s -c -OO etm --icon=etmTk/etmlogo.icns --target-dir dist-$plat/etmtk-${tag}-freeze-$plat
+    else
+        cxfreeze -OO etm --target-dir dist-$plat/etmtk-${tag}-freeze-$plat
+    fi
     cd dist-$plat
     tar czf etmtk-${tag}-freeze-$plat.tar.gz etmtk-${tag}-freeze-$plat
 #    zip -r etmtk-${tag}-freeze-UBUNTU.zip etmtk-${tag}-freeze-UBUNTU

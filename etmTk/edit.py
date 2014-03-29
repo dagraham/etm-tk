@@ -652,15 +652,15 @@ class SimpleEditor(Toplevel):
                 logger.debug('not ok')
                 return "break"
             if self.mode in [1, 3]:  # new
+                dir = self.options['datadir']
                 if 's' in self.edithsh and self.edithsh['s']:
                     dt = self.edithsh['s']
+                    file = relpath(ensureMonthly(self.options, dt.date()), dir)
                 else:
                     dt = None
-            if self.mode in [1, 3]:
+                    file = relpath(self.initfile, dir)
                 # we need a filename for the new item
                 # make datadir the root
-                dir = self.options['datadir']
-                file = relpath(self.initfile, dir)
                 logger.debug('initial dir and file: "{0}"; "{1}"'.format(dir, file))
                 fileops = {'defaultextension': '.txt',
                            'filetypes': [('text files', '.txt')],
