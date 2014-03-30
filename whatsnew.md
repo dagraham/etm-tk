@@ -1,6 +1,6 @@
 # New: A GUI based on Tk
 
-A new version of etm based on Tk instead of Qt is in the early stages of development. The homepage for this version is at [etmtk][]: people.duke.edu/~dgraham/etmtk
+A new version of etm based on Tk instead of Qt is in the early stages of development. The homepage is [etmtk][]: people.duke.edu/~dgraham/etmtk.
 
 The goals and initial results for this version:
 

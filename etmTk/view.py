@@ -1653,7 +1653,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             p = l + x/2 + x*i, t-13
             # logger.debug("x: {0}, i: {1}, p: {2}".format(x, i, p))
             if self.today_col and i == self.today_col:
-                self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=CURRENTLINE, tag='current_time')
+                self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=CURRENTLINE)
             else:
                 self.canvas.create_text(p, text="{0}".format(weekdays[i]))
 
