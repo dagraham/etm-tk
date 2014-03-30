@@ -3867,10 +3867,6 @@ def expenseCharge(hsh, options):
 
 def timedelta2Str(td, short=False):
     """
-
-    :param td: timedelat
-    :param short: format type
-    :return: formatted string
     """
     if td <= oneminute * 0:
         return 'none'
@@ -4221,11 +4217,6 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
                     ('note', (hsh['k'], tstr2SCI[typ][0]), '',
                      hsh['_summary'], f), tuple(keywords),
                     (uid, typ, setSummary(hsh, ''), '', etmdt)]
-
-                # item = [
-                #     ('note', 2, (tstr2SCI['so'][0]), dt,
-                #      hsh['_summary'], f),
-                #     (uid, 'ns', setSummary(hsh, dt), sdt, etmdt)]
                 add2list(items, item)
             #--------- make entry for next view ----------#
             if 's' not in hsh and hsh['itemtype'] in [u'+', u'-', u'%']:
@@ -4268,15 +4259,6 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
                     tzlocal()).replace(tzinfo=None)
                 dates.append(thisdate)
                 add2Dates(datetimes, (thisdate, f))
-                # elif 'f' in hsh and hsh['f']:
-            #     # make sure finish dates are indexed
-            #     thisdate = parse(
-            #         parse_dtstr(
-            #             hsh['f'][-1][0], hsh['z'])).astimezone(
-            #         tzlocal()).replace(tzinfo=None)
-            #     # dates.append(thisdate)
-            #     # add2Dates(datetimes, (thisdate, f))
-
             for dt in dates:
                 dtl = dt
                 etmdt = "%s %s" % (dtl.strftime(etmdatefmt),
@@ -4347,7 +4329,6 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
                 if (hsh['itemtype'] in ['+', '-', '%'] and
                             dtl < today_datetime):
                     time_diff = (dtl - today_datetime).days
-                    # start_day = fmt_date(dtl, True)
                     if time_diff == 0:
                         time_str = fmt_period(hsh['e'])
                         pastdue = False
@@ -4397,7 +4378,6 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
                     if time_diff > 0 and time_diff <= hsh['b']:
                         extstr = '%dd' % time_diff
                         exttd = 0 * oneday
-                        # add2Dates(datetimes, (today_datetime, f))
                         item = [('day',
                                  today_datetime.strftime(sortdatefmt),
                                  tstr2SCI['by'][0],
@@ -4831,7 +4811,6 @@ def export_ical(uuid2hash, vcal_file, calendars=None):
     if calendars:
         cal_pattern = r'^%s' % '|'.join([x[2] for x in calendars if x[1]])
         cal_regex = re.compile(cal_pattern)
-        # today = datetime.today()
     for uid, hsh in uuid2hash.items():
         if cal_regex and not cal_regex.match(hsh['fileinfo'][0]):
             continue
@@ -4900,20 +4879,16 @@ def import_ical(fname):
             start = comp.get('dtstart')
             if due:
                 s = due.to_ical()
-                # dated = True
             elif start:
                 s = start.to_ical()
-                # dated = True
 
         elif comp.name == "VJOURNAL":
             t = u'!'
             tmp = comp.get('dtstart')
             if tmp:
                 s = tmp.to_ical()[:16]
-                # dated = True
         else:
             continue
-            # uuid = comp.get('uid').to_ical()
         summary = comp.get('summary')
         clst = [t, summary]
         if start:
@@ -4993,25 +4968,17 @@ class ETMCmd():
     def __init__(self, options=None, parent=None):
         if not options: options = {}
         self.options = options
-        # logger.debug('options: {0}'.format(options))
         self.calendars = deepcopy(options['calendars'])
-        # logger.debug('Calendars: {0}'.format(self.calendars))
         self.cal_regex = None
         self.messages = []
         self.cmdDict = {
             '?': self.do_help,
             'a': self.do_a,
-            # 'c': self.do_c,
-            # 'h': self.do_h,
             'k': self.do_k,
-            # 'l': self.do_l,
             'm': self.do_m,
             'n': self.do_n,
-            # 'O': self.do_O,
             'p': self.do_p,
-            # 'q': self.do_q,
             'r': self.do_r,
-            # 'R': self.do_R,
             's': self.do_s,
             't': self.do_t,
             'v': self.do_v,
@@ -5020,20 +4987,11 @@ class ETMCmd():
         self.helpDict = {
             'help': self.help_help,
             'a': self.help_a,
-            # 'c': self.help_c,
-            # 'd': self.help_d,
-            # 'e': self.help_e,
-            # 'f': self.help_f,
-            # 'h': self.help_h,
             'k': self.help_k,
-            # 'l': self.help_l,
             'm': self.help_m,
             'n': self.help_n,
-            # 'O': self.help_O,
             'p': self.help_p,
-            # 'q': self.help_q,
             'r': self.help_r,
-            # 'R': self.help_R,
             's': self.help_s,
             't': self.help_t,
             'v': self.help_v,
@@ -5265,15 +5223,6 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
             return ()
         self.do_n('', hsh['entry'])
 
-#     @staticmethod
-#     def help_c():
-#         return _("""\
-# Usage:
-#
-#     c INT
-#
-# If there is an item number INT among those displayed by the previous 'a' or 'r'  command then open a COPY of the item for editing. The edited copy will be saved as a new item.\
-# """)
 
     def cmd_do_delete(self, choice):
         if not choice:
@@ -5354,15 +5303,6 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
         else:
             self.delete_item()
 
-#     @staticmethod
-#     def help_d():
-#         return _("""\
-# Usage:
-#
-#     d INT
-#
-# If there is an item number INT among those displayed by the previous 'a' or 'r' command then delete that item, first prompting for confirmation. When a repeating item is selected, you will first be prompted to choose which of the repeated instances should be deleted. \
-# """)
 
     def cmd_do_reschedule(self, new_dtn):
         # new_dtn = new_dt.astimezone(gettz(self.item_hsh['z'])).replace(tzinfo=None)
@@ -5392,20 +5332,6 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
         logger.debug(('replacement: {0}'.format(hsh_rev)))
         self.replace_item(hsh_rev)
 
-    # def addItem(self, hsh):
-    #     """
-    #
-    #     :param hsh: new item to be added
-    #     """
-    #     pass
-    #
-    # def replaceItem(self, hsh):
-    #     """
-    #
-    #     :param hsh: replacement for existing item
-    #     """
-    #     pass
-
     def delete_item(self):
         f, begline, endline = self.item_hsh['fileinfo']
         fp = os.path.join(self.options['datadir'], f)
@@ -5431,9 +5357,6 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
 
     def append_item(self, new_hsh, file):
         """
-
-        :param new_item: string
-        :param file: full path
         """
         new_item = hsh2str(new_hsh, self.options)
         old_items = getFileItems(file, self.options['datadir'], False)
@@ -5445,16 +5368,6 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
         self.safe_save(file, itemstr, mode=mode)
         # self.loadData()
         return True
-
-#     @staticmethod
-#     def help_e():
-#         return _("""\
-# Usage:
-#
-#     e INT
-#
-# If there is an item number INT among those displayed by the previous 'a' or 'r' command then open it for editing. When a repeating item is selected, you will first be prompted to choose which of the instances should be changed.\
-# """)
 
     def cmd_do_finish(self, dt):
         """
@@ -5496,32 +5409,6 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
             hsh.setdefault('f', []).append((dtz, ddn))
         # item = hsh2str(hsh, self.options)
         self.replace_item(hsh)
-
-#     @staticmethod
-#     def help_f():
-#         return _("""\
-# Usage:
-#
-#     f INT
-#
-# If there is an item number INT among those displayed by the previous 'a' or 'r' command and that item is an unfinished task, then first prompt for a completion date and time and then mark the task finished.""")
-#
-#     def do_h(self, arg_str):
-#         if 'hg_command' in self.options and self.options['hg_command']:
-#             cmd = self.options['hg_command'].format(
-#                 repo=self.options['datadir'])
-#             cmd = "%s %s" % (cmd, arg_str)
-#             return subprocess.check_output(cmd, shell=True)
-#
-#     @staticmethod
-#     def help_h():
-#         return _("""\
-# Usage:
-#
-#     h ARGS
-#
-# If 'hg_command' is specified in etmtk.cfg, then execute that command with ARGS.
-# """)
 
     def do_k(self, arg_str):
         # self.prevnext = getPrevNext(self.dates)
@@ -5585,20 +5472,6 @@ where N is the number of a report specification from the file {0}:\n """.format(
     def do_n(self, arg_str='', itemstr=""):
         return self.mk_rep('n {0}'.format(arg_str))
 
-    # def do_n(self, arg_str='', itemstr=""):
-    #     logger.debug('arg_str: {0}'.format(arg_str))
-    #     if arg_str:
-    #         new_item = s2or3(arg_str)
-    #         new_hsh, msg = str2hsh(new_item, options=self.options)
-    #         logger.debug('new_hsh: {0}'.format(new_hsh))
-    #         if msg:
-    #             return "\n".join(msg)
-    #         if 's' not in new_hsh:
-    #             new_hsh['s'] = None
-    #         res = self.append_item(new_hsh, self.currfile)
-    #         if res:
-    #             return _("item saved")
-
     @staticmethod
     def help_n():
         return _("""\
@@ -5612,30 +5485,6 @@ Create a new item from ITEM. E.g.,
 
 When the item is dated, it will be appended to the monthly file that corresponds to the date, otherwise it will be appended to the monthly file for the current month.\
 """)
-
-#     def do_O(self, arg):
-#         f = os.path.join(self.options['etmdir'], 'etmtk.cfg')
-#         if not f or not os.path.isfile(f):
-#             return ("""
-# This option requires a valid path to etmtk.cfg.""")
-#             return ()
-#         if not self.editcmd:
-#             return ("""
-# edit_cmd must be specified in etmtk.cfg.
-# """)
-#         hsh = {'file': f, 'line': 1}
-#         cmd = expand_template(self.editcmd, hsh)
-#         os.system(cmd)
-
-#     @staticmethod
-#     def help_O():
-#         return _("""\
-# Usage:
-#
-#     o
-#
-# Open etmtk.cfg for editing. This command requires a setting for 'edit_cmd' in etmtk.cfg.\
-# """)
 
     @staticmethod
     def do_q(line):
@@ -5697,30 +5546,6 @@ Composite report, grouped by tag, showing items that have tag 1 but
 not tag 2. (Quotes prevent shell expansion.)\
 """)
 
-#     def do_R(self, arg):
-#         f = self.options['report_specifications']
-#         if not f or not os.path.isfile(f):
-#             return _("""
-# This option requires a valid report_specifications setting in etmtk.cfg.""")
-#             return ()
-#         if not self.editcmd:
-#             return ("""
-# edit_cmd must be specified in etmtk.cfg.
-# """)
-#         hsh = {'file': f, 'line': 1}
-#         cmd = expand_template(self.editcmd, hsh)
-#         os.system(cmd)
-#
-#     @staticmethod
-#     def help_R():
-#         return _("""\
-# Usage:
-#
-#     r
-#
-# Open 'report_specifications'  (specified in etmtk.cfg) for editing. This command requires a setting for 'edit_cmd' in etmtk.cfg.\
-# """)
-
     def do_s(self, arg_str):
         self.prevnext = getPrevNext(self.dates)
         return self.mk_rep('s {0}'.format(arg_str))
@@ -5762,45 +5587,6 @@ Usage:
 
 Show items grouped and sorted by tag, optionally limited to those containing a case insensitive match for the regex FILTER.\
 """)
-
-
-#     def do_l(self, arg):
-#         """time and expense ledger specification:"""
-#         if not arg:
-#             self.help_a()
-#             return ()
-#         arg = arg.split('#')[0]
-#         arg_str = "t {0}".format(arg)
-#         return '\nreport: {0}'.format(arg_str)
-#         return self.mk_rep('s ' + arg_str)
-#
-#     @staticmethod
-#     def help_l():
-#         return _("""\
-# Usage:
-#
-#     l <groupby> [options]
-#
-# Generate an action report. Groupby can include *semicolon* separated date specifications and elements from:
-#     c context
-#     f file path
-#     k keyword
-#     u user
-#
-# Options include:
-#     -b begin date
-#     -c context regex
-#     -d depth
-#     -e end date
-#     -f file regex
-#     -k keyword regex
-#     -l location regex
-#     -s summary regex
-#     -t tags regex
-#     -u user regex
-#     -w column 1 width
-#     -W column 2 width\
-# """)
 
     def do_v(self, arg_str):
         d = {

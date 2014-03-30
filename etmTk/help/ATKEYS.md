@@ -164,6 +164,8 @@ where `frequency` is one of the following characters:
     m       monthly
     m       weekly
     d       daily
+    h       hourly
+    n       minutely
     l       list (a list of datetimes will be provided using @+)
 
 The `@r frequency` entry can, optionally, be followed by one or more `&key value` pairs:

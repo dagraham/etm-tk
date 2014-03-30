@@ -1040,6 +1040,7 @@ a time period if "+" is used."""
         choice = 3
         title = "etm tk"
         if 'r' in self.itemSelected:
+            # repeating
             choice, value = self.which(EDIT, self.dtSelected)
             logger.debug("{0}: {1}".format(choice, value))
             if self.weekly:
@@ -2430,26 +2431,22 @@ Relative dates and fuzzy parsing are supported.""")
                 # shouldn't happen
                 return "break"
             logger.debug('item: {0}'.format(hsh))
-            # self.newmenu.entryconfig(1, label=_("toggle timer"))
 
             self.actionTimer.timer_start(hsh)
             if ('running' in loop.options['action_timer'] and
                     loop.options['action_timer']['running']):
                 tcmd = loop.options['action_timer']['running']
                 logger.debug('command: {0}'.format(tcmd))
-                # process.startDetached(tcmd)
                 subprocess.call(tcmd, shell=True)
         elif self.actionTimer.timer_status in [PAUSED, RUNNING]:
             self.actionTimer.timer_toggle()
             if (self.actionTimer.timer_status == RUNNING and 'running' in loop.options['action_timer'] and loop.options['action_timer']['running']):
                 tcmd = loop.options['action_timer']['running']
                 logger.debug('command: {0}'.format(tcmd))
-                # process.startDetached(tcmd)
                 subprocess.call(tcmd, shell=True)
             elif (self.actionTimer.timer_status == PAUSED and 'paused' in loop.options['action_timer'] and loop.options['action_timer']['paused']):
                 tcmd = loop.options['action_timer']['paused']
                 logger.debug('command: {0}'.format(tcmd))
-                # process.startDetached(tcmd)
                 subprocess.call(tcmd, shell=True)
         self.timerStatus.set(self.actionTimer.get_time())
         self.newmenu.entryconfig(2, state="normal")
@@ -2646,7 +2643,6 @@ or 0 to expand all branches completely.""")
                     dt = ''
                 else:  # len 5 day view with datetime appended
                     uuid, item_type, col1, col2, dt = text[1]
-                # logger.debug("leaf: {0}, {1}".format(item_type, tstr2SCI[item_type][1]))
 
                 # This hack avoids encoding issues under python 2
                 col1 = "{0} ".format(id2Type[item_type]) + col1
@@ -2697,7 +2693,6 @@ def main(dir=None):  # debug, info, warn, error, critical
     # sys.stderr = outstr
     # sys.stdout = outstr
 
-    # app = App(path='/Users/dag/etm-tk')
     app = App()
     app.mainloop()
 
