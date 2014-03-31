@@ -1617,8 +1617,9 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
                 self.busyHsh[id] = tmp
             if self.today_col is not None:
                 xy = self.get_timeline()
-                self.canvas.delete('current_time')
-                self.canvas.create_line(xy, width=1, fill=CURRENTLINE, tag='current_time')
+                if xy:
+                    self.canvas.delete('current_time')
+                    self.canvas.create_line(xy, width=1, fill=CURRENTLINE, tag='current_time')
 
         self.busy_ids = busy_ids
         self.conf_ids = conf_ids
@@ -1661,14 +1662,14 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
     def get_timeline(self):
         if not (self.weekly and self.today_col):
             return
-        (w, h, l, r, t, b) = self.margins
         x = self.week_x
         if self.current_minutes < 7 * 60:
-            current_minutes = 7 * 60
+            return None
         elif self.current_minutes > 23 * 60:
-            current_minutes = 23 * 60
+            return None
         else:
             current_minutes = self.current_minutes
+        (w, h, l, r, t, b) = self.margins
         start_x = l
         end_x = l + x * 7
         # t1 = t + (max(7 * 60, current_minutes) - 7 * 60 ) * y_per_minute
@@ -2152,9 +2153,10 @@ or 0 to display all changes.""").format(title)
                 self.showView()
         elif self.today_col is not None:
             xy = self.get_timeline()
-            self.canvas.delete('current_time')
-            self.canvas.create_line(xy, width=1, fill=CURRENTLINE, tag='current_time')
-            self.update_idletasks()
+            if xy:
+                self.canvas.delete('current_time')
+                self.canvas.create_line(xy, width=1, fill=CURRENTLINE, tag='current_time')
+                self.update_idletasks()
 
         self.updateAlerts()
 
@@ -2221,7 +2223,7 @@ or 0 to display all changes.""").format(title)
                             self.textWindow(parent=self,
                                 title="etm", prompt=_("""\
 A sound alert failed. The setting for 'alert_soundcmd' is missing from \
-your etmtk.cfg.""", opts=self.options))
+your etmtk.cfg."""), opts=self.options)
                     if 'd' in actions:
                         if ('alert_displaycmd' in self.options and
                                 self.options['alert_displaycmd']):
@@ -2232,7 +2234,7 @@ your etmtk.cfg.""", opts=self.options))
                             self.textWindow(parent=self,
                                 title="etm", prompt=_("""\
 A display alert failed. The setting for 'alert_displaycmd' is missing \
-from your etmtk.cfg.""", opts=self.options))
+from your etmtk.cfg."""), opts=self.options)
                     if 'v' in actions:
                         if ('alert_voicecmd' in self.options and
                                 self.options['alert_voicecmd']):
@@ -2243,7 +2245,7 @@ from your etmtk.cfg.""", opts=self.options))
                             self.textWindow(parent=self,
                                 title="etm", prompt=_("""\
 An email alert failed. The setting for 'alert_voicecmd' is missing from \
-your etmtk.cfg.""", opts=self.options))
+your etmtk.cfg."""), opts=self.options)
                     if 'e' in actions:
                         missing = []
                         for field in [
