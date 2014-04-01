@@ -1202,7 +1202,7 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
         prompt = _("""\
 Enter the new date and time for the item or return an empty string to
 use the current time. Relative dates and fuzzy parsing are supported.""")
-        dt = GetDateTime(parent=self, master=master, title=title,
+        dt = GetDateTime(parent=self,  title=title,
                          prompt=prompt)
         new_dt = dt.value
         if new_dt is None:
@@ -2420,7 +2420,10 @@ Relative dates and fuzzy parsing are supported.""")
                 return "break"
             if value:
                 self.timerItem = None
-                hsh = {'_summary': value}
+                hsh = str2hsh(value, options=loop.options)[0]
+                # hsh['_summary'] = tmp['_summary']}
+                # if 'e' in tmp:
+                #     hsh['e'] = tmp['e']
             elif nullok:
                 self.timerItem = self.uuidSelected
                 # Based on item, 'entry' will be in hsh

@@ -148,7 +148,6 @@ class ReportWindow(Toplevel):
             else:
                 l, c = commandShortcut(k)
                 logger.debug("k: {0}; l: {1}; c: {2}".format(k, l, c))
-                # print("rm2cmd", k, self.rm2cmd[k])
                 self.bind(c, lambda e, x=k: self.after(AFTER, self.rm2cmd[x]))
             self.rm["menu"].entryconfig(i, accelerator=l, command=lambda x=k: self.after(AFTER, self.rm2cmd[x]))
         self.rm.pack(side="left", padx=2)
@@ -469,7 +468,6 @@ class SimpleEditor(Toplevel):
                     initfile = newhsh['fileinfo'][0]
                 else:
                     initfile = ensureMonthly(options=self.options)
-                # print('SimpleEditor hsh:', self.edithsh)
                 text = hsh2str(self.edithsh, self.options)
             elif newhsh is None: # rephsh
                 # we are editing and replacing rephsh - no file prompt
@@ -515,7 +513,7 @@ class SimpleEditor(Toplevel):
         self.bind(c, lambda e: self.e.focus_set())
         l, c = commandShortcut('g')
         self.bind(c, lambda e: self.onFind())
-
+        self.text.mark_set(INSERT, END)
         # l, c = commandShortcut('/')
         logger.debug("/: {0}, {1}".format(l, c))
         # self.text.bind("<Control-slash>", self.showCompletions)
@@ -538,7 +536,6 @@ class SimpleEditor(Toplevel):
     def showCompletions(self, e=None):
         if not self.completions:
             return "break"
-        # print(self.text.get("insert -1c wordstart", INSERT))
         line = self.text.get("insert linestart", INSERT)
         m = completion_regex.search(line)
         if m:

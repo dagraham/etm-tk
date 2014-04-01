@@ -222,7 +222,9 @@ qt2dt = [
     ('yy', '%y'),
     ('hh', '%H'),
     ('h', '%I'),
-    ('mm', '%M')]
+    ('mm', '%M'),
+    ('w', _('Week %W'))
+]
 
 def commandShortcut(s):
     """
@@ -783,7 +785,7 @@ range_regex = re.compile(r'range\((\d+)(\s*,\s*(\d+))?\)')
 id_regex = re.compile(r'^\s*@i')
 anniversary_regex = re.compile(r'!(\d{4})!')
 group_regex = re.compile(r'^\s*(.*)\s+(\d+)/(\d+):\s*(.*)')
-groupdate_regex = re.compile(r'\by{2}\b|\by{4}\b|\b[dM]{1,4}\b')
+groupdate_regex = re.compile(r'\by{2}\b|\by{4}\b|\b[dM]{1,4}\b|\bw\b')
 options_regex = re.compile(r'^\s*(!?[fk](\[[:\d]+\])?)|(!?[clostu])\s*$')
 # completion_regex = re.compile(r'(?:^.*?)((?:\@[a-zA-Z] ?)?\b\S*)$')
 completion_regex = re.compile(r'((?:\@[a-zA-Z]? ?)?(?:\b[a-zA-Z0-9_/:]+)?)$')
@@ -2754,7 +2756,7 @@ def str2opts(s, options=None):
     grpby['fmts'] = []
     grpby['tuples'] = []
     filters['grpby'] = ['_summary']
-    include = {'y', 'm', 'd'}
+    include = {'y', 'm', 'w', 'd'}
     for group in groupbylst:
         d_lst = []
         if groupdate_regex.search(group):
@@ -2764,6 +2766,10 @@ def str2opts(s, options=None):
             if 'M' in group:
                 d_lst.append('MM')
                 include.discard('m')
+            elif 'w' in group:
+                # groupby month or week, not both
+                d_lst.append('w')
+                include.discard('w')
             if 'd' in group:
                 d_lst.append('dd')
                 include.discard('d')
@@ -2814,8 +2820,12 @@ def str2opts(s, options=None):
                 grpby['include'] = "MMM d"
             elif include == {'y', 'd'}:
                 grpby['include'] = "yyyy-MM-d"
+            elif include == set(['y', 'w']):
+                groupby['include'] = "w yyyy"
             elif include == {'d'}:
                 grpby['include'] = "MMM d"
+            elif include == set(['w']):
+                grpby['include'] = "w yyyy"
             else:
                 grpby['include'] = ""
         else:

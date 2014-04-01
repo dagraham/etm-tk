@@ -189,7 +189,7 @@ class Timer():
     def timer_toggle(self, hsh=None):
         if not hsh: hsh = {}
         if self.timer_status == STOPPED:
-            self.timer_delta = timedelta(seconds=0)
+            self.get_time()
             self.timer_last = datetime.now()
             self.timer_status = RUNNING
         elif self.timer_status == RUNNING:
