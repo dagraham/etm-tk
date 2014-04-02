@@ -3240,6 +3240,10 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
             if item[0][1] >= beg_fmt and day_count <= days + 1:
                 # process day items until we get to days+1 so that all items
                 # from days are included
+                print('item', item)
+                if item[2][1] in ['fn', 'ac', 'ns']:
+                    # skip finished tasks, actions and notes
+                    continue
                 if item[0][1] != last_day:
                     last_day = item[0][1]
                     day_count += 1
@@ -5029,7 +5033,7 @@ class ETMCmd():
             'n': self.do_n,
             'p': self.do_p,
             'r': self.do_r,
-            's': self.do_s,
+            'd': self.do_d,
             't': self.do_t,
             'v': self.do_v,
         }
@@ -5098,7 +5102,7 @@ class ETMCmd():
         cmd = arg_str[0]
         ret = []
         views = {
-            's': 'day',  # schedule view in the GUI
+            'd': 'day',  # day view in the GUI
             'p': 'folder',
             't': 'tag',
             'n': 'note',
@@ -5596,9 +5600,9 @@ Composite report, grouped by tag, showing items that have tag 1 but
 not tag 2. (Quotes prevent shell expansion.)\
 """)
 
-    def do_s(self, arg_str):
+    def do_d(self, arg_str):
         self.prevnext = getPrevNext(self.dates)
-        return self.mk_rep('s {0}'.format(arg_str))
+        return self.mk_rep('d {0}'.format(arg_str))
 
     @staticmethod
     def help_s():

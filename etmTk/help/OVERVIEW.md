@@ -62,10 +62,11 @@ What you need to know now beginning with your schedule for the next few days and
 
 - **Someday**: Someday (maybe) items. Review these periodically.
 
+Note: finished tasks, actions and notes are not displayed in this view.
 
-### Schedule
+### Day
 
-Scheduled (dated) items appear in this view, grouped by date and sorted by starting time and item type. This includes:
+All dated items appear in this view, grouped by date and sorted by starting time and item type. This includes:
 
 - All non-repeating, dated items.
 
@@ -73,19 +74,19 @@ Scheduled (dated) items appear in this view, grouped by date and sorted by start
 
 - For repeating items with an infinite number of repetitions, those repetitions that occur within the first `weeks_after` weeks after the current week are displayed along with the first repetition after this interval. This assures that at least one repetition will be displayed for infrequently repeating items such as voting for president.
 
-### Tags
+### Tag
 
 All items with tag entries grouped by tag and sorted by type and *relevant datetime*. Note that items with multiple tags will be listed under each tag.
 
-### Keywords
+### Keyword
 
 All items grouped by keyword and sorted by type and *relevant datetime*.
 
-### Notes
+### Note
 
 All notes grouped and sorted by keyword and summary.
 
-### Paths
+### Path
 
 All items grouped by file path and sorted by type and *relevant datetime*. Use this view to review the status of your projects.
 

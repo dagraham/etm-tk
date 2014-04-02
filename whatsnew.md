@@ -38,6 +38,8 @@ The goals and initial results for this version:
 
         - *Someday*: Someday (maybe) items. Review these periodically.
 
+        Finished tasks, actions and notes are not displayed in this view.
+
     - **Notes view** is also new and shows notes grouped and sorted by keyword.
 
     - **Week view** is similar to the week view from etm-qt with the following differences.
@@ -93,7 +95,7 @@ The goals and initial results for this version:
                 Begin/Pause Action Timer                Ctrl-,
                 Finish Action Timer                     Ctrl-.
             Open
-                Data file ...                         Shift-Ctrl-D
+                Data file ...                         Shift-Ctrl-F
                 etmtk.cfg                             Shift-Ctrl-E
                 completions.cfg                       Shift-Ctrl-C
                 reports.cfg                           Shift-Ctrl-R
@@ -121,7 +123,7 @@ The goals and initial results for this version:
             Delete                                    Ctrl-BackSpace
             Edit                                        Ctrl-E
             Finish                                      Ctrl-X
-            Reschedule                                  Ctrl-D
+            Reschedule                                  Ctrl-S
             Open link                                   Ctrl-G
             Export item as ical                           F4
         Tools
@@ -138,9 +140,9 @@ The goals and initial results for this version:
     Main
         Views
             Agenda                                      Ctrl-A
-            Schedule                                    Ctrl-S
-            Tags                                        Ctrl-T
-            Keywords                                    Ctrl-K
-            Notes                                       Ctrl-N
-            Paths                                       Ctrl-P
+            Day                                         Ctrl-D
+            Tag                                         Ctrl-T
+            Keyword                                     Ctrl-K
+            Note                                        Ctrl-N
+            Path                                        Ctrl-P
             Week                                        Ctrl-W

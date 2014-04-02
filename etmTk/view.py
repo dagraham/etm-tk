@@ -80,11 +80,11 @@ FILTER = _("filter")
 FILTERCOLOR = "gray"
 
 AGENDA = _('Agenda')
-SCHEDULE = _('Schedule')
-PATHS = _('Paths')
-KEYWORDS = _('Keywords')
-TAGS = _('Tags')
-NOTES = _('Notes')
+DAY = _('Day')
+PATHS = _('Path')
+KEYWORDS = _('Keyword')
+TAGS = _('Tag')
+NOTES = _('Note')
 WEEK = _("Week")
 
 CALENDARS = _("Calendars")
@@ -137,7 +137,7 @@ class App(Tk):
     def __init__(self, path=None):
         Tk.__init__(self)
         # minsize: width, height
-        self.minsize(460, 440)
+        self.minsize(460, 480)
         self.uuidSelected = None
         self.timerItem = None
         self.actionTimer = Timer()
@@ -222,7 +222,7 @@ class App(Tk):
         openmenu = Menu(filemenu, tearoff=0)
         self.add2menu(path, (OPEN, ))
         path = OPEN
-        l, c = commandShortcut('D')
+        l, c = commandShortcut('F')
         label = _("Data file ...")
         openmenu.add_command(label=label, command=self.editData)
         self.bind(c, lambda e: openmenu.invoke(0))
@@ -419,7 +419,7 @@ class App(Tk):
             [_('Delete'), 'delete'],
             [_('Edit'), 'e'],
             [_('Finish'), 'x'],
-            [_('Reschedule'), 'd'],
+            [_('Reschedule'), 's'],
             [_('Open link'), 'g'],
             [_('Export item as ical'), 'f4'],
             ]
@@ -428,7 +428,7 @@ class App(Tk):
             'delete': self.deleteItem,
             'e': self.editItem,
             'x': self.finishItem,
-            'd': self.rescheduleItem,
+            's': self.rescheduleItem,
             'g': self.openWithDefault,
             'f4': self.exportItemToIcal,
             }
@@ -600,7 +600,7 @@ class App(Tk):
         topbar.pack(side="top", fill="x", expand=0, padx=0, pady=0)
 
         self.vm_options = [[AGENDA, 'a'],
-                           [SCHEDULE, 's'],
+                           [DAY, 'd'],
                            [TAGS, 't'],
                            [KEYWORDS, 'k'],
                            [NOTES, 'n'],
@@ -609,7 +609,7 @@ class App(Tk):
                            ]
 
         self.view2cmd = {'a': self.agendaView,
-                         's': self.scheduleView,
+                         'd': self.dayView,
                          'p': self.pathView,
                          'k': self.keywordView,
                          'n': self.noteView,
@@ -1243,8 +1243,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
     def agendaView(self, e=None):
         self.setView(AGENDA)
 
-    def scheduleView(self, e=None):
-        self.setView(SCHEDULE)
+    def dayView(self, e=None):
+        self.setView(DAY)
 
     def pathView(self, e=None):
         self.setView(PATHS)
@@ -1982,7 +1982,7 @@ or 0 to display all changes.""").format(title)
     def goHome(self, event=None):
         if self.weekly:
             self.showWeek(week=0)
-        elif self.view == SCHEDULE:
+        elif self.view == DAY:
             today = get_current_time().date()
             self.scrollToDate(today)
         else:
@@ -2358,8 +2358,8 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
         prompt = _("""\
 Return an empty string for the current date or a date to be parsed.
 Relative dates and fuzzy parsing are supported.""")
-        if self.view not in [SCHEDULE, WEEK]:
-            self.view = SCHEDULE
+        if self.view not in [DAY, WEEK]:
+            self.view = DAY
             self.showView()
         d = GetDateTime(parent=self, title=_('date'), prompt=prompt)
         day = d.value
@@ -2590,8 +2590,8 @@ or 0 to expand all branches completely.""")
 
     def scrollToDate(self, date):
         # only makes sense for schedule
-        logger.debug("SCHEDULE: {0}; date: {1}".format(self.view == SCHEDULE, date))
-        if self.view != SCHEDULE or date not in loop.prevnext:
+        logger.debug("DAY: {0}; date: {1}".format(self.view == DAY, date))
+        if self.view != DAY or date not in loop.prevnext:
             return ()
         active_date = loop.prevnext[date][1]
         if active_date not in self.date2id:
