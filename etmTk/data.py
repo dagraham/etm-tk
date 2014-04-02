@@ -223,7 +223,7 @@ qt2dt = [
     ('hh', '%H'),
     ('h', '%I'),
     ('mm', '%M'),
-    ('w', _('Week %W'))
+    ('w', 'WEEK')
 ]
 
 def commandShortcut(s):
@@ -286,13 +286,45 @@ def run_cmd(cmd):
 def d_to_str(d, s):
     for key, val in qt2dt:
         s = s.replace(key, val)
-    return s2or3(d.strftime(s))
-
+    ret = s2or3(d.strftime(s))
+    if 'WEEK' in ret:
+        theweek = get_week(d)
+        ret = ret.replace('WEEK', theweek)
+    return ret
 
 def dt_to_str(dt, s):
     for key, val in qt2dt:
         s = s.replace(key, val)
-    return s2or3(dt.strftime(s))
+    ret = s2or3(dt.strftime(s))
+    if 'WEEK' in ret:
+        theweek = get_week(dt)
+        ret = ret.replace('WEEK', theweek)
+    return ret
+
+def get_week(dt):
+    yn, wn, dn = dt.isocalendar()
+    if dn > 1:
+        days = dn - 1
+    else:
+        days = 0
+    weekbeg = dt - days * oneday
+    weekend = dt + (6 - days) * oneday
+    ybeg = weekbeg.year
+    yend = weekend.year
+    mbeg = weekbeg.month
+    mend = weekend.month
+    if mbeg == mend:
+        header = "{0} - {1}".format(
+            fmt_dt(weekbeg, '%b %d'), fmt_dt(weekend, '%d, %Y'))
+    elif ybeg == yend:
+        header = "{0} - {1}".format(
+            fmt_dt(weekbeg, '%b %d'), fmt_dt(weekend, '%b %d, %Y'))
+    else:
+        header = "{0} - {1}".format(
+            fmt_dt(weekbeg, '%b %d, %Y'), fmt_dt(weekend, '%b %d, %Y'))
+    header = leadingzero.sub('', header)
+    theweek = "{0} {1}: {2}".format(_("Week"), wn, header)
+    return theweek
 
 
 from etmTk.v import version
@@ -2760,19 +2792,27 @@ def str2opts(s, options=None):
     for group in groupbylst:
         d_lst = []
         if groupdate_regex.search(group):
-            if 'y' in group:
-                d_lst.append('yyyy')
-                include.discard('y')
-            if 'M' in group:
-                d_lst.append('MM')
-                include.discard('m')
-            elif 'w' in group:
-                # groupby month or week, not both
+            if 'w' in group:
+                # groupby week or some other date spec,  not both
+                group = "w"
                 d_lst.append('w')
                 include.discard('w')
-            if 'd' in group:
-                d_lst.append('dd')
-                include.discard('d')
+                if 'y' in group:
+                    include.discard('y')
+                if 'M' in group:
+                    include.discard('m')
+                if 'd' in group:
+                    include.discard('d')
+            else:
+                if 'y' in group:
+                    d_lst.append('yyyy')
+                    include.discard('y')
+                if 'M' in group:
+                    d_lst.append('MM')
+                    include.discard('m')
+                if 'd' in group:
+                    d_lst.append('dd')
+                    include.discard('d')
             grpby['tuples'].append(" ".join(d_lst))
             grpby['fmts'].append(
                 "d_to_str(tup[-3], '%s')" % group)
@@ -2821,11 +2861,11 @@ def str2opts(s, options=None):
             elif include == {'y', 'd'}:
                 grpby['include'] = "yyyy-MM-d"
             elif include == set(['y', 'w']):
-                groupby['include'] = "w yyyy"
+                groupby['include'] = "w"
             elif include == {'d'}:
                 grpby['include'] = "MMM d"
             elif include == set(['w']):
-                grpby['include'] = "w yyyy"
+                grpby['include'] = "w"
             else:
                 grpby['include'] = ""
         else:

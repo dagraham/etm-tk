@@ -1,5 +1,7 @@
 # Reports
 
+    Usage:  <report type character> <groupby setting> [report options]
+
 A *report specification* is created by entering a report *type character* followed by a *groupby setting* and, perhaps, by one or more *report options*. Together, the type character, groupby setting and options determine which items will appear in the report and how they will be organized and displayed.
 
 ## Report types
@@ -46,35 +48,53 @@ A semicolon separated list that determines how items will be grouped and sorted.
 
 c
 :   context
+
 f
 :   file path
+
 k
 :   keyword
+
 t
 :   tag
+
 u
 :   user
 
-A *date specification* is a combination of one or more of the following:
+A *date specification* is either
+
+w
+:   week number
+
+or a combination of one or more of the following:
 
 yy
 :   2-digit year
+
 yyyy
 :   4-digit year
+
 M
 :   month: 1 - 12
+
 MM
 :   month: 01 - 12
+
 MMM
 :   locale specific abbreviated month name: Jan - Dec
+
 MMMM
 :   locale specific month name: January - December
+
 d
 :   month day: 1 - 31
+
 dd
 :   month day: 01 - 31
+
 ddd
 :   locale specific abbreviated week day: Mon - Sun
+
 dddd
 :   locale specific week day: Monday - Sunday
 
@@ -85,6 +105,28 @@ For example, `c ddd, MMM d yyyy` would group by year, month and day together to 
     Sat, Apr 2 2011
         items for April 2
     ...
+
+On the other hand, `a w; u; k[0]; k[1:]` would group by week number, user and keywords to give output such as
+
+    13.1) Week 14: Mar 31 - Apr 6, 2014
+       6.3) agent 1
+          1.3) client 1
+             1.3) project 2
+                1.3) Activity (12)
+          5) client 2
+             4.5) project 1
+                4.5) Activity (21)
+             0.5) project 2
+                0.5) Activity (22)
+       6.8) agent 2
+          2.2) client 1
+             2.2) project 2
+                2.2) Activity (13)
+          4.6) client 2
+             3.9) project 1
+                3.9) Activity (23)
+             0.7) project 2
+                0.7) Activity (23)
 
 As another example, `c t -t tag 1, !tag 3` would group by tag showing items that have a tag matching `tag 1` but not one matching `tag 3`.
 

@@ -44,6 +44,8 @@ else:
 
 tkversion = tkinter.Tcl().eval('info patchlevel')
 
+# TODO: provide method to save changes to report specs
+
 
 import etmTk.data as data
 # from data import init_localization
