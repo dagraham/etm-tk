@@ -1040,7 +1040,7 @@ a time period if "+" is used."""
     def editItem(self, e=None):
         logger.debug('{0}: {1}'.format(self.itemSelected['_summary'], self.dtSelected))
         choice = 3
-        title = "etm tk"
+        title = ETM
         if 'r' in self.itemSelected:
             # repeating
             choice, value = self.which(EDIT, self.dtSelected)

@@ -3240,7 +3240,6 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
             if item[0][1] >= beg_fmt and day_count <= days + 1:
                 # process day items until we get to days+1 so that all items
                 # from days are included
-                print('item', item)
                 if item[2][1] in ['fn', 'ac', 'ns']:
                     # skip finished tasks, actions and notes
                     continue

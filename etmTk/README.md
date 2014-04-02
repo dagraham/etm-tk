@@ -43,31 +43,29 @@ Items in *etm* begin with a type character such as an asterisk (event) and conti
 
 ## Screen shots ##
 
-OS X Maverics on the left and Ubuntu 12.04 on the right.
-
 <table align="right" hspace="10" vspace="10" width="100%">
 <tr>
     <td>
-    <img src="images/darwin-main.png" width="100%"/></a>
+    <img src="images/agenda.gif" /></a>
     </td>
     <td>
-    <img src="images/linux-main.png" width="100%"/></a>
-    </td>
-</tr>
-<tr>
-    <td>
-    <img src="images/darwin-details.png" width="100%"/></a>
-    </td>
-    <td>
-    <img src="images/linux-details.png" width="100%"/></a>
+    <img src="images/context.gif" /></a>
     </td>
 </tr>
 <tr>
     <td>
-    <img src="images/darwin-edit.png" width="100%"/></a>
+    <img src="images/day.gif"/></a>
     </td>
     <td>
-    <img src="images/linux-edit.png" width="100%"/></a>
+    <img src="images/week.gif"/></a>
+    </td>
+</tr>
+<tr>
+    <td>
+    <img src="images/completion.gif"/></a>
+    </td>
+    <td>
+    <img src="images/report-a.gif"/></a>
     </td>
 </tr>
 </table>
