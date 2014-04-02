@@ -72,9 +72,11 @@ What you need to know now beginning with your schedule for the next few days and
 
 -   Someday: Someday (maybe) items. Review these periodically.
 
-Schedule
+Note: finished tasks, actions and notes are not displayed in this view.
 
-Scheduled (dated) items appear in this view, grouped by date and sorted by starting time and item type. This includes:
+Day
+
+All dated items appear in this view, grouped by date and sorted by starting time and item type. This includes:
 
 -   All non-repeating, dated items.
 
@@ -82,19 +84,19 @@ Scheduled (dated) items appear in this view, grouped by date and sorted by start
 
 -   For repeating items with an infinite number of repetitions, those repetitions that occur within the first weeks_after weeks after the current week are displayed along with the first repetition after this interval. This assures that at least one repetition will be displayed for infrequently repeating items such as voting for president.
 
-Tags
+Tag
 
 All items with tag entries grouped by tag and sorted by type and relevant datetime. Note that items with multiple tags will be listed under each tag.
 
-Keywords
+Keyword
 
 All items grouped by keyword and sorted by type and relevant datetime.
 
-Notes
+Note
 
 All notes grouped and sorted by keyword and summary.
 
-Paths
+Path
 
 All items grouped by file path and sorted by type and relevant datetime. Use this view to review the status of your projects.
 
@@ -489,6 +491,8 @@ where frequency is one of the following characters:
     m       monthly
     m       weekly
     d       daily
+    h       hourly
+    n       minutely
     l       list (a list of datetimes will be provided using @+)
 
 The @r frequency entry can, optionally, be followed by one or more &key value pairs:
@@ -1184,6 +1188,8 @@ REPORTS = """\
 Reports
 =======
 
+    Usage:  <report type character> <groupby setting> [report options]
+
 A report specification is created by entering a report type character followed by a groupby setting and, perhaps, by one or more report options. Together, the type character, groupby setting and options determine which items will appear in the report and how they will be organized and displayed.
 
 Report types
@@ -1232,35 +1238,53 @@ A semicolon separated list that determines how items will be grouped and sorted.
 
 c
     context
+
 f
     file path
+
 k
     keyword
+
 t
     tag
+
 u
     user
 
-A date specification is a combination of one or more of the following:
+A date specification is either
+
+w
+    week number
+
+or a combination of one or more of the following:
 
 yy
     2-digit year
+
 yyyy
     4-digit year
+
 M
     month: 1 - 12
+
 MM
     month: 01 - 12
+
 MMM
     locale specific abbreviated month name: Jan - Dec
+
 MMMM
     locale specific month name: January - December
+
 d
     month day: 1 - 31
+
 dd
     month day: 01 - 31
+
 ddd
     locale specific abbreviated week day: Mon - Sun
+
 dddd
     locale specific week day: Monday - Sunday
 
@@ -1271,6 +1295,28 @@ For example, c ddd, MMM d yyyy would group by year, month and day together to gi
     Sat, Apr 2 2011
         items for April 2
     ...
+
+On the other hand, a w; u; k[0]; k[1:] would group by week number, user and keywords to give output such as
+
+    13.1) Week 14: Mar 31 - Apr 6, 2014
+       6.3) agent 1
+          1.3) client 1
+             1.3) project 2
+                1.3) Activity (12)
+          5) client 2
+             4.5) project 1
+                4.5) Activity (21)
+             0.5) project 2
+                0.5) Activity (22)
+       6.8) agent 2
+          2.2) client 1
+             2.2) project 2
+                2.2) Activity (13)
+          4.6) client 2
+             3.9) project 1
+                3.9) Activity (23)
+             0.7) project 2
+                0.7) Activity (23)
 
 As another example, c t -t tag 1, !tag 3 would group by tag showing items that have a tag matching tag 1 but not one matching tag 3.
 

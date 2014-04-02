@@ -220,18 +220,21 @@ class ReportWindow(Toplevel):
 
     def quit(self, e=None):
         if self.modified:
-
-            ans = self.confirm(parent=self,
-                title=_('Quit'),
-                prompt=_("There are unsaved changes to your report specifications.\nDo you really want to quit?"))
+            if ('report_specifications' in self.options and os.path.isfile(self.options['report_specifications'])):
+                ans = self.confirm(parent=self,
+                    title=_('Quit'),
+                    prompt=_("Save the changes to your report specifications?"))
+                if ans:
+                    self.specs.sort()
+                    with open(self.options['report_specifications'], 'w') as fo:
+                        tmp = fo.write("\n".join(self.specs))
         else:
-            ans = True
-        if ans:
-            if self.parent:
-                logger.debug('focus set')
-                self.parent.focus()
-                self.parent.tree.focus_set()
-            self.destroy()
+            ans = False
+        if self.parent:
+            logger.debug('focus set')
+            self.parent.focus()
+            self.parent.tree.focus_set()
+        self.destroy()
         return "break"
 
     def messageWindow(self, title, prompt):
