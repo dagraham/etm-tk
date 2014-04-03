@@ -146,6 +146,9 @@ a MMM yyyy; u; k[0]; k[1:] -b -1/1 -e 1
 # this month's actions:
 a MMM yyyy; u; k[0]; k[1:] -b 1 -e +1/1
 
+# this week's actions:
+a w; u; k[0]; k[1:] -b sun - 6d -e sun
+
 # all items by folder:
 c f
 
@@ -869,11 +872,7 @@ actions = ["s", "d", "e", "p", "v"]
 
 # noinspection PyGlobalUndefined
 def get_options(d=''):
-    # global use_locale
     """
-
-    :param etmdir:
-    :type etmdir: string
     """
     global parse, s2or3, term_encoding, file_encoding
     from locale import getpreferredencoding
@@ -890,16 +889,16 @@ def get_options(d=''):
 
     use_locale = ()
     etmdir = ''
-    cfgname = "etmtk.cfg"
-    if d and os.path.isfile(os.path.join(d, cfgname)):
-        config = os.path.join(d, cfgname)
+    CFGNAME = "etmtk.cfg"
+    if d and os.path.isfile(os.path.join(d, CFGNAME)):
+        config = os.path.join(d, CFGNAME)
         datafile = os.path.join(d, ".etmtkdata.pkl")
         default_datadir = os.path.join(d, 'data')
         etmdir = d
     else:
         homedir = os.path.expanduser("~")
         etmdir = os.path.join(homedir, ".etm")
-        config = os.path.join(etmdir, cfgname)
+        config = os.path.join(etmdir, CFGNAME)
         datafile = os.path.join(etmdir, ".etmtkdata.pkl")
         default_datadir = os.path.join(etmdir, 'data')
     logger.info('Using config file: {0}'.format(config))
@@ -942,7 +941,6 @@ def get_options(d=''):
         'action_minutes': 6,
         'action_interval': 1,
         'action_timer': {'running': '', 'paused': ''},
-        # 'action_status': {'running': '', 'paused': '', 'stopped': ''},
         'action_rates': {'default': 100.0, },
         'action_template': '!hours!h $!value!) !label! (!count!)',
 
@@ -960,7 +958,6 @@ def get_options(d=''):
         'alert_wakecmd': '',
 
         'ampm': True,
-        # TODO: make sure completions exists to avoid startup error
         'auto_completions': os.path.join(etmdir, 'completions.cfg'),
         'calendars': [],
 

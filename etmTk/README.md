@@ -43,7 +43,7 @@ Items in *etm* begin with a type character such as an asterisk (event) and conti
 
 ## Screen shots ##
 
-<table align="right" hspace="10" vspace="10" width="100%">
+<table align="center" hspace="10" vspace="10" width="100%">
 <tr>
     <td>
     <img src="images/agenda.gif" /></a>
@@ -71,6 +71,97 @@ Items in *etm* begin with a type character such as an asterisk (event) and conti
 </table>
 
 <hr/>
+
+## Installation ##
+
+### Self-contained freeze file installation
+
+
+There are self-contained versions of etm created using cx_freeze. Download *etmtk-x.x.x-freeze-PLATFORM.tar.gz* from this site and unpack it in a convenient location. Everything but Mercurial is included - follow the instructions below to install Mercurial.
+
+The Darwin version was created using OS X 10.9.2. The Linux version was created using Ubuntu 12.04-32bit. A Windows version using Windows 7.1 may soon be available as well.
+
+
+### Source installation under OS X, Linux or Windows
+
+Python 2.7.x or python >= 3.3.0 is required.
+
+The following python packages are required for etm but are not included in the python standard library:
+
+-   dateutil (1.5 is OK but >= 2.1 is strongly recommended)
+-   PyYaml (>= 3.10)
+-   icalendar (>=3.5 for python 2, >= 3.6 for python 3)
+
+Tk and the python module tkinter are also required but are typically already installed on most modern operating systems. If needed, installation instructions are given at www.tkdocs.com/tutorial/install.html.
+
+#### Installing etm
+
+Download 'etmtk-x.x.x.tar.gz' from this site, unpack the tarball, cd to the resulting directory and do the normal
+
+    sudo python setup.py install
+
+for a system installation. You can then run from any directory either
+
+    $ etm ?
+
+for information about command line usage or
+
+    $ etm
+
+to open the etm gui.
+
+Alternatively, you can avoid doing a system installation and simply run either
+
+    $ python etm ?
+
+or
+
+    $ python etm
+
+or
+
+    $ ./etm
+
+from this directory.
+
+#### Installing Mercurial
+
+**Optional but strongly recommended!**
+
+Download Mercurial from
+
+    http://mercurial.selenic.com/
+
+install it and then create the file *~/.hgrc*, if it doesn't already exist, with at least the following two lines:
+
+    [ui]
+    username = Your Name <your email address>
+
+Mercurial is used to keep a record of changes to your etm data
+files.
+
+### New etm users
+
+By default, etm will use the directory
+
+    ~/.etm
+
+The first time you run etm it will create, if necessary, the following:
+
+    ~/.etm/
+    ~/.etm/etmtk.cfg
+    ~/.etm/completions.cfg
+    ~/.etm/reports.cfg
+    ~/.etm/data/
+
+If the data directory needs to be created, then a file `~/.etm/data/sample.txt` will be added with illustrative entries. Similarly, the `*.cfg` files will be populated with useful entries.
+
+### Previous etm users
+
+If you would like to use your current configuration settings, make a copy of `~/.etm/etm.cfg` and rename it `~/.etm/etmtk.cfg`.
+
+You can switch back and forth between etm_qt and etm. Any changes made to your data files by either one will be compatible with the other one.
+
 
 ## Feedback ##
 

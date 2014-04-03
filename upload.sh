@@ -78,7 +78,7 @@ else
         ;;
         i)
         echo "### copying images ###"
-        cp -p etmTk/images/*.png ~/.TEMP/images
+        cp -p etmTk/images/*.gif ~/.TEMP/images
         cp -p etmTk/help/images/*.png ~/.TEMP/help/images/
         cp -p etmTk/language/images/*.png ~/.TEMP/language/images/
         copy=1
