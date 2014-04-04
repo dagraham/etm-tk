@@ -2,7 +2,7 @@
 
 In contrast to most calendar/todo applications, creating items (events, tasks, and so forth) in etm does not require filling out fields in a form. Instead, items are created as free-form text entries using a simple, intuitive format and stored in plain text files.
 
-Dates in the examples below are entered using *fuzzy parsing* - e.g., `+7` for seven days from today, `fri` for next Friday, `+1/1` for the first day of next month. See Help/Dates for details.
+Dates in the examples below are entered using *fuzzy parsing* - e.g., `+7` for seven days from today, `fri` for next Friday, `+1/1` for the first day of next month, `sun - 6d` for Monday of the current week. See Help/Dates for details.
 
 ## Sample entries
 
@@ -48,7 +48,13 @@ Dates in the examples below are entered using *fuzzy parsing* - e.g., `+7` for s
 
 ## Views
 
-Note: if a (case-insensitive) filter is entered then the display in all views will be limited to items that match somewhere in either the branch or the leaf.
+All views, including week view, display only items consistent with the current choices of active calendars.
+
+If a (case-insensitive) filter is entered then the display in all views other than week view will be limited to items that match somewhere in either the branch or the leaf.  Relevant branches will automatically be expanded to show matches.
+
+In day and week views, pressing the space bar will move the display to the current date. In all other views, pressing the space bar will move the display to the first item in the outline.
+
+In day and week views, pressing *Ctrl-J* will first prompt for a fuzzy-parsed date and then "jump" to the specified date.
 
 ### Agenda
 
@@ -62,7 +68,7 @@ What you need to know now beginning with your schedule for the next few days and
 
 - **Someday**: Someday (maybe) items. Review these periodically.
 
-Note: finished tasks, actions and notes are not displayed in this view.
+Note: Finished tasks, actions and notes are not displayed in this view.
 
 ### Day
 
@@ -74,9 +80,13 @@ All dated items appear in this view, grouped by date and sorted by starting time
 
 - For repeating items with an infinite number of repetitions, those repetitions that occur within the first `weeks_after` weeks after the current week are displayed along with the first repetition after this interval. This assures that at least one repetition will be displayed for infrequently repeating items such as voting for president.
 
+Tip. Want to see your next appointment with Dr. Jones? Switch to day view and enter "jones" in the filter.
+
 ### Tag
 
 All items with tag entries grouped by tag and sorted by type and *relevant datetime*. Note that items with multiple tags will be listed under each tag.
+
+Tip: Use the filter to limit the display items with a particular tag.
 
 ### Keyword
 
@@ -92,11 +102,48 @@ All items grouped by file path and sorted by type and *relevant datetime*. Use t
 
 The *relevant datetime* is the past due date for any past due task, the starting datetime for any non-repeating item and the datetime of the next instance for any repeating item.
 
+Note: Items that you have "commented out" by beginning the item with a `#` will only be visible in this view.
+
 ### Week
 
 Events and occasions displayed graphically by week. Left and right cursor keys change, respectively, to the previous and next week. Up and down cursor keys select, respectively, the previous and next items within the given week. Items can also be selected by moving the mouse over the item. The summary and time period for the selected item is displayed at the bottom of the screen. Pressing return with an item selected or control-clicking an item opens a context menu. Control-clicking an unscheduled time opens a dialog to create an event for that date and time.
 
 Pressing "j" opens a dialog to jump to the week containing a fuzzy parsed date. Pressing "b" displays a list of busy times for the active week.
+
+## Creating New Items
+
+Items of any type can be created by pressing *Ctrl-I* in the GUI and then providing the details for the item in the resulting dialog.
+
+An event can also be created by double-clicking in a free period in the Week View - the date and time corresponding to the mouse position will already be entered in the resulting dialog.
+
+An action can also be created by pressing *Ctrl-Comma* to start a timer for the action. You will be prompted for a summary (title) and, optionally, an `@e` entry to specify a starting time for the timer. If an item is selected when you press *Ctrl-Comma* then you will have the additional option of creating the action as a copy of the selected item.
+
+The timer starts automatically when you close the dialog. Once the timer is running, pressing *Ctrl-Comma* toggles the timer between running and paused. Pressing *Ctrl-Period* when a timer is active (either running or paused) stops the timer and begins a dialog to provide the details of the action - the elapsed time will already be entered.
+
+While a timer is active, the title, the elapsed time and the status - running or paused - is displayed in the status bar.
+
+
+## Editing Existing Items
+
+Double-clicking an item or pressing *Return* when an item is selected will open a context menu of possible actions:
+
+- Copy
+- Delete
+- Edit
+- Finish (unfinished tasks only)
+- Reschedule
+- Open link (items with `@g` entries only)
+- Export as iCal
+
+When either *Copy* or *Edit* is chosen for a repeating item, you can further choose:
+
+1. this instance
+2. this and all subsequent instances
+3. all instances
+
+When *Delete* is chosen for a repeating item, a further choice is available:
+
+4. all previous instances
 
 ## Data Organization and Calendars
 

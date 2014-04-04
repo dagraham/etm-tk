@@ -39,14 +39,14 @@ for file in OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS; do
     echo '' >> ../help.py
 done
 
-echo Creating help.md
-echo "% ETM Users Manual" > help.md
+echo Creating UserManual.md
+echo "% ETM Users Manual" > UserManual.md
 for file in OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS; do
-    echo "" >> help.md
-    sed '1 s/%/##/' <$file.md >> help.md
+    echo "" >> UserManual.md
+    sed '1 s/%/##/' <$file.md >> UserManual.md
 done
-echo Creating help.html
-pandoc -s --toc --toc-depth=2 -B ~/etm-tk/etmTk/style-before -f markdown -t html -o help.html  help.md
+echo Creating UserManual.html
+pandoc -s --toc --toc-depth=2 -B ~/etm-tk/etmTk/style-before -f markdown -t html -o UserManual.html  UserManual.md
 
 #echo Creating help.tex
 #pandoc -s --toc --toc-depth=2 -f markdown -t latex -o help.tex help.md

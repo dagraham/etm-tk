@@ -411,7 +411,7 @@ class SimpleEditor(Toplevel):
         self.e.bind("<Return>", self.onFind)
         Button(frame, text='>', command=self.onFind, highlightbackground=BGCOLOR, padx=8, pady=2).pack(side=LEFT, padx=0)
 
-        text = Text(self, bd=2, relief="sunken", padx=3, pady=2, font=self.tkfixedfont, undo=True, width=70)
+        text = Text(self, wrap="word", bd=2, relief="sunken", padx=3, pady=2, font=self.tkfixedfont, undo=True, width=70)
         text.configure(highlightthickness=0)
         text.tag_configure(FOUND, background="lightskyblue")
 

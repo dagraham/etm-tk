@@ -17,11 +17,11 @@ The goals and initial results for this version:
 
     - smaller files
 
-        - source tarball: 260k for Tk vs. 20.5mb for Qt
+        - source tarball: 254k for Tk vs. 20.5mb for Qt
 
-        - Darwin: 9.6mb freeze tarball for Tk vs. 23mb app dmg for Qt
+        - Darwin: 8.2mb freeze tarball for Tk vs. 23mb app dmg for Qt
 
-        - Linux: 3.7mb freeze tarball for Tk (nothing comparable was available for Qt)
+        - Linux: 3.6mb freeze tarball for Tk (nothing comparable was available for Qt)
 
 
 - more informative display

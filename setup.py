@@ -11,7 +11,7 @@ else:
 
 APP = ['etm']
 
-includefiles = ["etmTk/etmlogo.gif", "etmTk/etmlogo.icns", "etmTk/etmlogo.ico"]
+# includefiles = ["etmTk/etmlogo.gif", "etmTk/etmlogo.icns", "etmTk/etmlogo.ico"]
 
 OPTIONS = {'build': {'build_exe': 'releases/etmtk-{0}'.format(version)},
               'build_exe': {'icon': 'etmTk/etmlogo.gif', 'optimize': '2',
@@ -58,11 +58,12 @@ setup(
     scripts=['etm'],
     install_requires=REQUIRES,
     # extras_require={"icalendar": EXTRAS},
-    package_data={'etmTk': ['etmlogo.*', 'CHANGES', 'etmtk.desktop', 'etmtk.1', 'etmtk.xpm']},
+    # package_data={'etmTk': ['etmlogo.*', 'CHANGES', 'etmtk.desktop', 'etmtk.1', 'etmtk.xpm']},
+    package_data={'etmTk': ['CHANGES', 'etmtk.desktop', 'etmtk.1', 'etmtk.xpm']},
     # TODO: fix man, icon, desktop, docs
     data_files=[
         ('share/doc/etmtk', ['etmTk/CHANGES']),
-        ('share/icons/etmtk', glob.glob('etmTk/etmlogo.*')),
+        # ('share/icons/etmtk', glob.glob('etmTk/etmlogo.*')),
         ('share/man/man1', ['etmTk/etmtk.1']),
         ('share/pixmaps', ['etmTk/etmtk.xpm']),
         ('share/applications', ['etmTk/etmtk.desktop']),

@@ -58,7 +58,7 @@ Sample entries
 Views
 -----
 
-Note: if a (case-insensitive) filter is entered then the display in all views will be limited to items that match somewhere in either the branch or the leaf.
+Note: if a (case-insensitive) filter is entered then the display in all views other than week view will be limited to items that match somewhere in either the branch or the leaf.
 
 Agenda
 
@@ -1448,7 +1448,7 @@ Menu Shortcuts
                 Begin/Pause Action Timer                Ctrl-,
                 Finish Action Timer                     Ctrl-.
             Open
-                Data file ...                         Shift-Ctrl-D
+                Data file ...                         Shift-Ctrl-F
                 etmtk.cfg                             Shift-Ctrl-E
                 completions.cfg                       Shift-Ctrl-C
                 reports.cfg                           Shift-Ctrl-R
@@ -1476,13 +1476,13 @@ Menu Shortcuts
             Delete                                    Ctrl-BackSpace
             Edit                                        Ctrl-E
             Finish                                      Ctrl-X
-            Reschedule                                  Ctrl-D
+            Reschedule                                  Ctrl-S
             Open link                                   Ctrl-G
             Export item as ical                           F4
         Tools
             Display yearly calendar                     Ctrl-Y
             Open date calculator                        Ctrl-L
-            Make report                                 Ctrl-R
+            Create report                               Ctrl-R
             Show history of changes                     Ctrl-H
             Export active calendars as iCal             Ctrl-F4
         Help
@@ -1493,11 +1493,11 @@ Menu Shortcuts
     Main
         Views
             Agenda                                      Ctrl-A
-            Schedule                                    Ctrl-S
-            Tags                                        Ctrl-T
-            Keywords                                    Ctrl-K
-            Notes                                       Ctrl-N
-            Paths                                       Ctrl-P
+            Day                                         Ctrl-D
+            Tag                                         Ctrl-T
+            Keyword                                     Ctrl-K
+            Note                                        Ctrl-N
+            Path                                        Ctrl-P
             Week                                        Ctrl-W
 """
 

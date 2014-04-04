@@ -5,10 +5,10 @@
 
 
 if [ -z "$1" ]; then
-    echo "usage: upload.sh [-a|b|d|e|i|l|p|s]"
-    echo "    where b: base files; a: app (dmg) file; d: documentation;"
-    echo "          e: examples; i: images; l: language files; m: movies;"
-    echo "          p: PyPI; s: sound files "
+    echo "usage: upload.sh [-b|D|L|W|d|e|i|l|p|s]"
+    echo "    where b: base files; D: Darwin freeze file; L: Linux freeze file;"
+    echo "          d: documentation; e: examples; i: images; l: language files; "
+    echo "          m: movies; p: PyPI; s: sound files "
 else
     copy=0
     # version=`cat v.txt`
@@ -19,12 +19,12 @@ else
     fi
     mkdir ~/.TEMP
     mkdir ~/.TEMP/images
-    mkdir ~/.TEMP/help
-    mkdir ~/.TEMP/help/images
-    mkdir ~/.TEMP/language
-    mkdir ~/.TEMP/language/images
-    mkdir ~/.TEMP/sample
-    mkdir ~/.TEMP/sounds
+#    mkdir ~/.TEMP/help
+#    mkdir ~/.TEMP/help/images
+#    mkdir ~/.TEMP/language
+#    mkdir ~/.TEMP/language/images
+#    mkdir ~/.TEMP/sample
+#    mkdir ~/.TEMP/sounds
 
     while getopts "DLWbdeilps" Option
     do
@@ -54,33 +54,24 @@ else
         ;;
         d)
         echo "### copying html and pdf documentation files ###"
-        cp -p etm_tk-man.pdf ~/.TEMP/help/
-        cp -p etmTk/help/*.html ~/.TEMP/help/
-#        cp -p etmTk/help/help.pdf ~/.TEMP/help/
-#        cp -p cheatsheet.tex ~/.TEMP/help/
-#        cp -p cheatsheet.pdf ~/.TEMP/help/
+        cp -p etmTk/help/UserManual.html ~/.TEMP
         cp -p whatsnew.html ~/.TEMP
-
-        # cp -p etm-empty/data/sample/*.txt ~/.TEMP/sample/
-#        cp -p etmTk/language/*.html ~/.TEMP/language/
         # careful that the following doesn't overwrite modified files
-        cp -p etmTk/HEADER.html etmTk/README.html etmTk/INSTALL.html ~/.TEMP
+        cp -p etmTk/HEADER.html etmTk/README.html ~/.TEMP
         copy=1
         ;;
-        e)
-        echo "### copying examples ###"
-        cp -p etm-sample/data/shared/sample_datafile.txt ~/.TEMP/sample
-        cp -p etm-sample/reports.cfg ~/.TEMP/sample
-        cp -p etm-sample/locale.cfg ~/.TEMP/sample
-        cp -p COMPLETIONS ~/.TEMP/sample/
-        cp -p TIMEZONES ~/.TEMP/sample/
-        copy=1
-        ;;
+#        e)
+#        echo "### copying examples ###"
+#        cp -p etm-sample/data/shared/sample_datafile.txt ~/.TEMP/sample
+#        cp -p etm-sample/reports.cfg ~/.TEMP/sample
+#        cp -p etm-sample/locale.cfg ~/.TEMP/sample
+#        cp -p COMPLETIONS ~/.TEMP/sample/
+#        cp -p TIMEZONES ~/.TEMP/sample/
+#        copy=1
+#        ;;
         i)
         echo "### copying images ###"
         cp -p etmTk/images/*.gif ~/.TEMP/images
-        cp -p etmTk/help/images/*.png ~/.TEMP/help/images/
-        cp -p etmTk/language/images/*.png ~/.TEMP/language/images/
         copy=1
         ;;
 #        l)

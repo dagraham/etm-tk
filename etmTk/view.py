@@ -576,6 +576,9 @@ class App(Tk):
         # self.wm_iconbitmap('etmlogo-4.xbm')
         # self.call('wm', 'iconbitmap', self._w, '/Users/dag/etm-tk/etmTk/etmlogo.gif')
 
+        # root = Tk()
+        # img = PhotoImage(file='/Users/dag/etm-tk/etmTk/etmlogo.icns')
+        # self.tk.call('wm', 'iconphoto', self._w, img)
         # if not mac:
         #     img = PhotoImage(file='etmlogo.gif')
         #     self.call('wm', 'iconphoto', self._w, img)
@@ -588,7 +591,8 @@ class App(Tk):
         #     # self.iconbitmap(ICON_PATH)
         # elif sys_platform == 'Darwin':
         #     logger.debug('using darwin icon')
-        #     self.wm_iconbitmap('etmlogo.icns')
+        # self.iconbitmap('/Users/dag/etm-tk/etmTk/etmlogo.ico')
+        # self.wm_iconbitmap('etmlogo.icns')
         # else:
         #     logger.debug('using windows icon')
         #     self.wm_iconbitmap('etmlogo.ico')
@@ -2434,6 +2438,7 @@ Relative dates and fuzzy parsing are supported.""")
                 for k in ['_r', 'o', '+', '-']:
                     if k in hsh:
                         del hsh[k]
+                hsh['e'] = 0 * ONEMINUTE
             else:
                 # shouldn't happen
                 return "break"

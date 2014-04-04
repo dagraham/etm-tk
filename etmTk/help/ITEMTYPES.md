@@ -1,4 +1,4 @@
-# Item types
+# Items
 
 There are several types of items in etm. Each item begins with a type character such as an asterisk (event) and continues on one or more lines either until the end of the file is reached or another line is found that begins with a type character. The type character for each item is followed by the item summary and then, perhaps, by one or more `@key value` pairs - see Help/@Keys for details. The order in which such pairs are entered does not matter.
 

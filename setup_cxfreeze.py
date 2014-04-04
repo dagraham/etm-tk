@@ -45,7 +45,8 @@ if sys.platform == 'win32':
     BASE = 'Win32GUI'
 
 EXECUTABLES = [
-    Executable(script='etm', base=BASE, targetDir="dist-{0}/etmtk-{1}-freeze-{0}".format(plat, version), icon='etmTk/etmlogo.icns')
+    # Executable(script='etm', base=BASE, targetDir="dist-{0}/etmtk-{1}-freeze-{0}".format(plat, version), icon='etmTk/etmlogo.icns')
+    Executable(script='etm', base=BASE, targetDir="dist-{0}/etmtk-{1}-freeze-{0}".format(plat, version))
 ]
 
 OPTIONS = {
@@ -66,5 +67,6 @@ setup(name='etm',
     author='Daniel A Graham',
     author_email='daniel.graham@duke.edu',
     options=OPTIONS,
-    package_data={'etmTk': ['etmlogo.*', 'etmtk.xpm', 'version.txt', 'CHANGES', 'logging.yaml']},
+    # package_data={'etmTk': ['etmlogo.*', 'etmtk.xpm', 'version.txt', 'CHANGES', 'logging.yaml']},
+    package_data={'etmTk': ['etmtk.xpm', 'version.txt', 'CHANGES', 'logging.yaml']},
 )
