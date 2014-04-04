@@ -218,18 +218,23 @@ class ReportWindow(Toplevel):
         logger.debug(('calling quit'))
         self.quit()
 
+    def saveSpecs(self, e=None):
+        if not self.modified:
+            return
+        if not ('report_specifications' in self.options and os.path.isfile(self.options['report_specifications'])):
+            return
+        ans = self.confirm(parent=self,
+            prompt=_("Save the changes to your report specifications?"))
+        if ans:
+            self.specs.sort()
+            with open(self.options['report_specifications'], 'w') as fo:
+                tmp = fo.write("\n".join(self.specs))
+            self.modified = False
+            self.box['values'] = self.specs
+
     def quit(self, e=None):
         if self.modified:
-            if ('report_specifications' in self.options and os.path.isfile(self.options['report_specifications'])):
-                ans = self.confirm(parent=self,
-                    title=_('Quit'),
-                    prompt=_("Save the changes to your report specifications?"))
-                if ans:
-                    self.specs.sort()
-                    with open(self.options['report_specifications'], 'w') as fo:
-                        tmp = fo.write("\n".join(self.specs))
-        else:
-            ans = False
+            self.saveSpecs()
         if self.parent:
             logger.debug('focus set')
             self.parent.focus()
@@ -274,20 +279,25 @@ class ReportWindow(Toplevel):
 
     def makeReport(self, event=None):
         self.value_of_combo = self.box.get()
-        if self.value_of_combo not in self.specs:
-            self.specs.append(self.value_of_combo)
-            self.specs.sort()
-            self.box["values"] = self.specs
-            self.modified = True
-        logger.debug("spec: {0}".format(self.value_of_combo))
-        self.all_text = text = getReportData(
-            self.value_of_combo,
-            self.loop.file2uuids,
-            self.loop.uuid2hash,
-            self.loop.options)
-        # logger.debug("res: {0}".format(text))
-        if not self.all_text:
-            text = _("Report contains no output.")
+        if not self.value_of_combo.strip():
+            return
+        try:
+            self.all_text = text = getReportData(
+                self.value_of_combo,
+                self.loop.file2uuids,
+                self.loop.uuid2hash,
+                self.loop.options)
+            if not self.all_text:
+                text = _("Report contains no output.")
+            if self.value_of_combo not in self.specs:
+                self.specs.append(self.value_of_combo)
+                self.specs.sort()
+                self.specs = [x for x in self.specs if x]
+                self.box["values"] = self.specs
+                self.modified = True
+            logger.debug("spec: {0}".format(self.value_of_combo))
+        except:
+            self.all_text = text = _("'{0}' could not be processed".format(self.value_of_combo))
         self.text.delete('1.0', END)
         self.text.insert(INSERT, text)
         self.text.mark_set(INSERT, '1.0')
@@ -324,10 +334,6 @@ class ReportWindow(Toplevel):
         fo.close()
 
     def emailReport(self):
-        logger.debug("not implemented")
-        pass
-
-    def saveSpecs(self):
         logger.debug("not implemented")
         pass
 

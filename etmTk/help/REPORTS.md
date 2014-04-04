@@ -1,104 +1,71 @@
 # Reports
 
-    Usage:  <report type character> <groupby setting> [report options]
+To create a report press *Ctrl-R* in the GUI. If you have entries in your report specifications file, `~./etm/reports.cfg` by default, you can choose one of them in the selection box at the bottom of the report window.
 
-A *report specification* is created by entering a report *type character* followed by a *groupby setting* and, perhaps, by one or more *report options*. Together, the type character, groupby setting and options determine which items will appear in the report and how they will be organized and displayed.
+You can also add report specifications to the list by selecting any item from the list and then replacing the content with anything you like. Press *Return* to *add* your specification temporarily to the list. *Note that the original entry will not be affected.*  When you close the report window you will have an opportunity to save the additions you have made. To modify or delete existing specifications, you must open the reports specification file itself using *Shift Ctrl-R* from the main window.
 
-## Report types
+When you have selected a report specification, press *Return* to generate the report and display it.
 
-There are two possible report type characters, *a* and *c*:
+A *report specification* is created by entering a report *type character*, either "a" or "c", followed by a *groupby setting* and, perhaps, by one or more *report options*:
 
-### **a**: action report.
+    <a|c> <groupby setting> [options]
 
-A report of expenditures of time and money recorded in actions with output formatted using `action_template` computations and expansions. See Help/Preferences for further details about the role of `action_template` in formatting action report output. E.g., with this setting in `etmtk.cfg`:
+Together, the type character, groupby setting and options determine which items will appear in the report and how they will be organized and displayed.
 
-    action_template: '!hours!h) !label! (!count!)'
+## Report type characters
 
-a report might appear as follows:
+- **a**: action report.
 
-    27.5h) Client 1 (3)
-        4.9h) Project A (1)
-        15h) Project B (1)
-        7.6h) Project C (1)
-    24.2h) Client 2 (3)
-        3.1h) Project D (1)
-        21.1h) Project E (2)
-            5.1h) Category a (1)
-            16h) Category b (1)
-    4.2h) Client 3 (1)
-    8.7h) Client 4 (2)
-        2.1h) Project F (1)
-        6.6h) Project G (1)
+    A report of expenditures of time and money recorded in *actions* with output formatted using `action_template` computations and expansions. See Help/Preferences for further details about the role of `action_template` in formatting action report output.
 
-### **c**: composite report.
+- **c**: composite report.
 
-Any item types but without `action_template` computations and expansions.
+    Any item types, including actions, but without `action_template` computations and expansions.
 
-You can select a report specification from a list of saved specifications, modify an existing specification or create an entirely new specification. Clicking on the *create report* icon or pressing *Control-R* will create a report based on the current specification.
-
-When you edit an existing specification, the background color of the entry field will change to yellow to indicate that this is a new, as yet unsaved specification. Pressing *Return* will add the new specification temporarily to the list without affecting the original specification.
-
-If the current specification has been modified, then deleting it by clicking on the *delete* icon or pressing *Control-D* will replace the modified specification with the original. If the current specification has not been modified, then deleting it will temporarily remove it from the list.
-
-When temporary changes have been made to the list, the *save* button will be enabled and you can either click on this button or press *Control-S* to save the changes. If you attempt to close the reports dialog while there are unsaved changes, you will be given the opportunity to save them.
-
-## groupby
+## Groupby setting
 
 A semicolon separated list that determines how items will be grouped and sorted. Possible elements include *date specifications* and elements from
 
-c
-:   context
+- c:   context
 
-f
-:   file path
+- f:   file path
 
-k
-:   keyword
+- k:   keyword
 
-t
-:   tag
+- t:   tag
 
-u
-:   user
+- u:   user
 
-A *date specification* is either
+A *date specification* is either a combination of one or more of the following:
 
-w
-:   week number
+- yy:   2-digit year
 
-or a combination of one or more of the following:
+- yyyy:   4-digit year
 
-yy
-:   2-digit year
+- M:   month: 1 - 12
 
-yyyy
-:   4-digit year
+- MM:   month: 01 - 12
 
-M
-:   month: 1 - 12
+- MMM:   locale specific abbreviated month name: Jan - Dec
 
-MM
-:   month: 01 - 12
+- MMMM:   locale specific month name: January - December
 
-MMM
-:   locale specific abbreviated month name: Jan - Dec
+- d:   month day: 1 - 31
 
-MMMM
-:   locale specific month name: January - December
+- dd:   month day: 01 - 31
 
-d
-:   month day: 1 - 31
+- ddd:   locale specific abbreviated week day: Mon - Sun
 
-dd
-:   month day: 01 - 31
+- dddd:   locale specific week day: Monday - Sunday
 
-ddd
-:   locale specific abbreviated week day: Mon - Sun
+or:
 
-dddd
-:   locale specific week day: Monday - Sunday
+- w:   week number
 
-For example, `c ddd, MMM d yyyy` would group by year, month and day together to give output such as
+The use of week number groups output by year and week number with Monday the first day of the week.  "Week 14: Mar 31 - Apr 6, 2014" illustrates the output produced.
+
+
+For example, the report specification `c ddd, MMM d yyyy` would group by year, month and day together to give output such as
 
     Fri, Apr 1 2011
         items for April 1
@@ -106,7 +73,7 @@ For example, `c ddd, MMM d yyyy` would group by year, month and day together to 
         items for April 2
     ...
 
-On the other hand, `a w; u; k[0]; k[1:]` would group by week number, user and keywords to give output such as
+On the other hand, the report specificaton `a w; u; k[0]; k[1:]` would group by week number, user and keywords to give output such as
 
     13.1) Week 14: Mar 31 - Apr 6, 2014
        6.3) agent 1
@@ -127,8 +94,6 @@ On the other hand, `a w; u; k[0]; k[1:]` would group by week number, user and ke
                 3.9) Activity (23)
              0.7) project 2
                 0.7) Activity (23)
-
-As another example, `c t -t tag 1, !tag 3` would group by tag showing items that have a tag matching `tag 1` but not one matching `tag 3`.
 
 With the heirarchial elements, file path and keyword, it is possible to use parts of the element as well as the whole. Consider, for example, the file path `A/B/C` with the components `[A, B, C]`. Then for this file path:
 
@@ -163,11 +128,11 @@ Suppose that keywords have the format `client:project`. Then grouping by year an
 
 Items that are missing an element specified in `groupby` will be omitted from the output. E.g., undated tasks and notes will be omitted when a date specification is included, items without keywords will be omitted when `k` is included and so forth.
 
-When a date specification is not included in `groupby`, undated notes and tasks will be potentially included, but only those instances of dated items that correspond to the *relevant datetime* of the item of the item will be included, where the *relevant datetime* is the past due date for any past due tasks, the starting datetime for any non-repeating item and the datetime of the next instance for any repeating item.
+When a date specification is not included in the groupby setting, undated notes and tasks will be potentially included, but only those instances of dated items that correspond to the *relevant datetime* of the item of the item will be included, where the *relevant datetime* is the past due date for any past due tasks, the starting datetime for any non-repeating item and the datetime of the next instance for any repeating item.
 
 Within groups, items are automatically sorted by date, type and time.
 
-## options
+## Options
 
 Report options are listed below. Report types `c` supports all options except `-d`. Report type `a` supports all options except `-o` and `-h`.
 
@@ -204,9 +169,6 @@ Fuzzy parsed date. Limit the display of dated items to those with datetimes fall
 
 Regular expression. Limit the display to items from files whose paths match FILE (ignoring case). Prepend an exclamation mark, i.e., use !FILE rather than FILE, to limit the display to items from files whose path does NOT match FILE.
 
-### -h HUE
-
-0, 1 or 2. `-h 2` uses all possible colors for leaf fonts, `-h 1` uses red for past due items and black for everything else and `-h 0` uses black for everything. The default is taken from the setting for `colors` in `emt.cfg`.
 
 ### -k KEYWORD
 
@@ -230,16 +192,12 @@ Comma separated list of case insensitive regular expressions. E.g., use
 
     -t tag1, !tag2
 
+or
+
+    -t tag1, -t !tag2
+
 to display items with one or more tags that match 'tag1' but none that match 'tag2'.
 
 ### -u USER
 
 Regular expression. Limit the display to items with user matching USER (ignoring case). Prepend an exclamation mark, i.e., use !USER rather than USER, to limit the display to items which do NOT have a user that matches USER.
-
-### -w WIDTH1
-
-Integer. Limit the first column display width to this number of characters. Default: `report_width1` in etm.cfg.
-
-### -W WIDTH2
-
-Integer. Limit the second column display width to this number of characters. Default: `report_width2` in etm.cfg.
