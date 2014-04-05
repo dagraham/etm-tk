@@ -5529,7 +5529,18 @@ where N is the number of a report specification from the file {0}:\n """.format(
         # return(res)
 
     def do_n(self, arg_str='', itemstr=""):
-        return self.mk_rep('n {0}'.format(arg_str))
+        logger.debug('arg_str: {0}'.format(arg_str))
+        if arg_str:
+            new_item = s2or3(arg_str)
+            new_hsh, msg = str2hsh(new_item, options=self.options)
+            logger.debug('new_hsh: {0}'.format(new_hsh))
+            if msg:
+                return "\n".join(msg)
+            if 's' not in new_hsh:
+                new_hsh['s'] = None
+            res = self.append_item(new_hsh, self.currfile)
+            if res:
+                return _("item saved")
 
     @staticmethod
     def help_n():
@@ -5542,7 +5553,7 @@ Create a new item from ITEM. E.g.,
 
     etm n '* meeting @s +0 4p @e 1h30m'
 
-When the item is dated, it will be appended to the monthly file that corresponds to the date, otherwise it will be appended to the monthly file for the current month.\
+The item will be appended to the monthly file for the current month.\
 """)
 
     @staticmethod
