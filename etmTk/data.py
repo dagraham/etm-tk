@@ -168,7 +168,7 @@ c u
 USAGE = """\
 Usage:
 
-    etm_qt [logging level] [path] [?] [acmsv]
+    etm [logging level] [path] [?] [acmsv]
 
 With no arguments, etm will set logging level 3 (warn), use settings from
 the configuration file ~/.etm/etmtk.cfg, and open the GUI.
@@ -184,6 +184,7 @@ If the first (remaining) argument is one of the commands listed below, then
 execute the remaining arguments without opening the GUI.
 
     a ARG   display the agenda view using ARG, if given, as a filter.
+    d ARG   display the day view using ARG, if given, as a filter.
     k ARG   display the keywords view using ARG, if given, as a filter.
     n ARGS  Create a new item using the remaining arguments as the item
             specification. (Enclose ARGS in quotes to prevent shell
@@ -196,7 +197,6 @@ execute the remaining arguments without opening the GUI.
     r ARGS  display a report using the remaining arguments as the report
             specification. (Enclose ARGS in quotes to prevent shell
             expansion.)
-    s ARG   display the schedule view using ARG, if given, as a filter.
     t ARG   display the tags view using ARG, if given, as a filter.
     v       display information about etm and the operating system.
     ? ARG   display (this) command line help information if ARGS = '' or,
@@ -5024,12 +5024,12 @@ class ETMCmd():
         self.cmdDict = {
             '?': self.do_help,
             'a': self.do_a,
+            'd': self.do_d,
             'k': self.do_k,
             'm': self.do_m,
             'n': self.do_n,
             'p': self.do_p,
             'r': self.do_r,
-            'd': self.do_d,
             't': self.do_t,
             'v': self.do_v,
         }
@@ -5037,12 +5037,12 @@ class ETMCmd():
         self.helpDict = {
             'help': self.help_help,
             'a': self.help_a,
+            'd': self.help_d,
             'k': self.help_k,
             'm': self.help_m,
             'n': self.help_n,
             'p': self.help_p,
             'r': self.help_r,
-            's': self.help_s,
             't': self.help_t,
             'v': self.help_v,
         }
@@ -5262,7 +5262,7 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
         return ("""\
 Usage:
 
-    a
+    etm a
 
 Generate an agenda including dated items for the next {0} days (agenda_days from etmtk.cfg) together with any now and next items.\
 """.format(self.options['agenda_days']))
@@ -5469,7 +5469,7 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
         return ("""\
 Usage:
 
-    k [FILTER]
+    etm k [FILTER]
 
 Show items grouped and sorted by keyword optionally limited to those containing a case insenstive match for the regex FILTER.\
 """)
@@ -5511,7 +5511,7 @@ This option requires a valid report_specifications setting in etmtk.cfg.""")
             res.append(_("""\
 Usage:
 
-    m N
+    etm m N
 
 where N is the number of a report specification from the file {0}:\n """.format(f)))
             for i in range(len(lines)):
@@ -5527,11 +5527,11 @@ where N is the number of a report specification from the file {0}:\n """.format(
         return _("""\
 Usage:
 
-    n ITEM
+    etm n ITEM
 
 Create a new item from ITEM. E.g.,
 
-    n '* meeting @s +0 4p @e 1h30m'
+    etm n '* meeting @s +0 4p @e 1h30m'
 
 When the item is dated, it will be appended to the monthly file that corresponds to the date, otherwise it will be appended to the monthly file for the current month.\
 """)
@@ -5562,7 +5562,7 @@ When the item is dated, it will be appended to the monthly file that corresponds
         return _("""\
 Usage:
 
-    r <type> <groupby> [options]
+    etm r <type> <groupby> [options]
 
 Generate a report where type is either 'a' (action) or 'c' (composite).
 Groupby can include *semicolon* separated date specifications and
@@ -5572,6 +5572,20 @@ elements from:
     k keyword
     t tag
     u user
+
+A *date specification* is either
+    w:   week number
+or a combination of one or more of the following:
+    yy:   2-digit year
+    yyyy:   4-digit year
+    M:   month: 1 - 12
+    MM:   month: 01 - 12
+    MMM:   locale specific abbreviated month name: Jan - Dec
+    MMMM:   locale specific month name: January - December
+    d:   month day: 1 - 31
+    dd:   month day: 01 - 31
+    ddd:   locale specific abbreviated week day: Mon - Sun
+    dddd:   locale specific week day: Monday - Sunday
 
 Options include:
     -b begin date
@@ -5590,10 +5604,7 @@ Options include:
 
 Example:
 
-    r c t -t tag 1 -t '!tag 2'
-
-Composite report, grouped by tag, showing items that have tag 1 but
-not tag 2. (Quotes prevent shell expansion.)\
+    etm r 'c ddd, MMM d yyyy -b 1 -e +1/1'
 """)
 
     def do_d(self, arg_str):
@@ -5601,13 +5612,13 @@ not tag 2. (Quotes prevent shell expansion.)\
         return self.mk_rep('d {0}'.format(arg_str))
 
     @staticmethod
-    def help_s():
+    def help_d():
         return ("""\
 Usage:
 
-    s [FILTER]
+    etm d [FILTER]
 
-Show dated items grouped and sorted by date and type, optionally limited to those containing a case insensitive match for the regex FILTER.\
+Show the day view with dated items grouped and sorted by date and type, optionally limited to those containing a case insensitive match for the regex FILTER.\
 """)
 
     def do_p(self, arg_str):
@@ -5619,7 +5630,7 @@ Show dated items grouped and sorted by date and type, optionally limited to thos
         return ("""\
 Usage:
 
-    p [FILTER]
+    etm p [FILTER]
 
 Show items grouped and sorted by file path, optionally limited to those containing a case insensitive match for the regex FILTER.\
 """)
@@ -5633,7 +5644,7 @@ Show items grouped and sorted by file path, optionally limited to those containi
         return ("""\
 Usage:
 
-    t [FILTER]
+    etm t [FILTER]
 
 Show items grouped and sorted by tag, optionally limited to those containing a case insensitive match for the regex FILTER.\
 """)
@@ -5708,7 +5719,7 @@ def main(etmdir='', argv=[]):
     logger.debug("data.main etmdir: {0}, argv: {1}".format(etmdir, argv))
     use_locale = ()
     (user_options, options, use_locale) = get_options(etmdir)
-    ARGS = ['a', 'k', 'm', 'n', 'p', 'r', 's', 't', 'v']
+    ARGS = ['a', 'k', 'm', 'n', 'p', 'r', 'd', 't', 'v']
     if len(argv) > 1:
         c = ETMCmd(options)
         c.loop = False
