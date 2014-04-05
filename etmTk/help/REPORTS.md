@@ -36,7 +36,11 @@ A semicolon separated list that determines how items will be grouped and sorted.
 
 - u:   user
 
-A *date specification* is either a combination of one or more of the following:
+A *date specification* is either
+
+- w:   week number
+
+or a combination of one or more of the following:
 
 - yy:   2-digit year
 
@@ -57,13 +61,6 @@ A *date specification* is either a combination of one or more of the following:
 - ddd:   locale specific abbreviated week day: Mon - Sun
 
 - dddd:   locale specific week day: Monday - Sunday
-
-or:
-
-- w:   week number
-
-The use of week number groups output by year and week number with Monday the first day of the week.  "Week 14: Mar 31 - Apr 6, 2014" illustrates the output produced.
-
 
 For example, the report specification `c ddd, MMM d yyyy` would group by year, month and day together to give output such as
 

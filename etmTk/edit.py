@@ -183,7 +183,7 @@ class ReportWindow(Toplevel):
         if ('report_specifications' in self.options and os.path.isfile(self.options['report_specifications'])):
             with open(self.options['report_specifications']) as fo:
                 tmp = fo.readlines()
-            self.specs = [str(x).rstrip() for x in tmp if x[0] != "#"]
+            self.specs = [str(x).rstrip() for x in tmp if x.strip() and x[0] != "#"]
         logger.debug('specs: {0}'.format(self.specs))
         self.value_of_combo = self.specs[0]
         self.box['values'] = self.specs
@@ -227,9 +227,13 @@ class ReportWindow(Toplevel):
             prompt=_("Save the changes to your report specifications?"))
         if ans:
             self.specs.sort()
-            with open(self.options['report_specifications'], 'w') as fo:
+            file = self.options['report_specifications']
+            with open(file, 'w') as fo:
                 tmp = fo.write("\n".join(self.specs))
             self.modified = False
+            changed = SimpleEditor(parent=self, file=file, options=self.options, title='report_specifications').changed
+            if changed:
+                logger.debug("saved: {0}".format(file))
             self.box['values'] = self.specs
 
     def quit(self, e=None):

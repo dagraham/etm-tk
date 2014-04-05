@@ -172,11 +172,9 @@ cd "$home"
 echo
 echo -n "Create $plat package?"
 if asksure; then
-#    cxfreeze3 -OO etm --icon=etmTk/etmlogo.icns --target-dir releases/etmtk-${tag}-freeze-OSX
     echo "Building for $plat"
     echo
-#    sudo rm -fR dist-$plat/*
-#    python3 setup_cxfreeze.py build
+    sudo rm -fR dist-$plat/*
     if [ "$plat" = 'Darwin' ]; then
         cxfreeze3 -s -c -OO etm --icon=etmTk/etmlogo.icns --target-dir dist-$plat/etmtk-${tag}-freeze-$plat
     else
@@ -186,7 +184,6 @@ if asksure; then
     tar czf etmtk-${tag}-freeze-$plat.tar.gz etmtk-${tag}-freeze-$plat
 #    zip -r etmtk-${tag}-freeze-UBUNTU.zip etmtk-${tag}-freeze-UBUNTU
     cd "$home"
-#    sudo rm -fR releases/etmtk-${tag}
     echo "Creating package" >> $logfile
 else
     echo "Skipping etm.app creation."

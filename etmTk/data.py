@@ -1572,7 +1572,7 @@ def truncate(s, l):
     return s
 
 
-def tree2Html(tree, indent=2, width1=54, width2=14, colors=2):
+def tree2Html(tree, indent=2, width1=54, width2=20, colors=2):
     global html_lst
     html_lst = []
     if colors:
@@ -1670,7 +1670,7 @@ def tree2Rst(tree, indent=2, width1=54, width2=14, colors=0,
     return [x for x in text_lst], args[0], args[1]
 
 
-def tree2Text(tree, indent=2, width1=43, width2=17, colors=0,
+def tree2Text(tree, indent=2, width1=43, width2=20, colors=0,
               number=False, count=0, count2id=None):
     global text_lst
     args = [count, count2id]
@@ -2785,7 +2785,8 @@ def str2opts(s, options=None):
     grpby['fmts'] = []
     grpby['tuples'] = []
     filters['grpby'] = ['_summary']
-    include = {'y', 'm', 'w', 'd'}
+    # include = {'y', 'm', 'w', 'd'}
+    include = {'y', 'm', 'd'}
     for group in groupbylst:
         d_lst = []
         if groupdate_regex.search(group):
@@ -2867,6 +2868,7 @@ def str2opts(s, options=None):
                 grpby['include'] = ""
         else:
             grpby['include'] = ""
+        logger.debug('grpby final: {0}'.format(grpby))
 
     for part in parts:
         key = unicode(part[0])
@@ -3290,6 +3292,15 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
     if not options: options = {}
 
     grpby, dated, filters = str2opts(s, options)
+    if 'width1' in grpby:
+        width1 = grpby['width1']
+    else:
+        width1=options['report_width1'],
+    if 'width2' in grpby:
+        width2 = grpby['width2']
+    else:
+        width2=options['report_width2'],
+
     logger.debug("grpby: {0}\ndated: {1}\nfilters: {2}".format(grpby, dated, filters))
     if not grpby:
         return [str(_('invalid grpby setting'))]
@@ -3368,9 +3379,7 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
         else:
             clrs = grpby['colors']
         tree = makeTree(items, sort=False)
-        txt, args0, args1 = tree2Text(tree,
-                width1=options['report_width1'],
-                width2=options['report_width2'])
+        txt, args0, args1 = tree2Text(tree, width1=width1, width2=width2)
         return "\n".join([x.rstrip() for x in txt if x.strip()])
     else:
         if grpby['report'] == 'a' and 'depth' in grpby and grpby['depth']:
@@ -5482,7 +5491,7 @@ Show items grouped and sorted by keyword optionally limited to those containing 
             return _("""
 This option requires a valid report_specifications setting in etmtk.cfg.""")
         with open(f, 'r') as fo:
-            lines = [x for x in fo.readlines() if x[0] != "#"]
+            lines = [x for x in fo.readlines() if x.strip() and x[0] != "#"]
         try:
             n = int(arg_str)
             if n < 1 or n > len(lines):
@@ -5506,7 +5515,7 @@ This option requires a valid report_specifications setting in etmtk.cfg.""")
             return _("""
 This option requires a valid report_specifications setting in etmtk.cfg.""")
         with open(f, 'r') as fo:
-            lines = [x for x in fo.readlines() if x[0] != "#"]
+            lines = [x for x in fo.readlines() if x.strip() and x[0] != "#"]
         if lines:
             res.append(_("""\
 Usage:
