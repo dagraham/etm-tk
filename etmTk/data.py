@@ -877,7 +877,7 @@ def get_options(d=''):
     global parse, s2or3, term_encoding, file_encoding
     from locale import getpreferredencoding
     from sys import stdout
-
+    logger.debug('in get_options with d: {0}'.format(d))
     try:
         dterm_encoding = stdout.term_encoding
     except AttributeError:
@@ -889,23 +889,23 @@ def get_options(d=''):
 
     use_locale = ()
     etmdir = ''
-    CFGNAME = "etmtk.cfg"
-    if d and os.path.isfile(os.path.join(d, CFGNAME)):
-        config = os.path.join(d, CFGNAME)
-        datafile = os.path.join(d, ".etmtkdata.pkl")
-        default_datadir = os.path.join(d, 'data')
+    NEWCFG = "etmtk.cfg"
+    OLDCFG = "etm.cfg"
+    using_oldcfg = False
+    if d and os.path.isdir(d):
         etmdir = d
     else:
         homedir = os.path.expanduser("~")
         etmdir = os.path.join(homedir, ".etm")
-        config = os.path.join(etmdir, CFGNAME)
-        datafile = os.path.join(etmdir, ".etmtkdata.pkl")
-        default_datadir = os.path.join(etmdir, 'data')
-    logger.info('Using config file: {0}'.format(config))
+    newconfig = os.path.join(etmdir, NEWCFG)
+    oldconfig = os.path.join(etmdir, OLDCFG)
+    datafile = os.path.join(etmdir, ".etmtkdata.pkl")
+    default_datadir = os.path.join(etmdir, 'data')
+    logger.debug('will check first for: {0}; then: {1}'.format(newconfig, oldconfig))
 
     locale_cfg = os.path.join(etmdir, 'locale.cfg')
     if os.path.isfile(locale_cfg):
-        logger.info('Using locale file: {0}'.format(locale_cfg))
+        logger.info('using locale file: {0}'.format(locale_cfg))
         fo = codecs.open(locale_cfg, 'r', dfile_encoding)
         use_locale = yaml.load(fo)
         fo.close()
@@ -1026,19 +1026,31 @@ def get_options(d=''):
         # first etm use, no etmdir
         os.makedirs(etmdir)
 
-    if os.path.isfile(config):
+    if os.path.isfile(newconfig):
         try:
-            fo = codecs.open(config, 'r', dfile_encoding)
+            logger.info('user options from: {0}'.format(newconfig))
+            fo = codecs.open(newconfig, 'r', dfile_encoding)
             user_options = yaml.load(fo)
             fo.close()
         except yaml.parser.ParserError:
             logger.exception(
-                'Exception loading {0}. Using default options.'.format(config))
+                'Exception loading {0}. Using default options.'.format(newconfig))
             user_options = {}
-
+    elif os.path.isfile(oldconfig):
+        try:
+            using_oldcfg = True
+            logger.info('user options from: {0}'.format(oldconfig))
+            fo = codecs.open(oldconfig, 'r', dfile_encoding)
+            user_options = yaml.load(fo)
+            fo.close()
+        except yaml.parser.ParserError:
+            logger.exception(
+                'Exception loading {0}. Using default options.'.format(oldconfig))
+            user_options = {}
     else:
+        logger.info('using default user options')
         user_options = {'datadir': default_datadir}
-        fo = codecs.open(config, 'w', dfile_encoding)
+        fo = codecs.open(newconfig, 'w', dfile_encoding)
         # fo = open(config, 'w')
         yaml.safe_dump(user_options, fo)
         fo.close()
@@ -1069,12 +1081,9 @@ def get_options(d=''):
                 options[key] = default_options[key]
                 changed = True
 
-        elif default_options[key] and (key not in user_options
-                                       or not user_options[key]):
+        elif default_options[key] and (key not in user_options or not user_options[key]):
             options[key] = default_options[key]
             changed = True
-            # we'll get custom user settings from a separate file
-            #####################
 
     remove_keys = []
     for key in options:
@@ -1084,9 +1093,10 @@ def get_options(d=''):
     for key in remove_keys:
         del options[key]
 
-    #####################
-    if changed:
-        fo = codecs.open(config, 'w', options['encoding']['file'])
+    logger.debug('changed: {0}; user: {1}; options: {2}'.format(changed, (user_options != default_options), (options != default_options)))
+    if changed or using_oldcfg:
+        # save options to newconfig even if user options came from oldconfig
+        fo = codecs.open(newconfig, 'w', options['encoding']['file'])
         yaml.safe_dump(options, fo)
         fo.close()
 
@@ -1094,7 +1104,7 @@ def get_options(d=''):
     (options['daybegin_fmt'], options['dayend_fmt'], options['reprtimefmt'],
      options['reprdatetimefmt'], options['etmdatetimefmt'],
      options['rfmt'], options['efmt']) = get_fmts(options)
-    options['config'] = config
+    options['config'] = newconfig
     options['datafile'] = datafile
     options['scratchpad'] = os.path.join(options['etmdir'], _("scratchpad"))
 
@@ -5610,7 +5620,7 @@ or a combination of one or more of the following:
 Options include:
     -b begin date
     -c context regex
-    -d depth
+    -d depth (a reports only)
     -e end date
     -f file regex
     -k keyword regex

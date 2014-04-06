@@ -2692,9 +2692,11 @@ log_levels = {
 def main(dir=None):  # debug, info, warn, error, critical
     global loop
     etmdir = ''
+    logger.debug('in view.main with dir: {0}'.format(dir))
     # For testing override etmdir:
     if dir is not None:
         etmdir = dir
+    logger.debug('using etmdir: {0}'.format(etmdir))
     init_localization()
     (user_options, options, use_locale) = data.get_options(etmdir)
     loop = data.ETMCmd(options=options)

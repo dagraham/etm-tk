@@ -27,8 +27,9 @@ if __name__ == "__main__":
     if len(sys.argv) > 1 and os.path.isdir(sys.argv[1]):
         temp = sys.argv.pop(1)
         logger.debug("got directory: {0}".format(temp))
-        path = os.path.join(temp, 'etm.cfg')
-        if os.path.isfile(path):
+        oldpath = os.path.join(temp, 'etm.cfg')
+        newpath = os.path.join(temp, 'etmtk.cfg')
+        if os.path.isfile(newpath) or os.path.isfile(oldpath):
             etmdir = temp
 
     if len(sys.argv) > 1:
