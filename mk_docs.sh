@@ -4,9 +4,9 @@
 cd /Users/dag/etm-tk
 
 echo "Processing what's new"
-pandoc -s -B ~/etm-tk/etmTk/style-before -f markdown -t html -o whatsnew.html whatsnew.md
+pandoc -s -B ~/etm-tk/etmTk/style-before -f markdown -t html -o WhatsNew.html whatsnew.md
 
-pandoc -s -f markdown -t plain -o whatsnew.txt whatsnew.md
+pandoc -s -f markdown -t plain -o WhatsNew.txt whatsnew.md
 
 echo Making the man file
 vinfo=`cat etmTk/v.py | head -1 | sed 's/\"//g' | sed 's/^.*= *//g'`
@@ -48,11 +48,11 @@ done
 echo Creating UserManual.html
 pandoc -s --toc --toc-depth=2 -B ~/etm-tk/etmTk/style-before -f markdown -t html -o UserManual.html  UserManual.md
 
-#echo Creating help.tex
-#pandoc -s --toc --toc-depth=2 -f markdown -t latex -o help.tex help.md
-#
-#echo Creating help.pdf
-#pdflatex help.tex
+echo Creating UserManual.tex
+pandoc -s --toc --toc-depth=2 -f markdown -t latex -o UserManual.tex UserManual.md
+
+echo Creating UserManual.pdf
+pdflatex UserManual.tex
 
 #echo Creating help.text
 #pandoc -s --toc --toc-depth=2 -f markdown -t plain -o help.text  help.md

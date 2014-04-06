@@ -55,7 +55,8 @@ else
         d)
         echo "### copying html and pdf documentation files ###"
         cp -p etmTk/help/UserManual.html ~/.TEMP
-        cp -p whatsnew.html ~/.TEMP
+        cp -p etmTk/help/UserManual.pdf ~/.TEMP
+        cp -p WhatsNew.html ~/.TEMP
         # careful that the following doesn't overwrite modified files
         cp -p etmTk/HEADER.html etmTk/README.html ~/.TEMP
         copy=1

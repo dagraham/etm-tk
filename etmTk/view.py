@@ -421,7 +421,7 @@ class App(Tk):
             [_('Finish'), 'x'],
             [_('Reschedule'), 's'],
             [_('Open link'), 'g'],
-            [_('Export item as ical'), 'f4'],
+            [_('Export item as ical'), 'f6'],
             ]
         self.edit2cmd = {
             'c': self.copyItem,
@@ -430,7 +430,7 @@ class App(Tk):
             'x': self.finishItem,
             's': self.rescheduleItem,
             'g': self.openWithDefault,
-            'f4': self.exportItemToIcal,
+            'f6': self.exportItemToIcal,
             }
         self.em_opts = [x[0] for x in self.em_options]
         # em_cmds = [x[1] for x in self.em_options]
@@ -441,9 +441,9 @@ class App(Tk):
             if k == 'delete':
                 l = "Ctrl-BackSpace"
                 c = "<Control-BackSpace>"
-            elif k == "f4":
-                l = "F4"
-                c = "<F4>"
+            elif k == "f6":
+                l = "F6"
+                c = "<F6>"
             # elif k == "e":
             #     l, c  = commandShortcut(k)
             #     l = "{0}, Return".format(l)
@@ -464,7 +464,9 @@ class App(Tk):
         self.add2menu(menu, (path, ))
         toolsmenu = Menu(menubar, tearoff=0)
 
-        l, c = commandShortcut('y')
+        l = "F4"
+        c = "<F4>"
+        # l, c = commandShortcut('y')
         label=_("Display yearly calendar")
         toolsmenu.add_command(label=label, underline=8, command=self.showCalendar)
         self.bind(c, lambda event: self.after(AFTER, self.showCalendar))
@@ -473,7 +475,9 @@ class App(Tk):
         self.add2menu(path, (label, l))
 
         # date calculator
-        l, c = commandShortcut('l')
+        l = "F5"
+        c = "<F5>"
+        # l, c = commandShortcut('l')
         label=_("Open date calculator")
         toolsmenu.add_command(label=label, underline=12, command=self.dateCalculator)
         self.bind(c, lambda event: self.after(AFTER, self.dateCalculator))
@@ -501,8 +505,8 @@ class App(Tk):
 
 
         ## export
-        l = "Ctrl-F4"
-        c = "<Control-F4>"
+        l = "Shift-F6"
+        c = "<Shift-F6>"
         label = _("Export active calendars as iCal")
         toolsmenu.add_command(label=label, underline=1, command=self.exportActiveToIcal)
         self.bind(c, self.exportActiveToIcal)
@@ -879,6 +883,8 @@ a time period if "+" is used."""
         MessageWindow(self, title=_("result"), prompt=prompt)
 
     def exportItemToIcal(self):
+        if not self.itemSelected:
+            return
         if 'icsitem_file' in loop.options:
             res = export_ical_item(self.itemSelected, loop.options['icsitem_file'])
             if res:
@@ -889,7 +895,7 @@ a time period if "+" is used."""
             prompt = "icsitem_file is not set in etmtk.cfg"
         MessageWindow(self, 'Selected Item Export', prompt)
 
-    def exportActiveToIcal(self):
+    def exportActiveToIcal(self, event=None):
         if 'icscal_file' in loop.options:
             res = export_ical(loop.uuid2hash, loop.options['icscal_file'], loop.calendars)
             if res:

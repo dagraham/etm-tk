@@ -88,6 +88,7 @@ The goals and initial results for this version:
 
 ## Comands and Shortcuts
 
+
     Menubar
         File
             New
@@ -125,13 +126,13 @@ The goals and initial results for this version:
             Finish                                      Ctrl-X
             Reschedule                                  Ctrl-S
             Open link                                   Ctrl-G
-            Export item as ical                           F4
+            Export item as ical                           F6
         Tools
-            Display yearly calendar                     Ctrl-Y
-            Open date calculator                        Ctrl-L
+            Display yearly calendar                       F4
+            Open date calculator                          F5
             Create report                               Ctrl-R
             Show history of changes                     Ctrl-H
-            Export active calendars as iCal             Ctrl-F4
+            Export active calendars as iCal            Shift-F6
         Help
             Search
             Help                                          F1

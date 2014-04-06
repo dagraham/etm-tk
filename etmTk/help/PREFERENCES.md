@@ -258,9 +258,6 @@ The absolute path to the file to be used for autocompletions. Each line in the f
 
 If you enter, for example, "@c" in the editor and press Ctrl-/, a list of possible completions will pop up and then, as you type further characters, the list will shrink to show only those that still match:
 
-<center>
-![](images/completion.png "Completion")
-</center>
 
 Up and down arrow keys change the selection and either *Tab* or *Return* inserts the selection.
 
@@ -272,10 +269,6 @@ Up and down arrow keys change the selection and either *Tab* or *Return* inserts
     - [shared, true, shared]
 
 These are (label, default, path relative to `datadir`) tuples to be interpreted as separate calendars. Those for which default is `true` will be displayed as default calendars. E.g., with the `datadir` below, `dag` would be a default calendar and would correspond to the absolute path `/Users/dag/.etm/data/personal/dag`. With this setting, the calendar selection dialog would appear as follows:
-
-<center>
-![](images/calendar_selection.png "available calendars")
-</center>
 
 When non-default calendars are selected, busy times in the "week view" will appear in one color for events from default calendars and in another color for events from non-default calendars.
 

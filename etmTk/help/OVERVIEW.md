@@ -46,6 +46,140 @@ Dates in the examples below are entered using *fuzzy parsing* - e.g., `+7` for s
         - join the etm discussion group @s +14
           @g groups.google.com/group/eventandtaskmanager/topics
 
+## Starting etm
+
+To start the etm GUI open a terminal window and enter `etm` at the prompt:
+
+    $ etm
+
+If you have not done a system installation of etm you will need first to cd to the directory where you unpacked etm.
+
+You can add a command to use the CLI instead of the GUI. For example, to get the complete command line usage information printed to the terminal window just add a question mark:
+
+    $ etm ?
+    Usage:
+
+        etm [logging level] [path] [?] [acmsv]
+
+    With no arguments, etm will set logging level 3 (warn), use settings from
+    the configuration file ~/.etm/etmtk.cfg, and open the GUI.
+
+    If the first argument is an integer not less than 1 (debug) and not greater
+    than 5 (critical), then set that logging level and remove the argument.
+
+    If the first (remaining) argument is the path to a directory that contains
+    a file named etmtk.cfg, then use that configuration file and remove the
+    argument.
+
+    If the first (remaining) argument is one of the commands listed below, then
+    execute the remaining arguments without opening the GUI.
+
+        a ARG   display the agenda view using ARG, if given, as a filter.
+        d ARG   display the day view using ARG, if given, as a filter.
+        k ARG   display the keywords view using ARG, if given, as a filter.
+        n ARGS  Create a new item using the remaining arguments as the item
+                specification. (Enclose ARGS in quotes to prevent shell
+                expansion.)
+        m INT   display a report using the remaining argument, which must be a
+                positive integer, to display a report using the corresponding
+                entry from the file given by report_specifications in etmtk.cfg.
+                Use ? m to display the numbered list of entries from this file.
+        p ARG   display the path view using ARG, if given, as a filter.
+        r ARGS  display a report using the remaining arguments as the report
+                specification. (Enclose ARGS in quotes to prevent shell
+                expansion.)
+        t ARG   display the tags view using ARG, if given, as a filter.
+        v       display information about etm and the operating system.
+        ? ARG   display (this) command line help information if ARGS = '' or,
+                if ARGS = X where X is one of the above commands, then display
+                details about command X. 'X ?' is equivalent to '? X'.
+
+For another example, you can print your agenda to the terminal window by adding the letter "a":
+
+    $ etm a
+    Sun Apr 06, 2014
+      > set up luncheon meeting with Joe Smith           4d
+    Mon Apr 07, 2014
+      * test command line event                      3pm ~ 4pm
+      * Aerobics                                     5pm ~ 6pm
+      - follow up with Mary Jones
+    Wed Apr 09, 2014
+      * Aerobics                                     5pm ~ 6pm
+    Thu Apr 10, 2014
+      * Frank Burns conference call 1pm Pacif..     4pm ~ 5:30pm
+      * Book club                                    7pm ~ 9pm
+      - sales meeting
+      - set up luncheon meeting with Joe Smith          15m
+    Now
+      Available
+        - Hair cut                                      -1d
+    Next
+      errands
+        - milk and eggs
+      phone
+        - reservation for Saturday dinner
+    Someday
+      ? lose weight and exercise more
+
+You filter the output by adding a (case-insensitive) argument:
+
+    $ etm a smith
+    Sun Apr 06, 2014
+      > set up luncheon meeting with Joe Smith           4d
+    Thu Apr 10, 2014
+      - set up luncheon meeting with Joe Smith          15m
+
+Or you can add a question mark to a command to get more information, e.g.:
+
+    $ etm r ?
+    Usage:
+
+        etm r <type> <groupby> [options]
+
+    Generate a report where type is either 'a' (action) or 'c' (composite).
+    Groupby can include *semicolon* separated date specifications and
+    elements from:
+        c context
+        f file path
+        k keyword
+        t tag
+        u user
+
+    A *date specification* is either
+        w:   week number
+    or a combination of one or more of the following:
+        yy:   2-digit year
+        yyyy:   4-digit year
+        M:   month: 1 - 12
+        MM:   month: 01 - 12
+        MMM:   locale specific abbreviated month name: Jan - Dec
+        MMMM:   locale specific month name: January - December
+        d:   month day: 1 - 31
+        dd:   month day: 01 - 31
+        ddd:   locale specific abbreviated week day: Mon - Sun
+        dddd:   locale specific week day: Monday - Sunday
+
+    Options include:
+        -b begin date
+        -c context regex
+        -d depth (a reports only)
+        -e end date
+        -f file regex
+        -k keyword regex
+        -l location regex
+        -o omit
+        -s summary regex
+        -t tags regex
+        -u user regex
+        -w column 1 width
+        -W column 2 width
+
+    Example:
+
+        etm r 'c ddd, MMM d yyyy -b 1 -e +1/1'
+
+Note: The CLI offers the same views and reporting, with the exception of week view, as the GUI. It is also possible to create new items in the CLI with the `n` command. Other modifications such as copying, deleting, finishing and so forth, can only be done in the GUI or, perhaps, in your favorite text editor. An advantage to using the GUI is that it provides validation.
+
 ## Views
 
 All views, including week view, display only items consistent with the current choices of active calendars.
@@ -122,6 +256,7 @@ The timer starts automatically when you close the dialog. Once the timer is runn
 
 While a timer is active, the title, elapsed time and status - running or paused - is displayed in the status bar.
 
+Tip: When creating a repeating item, press *Validate* to check your entry and see a list of the instances that will be generated.
 
 ## Editing Existing Items
 
@@ -144,6 +279,8 @@ When either *Copy* or *Edit* is chosen for a repeating item, you can further cho
 When *Delete* is chosen for a repeating item, a further choice is available:
 
 4. all previous instances
+
+Tip: Use *Reschedule* to enter a date for an undated item or to change the scheduled date for the item or the selected instance of a repeating item. All you have to do is enter the new (fuzzy parsed) datetime.
 
 ## Data Organization and Calendars
 

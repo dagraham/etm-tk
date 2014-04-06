@@ -158,7 +158,7 @@ If the data directory needs to be created, then a file `~/.etm/data/sample.txt` 
 
 ### Previous etm users
 
-If you would like to use your current configuration settings, make a copy of `~/.etm/etm.cfg` and rename it `~/.etm/etmtk.cfg`.
+The first time you run etm, it will copy your current configuration settings from `~/.etm/etm.cfg` to `~/.etm/etmtk.cfg`. You can make any changes you like to the latter file without affecting the former.
 
 You can switch back and forth between etm_qt and etm. Any changes made to your data files by either one will be compatible with the other one.
 
