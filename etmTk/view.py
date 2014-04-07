@@ -775,6 +775,9 @@ class App(Tk):
         REPORT = _("Report")
         self.add2menu(root, (REPORT, ))
         self.add2menu(REPORT, (_("Create and display selected report"), "Return"))
+        self.add2menu(REPORT, (_("Export report in text format ..."), "Ctrl-T"))
+        self.add2menu(REPORT, (_("Export report in csv format ..."), "Ctrl-X"))
+        self.add2menu(REPORT, (_("Save changes to report specifications"), "Ctrl-W"))
         self.add2menu(REPORT, (_("Expand report list"), "Down"))
         self.add2menu(REPORT, (_("Quit"), "Ctrl-Q"))
 

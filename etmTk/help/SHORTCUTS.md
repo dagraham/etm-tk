@@ -67,4 +67,8 @@ Note: Most dialog windows can be closed by pressing *Escape*.
         Save changes and close editor                   Ctrl-W
     Report
         Create and display selected report              Return
+        Export report in text format ...                Ctrl-T
+        Export report in csv format ...                 Ctrl-X
+        Save changes to report specifications           Ctrl-W
         Expand report list                               Down
+        Quit                                            Ctrl-Q

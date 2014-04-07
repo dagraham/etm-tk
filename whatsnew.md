@@ -88,6 +88,7 @@ The goals and initial results for this version:
 
 ## Comands and Shortcuts
 
+Note: Most dialogs can be closed by pressing Escape.
 
     Menubar
         File
@@ -147,3 +148,15 @@ The goals and initial results for this version:
             Note                                        Ctrl-N
             Path                                        Ctrl-P
             Week                                        Ctrl-W
+    Edit
+        Show possible completions                     Ctrl-Space
+        Validate entry                                  Ctrl-?
+        Close editor                                    Ctrl-Q
+        Save changes and close editor                   Ctrl-W
+    Report
+        Create and display selected report              Return
+        Export report in text format ...                Ctrl-T
+        Export report in csv format ...                 Ctrl-X
+        Save changes to report specifications           Ctrl-W
+        Expand report list                               Down
+        Quit                                            Ctrl-Q
