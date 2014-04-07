@@ -57,8 +57,8 @@ FOUND = "found"  # for found text marking
 
 MAKE = _("Make")
 PRINT = _("Print")
-SAVEAS = _("Save as ...")
-EXPORTCSV = _("Export in CSV format ...")
+EXPORTTEXT = _("Export report in text format ...")
+EXPORTCSV = _("Export report in CSV format ...")
 SAVESPECS = _("Save changes to report specifications")
 CLOSE = _("Close")
 
@@ -115,14 +115,14 @@ class ReportWindow(Toplevel):
         # report menu
         self.reportLabel = _("Report Commands")
         self.rm_options = [[MAKE, 'm'],
-                           [SAVEAS, 's'],
+                           [EXPORTTEXT, 't'],
                            [EXPORTCSV, 'x'],
                            [SAVESPECS, 'w'],
                            [CLOSE, 'q'],
         ]
 
         self.rm2cmd = {'m': self.makeReport,
-                         's': self.saveReportAs,
+                         't': self.exportText,
                          'x': self.exportCSV,
                          'w': self.saveSpecs,
                          'q': self.quit}
@@ -308,7 +308,7 @@ class ReportWindow(Toplevel):
     def newselection(self, event=None):
         self.value_of_combo = self.box.get()
 
-    def saveReportAs(self):
+    def exportText(self):
         logger.debug("spec: {0}".format(self.value_of_combo))
         fileops = {'defaultextension': '.text',
                    'filetypes': [('text files', '.text')],
