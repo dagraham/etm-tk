@@ -2,7 +2,7 @@
 
 In contrast to most calendar/todo applications, creating items (events, tasks, and so forth) in etm does not require filling out fields in a form. Instead, items are created as free-form text entries using a simple, intuitive format and stored in plain text files.
 
-Dates in the examples below are entered using *fuzzy parsing* - e.g., `+7` for seven days from today, `fri` for next Friday, `+1/1` for the first day of next month, `sun - 6d` for Monday of the current week. See Help/Dates for details.
+Dates in the examples below are entered using *fuzzy parsing* - e.g., `+7` for seven days from today, `fri` for next Friday, `+1/1` for the first day of next month, `sun - 6d` for Monday of the current week. See [Dates](#dates) for details.
 
 ## Sample entries
 
@@ -320,7 +320,7 @@ and
         - [dag, false, personal/dag]
         - [shared, true, shared]
 
-then, by default, both dag and erp would see the entries from their personal files as well as the shared entries and each could optionally view the entries from the other's personal files as well.  See the Help/Preferences for details on the `calendars` entry.
+then, by default, both dag and erp would see the entries from their personal files as well as the shared entries and each could optionally view the entries from the other's personal files as well.  See the [Preferences](#preferences) for details on the `calendars` entry.
 
 Note for Windows users. The path separator needs to be "escaped" in the calendar paths, e.g., you should enter
 

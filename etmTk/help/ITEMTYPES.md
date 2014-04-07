@@ -1,6 +1,6 @@
 # Items
 
-There are several types of items in etm. Each item begins with a type character such as an asterisk (event) and continues on one or more lines either until the end of the file is reached or another line is found that begins with a type character. The type character for each item is followed by the item summary and then, perhaps, by one or more `@key value` pairs - see *@Keys* for details. The order in which such pairs are entered does not matter.
+There are several types of items in etm. Each item begins with a type character such as an asterisk (event) and continues on one or more lines either until the end of the file is reached or another line is found that begins with a type character. The type character for each item is followed by the item summary and then, perhaps, by one or more `@key value` pairs - see [&#64;-Keys](#keys) for details. The order in which such pairs are entered does not matter.
 
 ## ~ Action
 
@@ -8,7 +8,7 @@ A record of the expenditure of time (`@e`) and/or money (`@x`). Actions are not 
 
         ~ picked up lumber and paint @s mon 3p @e 1h15m @x 127.32
 
-Entries such as `@s mon 3p`, `@e 1h15m` and `@x 127.32` are discussed below under *Item details*. Action entries form the basis for time and expense billing using action reports - see *Reports* for details.
+Entries such as `@s mon 3p`, `@e 1h15m` and `@x 127.32` are discussed below under *Item details*. Action entries form the basis for time and expense billing using action reports - see [Reports](#reports) for details.
 
 ## * Event
 
@@ -30,7 +30,7 @@ Holidays, anniversaries, birthdays and such. Similar to an event with a date but
 
         ^ The !1776! Independence Day @s 2010-07-04 @r y &M 7 &m 4
 
-On July 4, 2013, this would appear as `The 237th Independence Day`. Here !1776!` is an example of an *anniversary substitution* - see *Dates* for details.
+On July 4, 2013, this would appear as `The 237th Independence Day`. Here !1776!` is an example of an *anniversary substitution* - see [Dates](#dates) for details.
 
 ## ! Note
 

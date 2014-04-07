@@ -16,7 +16,7 @@ Together, the type character, groupby setting and options determine which items 
 
 - **a**: action report.
 
-    A report of expenditures of time and money recorded in *actions* with output formatted using `action_template` computations and expansions. See Help/Preferences for further details about the role of `action_template` in formatting action report output.
+    A report of expenditures of time and money recorded in *actions* with output formatted using `action_template` computations and expansions. See [Preferences](#preferences) for further details about the role of `action_template` in formatting action report output.
 
 - **c**: composite report.
 
