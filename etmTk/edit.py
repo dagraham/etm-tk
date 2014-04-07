@@ -59,7 +59,6 @@ MAKE = _("Make")
 PRINT = _("Print")
 SAVEAS = _("Save as ...")
 EXPORTCSV = _("Export in CSV format ...")
-EMAILREPORT = _("Email ...")
 SAVESPECS = _("Save changes to report specifications")
 CLOSE = _("Close")
 
@@ -118,7 +117,6 @@ class ReportWindow(Toplevel):
         self.rm_options = [[MAKE, 'm'],
                            [SAVEAS, 's'],
                            [EXPORTCSV, 'x'],
-                           [EMAILREPORT, 'e'],
                            [SAVESPECS, 'w'],
                            [CLOSE, 'q'],
         ]
@@ -126,7 +124,6 @@ class ReportWindow(Toplevel):
         self.rm2cmd = {'m': self.makeReport,
                          's': self.saveReportAs,
                          'x': self.exportCSV,
-                         'e': self.emailReport,
                          'w': self.saveSpecs,
                          'q': self.quit}
         self.rm_opts = [x[0] for x in self.rm_options]
@@ -311,12 +308,25 @@ class ReportWindow(Toplevel):
     def newselection(self, event=None):
         self.value_of_combo = self.box.get()
 
-    def reportHelp(self):
-        logger.warn("not implemented")
-
     def saveReportAs(self):
-        logger.debug("not implemented")
-        pass
+        logger.debug("spec: {0}".format(self.value_of_combo))
+        fileops = {'defaultextension': '.text',
+                   'filetypes': [('text files', '.text')],
+                   'initialdir': self.options['etmdir'],
+                   'title': 'Text report files',
+                   'parent': self}
+        filename = asksaveasfilename(**fileops)
+        if not filename:
+            return False
+        self.text = text = getReportData(
+            self.value_of_combo,
+            self.loop.file2uuids,
+            self.loop.uuid2hash,
+            self.loop.options,
+            export=False)
+        fo = codecs.open(filename, 'w', self.options['encoding']['file'])
+        fo.write(self.text)
+        fo.close()
 
     def exportCSV(self):
         logger.debug("spec: {0}".format(self.value_of_combo))
@@ -339,9 +349,6 @@ class ReportWindow(Toplevel):
             fo.write("{0}\n".format(",".join(row)))
         fo.close()
 
-    def emailReport(self):
-        logger.debug("not implemented")
-        pass
 
     def confirm(self, parent=None, title="", prompt="", instance="xyz"):
         ok, value = OptionsDialog(parent=parent, title=_("confirm").format(instance), prompt=prompt).getValue()
