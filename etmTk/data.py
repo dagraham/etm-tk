@@ -924,9 +924,6 @@ def get_options(d=''):
 
     time_zone = get_localtz()[0]
 
-    # for adjusting vertical height in <GUI> tree "views" {if positive}
-    default_rowsize = 0
-
     if windoz:
         default_fontsize = 10
     elif mac:
@@ -998,8 +995,6 @@ def get_options(d=''):
         'report_specifications': os.path.join(etmdir, 'reports.cfg'),
         'report_width1': 43,
         'report_width2': 17,
-
-        'rowsize': default_rowsize,
 
         'show_finished': 1,
 
@@ -1075,7 +1070,7 @@ def get_options(d=''):
                 # we want to allow 0 as an entry
                 options[key] = default_options[key]
                 changed = True
-        elif key in ['ampm', 'dayfirst', 'yearfirst', 'rowsize']:
+        elif key in ['ampm', 'dayfirst', 'yearfirst']:
             if key not in user_options:
                 # we want to allow False as an entry
                 options[key] = default_options[key]

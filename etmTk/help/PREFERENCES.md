@@ -426,12 +426,6 @@ Report begin and end are fuzzy parsed dates specifying the default period for re
 
 In the reports dialog these appear in the report specifications pop-up list. A specification from the list can be selected and, perhaps, modified or an entirely new specification can be entered. See the *Reports* tab for details. See also the *agenda* settings above.
 
-### rowsize
-
-    rowsize: 18
-
-If positive, use this vertical size in GUI tree views.
-
 ### show_finished
 
     show_finished: 1
