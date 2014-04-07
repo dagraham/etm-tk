@@ -30,7 +30,7 @@ Holidays, anniversaries, birthdays and such. Similar to an event with a date but
 
         ^ The !1776! Independence Day @s 2010-07-04 @r y &M 7 &m 4
 
-On July 4, 2013, this would appear as `The 237th Independence Day`. Here !1776!` is an example of an *anniversary substitution* - see Help/Dates for details.
+On July 4, 2013, this would appear as `The 237th Independence Day`. Here !1776!` is an example of an *anniversary substitution* - see Dates for details.
 
 ## ! Note
 

@@ -121,7 +121,7 @@ For another example, you can print your agenda to the terminal window by adding 
     Someday
       ? lose weight and exercise more
 
-You filter the output by adding a (case-insensitive) argument:
+You can filter the output by adding a (case-insensitive) argument:
 
     $ etm a smith
     Sun Apr 06, 2014
@@ -129,7 +129,7 @@ You filter the output by adding a (case-insensitive) argument:
     Thu Apr 10, 2014
       - set up luncheon meeting with Joe Smith          15m
 
-Or you can add a question mark to a command to get more information, e.g.:
+Or you can add a question mark to a command to get details about the commmand, e.g.:
 
     $ etm r ?
     Usage:
@@ -190,7 +190,7 @@ In day and week views, pressing the space bar will move the display to the curre
 
 In day and week views, pressing *Ctrl-J* will first prompt for a fuzzy-parsed date and then "jump" to the specified date.
 
-### Agenda
+### Agenda View
 
 What you need to know now beginning with your schedule for the next few days and followed by items in these groups:
 
@@ -204,7 +204,7 @@ What you need to know now beginning with your schedule for the next few days and
 
 Note: Finished tasks, actions and notes are not displayed in this view.
 
-### Day
+### Day View
 
 All dated items appear in this view, grouped by date and sorted by starting time and item type. This includes:
 
@@ -216,21 +216,21 @@ All dated items appear in this view, grouped by date and sorted by starting time
 
 Tip: Want to see your next appointment with Dr. Jones? Switch to day view and enter "jones" in the filter.
 
-### Tag
+### Tag View
 
 All items with tag entries grouped by tag and sorted by type and *relevant datetime*. Note that items with multiple tags will be listed under each tag.
 
 Tip: Use the filter to limit the display to items with a particular tag.
 
-### Keyword
+### Keyword View
 
 All items grouped by keyword and sorted by type and *relevant datetime*.
 
-### Note
+### Note View
 
 All notes grouped and sorted by keyword and summary.
 
-### Path
+### Path View
 
 All items grouped by file path and sorted by type and *relevant datetime*. Use this view to review the status of your projects.
 
@@ -238,7 +238,7 @@ The *relevant datetime* is the past due date for any past due task, the starting
 
 Note: Items that you have "commented out" by beginning the item with a `#` will only be visible in this view.
 
-### Week
+### Week View
 
 Events and occasions displayed graphically by week. Left and right cursor keys change, respectively, to the previous and next week. Up and down cursor keys select, respectively, the previous and next items within the given week. Items can also be selected by moving the mouse over the item. The summary and time period for the selected item is displayed at the bottom of the screen. Pressing return with an item selected or control-clicking an item opens a context menu. Control-clicking an unscheduled time opens a dialog to create an event for that date and time.
 
