@@ -467,31 +467,6 @@ Required settings for text messaging in alerts. Enter the 10-digit area code and
 
 The setting affects only the twelve month calendar display.
 
-### sunmoon_location
-
-    sunmoon_location: [Chapel Hill, NC]
-
-The USNO location for sun/moon data. Either a US city-state 2-tuple such as `[Chapel Hill, NC]` or a placename-longitude-latitude 7-tuple such as `[Home, W, 79, 0, N, 35, 54]`.
-
-Enter a blank value to disable sunmoon information.
-
-### weather_location
-
-    weather_location: w=615702
-
-To get the yahoo weather location code (WOEID) go to http://weather.yahoo.com/, enter your location and hit return. When the weather page for your location opens, the WOEID will be in the url for your location, e.g., for Paris, FR the url is
-
-    http://weather.yahoo.com/france/ile-de-france/paris-615702/
-
-and the WOEID is 615702. For US locations you can us the US 5-digit zip code for your location. E.g. my zip code in Chapel Hill, NC is 27517 and I would enter
-
-    weather_location: p=27517
-
-Note that `p=` replaces `w=` when using a zip code instead of a WOEID. By default temperatures are given in degrees Farenheit. If you would prefer Celcius append `&u=c` to either the WOEID or the zip code in your `weather_location`. Note that choosing Celsius degree units changes all the weather units to metric, for example, wind speed will be reported as kilometers per hour and barometric pressure as millibars.
-
-Enter a blank value to disable weather information.
-
-
 ### weeks_after
 
     weeks_after: 52

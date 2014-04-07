@@ -1012,8 +1012,6 @@ def get_options(d=''):
         'sms_subject': '!time_span!',
 
         'sundayfirst': False,
-        'sunmoon_location': [],
-        'weather_location': '',
         'weeks_after': 52,
         'yearfirst': yearfirst}
 
