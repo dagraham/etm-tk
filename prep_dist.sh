@@ -62,7 +62,7 @@ if asksure; then
     newpatch=$(($patch +1))
     tag=$major.$minor.$newpatch
     change="incrementing the current version $vinfo.
-Edit etmQt/v.py to change the major and minor numbers."
+Edit etmTk/v.py to change the major and minor numbers."
     hg tag $tag -f
     echo "version = \"$tag\"" > /Users/dag/etm-tk/etmTk/v.py
     echo "Updated to $tag [$versioninfo]" >> $logfile
@@ -92,7 +92,6 @@ echo
 # cp /Users/dag/etm-qt/etm-sample/data/shared/sample_datafile.txt.orig /Users/dag/etm-qt/etm-sample/data/shared/sample_datafile.txt
 echo "Updating etm-sample"
 cp "$home/etm-sample/data/shared/sample_datafile.txt.orig" "$home/etm-sample/data/shared/sample_datafile.txt"
-# cd /Users/dag/etm-qt/etmQt/language
 
 cd "$home/etmTk"
 pwd

@@ -1,5 +1,7 @@
 # Menu Shortcuts
 
+Note: Most dialog windows can be closed by pressing *Escape*.
+
     Menubar
         File
             New
@@ -58,3 +60,11 @@
             Note                                        Ctrl-N
             Path                                        Ctrl-P
             Week                                        Ctrl-W
+    Edit
+        Show possible completions                     Ctrl-Space
+        Validate entry                                  Ctrl-?
+        Close editor                                    Ctrl-Q
+        Save changes and close editor                   Ctrl-W
+    Report
+        Create and display selected report              Return
+        Expand report list                               Down

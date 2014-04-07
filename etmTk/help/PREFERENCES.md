@@ -256,10 +256,11 @@ The absolute path to the file to be used for autocompletions. Each line in the f
     @z US/Pacific
     dnlgrhm@gmail.com
 
-If you enter, for example, "@c" in the editor and press Ctrl-/, a list of possible completions will pop up and then, as you type further characters, the list will shrink to show only those that still match:
-
+If you enter, for example, "@c" in the editor and press Ctrl-Space, a list of possible completions will pop up. Choose the one you want and press *Return* to insert it and close the popup.
 
 Up and down arrow keys change the selection and either *Tab* or *Return* inserts the selection.
+
+To edit the auto_completions file, press *Shift-Control-C* in the main window or from the main menu under *File/Open*.
 
 ### calendars
 

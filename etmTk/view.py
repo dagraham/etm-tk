@@ -766,6 +766,20 @@ class App(Tk):
                 [x[2] for x in calendars if x[1]])
             self.default_regex = re.compile(default_pattern)
 
+        self.add2menu(root, (EDIT, ))
+        self.add2menu(EDIT, (_("Show possible completions"), "Ctrl-Space"))
+        self.add2menu(EDIT, (_("Validate entry"), "Ctrl-?"))
+        self.add2menu(EDIT, (_("Close editor"), "Ctrl-Q"))
+        self.add2menu(EDIT, (_("Save changes and close editor"), "Ctrl-W"))
+
+        REPORT = _("Report")
+        self.add2menu(root, (REPORT, ))
+        self.add2menu(REPORT, (_("Create and display selected report"), "Return"))
+        self.add2menu(REPORT, (_("Expand report list"), "Down"))
+        self.add2menu(REPORT, (_("Quit"), "Ctrl-Q"))
+
+
+
         # start clock
         self.updateClock()
 

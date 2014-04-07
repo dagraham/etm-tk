@@ -116,7 +116,7 @@ class MenuTree:
     def showMenu(self, position, level=_ROOT):
         queue = self[position].fpointer
         if level == _ROOT:
-            self.lst = []
+            self.lst = ["Note: Most dialogs can be closed by pressing Escape.", ""]
         else:
             name, key = self[position].name.split("::")
             name = "{0}{1}".format("    "*(level-1), name.strip())

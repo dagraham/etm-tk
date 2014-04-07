@@ -160,6 +160,7 @@ class ReportWindow(Toplevel):
         self.e.pack(side=LEFT, padx=0, expand=1, fill=X)
         self.e.bind("<Return>", self.onFind)
         Button(topbar, text='>', command=self.onFind, highlightbackground=BGCOLOR,  padx=8, pady=2).pack(side=LEFT, padx=0)
+        Button(topbar, text=_("Quit"), command=self.quit, highlightbackground=BGCOLOR,  padx=8, pady=2).pack(side=RIGHT, padx=0)
 
         # # help
         # Button(topbar, text="?", command=self.reportHelp, highlightbackground=BGCOLOR).pack(side=LEFT, padx=4)
@@ -179,6 +180,7 @@ class ReportWindow(Toplevel):
         self.box.bind("<<ComboboxSelected>>", self.newselection)
         self.bind("<Return>", self.makeReport)
         self.bind("<Escape>", self.quit)
+        self.bind("<Control-q>", self.quit)
         self.specs = ['']
         if ('report_specifications' in self.options and os.path.isfile(self.options['report_specifications'])):
             with open(self.options['report_specifications']) as fo:
@@ -400,18 +402,23 @@ class SimpleEditor(Toplevel):
         btnwdth = 5
 
         # ok will check, save and quit
-        Button(frame, text=_("OK"), highlightbackground=BGCOLOR, width=btnwdth, command=self.onSave, pady=2).pack(side=RIGHT, padx=4)
+        Button(frame, text=_("Save and Exit"), highlightbackground=BGCOLOR, command=self.onSave, pady=2).pack(side=RIGHT, padx=4)
 
         l, c = commandShortcut('w')
         self.bind(c, self.onSave)
 
-        # cancel will quit with a warning prompt if modified
-        Button(frame, text=_("Cancel"), highlightbackground=BGCOLOR, pady=2, width=btnwdth, command=self.cancel).pack(side=RIGHT, padx=4)
+        # quit with a warning prompt if modified
+        Button(frame, text=_("Cancel"), highlightbackground=BGCOLOR, pady=2, command=self.quit).pack(side=LEFT, padx=4)
         # self.bind("<Escape>", self.quit)
+
+        l, c = commandShortcut('q')
+        self.bind(c, self.quit)
         self.bind("<Escape>", self.cancel)
         # check will evaluate the item entry and, if repeating, show reps
         inspect = Button(frame, text=_("Validate"), highlightbackground=BGCOLOR,  command=self.onCheck, pady=2)
-        inspect.pack(side=LEFT, padx=4)
+        l, c = commandShortcut('?')
+        self.bind(c, self.onCheck)
+        inspect.pack(side=RIGHT, padx=4)
 
         # find
         Button(frame, text='x', command=self.clearFind, highlightbackground=BGCOLOR, padx=8, pady=2).pack(side=LEFT, padx=0)
@@ -514,8 +521,6 @@ class SimpleEditor(Toplevel):
             self.setmodified(False)
         self.text.bind('<<Modified>>', self.updateSaveStatus)
 
-        # if self.parent:
-        #     self.initial_focus().focus_set = self.parent
         self.text.focus_set()
         self.protocol("WM_DELETE_WINDOW", self.quit)
         if parent:
@@ -657,7 +662,7 @@ class SimpleEditor(Toplevel):
             self.quit()
         else:
             # we are editing an item
-            ok = self.onCheck(showreps=False)
+            ok = self.onCheck(showreps=False, showres=False)
             if not ok:
                 logger.debug('not ok')
                 return "break"
@@ -713,7 +718,7 @@ class SimpleEditor(Toplevel):
             self.quit()
             return "break"
 
-    def onCheck(self, event=None, showreps=True):
+    def onCheck(self, event=None, showreps=True, showres=True):
         self.loop.messages = []
         text = self.gettext()
         logger.debug("text: {0}".format(text))
@@ -748,9 +753,11 @@ class SimpleEditor(Toplevel):
 
             repetitions = "{0}".format("\n".join(repsfmt))
             if showing_all:
-                self.messageWindow(ALLREPS, repetitions, opts=self.options)
+                self.messageWindow(ALLREPS, repetitions, opts=self.options, width=24)
             else:
-                self.messageWindow(SOMEREPS, repetitions, opts=self.options)
+                self.messageWindow(SOMEREPS, repetitions, opts=self.options, width=24)
+        elif showres:
+            self.messageWindow(MESSAGES, _("valid entry"), opts=self.options, height=1, width=14)
         logger.debug(('onCheck: Ok'))
         return True
 
@@ -776,6 +783,8 @@ class SimpleEditor(Toplevel):
         if t.strip():
             self.clearFind()
             return "break"
+        # if self.checkmodified():
+        #     return "break"
         logger.debug(('calling quit'))
         self.quit()
 
@@ -794,7 +803,7 @@ class SimpleEditor(Toplevel):
             self.destroy()
         return "break"
 
-    def messageWindow(self, title, prompt, opts=None):
+    def messageWindow(self, title, prompt, opts=None, height=14, width=52):
         win = Toplevel()
         win.title(title)
         # win.minsize(444, 430)
@@ -809,8 +818,8 @@ class SimpleEditor(Toplevel):
         t = ReadOnlyText(
             f, wrap="word", padx=2, pady=2, bd=2, relief="sunken",
             font=self.tkfixedfont,
-            height=14,
-            width=52,
+            height=height,
+            width=width,
             takefocus=False)
         t.insert("0.0", prompt)
         t.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0, pady=0)

@@ -74,14 +74,6 @@ Items in *etm* begin with a type character such as an asterisk (event) and conti
 
 ## Installation ##
 
-### Self-contained freeze file installation
-
-
-There are self-contained versions of etm created using cx_freeze. Download *etmtk-x.x.x-freeze-PLATFORM.tar.gz* from this site and unpack it in a convenient location. Everything but Mercurial is included - follow the instructions below to install Mercurial.
-
-The Darwin version was created using OS X 10.9.2. The Linux version was created using Ubuntu 12.04-32bit. A Windows version using Windows 7.1 may soon be available as well.
-
-
 ### Source installation under OS X, Linux or Windows
 
 Python 2.7.x or python >= 3.3.0 is required.
@@ -94,7 +86,7 @@ The following python packages are required for etm but are not included in the p
 
 Tk and the python module tkinter are also required but are typically already installed on most modern operating systems. If needed, installation instructions are given at www.tkdocs.com/tutorial/install.html.
 
-#### Installing etm
+### Installing etm
 
 Download 'etmtk-x.x.x.tar.gz' from this site, unpack the tarball, cd to the resulting directory and do the normal
 
@@ -124,7 +116,7 @@ or
 
 from this directory.
 
-#### Installing Mercurial
+### Installing Mercurial
 
 **Optional but strongly recommended!**
 
