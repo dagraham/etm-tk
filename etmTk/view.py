@@ -769,7 +769,7 @@ class App(Tk):
         self.add2menu(root, (EDIT, ))
         self.add2menu(EDIT, (_("Show possible completions"), "Ctrl-Space"))
         self.add2menu(EDIT, (_("Validate entry"), "Ctrl-?"))
-        self.add2menu(EDIT, (_("Close editor"), "Ctrl-Q"))
+        self.add2menu(EDIT, (_("Cancel"), "Ctrl-Q"))
         self.add2menu(EDIT, (_("Save changes and close editor"), "Ctrl-W"))
 
         REPORT = _("Report")
@@ -928,7 +928,9 @@ a time period if "+" is used."""
         changed = SimpleEditor(parent=self, options=loop.options).changed
         if changed:
             logger.debug('changed, reloading data')
-            loop.loadData()
+            # FIXME: if updateDataFromFile doesn't work
+            # loop.loadData()
+
             self.updateAlerts()
             if self.weekly:
                 self.showWeek()
@@ -1021,7 +1023,7 @@ a time period if "+" is used."""
         changed = SimpleEditor(parent=self, newhsh=hsh_cpy, rephsh=None,
                          options=loop.options, title=title, modified=True).changed
         if changed:
-            loop.loadData()
+            # loop.loadData()
             self.updateAlerts()
             if self.weekly:
                 self.showWeek()
@@ -1054,7 +1056,7 @@ a time period if "+" is used."""
                 return
         loop.item_hsh = self.itemSelected
         loop.cmd_do_delete(indx)
-        loop.loadData()
+        # loop.loadData()
         self.updateAlerts()
         if self.weekly:
             self.canvas.focus_set()
@@ -1146,7 +1148,7 @@ a time period if "+" is used."""
                      options=loop.options, title=title).changed
 
         if changed:
-            loop.loadData()
+            # loop.loadData()
             self.updateAlerts()
             if self.weekly:
                 self.showWeek()
@@ -1175,7 +1177,7 @@ a time period if "+" is used."""
                 if options['calendars'] != current_options['calendars']:
                     self.updateCalendars()
             logger.debug("changed - calling loadData and updateAlerts")
-            loop.loadData()
+            # loop.loadData()
             self.updateAlerts()
             self.showView()
 
@@ -1205,7 +1207,7 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
         logger.debug('completion date: {0}'.format(chosen_day))
         loop.item_hsh = self.itemSelected
         loop.cmd_do_finish(chosen_day)
-        loop.loadData()
+        # loop.loadData()
         self.updateAlerts()
         if self.weekly:
             self.showWeek()
@@ -1239,7 +1241,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         new_dtn = new_dt.astimezone(gettz(self.itemSelected['z'])).replace(tzinfo=None)
         logger.debug('rescheduled from {0} to {1}'.format(self.dtSelected, new_dtn))
         loop.cmd_do_reschedule(new_dtn)
-        loop.loadData()
+        # loop.loadData()
         self.updateAlerts()
         if self.weekly:
             self.showWeek()
@@ -1877,8 +1879,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             changed = SimpleEditor(parent=self, master=self.canvas, newhsh=hsh, options=loop.options).changed
 
             if changed:
-                logger.debug('changed, reloading data')
-                loop.loadData()
+                logger.debug('changed, updating alerts, ...')
+                # loop.loadData()
                 self.updateAlerts()
                 self.showView()
                 self.showWeek()
@@ -2174,7 +2176,8 @@ or 0 to display all changes.""").format(title)
         new, modified, deleted = get_changes(
             self.options, loop.file2lastmodified)
         if newday or new or modified or deleted:
-            logger.debug('refreshing view: newday or changed')
+            logger.debug('updating: newday or new: {0}; modified: {1}; deleted: {2}'
+                         .format(new, modified, deleted))
             loop.loadData()
             if self.weekly:
                 self.showWeek()
@@ -2218,7 +2221,7 @@ or 0 to display all changes.""").format(title)
             logger.debug('updateAlerts 1: {0}'.format(len(loop.alerts)))
         alerts = deepcopy(loop.alerts)
         if loop.options['calendars']:
-            logger.debug("cal_regex: {0}".format(self.cal_regex))
+            # logger.debug("cal_regex: {0}".format(self.cal_regex))
             alerts = [x for x in alerts if self.cal_regex.match(x[-1])]
         if alerts:
             curr_minutes = datetime2minutes(self.now)
@@ -2502,7 +2505,7 @@ Relative dates and fuzzy parsing are supported.""")
             self.actionTimer.timer_clear()
             self.timerStatus.set("")
             self.newmenu.entryconfig(2, state="disabled")
-            loop.loadData()
+            # loop.loadData()
             self.updateAlerts()
             self.showView(row=self.topSelected)
         else:

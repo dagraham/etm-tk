@@ -151,7 +151,7 @@ Note: Most dialogs can be closed by pressing Escape.
     Edit
         Show possible completions                     Ctrl-Space
         Validate entry                                  Ctrl-?
-        Close editor                                    Ctrl-Q
+        Cancel                                          Ctrl-Q
         Save changes and close editor                   Ctrl-W
     Report
         Create and display selected report              Return

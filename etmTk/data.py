@@ -1930,7 +1930,7 @@ def datetime2minutes(dt):
 
 def parse_datetime(dt, timezone='', f=rfmt):
     # relative date and month parsing for user input
-    logger.debug('dt: {0}, tz: {1}, f: {2}'.format(dt, timezone, f))
+    # logger.debug('dt: {0}, tz: {1}, f: {2}'.format(dt, timezone, f))
     if not dt:
         return ''
     if type(dt) is datetime:
@@ -2245,6 +2245,7 @@ def process_data_file_list(filelist, options=None):
 def process_one_file(full_filename, rel_filename, options=None):
     if not options: options = {}
     file_items = getFileItems(full_filename, rel_filename)
+    logger.debug('file_items: {0}'.format(file_items))
     return items2Hashes(file_items, options)
 
 
@@ -2291,33 +2292,33 @@ def getFiles(root):
     return common_prefix, filelist
 
 
-def removeIds(root):
-    prefix, filelist = getFiles(root)
-    for filename, relname in filelist:
-        try:
-            logger.debug("Removing id lines from {0}".format(filename))
-            filename = str(filename)
-            pathname, ext = os.path.splitext(filename)
-            directory, name = os.path.split(pathname)
-            bakfile = os.path.join(directory, "%s.bak" % name)
-            shutil.copy2(filename, bakfile)
-
-            fin = open(bakfile)
-            fout = open(filename, "w")
-
-            count = 0
-            for line in fin.readlines():
-                if id_regex.match(line):
-                    count += 1
-                else:
-                    fout.write(line)
-            fin.close()
-            fout.close()
-            os.remove(bakfile)
-            logger.debug("removed %s idlines" % count)
-        except:
-            logger.warn('error processing', filename)
-
+# def removeIds(root):
+#     prefix, filelist = getFiles(root)
+#     for filename, relname in filelist:
+#         try:
+#             logger.debug("Removing id lines from {0}".format(filename))
+#             filename = str(filename)
+#             pathname, ext = os.path.splitext(filename)
+#             directory, name = os.path.split(pathname)
+#             bakfile = os.path.join(directory, "%s.bak" % name)
+#             shutil.copy2(filename, bakfile)
+#
+#             fin = open(bakfile)
+#             fout = open(filename, "w")
+#
+#             count = 0
+#             for line in fin.readlines():
+#                 if id_regex.match(line):
+#                     count += 1
+#                 else:
+#                     fout.write(line)
+#             fin.close()
+#             fout.close()
+#             os.remove(bakfile)
+#             logger.debug("removed %s idlines" % count)
+#         except:
+#             logger.warn('error processing', filename)
+#
 
 def lines2Items(lines):
     """
@@ -2394,7 +2395,8 @@ def getFileItems(full_name, rel_name, append_newline=True):
 
 def items2Hashes(list_of_items, options=None):
     """
-        Return a list of hashes corresponding to items in list_of_items.
+        Return a list of messages and a list of hashes corresponding to items in
+        list_of_items.
     """
     if not options: options = {}
     # list_of_hashes = []
@@ -3761,6 +3763,7 @@ def get_changes(options, file2lastmodified):
         if (f, r) not in file2lastmodified:
             new.append((f, r))
         elif os.path.getmtime(f) != file2lastmodified[(f, r)]:
+            logger.debug('mtime: {0}; lastmodified: {1}'.format(os.path.getmtime(f), file2lastmodified[(f, r)]))
             modified.append((f, r))
     for (f, r) in file2lastmodified:
         if (f, r) not in filelist:
@@ -5160,8 +5163,7 @@ class ETMCmd():
             ret.append(s)
         return '\n'.join(ret)
 
-    def loadData(self):
-        logger.debug("loadData")
+    def loadData(self, file=None):
         self.count2id = {}
         now = datetime.now()
         year, wn, dn = now.isocalendar()
@@ -5186,6 +5188,35 @@ class ETMCmd():
         if self.last_rep:
             logger.debug('calling mk_rep with {0}'.format(self.last_rep))
             return self.mk_rep(self.last_rep)
+
+    def updateDataFromFile(self, fp, rp):
+        self.count2id = {}
+        now = datetime.now()
+        year, wn, dn = now.isocalendar()
+        weeks_after = self.options['weeks_after']
+        if dn > 1:
+            days = dn - 1
+        else:
+            days = 0
+        week_beg = now - days * oneday
+        bef = (week_beg + (7 * (weeks_after + 1)) * oneday)
+        self.options['bef'] = bef
+        if rp in self.file2uuids:
+            ids = self.file2uuids[rp]
+        else:
+            ids = []
+        logger.debug('fp: {0}; rp: {1}'.format(fp, rp))
+        for id in ids:
+            del self.uuid2hash[id]
+        self.file2uuids[rp] = []
+        loh = [x for x in process_one_file(fp, rp, self.options)[1] if x]
+        for hsh in loh:
+            id = hsh['i']
+            self.file2uuids[rp].append(id)
+            self.uuid2hash[id] = hsh
+        mtime = os.path.getmtime(fp)
+        self.file2lastmodified[(fp, rp)] = mtime
+        (self.rows, self.busytimes, self.busydays, self.alerts, self.dates, self.occasions) = getViewData(bef, self.file2uuids, self.uuid2hash, options=self.options)
 
     def edit_tmp(self):
         if not self.editcmd:
@@ -5250,8 +5281,16 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
             return 'error writing to file - aborted'
             return False
         shutil.copy2(self.tmpfile, file)
-        logger.debug("calling commit with mode: '{0}'".format(mode))
+        logger.debug("modified file: '{0}'".format(file))
+        pathname, ext = os.path.splitext(file)
+        if ext == ".txt":
+            # this is a data file
+            fp = file
+            rp = relpath(fp, self.options['datadir'])
+            # this is a data file
+            self.updateDataFromFile(fp, rp)
         return self.commit(file, mode)
+
 
     def get_itemhash(self, arg_str):
         try:

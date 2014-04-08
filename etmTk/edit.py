@@ -661,9 +661,10 @@ class SimpleEditor(Toplevel):
         elif self.file is not None:
             # we are editing a file
             alltext = self.gettext()
-            with codecs.open(self.file, 'w',
-                             self.options['encoding']['file']) as f:
-                f.write(alltext)
+            self.loop.safe_save(self.file, alltext)
+            # with codecs.open(self.file, 'w',
+            #                  self.options['encoding']['file']) as f:
+            #     f.write(alltext)
             self.setmodified(False)
             self.changed = True
             self.quit()
