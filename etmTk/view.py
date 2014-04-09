@@ -140,7 +140,7 @@ class App(Tk):
         self.minsize(460, 480)
         self.uuidSelected = None
         self.timerItem = None
-        self.actionTimer = Timer()
+        self.actionTimer = Timer(self)
         self.loop = loop
         self.activeAlerts = []
         self.configure(background=BGCOLOR)

@@ -245,12 +245,13 @@ class MenuTree:
 
 
 class Timer():
-    def __init__(self):
+    def __init__(self, parent=None):
         """
             Methods providing the action timer
         """
         self.timer_clear()
-        self.starttime = datetime.now()
+        self.parent = parent
+        # self.starttime = datetime.now()
 
     def timer_clear(self):
         self.timer_delta = 0 * ONEMINUTE
@@ -261,9 +262,9 @@ class Timer():
         self.timer_hsh = None
         self.timer_summary = None
 
-
     def timer_start(self, hsh=None, toggle=True):
         if not hsh: hsh = {}
+        self.starttime = datetime.now()
         self.timer_hsh = hsh
         text = hsh['_summary']
         self.timer_hsh['s'] = self.starttime
@@ -302,6 +303,9 @@ class Timer():
         elif self.timer_status == PAUSED:
             self.timer_status = RUNNING
             self.timer_last = datetime.now()
+        if self.parent:
+            self.parent.update_idletasks()
+
 
     def get_time(self):
         if self.timer_status == PAUSED:
