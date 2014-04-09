@@ -1319,6 +1319,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         if row:
             logger.debug("row: {0}".format(row))
             # self.tree.see(max(0, self.rowSelected))
+            # self.tree.yview(max(0, row - 1))
             self.tree.yview(max(0, row - 1))
 
     def showBusyTimes(self, event=None):
@@ -2113,7 +2114,6 @@ or 0 to display all changes.""").format(title)
             self.uuidSelected = None
             self.dtSelected = None
         r = self.tree.identify_row(1)
-        logger.debug("top row: '{0}' {1}".format(r, type(r)))
         if r:
             self.topSelected = int(r)
         else:
