@@ -2061,8 +2061,12 @@ or 0 to display all changes.""").format(title)
         elif uuid is None: # tree view
             item = self.tree.selection()[0]
             self.rowSelected = int(item)
-            type_chr = self.tree.item(item)['text'][0]
+            # type_chr is the actual type, e.g., "-"
+            # show_chr is what's displayed in the tree, e.g., "X"
+            type_chr = show_chr = self.tree.item(item)['text'][0]
             uuid, dt, hsh = self.getInstance(item)
+            if hsh:
+                type_chr = hsh['itemtype']
 
         if uuid is not None:
             # self.itemmenu.configure(state="normal")
@@ -2075,7 +2079,7 @@ or 0 to display all changes.""").format(title)
                 self.itemmenu.entryconfig(1, label=self.em_opts[1])
                 self.itemmenu.entryconfig(2, label=self.em_opts[2])
                 item = _('selected')
-            isUnfinished = (type_chr in ['-', '+', '%'])
+            isUnfinished = (type_chr in ['-', '+', '%'] and show_chr != 'X')
             hasLink = ('g' in hsh and hsh['g'])
             l1 = hsh['fileinfo'][1]
             l2 = hsh['fileinfo'][2]
@@ -2089,7 +2093,7 @@ or 0 to display all changes.""").format(title)
                 text = "{1}\n\n{2}: {3}\n\n{4}: {5}".format(item, hsh['entry'].lstrip(), _("Errors"), hsh['errors'],  _("file"), filetext)
             else:
                 text = "{1}\n\n{2}: {3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
-            for i in [0, 1, 2, 4, 6]: # everything except finish
+            for i in [0, 1, 2, 4, 6]: # everything except finish and open link
                 self.itemmenu.entryconfig(i, state='normal')
             if isUnfinished:
                 self.itemmenu.entryconfig(3, state='normal')

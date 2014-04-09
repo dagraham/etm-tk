@@ -3817,7 +3817,7 @@ def expandPath(path):
 # noinspection PyArgumentList
 def getDoneAndTwo(hsh, keep=False):
     if hsh['itemtype'] not in ['+', '-', '%']:
-        return ()
+        return
     done = None
     nxt = None
     following = None
