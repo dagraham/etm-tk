@@ -67,16 +67,6 @@ from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, comm
 
 from etmTk.dialog import BGCOLOR, OptionsDialog, ReadOnlyText
 
-# from idlelib.WidgetRedirector import WidgetRedirector
-#
-# class ReadOnlyText(Text):
-#     # noinspection PyShadowingNames
-#     def __init__(self, *args, **kwargs):
-#         Text.__init__(self, *args, **kwargs)
-#         self.redirector = WidgetRedirector(self)
-#         self.insert = self.redirector.register("insert", lambda *args, **kw: "break")
-#         self.delete = self.redirector.register("delete", lambda *args, **kw: "break")
-
 class ReportWindow(Toplevel):
     def __init__(self, parent=None, options=None, title=None):
         Toplevel.__init__(self, parent)
@@ -561,6 +551,8 @@ class SimpleEditor(Toplevel):
     def showCompletions(self, e=None):
         if not self.completions:
             return "break"
+        if self.autocompletewindow:
+            return "break"
         line = self.text.get("insert linestart", INSERT)
         m = completion_regex.search(line)
         if m:
@@ -573,7 +565,8 @@ class SimpleEditor(Toplevel):
                 # self.line = line
                 self.match = match
 
-                self.autocompletewindow = acw = Toplevel(self)
+                self.autocompletewindow = acw = Toplevel(master=self.text)
+                self.autocompletewindow.wm_attributes("-topmost", 1)
                 self.scrollbar = scrollbar = ttk.Scrollbar(acw,
                                                            orient="vertical")
                 self.listbox = listbox = Listbox(acw, yscrollcommand=scrollbar.set, exportselection=False, bg="white")
@@ -584,10 +577,14 @@ class SimpleEditor(Toplevel):
                 listbox.pack(side=LEFT, fill=BOTH, expand=True)
                 self.listbox.select_set(0)
                 self.listbox.see(0)
-                self.listbox.focus_set()
+
+                # self.listbox.focus_set()
+
                 self.listbox.bind("<Double-1>", self.completionSelected)
                 self.listbox.bind("<Return>", self.completionSelected)
+
                 self.listbox.bind("<Escape>", self.hideCompletions)
+
                 self.listbox.bind("Up", self.cursorUp)
                 self.listbox.bind("Down", self.cursorDown)
 
@@ -790,6 +787,9 @@ class SimpleEditor(Toplevel):
         t = self.find_text.get()
         if t.strip():
             self.clearFind()
+            return "break"
+        if self.autocompletewindow:
+            self.hideCompletions()
             return "break"
         # if self.checkmodified():
         #     return "break"

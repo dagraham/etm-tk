@@ -5217,6 +5217,7 @@ class ETMCmd():
         mtime = os.path.getmtime(fp)
         self.file2lastmodified[(fp, rp)] = mtime
         (self.rows, self.busytimes, self.busydays, self.alerts, self.dates, self.occasions) = getViewData(bef, self.file2uuids, self.uuid2hash, options=self.options)
+        dump_data(self.options, self.uuid2hash, self.file2uuids, self.file2lastmodified, [], [])
 
     def edit_tmp(self):
         if not self.editcmd:

@@ -266,6 +266,7 @@ class Timer():
         if not hsh: hsh = {}
         self.timer_hsh = hsh
         text = hsh['_summary']
+        self.timer_hsh['s'] = self.starttime
         if 'e' in hsh:
             self.timer_delta = hsh['e']
         if len(text) > 16:
@@ -286,8 +287,6 @@ class Timer():
             self.timer_status = PAUSED
 
         self.timer_delta = max(self.timer_delta, ONEMINUTE)
-        # e = fmt_period(self.timer_delta)
-        self.timer_hsh['s'] = self.starttime
         self.timer_hsh['e'] = self.timer_delta
         self.timer_hsh['itemtype'] = '~'
 
