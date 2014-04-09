@@ -384,25 +384,18 @@ class App(Tk):
             viewmenu.entryconfig(12, accelerator=l)
         self.add2menu(path, (label, l))
 
-        l = "Escape"
-        label=_("Clear selection")
-        viewmenu.add_command(label=label, underline=1, command=self.on_clear_item)
-        if not mac:
-            viewmenu.entryconfig(13, accelerator=l)
-        self.add2menu(path, (label, l))
-
         l, c = commandShortcut("b")
         label=_("List busy times in week")
         viewmenu.add_command(label=label, underline=5, command=self.showBusyTimes)
         if not mac:
-            viewmenu.entryconfig(14, accelerator=l)
+            viewmenu.entryconfig(13, accelerator=l)
         self.bind(c, lambda event: self.after(AFTER, self.showBusyTimes))
         self.add2menu(path, (label, l))
 
         # viewmenu.add_cascade(label=path, menu=viewmenu, underline=0)
 
         # self.viewmenu.entryconfig(0, state="normal")
-        for i in range(9, 15):
+        for i in range(9, 14):
             self.viewmenu.entryconfig(i, state="disabled")
 
 
@@ -1361,7 +1354,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             if times:
                 lines.append("%s: %s" % (weekdays[i], "; ".join(times)))
         s = "\n".join(lines)
-        self.textWindow(parent=self.canvas, title=_('busy times'), prompt=s, opts=self.options)
+        self.textWindow(parent=self, title=_('busy times'), prompt=s, opts=self.options)
 
     def setWeek(self, chosen_day=None):
         if chosen_day is None:
@@ -1446,7 +1439,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
     def closeWeekly(self, event=None):
         self.today_col = None
-        for i in range(9, 15):
+        for i in range(9, 14):
             self.viewmenu.entryconfig(i, state="disabled")
         self.canvas.pack_forget()
         self.weekly = False
@@ -1516,7 +1509,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             self.hours = ["{0}am".format(i) for i in range(7,12)] + ['12pm'] + ["{0}pm".format(i) for i in range(1,12)]
         else:
             self.hours = ["{0}:00".format(i) for i in range(7, 24)]
-        for i in [9, 10, 11, 12, 13, 15]:
+        for i in [9, 10, 11, 12, 13]:
             self.viewmenu.entryconfig(i, state="normal")
         self.canvas.focus_set()
         self.showWeek()
@@ -2424,6 +2417,8 @@ Relative dates and fuzzy parsing are supported.""")
         self.fltr.configure(bg=BGCOLOR)
         self.fltrbtn.configure(state="disabled")
         self.tree.focus_set()
+        self.tree.focus(self.rowSelected)
+        self.tree.selection_set(self.rowSelected)
 
 
     def startActionTimer(self, event=None):
