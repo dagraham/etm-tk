@@ -413,7 +413,7 @@ class SimpleEditor(Toplevel):
         self.bind("<Escape>", self.cancel)
         # check will evaluate the item entry and, if repeating, show reps
         inspect = Button(frame, text=_("Validate"), highlightbackground=BGCOLOR,  command=self.onCheck, pady=2)
-        l, c = commandShortcut('?')
+        l, c = commandShortcut('v')
         self.bind(c, self.onCheck)
         inspect.pack(side=RIGHT, padx=4)
 
