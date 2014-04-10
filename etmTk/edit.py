@@ -413,8 +413,7 @@ class SimpleEditor(Toplevel):
         self.bind("<Escape>", self.cancel)
         # check will evaluate the item entry and, if repeating, show reps
         inspect = Button(frame, text=_("Validate"), highlightbackground=BGCOLOR,  command=self.onCheck, pady=2)
-        l, c = commandShortcut('v')
-        self.bind(c, self.onCheck)
+        self.bind("<Control-question>", self.onCheck)
         inspect.pack(side=RIGHT, padx=4)
 
         # find
@@ -595,68 +594,6 @@ class SimpleEditor(Toplevel):
         self.fltr.bind("<Down>", self.cursorDown)
         self.setCompletions()
 
-        # if m:
-        #     match = m.groups()[0]
-        #     logger.debug("found match '{0}' in line '{1}'".format(match, line))
-        #     self.filterValue.set(match)
-        #     self.fltr.mark_set(INSERT, END)
-        #     self.setCompletions()
-        #
-        #     self.matches = matches = [x for x in self.completions if x.lower()
-        #         .startswith(match.lower())]
-        #     if len(matches) >= 1:
-        #         logger.debug("{0} items in completions matching '{1}'".format(len(matches), match))
-        #         # self.line = line
-        #         self.match = match
-        #
-        #         self.autocompletewindow = acw = Toplevel(master=self.text)
-        #         self.autocompletewindow.wm_attributes("-topmost", 1)
-        #
-        #         self.filterValue = StringVar(self)
-        #         self.filterValue.set(match)
-        #         # self.filterValue.trace_variable("w", self.filterView)
-        #         self.fltr = fltr = Entry(acw, textvariable=self.filterValue)
-        #         self.fltr.mark_set(INSERT, END)
-        #         self.fltr.pack(side="top", fill="x") #, expand=1, fill=X)
-        #
-        #         # self.scrollbar = scrollbar = ttk.Scrollbar(acw, orient="vertical")
-        #         self.listbox = listbox = Listbox(acw, exportselection=False)
-        #         for item in matches:
-        #             listbox.insert(END, item)
-        #         # scrollbar.config(command=listbox.yview)
-        #         # scrollbar.pack(side=RIGHT, fill="y")
-        #         listbox.pack(side="bottom", fill=BOTH, expand=True)
-        #         self.listbox.select_set(0)
-        #         self.listbox.see(0)
-        #
-        #         self.fltr.focus_set()
-        #         #
-        #         # self.listbox.bind("<Double-1>", self.completionSelected)
-        #         # self.listbox.bind("<Return>", self.completionSelected)
-        #         # self.listbox.bind("<Escape>", self.hideCompletions)
-        #         # self.listbox.bind("Up", self.cursorUp)
-        #         # self.listbox.bind("Down", self.cursorDown)
-        #         # self.fltr.bind("<Return>", self.completionSelected)
-        #         # self.fltr.bind("<Escape>", self.hideCompletions)
-        #         # self.fltr.bind("Up", self.cursorUp)
-        #         # self.fltr.bind("Down", self.cursorDown)
-        #
-        #
-        #         self.autocompletewindow.bind("<Double-1>", self.completionSelected)
-        #         self.autocompletewindow.bind("<Return>", self.completionSelected)
-        #         self.autocompletewindow.bind("<Escape>", self.hideCompletions)
-        #         self.autocompletewindow.bind("<Up>", self.cursorUp)
-        #         self.autocompletewindow.bind("<Down>", self.cursorDown)
-        #         self.fltr.bind("<Up>", self.cursorUp)
-        #         self.fltr.bind("<Down>", self.cursorDown)
-
-
-
-        #     # else:
-        #     #     relfile = relpath(self.options['auto_completions'], self.options['etmdir'])
-        #     #     self.messageWindow(title='etm', prompt=_("No matches for '{0}'\nin '{1}'.").format(match, relfile), opts=self.options)
-        #     #     return "break"
-        # return "break"
 
     def is_active(self):
         return self.autocompletewindow is not None
@@ -877,13 +814,15 @@ class SimpleEditor(Toplevel):
         return "break"
 
     def messageWindow(self, title, prompt, opts=None, height=14, width=52):
-        win = Toplevel()
+        win = Toplevel(self)
         win.title(title)
+        win.geometry("+%d+%d" % (self.text.winfo_rootx() + 50,
+                          self.text.winfo_rooty() + 50))
         # win.minsize(444, 430)
         # win.minsize(450, 450)
         f = Frame(win)
         # pack the button first so that it doesn't disappear with resizing
-        b = Button(win, text=_('OK'), width=10, command=win.destroy, default='active')
+        b = Button(win, text=_('OK'), width=10, command=win.destroy, default='active', pady=2)
         b.pack(side='bottom', fill=tkinter.NONE, expand=0, pady=0)
         win.bind('<Return>', (lambda e, b=b: b.invoke()))
         win.bind('<Escape>', (lambda e, b=b: b.invoke()))
@@ -896,10 +835,10 @@ class SimpleEditor(Toplevel):
             takefocus=False)
         t.insert("0.0", prompt)
         t.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0, pady=0)
-        ysb = ttk.Scrollbar(f, orient='vertical', command=t.yview)
-        ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
+        # ysb = ttk.Scrollbar(f, orient='vertical', command=t.yview)
+        # ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
         # t.configure(state="disabled", yscroll=ysb.set)
-        t.configure(yscroll=ysb.set)
+        # t.configure(yscroll=ysb.set)
         f.pack(padx=2, pady=2, fill=tkinter.BOTH, expand=1)
 
         win.focus_set()

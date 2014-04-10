@@ -774,8 +774,6 @@ class App(Tk):
         self.add2menu(REPORT, (_("Expand report list"), "Down"))
         self.add2menu(REPORT, (_("Quit"), "Ctrl-Q"))
 
-
-
         # start clock
         self.updateClock()
 
