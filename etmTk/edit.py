@@ -320,7 +320,7 @@ class ReportWindow(Toplevel):
 
     def exportCSV(self):
         logger.debug("spec: {0}".format(self.value_of_combo))
-        self.csv = text = getReportData(
+        data = getReportData(
             self.value_of_combo,
             self.loop.file2uuids,
             self.loop.uuid2hash,
@@ -334,11 +334,11 @@ class ReportWindow(Toplevel):
         filename = asksaveasfilename(**fileops)
         if not filename:
             return False
-        fo = codecs.open(filename, 'w', self.options['encoding']['file'])
-        for row in self.csv:
-            fo.write("{0}\n".format(",".join(row)))
-        fo.close()
-
+        import csv as CSV
+        c = CSV.writer(open(filename, "w"), delimiter=",")
+        for line in data:
+            print(line)
+            c.writerow(line)
 
     def confirm(self, parent=None, title="", prompt="", instance="xyz"):
         ok, value = OptionsDialog(parent=parent, title=_("confirm").format(instance), prompt=prompt).getValue()

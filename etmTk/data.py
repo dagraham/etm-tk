@@ -447,13 +447,13 @@ def s2or3(s):
 
 
 def term_print(s):
-    if type(s) is unicode:
-        print(s)
-    else:
+    if python_version2:
         try:
             print(unicode(s).encode(term_encoding))
         except Exception as e:
-            logger.exception("s: {0}".format(s))
+            logger.exception("error printing: '{0}', {1}".format(s, type(s)))
+    else:
+        print(s)
 
 # noinspection PyGlobalUndefined
 def setup_parse(day_first, year_first):
@@ -1757,6 +1757,9 @@ to be tallied.
 
 Recursively process groups and accumulate the totals.
     """
+    print('staring list of tuples')
+    for t in list_of_tuples:
+        print(t)
     if not options: options = {}
     if not max_level:
         max_level = len(list_of_tuples[0]) - 1
@@ -1819,13 +1822,23 @@ Recursively process groups and accumulate the totals.
         global row, rows
         hsh = {}
         lvl += 1
+        print('lvl', lvl, max_level)
+        # if max_level and lvl > max_level - 1:
         if max_level and lvl > max_level - 1:
+            print('using row', row)
             rows.append(deepcopy(row))
-            return ()
+            return
+        else:
+            print('skipping row', row)
+
+        # else:
+        #     rows.append(deepcopy(row))
         hsh['indent'] = tab * lvl
         for k, g, t in group_sort(tuple_list):
             row[lvl] = k[-1]
             row[-1] = t
+            print('row', row)
+
             hsh['count'] = len(g)
             hsh['minutes'] = t[0]  # only 2 digits after the decimal point
             hsh['value'] = "%.2f" % t[1]
@@ -1841,6 +1854,7 @@ Recursively process groups and accumulate the totals.
                 hsh['hours'] = "%d:%02d" % (t[0] // 60, t[0] % 60)
 
             hsh['label'] = k[-1]
+            print('adding to lst', expand_template(action_template, hsh, complain=True))
             lst.append(expand_template(action_template, hsh, complain=True))
             if len(g) > 1:
                 doGroups(g, lvl)
@@ -1848,8 +1862,16 @@ Recursively process groups and accumulate the totals.
                 doLeaf(g[0], lvl)
 
     doGroups(list_of_tuples, level)
+    # print('rows')
+    # for row in rows:
+    #     print(row)
+    # print('lst')
+    # for row in lst:
+    #     print(lst)
+
     if export:
         return rows
+        # return list_of_tuples
     else:
         return lst
 
@@ -3281,9 +3303,7 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
 
 @memoize
 def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
-                  colors=None,
-                  # mode='html'
-            ):
+                  colors=None):
     """
         getViewData returns items with the format:
             [(view, (sort)), node1, node2, ...,
@@ -3392,8 +3412,10 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
         else:
             depth = len(grpby['lst'])
         if export:
+            data = []
             # head = map(str, grpby['lst'][:depth])
-            head = ["{0}".format(x) for x in grpby['lst'][:depth]]
+            # head = ["{0}".format(x) for x in grpby['lst'][:depth]]
+            head = [x for x in grpby['lst'][:depth]]
             logger.debug('head: {0}\nlst: {1}\ndepth: {2}'.format(head, grpby['lst'], depth))
             csv = [head]
             if grpby['report'] == 'c':
@@ -3403,16 +3425,20 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
                     csv.append(row)
             else:
                 head.extend(['minutes', 'value', 'expense', 'charge'])
-                csv = [head]
+                data.append(head)
+                # head = ['"{0}"'.format(x) for x in head]
+                # print('head', head)
+                # csv = [head]
                 lst = tallyByGroup(
                     items, max_level=depth, options=options, export=True)
                 for row in lst:
                     # if not row:
                     #     continue
-                    tup = ['"{0}"'.format(x) for x in list(row.pop(-1))]
+                    tup = [x for x in list(row.pop(-1))]
                     row.extend(tup)
-                    csv.append(row)
-            return(csv)
+                    print('row', row)
+                    data.append(row)
+            return data
         else:
             items = tallyByGroup(items, max_level=depth, options=options)
             return "\n".join([x.rstrip() for x in items if x.strip()])

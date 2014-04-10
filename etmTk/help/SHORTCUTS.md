@@ -30,7 +30,6 @@ Note: Most dialog windows can be closed by pressing *Escape*.
             Next week                                    Right
             Previous item in week                         Up
             Next item in week                            Down
-            Clear selection                             Escape
             List busy times in week                     Ctrl-B
         Item
             Copy                                        Ctrl-C
