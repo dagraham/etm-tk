@@ -217,8 +217,8 @@ qt2dt = [
     ('a', '%p'),
     ('dddd', '%A'),
     ('ddd', '%a'),
-    # ('dd', '%d'), # this and tne next make dd -> %%d
-    ('d', '%d'),
+    ('dd', '%d'), # this and tne next make dd -> %%d
+    # ('d', '%d'),
     ('MMMM', '%B'),
     ('MMM', '%b'),
     ('MM', '%m'),
