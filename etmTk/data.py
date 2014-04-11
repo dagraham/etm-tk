@@ -217,8 +217,7 @@ qt2dt = [
     ('a', '%p'),
     ('dddd', '%A'),
     ('ddd', '%a'),
-    ('dd', '%d'), # this and tne next make dd -> %%d
-    # ('d', '%d'),
+    ('dd', '%d'),
     ('MMMM', '%B'),
     ('MMM', '%b'),
     ('MM', '%m'),
@@ -3238,8 +3237,12 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                 hsh['t'] = []
             if dated['grpby']:
                 dates = []
-                start = parse(parse_dtstr(hsh['s'], hsh['z'])).astimezone(
-                    tzlocal()).replace(tzinfo=None)
+                if 'f' in hsh and hsh['f']:
+                    next = getDoneAndTwo(hsh)[1]
+                    # print('next', hsh['_summary'], next)
+                    if next: start = next
+                else:
+                    start = parse(parse_dtstr(hsh['s'], hsh['z'])).astimezone(tzlocal()).replace(tzinfo=None)
                 if 'rrule' in hsh:
                     if dated['b'] > start:
                         start = dated['b']
