@@ -13,7 +13,7 @@ import logging
 import logging.config
 logger = logging.getLogger()
 
-def setup_logging(level='3'):
+def setup_logging(level, etmdir):
     """
     Setup logging configuration. Override root:level in
     logging.yaml with default_level.
@@ -31,6 +31,8 @@ def setup_logging(level='3'):
     else:
         loglevel = log_levels['3']
 
+    logfile = os.path.join(etmdir, "etmtk_log.txt")
+
     config = {'disable_existing_loggers': False,
               'formatters': {'simple': {
                   'format': '--- %(asctime)s - %(levelname)s - %(module)s.%(funcName)s\n    %(message)s'}},
@@ -41,7 +43,7 @@ def setup_logging(level='3'):
                            'file': {'backupCount': 5,
                                     'class': 'logging.handlers.RotatingFileHandler',
                                     'encoding': 'utf8',
-                                    'filename': 'etmtk_log.txt',
+                                    'filename': logfile,
                                     'formatter': 'simple',
                                     'level': 'WARN',
                                     'maxBytes': 1048576}},
@@ -444,6 +446,99 @@ def s2or3(s):
             return s.toUtf8()
     else:
         return s
+
+############ for indexableskiplist ###############
+
+from random import random
+from math import log
+
+class Node(object):
+    __slots__ = 'value', 'next', 'width'
+    def __init__(self, value, next, width):
+        self.value, self.next, self.width = value, next, width
+
+class End(object):
+    'Sentinel object that always compares greater than another object'
+    def __cmp__(self, other):
+        return 1
+
+NIL = Node(End(), [], [])               # Singleton terminator node
+
+class IndexableSkiplist:
+    'Sorted collection supporting O(lg n) insertion, removal, and lookup by rank.'
+
+    def __init__(self, expected_size=100):
+        self.size = 0
+        self.maxlevels = int(1 + log(expected_size, 2))
+        self.head = Node('HEAD', [NIL]*self.maxlevels, [1]*self.maxlevels)
+
+    def __len__(self):
+        return self.size
+
+    def __getitem__(self, i):
+        node = self.head
+        i += 1
+        for level in reversed(range(self.maxlevels)):
+            while node.width[level] <= i:
+                i -= node.width[level]
+                node = node.next[level]
+        return node.value
+
+    def insert(self, value):
+        # find first node on each level where node.next[levels].value > value
+        chain = [None] * self.maxlevels
+        steps_at_level = [0] * self.maxlevels
+        node = self.head
+        for level in reversed(range(self.maxlevels)):
+            while node.next[level].value <= value:
+                steps_at_level[level] += node.width[level]
+                node = node.next[level]
+            chain[level] = node
+
+        # insert a link to the newnode at each level
+        d = min(self.maxlevels, 1 - int(log(random(), 2.0)))
+        newnode = Node(value, [None]*d, [None]*d)
+        steps = 0
+        for level in range(d):
+            prevnode = chain[level]
+            newnode.next[level] = prevnode.next[level]
+            prevnode.next[level] = newnode
+            newnode.width[level] = prevnode.width[level] - steps
+            prevnode.width[level] = steps + 1
+            steps += steps_at_level[level]
+        for level in range(d, self.maxlevels):
+            chain[level].width[level] += 1
+        self.size += 1
+
+    def remove(self, value):
+        # find first node on each level where node.next[levels].value >= value
+        chain = [None] * self.maxlevels
+        node = self.head
+        for level in reversed(range(self.maxlevels)):
+            while node.next[level].value < value:
+                node = node.next[level]
+            chain[level] = node
+        if value != chain[0].next[0].value:
+            raise KeyError('Not Found')
+
+        # remove one link at each level
+        d = len(chain[0].next[0].next)
+        for level in range(d):
+            prevnode = chain[level]
+            prevnode.width[level] += prevnode.next[level].width[level] - 1
+            prevnode.next[level] = prevnode.next[level].next[level]
+        for level in range(d, self.maxlevels):
+            chain[level].width[level] -= 1
+        self.size -= 1
+
+    def __iter__(self):
+        'Iterate over values in sorted order'
+        node = self.head.next[0]
+        while node is not NIL:
+            yield node.value
+            node = node.next[0]
+
+############ for indexableskiplist ###############
 
 
 def term_print(s):
@@ -1372,6 +1467,20 @@ def fmt_date(dt, short=False):
         dt_fmt = dt.strftime(reprdatefmt)
     return s2or3(dt_fmt)
 
+def fmt_shortdatetime(dt, options=None):
+    if not options: options = {}
+    if type(dt) in [str, unicode]:
+        return unicode(dt)
+    tdy = datetime.today()
+    if dt.date() == tdy.date():
+        dt_fmt = "%s %s" % (fmt_time(dt, options=options), _('today'))
+    elif dt.year == tdy.year:
+        dt_fmt = "%s %s" % (fmt_time(dt, options=options), dt.strftime(shortyearlessfmt))
+    else:
+        dt_fmt = dt.strftime(shortdatefmt)
+    dt_fmt = leadingzero.sub('', dt_fmt)
+    return s2or3(dt_fmt)
+
 
 def fmt_datetime(dt, options=None):
     if not options: options = {}
@@ -1757,9 +1866,9 @@ to be tallied.
 
 Recursively process groups and accumulate the totals.
     """
-    print('staring list of tuples')
-    for t in list_of_tuples:
-        print(t)
+    # print('staring list of tuples')
+    # for t in list_of_tuples:
+    #     print(t)
     if not options: options = {}
     if not max_level:
         max_level = len(list_of_tuples[0]) - 1
@@ -1822,14 +1931,14 @@ Recursively process groups and accumulate the totals.
         global row, rows
         hsh = {}
         lvl += 1
-        print('lvl', lvl, max_level)
+        # print('lvl', lvl, max_level)
         # if max_level and lvl > max_level - 1:
         if max_level and lvl > max_level - 1:
-            print('using row', row)
+            # print('using row', row)
             rows.append(deepcopy(row))
             return
-        else:
-            print('skipping row', row)
+        # else:
+        #     print('skipping row', row)
 
         # else:
         #     rows.append(deepcopy(row))
@@ -1837,7 +1946,7 @@ Recursively process groups and accumulate the totals.
         for k, g, t in group_sort(tuple_list):
             row[lvl] = k[-1]
             row[-1] = t
-            print('row', row)
+            # print('row', row)
 
             hsh['count'] = len(g)
             hsh['minutes'] = t[0]  # only 2 digits after the decimal point
@@ -3258,10 +3367,6 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
     if not items:
         return "no output"
     for item in items:
-
-        # if cal_regex and not cal_regex.match(item[0][-1]):
-        #     continue
-        # logger.debug('view: {0}'.format(item[0][0]))
         if item[0][0] == 'day':
             if item[0][1] >= beg_fmt and day_count <= days + 1:
                 # process day items until we get to days+1 so that all items
@@ -3436,7 +3541,7 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
                     #     continue
                     tup = [x for x in list(row.pop(-1))]
                     row.extend(tup)
-                    print('row', row)
+                    # print('row', row)
                     data.append(row)
             return data
         else:
@@ -4065,9 +4170,602 @@ def setItemPeriod(hsh, start, end, short=False, options=None):
 
     return period
 
+@memoize
+def getDataFromFile(f, file2data, bef, busytimes, busydays, occasions, file2uuids=None, uuid2hash=None, options=None):
+    # print('processing', f)
+    # print('busytimes', busytimes)
+    if not options: options = {}
+    if not file2uuids: file2uuids = {}
+    if not uuid2hash: uuid2hash = {}
+    today_datetime = datetime.now().replace(
+        hour=0, minute=0, second=0, microsecond=0)
+    today_date = datetime.now().date()
+    yearnum, weeknum, daynum = today_date.isocalendar()
+    items = []       # [(view, sort(3|4), fn), (branches), (leaf)]
+    datetimes = []
+    # busytimes = {}
+    # # isodate -> [(start_minutes, end_minutes, uuid, time period, subject, f)]
+    # busydays = {}   # date -> totalminutes
+    # occasions = {}  # isodate -> [(uuid, subject)]
+    alerts = []  # today only [(start_minutes, alert_minutes, action, uuid, f)]
+    alert_minutes = {}
+    folders = expandPath(f)
+    for uid in file2uuids[f]:
+        # this will give the items in file order!
+        if uuid2hash[uid]['itemtype'] in ['=']:
+            continue
+        hsh = {}
+        for k, v in uuid2hash[uid].items():
+            hsh[k] = v
+            # we'll make anniversary subs to a copy later
+        hsh['summary'] = hsh['_summary']
+        typ = type2Str[hsh['itemtype']]
+        # we need a context for due view and a keyword for keyword view
+        for k in ['c', 'k']:
+            if k not in hsh:
+                # hsh[k] = "%s" % _('none')
+                hsh[k] = 'none'
+        if 't' not in hsh:
+            hsh['t'] = []
+            #--------- make entry for folder view ----------#
+        if hsh['itemtype'] in [u'+', u'-', u'%']:
+            done, due, following = getDoneAndTwo(hsh)
+            if done:
+                dts = done.strftime(sortdatefmt)
+                # sdt = fmt_date(hsh['f'][-1][0], True)
+                sdt = fmt_date(hsh['f'][-1][0], True)
+                typ = 'fn'
+                # add a finished entry to day view
+                # only show the last 'show_finished' completions
+                for d0, d1 in hsh['f'][-options['show_finished']:]:
+                    item = [
+                        ('day', d0.strftime(sortdatefmt),
+                         tstr2SCI[typ][0], hsh['_p'], '', f),
+                        (fmt_date(d0),),
+                        (uid, typ, setSummary(hsh, d0), '', d0.strftime(rfmt))]
+                    add2list(items, item)
+                    add2Dates(datetimes, (d0, f))
+                if not due:
+                    # add the last completion to folder view
+                    item = [
+                        ('folder', (f, tstr2SCI[typ][0]), done,
+                         hsh['_summary'], f), tuple(folders),
+                        (uid, typ, setSummary(hsh, done), sdt, done.strftime(rfmt))]
+                    add2list(items, item)
+
+            if due:
+                # add a due entry to folder view
+                dtl = due
+                etmdt = "%s %s" % (dtl.strftime(etmdatefmt),
+                                   fmt_time(dtl, True, options=options))
+
+                dts = due.strftime(sortdatefmt)
+                sdt = fmt_date(due, True)
+                time_diff = (due - today_datetime).days
+                if time_diff >= 0:
+                    time_str = sdt
+                    pastdue = False
+                else:
+                    if time_diff > -99:
+                        time_str = '%s: %dd' % (sdt, time_diff)
+                    else:
+                        time_str = sdt
+                    pastdue = True
+                time_str = leadingzero.sub('', time_str)
+
+                if hsh['itemtype'] == '%':
+                    if pastdue:
+                        typ = 'pd'
+                    else:
+                        typ = 'ds'
+                elif hsh['itemtype'] == '-':
+                    if pastdue:
+                        typ = 'pt'
+                    else:
+                        typ = 'av'
+                else:
+                    # group
+                    if 'prereqs' in hsh and hsh['prereqs']:
+                        if pastdue:
+                            typ = 'pc'
+                        else:
+                            typ = 'cs'
+                    else:
+                        if pastdue:
+                            typ = 'pt'
+                        else:
+                            typ = 'av'
+                item = [
+                    ('folder', (f, tstr2SCI[typ][0]), due,
+                     hsh['_summary'], f), tuple(folders),
+                    (uid, typ, setSummary(hsh, due), time_str, etmdt)]
+                add2list(items, item)
+                if 'k' in hsh and hsh['k'] != 'none':
+                    keywords = [x.strip() for x in hsh['k'].split(':')]
+                    item = [
+                        ('keyword', (hsh['k'], tstr2SCI[typ][0]),
+                         due, hsh['_summary'], f), tuple(keywords),
+                        (uid, typ,
+                         setSummary(hsh, due), time_str, etmdt)]
+                    add2list(items, item)
+                if 't' in hsh:
+                    for tag in hsh['t']:
+                        item = [
+                            ('tag', (tag, tstr2SCI[typ][0]), due,
+                             hsh['_summary'], f), (tag,),
+                            (uid, typ,
+                             setSummary(hsh, due), time_str, etmdt)]
+                        add2list(items, item)
+            if not due and not done:  # undated
+                dts = "none"
+                dtl = today_datetime
+                etmdt = "%s %s" % (
+                    dtl.strftime(etmdatefmt),
+                    fmt_time(dtl, True, options=options))
+                item = [
+                    ('folder', (f, tstr2SCI[typ][0]), '',
+                     hsh['_summary'], f),
+                    tuple(folders),
+                    (uid, typ, setSummary(hsh, ''), '')]
+                add2list(items, item)
+
+
+                if 'k' in hsh and hsh['k'] != 'none':
+                    keywords = [x.strip() for x in hsh['k'].split(':')]
+                    item = [
+                        ('keyword', (hsh['k'], tstr2SCI[typ][0]), '',
+                         hsh['_summary'], f), tuple(keywords),
+                        (uid, typ, setSummary(hsh, ''), '', etmdt)]
+                    add2list(items, item)
+                if 't' in hsh:
+                    for tag in hsh['t']:
+                        item = [
+                            ('tag', (tag, tstr2SCI[typ][0]), due,
+                             hsh['_summary'], f), (tag,),
+                            (uid, typ, setSummary(hsh, ''), '', etmdt)]
+                        add2list(items, item)
+
+        else:  # not a task type
+            if 's' in hsh:
+                if 'rrule' in hsh:
+                    if hsh['itemtype'] in ['^', '*', '~']:
+                        dt = (
+                            hsh['rrule'].after(today_datetime, inc=True)
+                            or hsh['rrule'].before(
+                                today_datetime, inc=True))
+                    else:
+                        dt = hsh['rrule'].after(hsh['s'], inc=True)
+                else:
+                    dt = parse(parse_dtstr(hsh['s'],
+                                           hsh['z'])).replace(tzinfo=None)
+            else:
+                dt = None
+                dts = "none"
+                sdt = ""
+
+            if dt:
+                try:
+                    etmdt = "%s %s" % (
+                        dt.strftime(etmdatefmt),
+                        fmt_time(dt, True, options=options))
+                    dts = dt.strftime(sortdatefmt)
+                except:
+                    logger.exception("bad datetime: {0}, {1}\n{2}".format(dt, type(dt), hsh))
+                if hsh['itemtype'] == '*':
+                    # sdt = "%s %s" % (
+                    #     fmt_time(dt, True, options=options),
+                    #     fmt_date(dt, True))
+                    sdt = fmt_shortdatetime(dt, options=options)
+                elif hsh['itemtype'] == '~':
+                    if 'e' in hsh:
+                        sd = fmt_date(dt, True)
+                        sd = leadingzero.sub('', sd)
+                        sdt = "%s: %s" % (
+                            sd,
+                            fmt_period(hsh['e'])
+                        )
+                    else:
+                        sdt = ""
+                else:
+                    # sdt = fmt_date(dt, True)
+                    # sdt = leadingzero.sub('', fmt_date(dt, True)),
+                    sdt = fmt_date(dt, True)
+                    sdt = leadingzero.sub('', sdt)
+            else:
+                dt = today_datetime
+                etmdt = ''
+
+            if hsh['itemtype'] == '*':
+                if 'e' in hsh and hsh['e']:
+                    typ = 'ev'
+                else:
+                    typ = 'rm'
+            else:
+                typ = type2Str[hsh['itemtype']]
+            item = [
+                ('folder', (f, tstr2SCI[typ][0]), dt,
+                 hsh['_summary'], f), tuple(folders),
+                (uid, typ, setSummary(hsh, dt), sdt, etmdt)]
+            add2list(items, item)
+            if 'k' in hsh and hsh['k'] != 'none':
+                keywords = [x.strip() for x in hsh['k'].split(':')]
+                item = [
+                    ('keyword', (hsh['k'], tstr2SCI[typ][0]), dt,
+                     hsh['_summary'], f), tuple(keywords),
+                    (uid, typ, setSummary(hsh, dt), sdt, etmdt)]
+                add2list(items, item)
+            if 't' in hsh and hsh['t'] != 'none':
+                for tag in hsh['t']:
+                    item = [
+                        ('tag', (tag, tstr2SCI[typ][0]), dt,
+                         hsh['_summary'], f), (tag,),
+                        (uid, typ, setSummary(hsh, dt), sdt, etmdt)]
+                    add2list(items, item)
+            if hsh['itemtype'] == '#':
+                # don't include deleted items in any other views
+                continue
+                # make in basket and someday entries #
+                # sort numbers for now view --- we'll add the typ num to
+        if hsh['itemtype'] == '$':
+            item = [
+                ('inbasket', (0, tstr2SCI['ib'][0]), dt,
+                 hsh['_summary'], f),
+                (uid, 'ib', setSummary(hsh, dt), sdt, etmdt)]
+            add2list(items, item)
+            continue
+        if hsh['itemtype'] == '?':
+            item = [
+                ('someday', 2, (tstr2SCI['so'][0]), dt,
+                 hsh['_summary'], f),
+                (uid, 'so', setSummary(hsh, dt), sdt, etmdt)]
+            add2list(items, item)
+            continue
+        if hsh['itemtype'] == '!':
+            if not ('k' in hsh and hsh['k']):
+                hsh['k'] = _("none")
+            keywords = [x.strip() for x in hsh['k'].split(':')]
+            item = [
+                ('note', (hsh['k'], tstr2SCI[typ][0]), '',
+                 hsh['_summary'], f), tuple(keywords),
+                (uid, typ, setSummary(hsh, ''), '', etmdt)]
+            add2list(items, item)
+        #--------- make entry for next view ----------#
+        if 's' not in hsh and hsh['itemtype'] in [u'+', u'-', u'%']:
+            dts = "none"
+            if 'f' in hsh:
+                continue
+            if 'e' in hsh and hsh['e'] is not None:
+                extstr = fmt_period(hsh['e'])
+                exttd = hsh['e']
+            else:
+                extstr = ''
+                exttd = 0 * oneday
+            if hsh['itemtype'] == '+':
+                if 'prereqs' in hsh and hsh['prereqs']:
+                    typ = 'cu'
+                else:
+                    typ = 'un'
+            elif hsh['itemtype'] == '%':
+                typ = 'du'
+            else:
+                typ = type2Str[hsh['itemtype']]
+
+            item = [
+                ('next', (1, hsh['c'], hsh['_p'], exttd),
+                 tstr2SCI[typ][0], hsh['_p'], hsh['_summary'], f),
+                (hsh['c'],), (uid, typ, hsh['_summary'], extstr)]
+            add2list(items, item)
+            continue
+        #---- make entries for day view and friends ----#
+        dates = []
+        if 'rrule' in hsh:
+            gotall, dates = get_reps(bef, hsh)
+            for date in dates:
+                add2Dates(datetimes, (date, f))
+
+        elif 's' in hsh and hsh['s'] and 'f' not in hsh:
+            thisdate = parse(
+                parse_dtstr(
+                    hsh['s'], hsh['z'])).astimezone(
+                tzlocal()).replace(tzinfo=None)
+            dates.append(thisdate)
+            add2Dates(datetimes, (thisdate, f))
+        for dt in dates:
+            dtl = dt
+            etmdt = "%s %s" % (dtl.strftime(etmdatefmt),
+                               fmt_time(dtl, True, options=options))
+            sd = dtl.date()
+            st = dtl.time()
+            if typ == 'oc':
+                st_fmt = ''
+            else:
+                st_fmt = fmt_time(st, options=options)
+            summary = setSummary(hsh, dtl)
+            tmpl_hsh = {'i': uid, 'summary': summary,
+                        'start_date': fmt_date(dtl, True),
+                        'start_time': fmt_time(dtl, True, options=options)}
+            if 't' in hsh:
+                tmpl_hsh['t'] = ', '.join(hsh['t'])
+            else:
+                tmpl_hsh['t'] = ''
+            if 'e' in hsh:
+                try:
+                    tmpl_hsh['e'] = fmt_period(hsh['e'])
+                    etl = (dtl + hsh['e'])
+                except:
+                    logger.exception("Could not fmt hsh['e']=%s" % hsh['e'])
+            else:
+                tmpl_hsh['e'] = ''
+                etl = dtl
+            tmpl_hsh['time_span'] = setItemPeriod(
+                hsh, dtl, etl, options=options)
+            tmpl_hsh['busy_span'] = setItemPeriod(
+                hsh, dtl, etl, True, options=options)
+            for k in ['c', 'd', 'k', 'l', 'm', 'uid', 'z']:
+                if k in hsh:
+                    tmpl_hsh[k] = hsh[k]
+                else:
+                    tmpl_hsh[k] = ''
+            if '_a' in hsh and hsh['_a']:
+                for alert in hsh['_a']:
+                    time_deltas, acts, arguments = alert
+                    if not acts:
+                        acts = options['alert_default']
+                    tmpl_hsh['alert_email'] = tmpl_hsh['alert_process'] = ''
+                    tmpl_hsh["_alert_action"] = acts
+                    tmpl_hsh["_alert_argument"] = arguments
+
+                    for td in time_deltas:
+                        adt = dtl - td
+                        if adt.date() == today_date:
+                            this_hsh = deepcopy(tmpl_hsh)
+                            this_hsh['alert_time'] = fmt_time(
+                                adt, True, options=options)
+                            this_hsh['time_left'] = timedelta2Str(td)
+                            this_hsh['when'] = timedelta2Sentence(td)
+                            if adt.date() != dtl.date():
+                                this_hsh['_event_time'] = fmt_period(td)
+                            else:
+                                this_hsh['_event_time'] = fmt_time(
+                                    dtl, True, options=options)
+                            amn = adt.hour * 60 + adt.minute
+                            # we don't want ties in amn else add2list will try to sort on the hash and fail
+                            if amn in alert_minutes:
+                                # add 6 seconds to avoid the tie
+                                alert_minutes[amn] += .1
+                            else:
+                                alert_minutes[amn] = amn
+                            # add2list(alerts, (amn, this_hsh, f), False)
+                            add2list(alerts, (alert_minutes[amn], this_hsh, f), False)
+            if (hsh['itemtype'] in ['+', '-', '%'] and
+                        dtl < today_datetime):
+                time_diff = (dtl - today_datetime).days
+                if time_diff == 0:
+                    time_str = fmt_period(hsh['e'])
+                    pastdue = False
+                else:
+                    time_str = '%dd' % time_diff
+                    pastdue = True
+                if hsh['itemtype'] == '%':
+                    if pastdue:
+                        typ = 'pd'
+                    else:
+                        typ = 'ds'
+                    cat = 'Delegated'
+                    sn = (2, tstr2SCI[typ][0])
+                elif hsh['itemtype'] == '-':
+                    if pastdue:
+                        typ = 'pt'
+                    else:
+                        typ = 'av'
+                    cat = 'Available'
+                    sn = (1, tstr2SCI[typ][0])
+                else:
+                    # group
+                    if 'prereqs' in hsh and hsh['prereqs']:
+                        if pastdue:
+                            typ = 'pc'
+                        else:
+                            typ = 'cs'
+                        cat = 'Waiting'
+                        sn = (2, tstr2SCI[typ][0])
+                    else:
+                        if pastdue:
+                            typ = 'pt'
+                        else:
+                            typ = 'av'
+                        cat = 'Available'
+                        sn = (1, tstr2SCI[typ][0])
+                if 'f' in hsh and 'rrule' not in hsh:
+                    continue
+                else:
+                    item = [
+                        ('now', sn, dtl, hsh['_p'], summary, f), (cat,),
+                        (uid, typ, summary, time_str, etmdt)]
+                add2list(items, item)
+
+            if 'b' in hsh:
+                time_diff = (dtl - today_datetime).days
+                if time_diff > 0 and time_diff <= hsh['b']:
+                    extstr = '%dd' % time_diff
+                    exttd = 0 * oneday
+                    item = [('day',
+                             today_datetime.strftime(sortdatefmt),
+                             tstr2SCI['by'][0],
+                             # tstr2SCI[typ][0],
+                             time_diff,
+                             hsh['_p'],
+                             f),
+                            (fmt_date(today_datetime),),
+                            (uid, 'by', summary, extstr, etmdt)]
+                    add2list(items, item)
+
+            if hsh['itemtype'] == '!':
+                typ = 'ns'
+                item = [
+                    ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
+                     hsh['_p'], '', f),
+                    (fmt_date(dt),),
+                    (uid, typ, summary, '', etmdt)]
+                add2list(items, item)
+                continue
+            if hsh['itemtype'] == '^':
+                typ = 'oc'
+                item = [
+                    ('day', sd.strftime(sortdatefmt),
+                     tstr2SCI[typ][0], hsh['_p'], '', f),
+                    (fmt_date(dt),),
+                    (uid, typ, summary, '', etmdt)]
+                add2list(items, item)
+                add_occasion(uid, sd, summary, occasions, f)
+                continue
+            if hsh['itemtype'] == '~':
+                typ = 'ac'
+                if 'e' in hsh:
+                    sdt = fmt_period(hsh['e'])
+                else:
+                    sdt = ""
+                item = [
+                    ('day', sd.strftime(sortdatefmt),
+                     tstr2SCI[typ][0], hsh['_p'], '', f),
+                    (fmt_date(dt),),
+                    (uid, 'ac', summary,
+                     sdt, etmdt)]
+                add2list(items, item)
+                continue
+            if hsh['itemtype'] == '*':
+                sm = st.hour * 60 + st.minute
+                ed = etl.date()
+                et = etl.time()
+                em = et.hour * 60 + et.minute
+                evnt_summary = "%s: %s" % (
+                     tmpl_hsh['summary'], tmpl_hsh['busy_span'])
+                if et != st:
+                    et_fmt = " ~ %s" % fmt_time(et, options=options)
+                else:
+                    et_fmt = ''
+                if ed > sd:
+                    # this event overlaps more than one day
+                    # first_min = 24*60 - sm
+                    # last_min = em
+                    # the first day tuple
+                    item = [
+                        ('day', sd.strftime(sortdatefmt),
+                         tstr2SCI[typ][0], hsh['_p'],
+                         st.strftime(sorttimefmt), f),
+                        (fmt_date(sd),),
+                        (uid, typ, summary, '%s ~ %s' %
+                                            (st_fmt,
+                                             options['dayend_fmt']), etmdt)]
+                    add2list(items, item)
+                    add_busytime(uid, sd, sm, day_end_minutes,
+                                 evnt_summary, busytimes, busydays, f)
+                    sd += oneday
+                    i = 0
+                    item_copy = []
+                    while sd < ed:
+                        item_copy.append([x for x in item])
+                        item_copy[i][0] = list(item_copy[i][0])
+                        item_copy[i][1] = list(item_copy[i][1])
+                        item_copy[i][2] = list(item_copy[i][2])
+                        item_copy[i][0][1] = sd.strftime(sortdatefmt)
+                        item_copy[i][1][0] = fmt_date(sd)
+                        item_copy[i][2][3] = '%s ~ %s' % (
+                            options['daybegin_fmt'],
+                            options['dayend_fmt'])
+                        item_copy[i][0] = tuple(item_copy[i][0])
+                        item_copy[i][1] = tuple(item_copy[i][1])
+                        item_copy[i][2] = tuple(item_copy[i][2])
+                        add2list(items, item_copy[i])
+                        add_busytime(uid, sd, 0, day_end_minutes,
+                                     evnt_summary, busytimes, busydays,
+                                     f)
+                        sd += oneday
+                        i += 1
+                        # the last day tuple
+                    if em:
+                        item_copy.append([x for x in item])
+                        item_copy[i][0] = list(item_copy[i][0])
+                        item_copy[i][1] = list(item_copy[i][1])
+                        item_copy[i][2] = list(item_copy[i][2])
+                        item_copy[i][0][1] = sd.strftime(sortdatefmt)
+                        item_copy[i][1][0] = fmt_date(sd)
+                        item_copy[i][2][3] = '%s%s' % (
+                            options['daybegin_fmt'], et_fmt)
+                        item_copy[i][0] = tuple(item_copy[i][0])
+                        item_copy[i][1] = tuple(item_copy[i][1])
+                        item_copy[i][2] = tuple(item_copy[i][2])
+                        add2list(items, item_copy[i])
+                        add_busytime(uid, sd, 0, em, evnt_summary,
+                                     busytimes, busydays, f)
+                else:
+                    # single day event or reminder
+                    item = [
+                        ('day', sd.strftime(sortdatefmt),
+                         tstr2SCI[typ][0], hsh['_p'],
+                         st.strftime(sorttimefmt), f),
+                        (fmt_date(sd),),
+                        (uid, typ, summary, '%s%s' % (
+                            st_fmt,
+                            et_fmt), etmdt)]
+                    add2list(items, item)
+                    add_busytime(uid, sd, sm, em, evnt_summary, busytimes, busydays, f)
+                    continue
+                    #--------------- other dated items ---------------#
+            if hsh['itemtype'] in ['+', '-', '%']:
+                if 'e' in hsh:
+                    extstr = fmt_period(hsh['e'])
+                else:
+                    extstr = ''
+                if 'f' in hsh and hsh['f'][-1][1] == dtl:
+                    typ = 'fn'
+                else:
+                    if hsh['itemtype'] == '%':
+                        typ = 'ds'
+                    elif hsh['itemtype'] == '+':
+                        if 'prereqs' in hsh and hsh['prereqs']:
+                            typ = 'cs'
+                        else:
+                            typ = 'av'
+                    else:
+                        typ = 'av'
+                item = [
+                    ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
+                     hsh['_p'], '', f),
+                    (fmt_date(dt),),
+                    (uid, typ, summary, extstr, etmdt)]
+                add2list(items, item)
+                continue
+            if hsh['itemtype'] == '%':
+                if 'f' in hsh:
+                    typ = 'fn'
+                else:
+                    typ = 'ds'
+                item = [
+                    ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
+                     hsh['_p'], '', f),
+                    (fmt_date(dt),),
+                    (uid, typ, summary, extstr, etmdt)]
+                add2list(items, item)
+                continue
+            if hsh['itemtype'] == '+':
+                if 'prereqs' in hsh and hsh['prereqs']:
+                    typ = 'cs'
+                else:
+                    if 'f' in hsh:
+                        typ = 'fn'
+                    else:
+                        typ = 'av'
+                item = [
+                    ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
+                     hsh['_p'], '', f),
+                    (fmt_date(dt),),
+                    (uid, typ, summary, extstr, etmdt)]
+                add2list(items, item)
+                continue
+    file2data[f] = [items, alerts, datetimes]
 
 # noinspection PyChainedComparisons
-@memoize
 def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
     """
         Collect data on all items, apply filters later
@@ -4087,562 +4785,19 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
     occasions = {}  # isodate -> [(uuid, subject)]
     alerts = []  # today only [(start_minutes, alert_minutes, action, uuid, f)]
     alert_minutes = {}
+    file2data = {}
     for f in file2uuids:
-        folders = expandPath(f)
-        for uid in file2uuids[f]:
-            # this will give the items in file order!
-            if uuid2hash[uid]['itemtype'] in ['=']:
-                continue
-            hsh = {}
-            for k, v in uuid2hash[uid].items():
-                hsh[k] = v
-                # we'll make anniversary subs to a copy later
-            hsh['summary'] = hsh['_summary']
-            typ = type2Str[hsh['itemtype']]
-            # we need a context for due view and a keyword for keyword view
-            for k in ['c', 'k']:
-                if k not in hsh:
-                    # hsh[k] = "%s" % _('none')
-                    hsh[k] = 'none'
-            if 't' not in hsh:
-                hsh['t'] = []
-                #--------- make entry for folder view ----------#
-            if hsh['itemtype'] in [u'+', u'-', u'%']:
-                done, due, following = getDoneAndTwo(hsh)
-                if done:
-                    dts = done.strftime(sortdatefmt)
-                    # sdt = fmt_date(hsh['f'][-1][0], True)
-                    sdt = fmt_date(hsh['f'][-1][0], True)
-                    typ = 'fn'
-                    # add a finished entry to day view
-                    for done, due in hsh['f'][-options['show_finished']:]:
-                        item = [
-                            ('day', done.strftime(sortdatefmt),
-                             tstr2SCI[typ][0], hsh['_p'], '', f),
-                            (fmt_date(done),),
-                            (uid, typ, setSummary(hsh, done), '', done.strftime(rfmt))]
-                        add2list(items, item)
-                        # add each relevant done date to index
-                        # logger.debug("appending {0} to {1}, {2}".format(done, hsh['entry'], hsh['f']))
-                        add2Dates(datetimes, (done, f))
-                if due:
-                    # add a due entry to folder view
-                    dtl = due
-                    etmdt = "%s %s" % (dtl.strftime(etmdatefmt),
-                                       fmt_time(dtl, True, options=options))
+        getDataFromFile(f, file2data, bef, busytimes, busydays, occasions, file2uuids, uuid2hash, options)
 
-                    dts = due.strftime(sortdatefmt)
-                    sdt = fmt_date(due, True)
-                    time_diff = (due - today_datetime).days
-                    if time_diff >= 0:
-                        time_str = sdt
-                        pastdue = False
-                    else:
-                        time_str = '%s: %dd' % (sdt, time_diff)
-                        pastdue = True
-                    if hsh['itemtype'] == '%':
-                        if pastdue:
-                            typ = 'pd'
-                        else:
-                            typ = 'ds'
-                    elif hsh['itemtype'] == '-':
-                        if pastdue:
-                            typ = 'pt'
-                        else:
-                            typ = 'av'
-                    else:
-                        # group
-                        if 'prereqs' in hsh and hsh['prereqs']:
-                            if pastdue:
-                                typ = 'pc'
-                            else:
-                                typ = 'cs'
-                        else:
-                            if pastdue:
-                                typ = 'pt'
-                            else:
-                                typ = 'av'
-                    item = [
-                        ('folder', (f, tstr2SCI[typ][0]), due,
-                         hsh['_summary'], f), tuple(folders),
-                        (uid, typ, setSummary(hsh, due), time_str, etmdt)]
-                    add2list(items, item)
-                    if 'k' in hsh and hsh['k'] != 'none':
-                        keywords = [x.strip() for x in hsh['k'].split(':')]
-                        item = [
-                            ('keyword', (hsh['k'], tstr2SCI[typ][0]),
-                             due, hsh['_summary'], f), tuple(keywords),
-                            (uid, typ,
-                             setSummary(hsh, due), time_str, etmdt)]
-                        add2list(items, item)
-                    if 't' in hsh:
-                        for tag in hsh['t']:
-                            item = [
-                                ('tag', (tag, tstr2SCI[typ][0]), due,
-                                 hsh['_summary'], f), (tag,),
-                                (uid, typ,
-                                 setSummary(hsh, due), time_str, etmdt)]
-                            add2list(items, item)
-                if not due and not done:  # undated
-                    dts = "none"
-                    dtl = today_datetime
-                    etmdt = "%s %s" % (
-                        dtl.strftime(etmdatefmt),
-                        fmt_time(dtl, True, options=options))
-                    item = [
-                        ('folder', (f, tstr2SCI[typ][0]), '',
-                         hsh['_summary'], f),
-                        tuple(folders),
-                        (uid, typ, setSummary(hsh, ''), '')]
-                    add2list(items, item)
+    # for f in file2data:
+        _items, _alerts, _datetimes = file2data[f]
+        for item in _items:
+            add2list(items, item, expand=False)
+        for alert in _alerts:
+            add2list(alerts, alert, expand=False)
+        for dt in _datetimes:
+            add2list(datetimes, dt, expand=False)
 
-
-                    if 'k' in hsh and hsh['k'] != 'none':
-                        keywords = [x.strip() for x in hsh['k'].split(':')]
-                        item = [
-                            ('keyword', (hsh['k'], tstr2SCI[typ][0]), '',
-                             hsh['_summary'], f), tuple(keywords),
-                            (uid, typ, setSummary(hsh, ''), '', etmdt)]
-                        add2list(items, item)
-                    if 't' in hsh:
-                        for tag in hsh['t']:
-                            item = [
-                                ('tag', (tag, tstr2SCI[typ][0]), due,
-                                 hsh['_summary'], f), (tag,),
-                                (uid, typ, setSummary(hsh, ''), '', etmdt)]
-                            add2list(items, item)
-
-            else:  # not a task type
-                if 's' in hsh:
-                    if 'rrule' in hsh:
-                        if hsh['itemtype'] in ['^', '*', '~']:
-                            dt = (
-                                hsh['rrule'].after(today_datetime, inc=True)
-                                or hsh['rrule'].before(
-                                    today_datetime, inc=True))
-                        else:
-                            dt = hsh['rrule'].after(hsh['s'], inc=True)
-                    else:
-                        dt = parse(parse_dtstr(hsh['s'],
-                                               hsh['z'])).replace(tzinfo=None)
-                else:
-                    dt = None
-                    dts = "none"
-                    sdt = ""
-
-                if dt:
-                    try:
-                        etmdt = "%s %s" % (
-                            dt.strftime(etmdatefmt),
-                            fmt_time(dt, True, options=options))
-                        dts = dt.strftime(sortdatefmt)
-                    except:
-                        logger.exception("bad datetime: {0}, {1}\n{2}".format(dt, type(dt), hsh))
-                    if hsh['itemtype'] == '*':
-                        sdt = "%s %s" % (
-                            fmt_time(dt, True, options=options),
-                            fmt_date(dt, True))
-                    elif hsh['itemtype'] == '~':
-                        if 'e' in hsh:
-                            sdt = "%s: %s" % (
-                                fmt_period(hsh['e']),
-                                fmt_date(dt, True))
-                        else:
-                            sdt = ""
-                    else:
-                        sdt = fmt_date(dt, True)
-                else:
-                    dt = today_datetime
-                    etmdt = ''
-
-                if hsh['itemtype'] == '*':
-                    if 'e' in hsh and hsh['e']:
-                        typ = 'ev'
-                    else:
-                        typ = 'rm'
-                else:
-                    typ = type2Str[hsh['itemtype']]
-                item = [
-                    ('folder', (f, tstr2SCI[typ][0]), dt,
-                     hsh['_summary'], f), tuple(folders),
-                    (uid, typ, setSummary(hsh, dt), sdt, etmdt)]
-                add2list(items, item)
-                if 'k' in hsh and hsh['k'] != 'none':
-                    keywords = [x.strip() for x in hsh['k'].split(':')]
-                    item = [
-                        ('keyword', (hsh['k'], tstr2SCI[typ][0]), dt,
-                         hsh['_summary'], f), tuple(keywords),
-                        (uid, typ, setSummary(hsh, dt), sdt, etmdt)]
-                    add2list(items, item)
-                if 't' in hsh and hsh['t'] != 'none':
-                    for tag in hsh['t']:
-                        item = [
-                            ('tag', (tag, tstr2SCI[typ][0]), dt,
-                             hsh['_summary'], f), (tag,),
-                            (uid, typ, setSummary(hsh, dt), sdt, etmdt)]
-                        add2list(items, item)
-                if hsh['itemtype'] == '#':
-                    # don't include deleted items in any other views
-                    continue
-                    # make in basket and someday entries #
-                    # sort numbers for now view --- we'll add the typ num to
-            if hsh['itemtype'] == '$':
-                item = [
-                    ('inbasket', (0, tstr2SCI['ib'][0]), dt,
-                     hsh['_summary'], f),
-                    (uid, 'ib', setSummary(hsh, dt), sdt, etmdt)]
-                add2list(items, item)
-                continue
-            if hsh['itemtype'] == '?':
-                item = [
-                    ('someday', 2, (tstr2SCI['so'][0]), dt,
-                     hsh['_summary'], f),
-                    (uid, 'so', setSummary(hsh, dt), sdt, etmdt)]
-                add2list(items, item)
-                continue
-            if hsh['itemtype'] == '!':
-                if not ('k' in hsh and hsh['k']):
-                    hsh['k'] = _("none")
-                keywords = [x.strip() for x in hsh['k'].split(':')]
-                item = [
-                    ('note', (hsh['k'], tstr2SCI[typ][0]), '',
-                     hsh['_summary'], f), tuple(keywords),
-                    (uid, typ, setSummary(hsh, ''), '', etmdt)]
-                add2list(items, item)
-            #--------- make entry for next view ----------#
-            if 's' not in hsh and hsh['itemtype'] in [u'+', u'-', u'%']:
-                dts = "none"
-                if 'f' in hsh:
-                    continue
-                if 'e' in hsh and hsh['e'] is not None:
-                    extstr = fmt_period(hsh['e'])
-                    exttd = hsh['e']
-                else:
-                    extstr = ''
-                    exttd = 0 * oneday
-                if hsh['itemtype'] == '+':
-                    if 'prereqs' in hsh and hsh['prereqs']:
-                        typ = 'cu'
-                    else:
-                        typ = 'un'
-                elif hsh['itemtype'] == '%':
-                    typ = 'du'
-                else:
-                    typ = type2Str[hsh['itemtype']]
-
-                item = [
-                    ('next', (1, hsh['c'], hsh['_p'], exttd),
-                     tstr2SCI[typ][0], hsh['_p'], hsh['_summary'], f),
-                    (hsh['c'],), (uid, typ, hsh['_summary'], extstr)]
-                add2list(items, item)
-                continue
-            #---- make entries for day view and friends ----#
-            dates = []
-            if 'rrule' in hsh:
-                gotall, dates = get_reps(bef, hsh)
-                for date in dates:
-                    add2Dates(datetimes, (date, f))
-
-            elif 's' in hsh and hsh['s'] and 'f' not in hsh:
-                thisdate = parse(
-                    parse_dtstr(
-                        hsh['s'], hsh['z'])).astimezone(
-                    tzlocal()).replace(tzinfo=None)
-                dates.append(thisdate)
-                add2Dates(datetimes, (thisdate, f))
-            for dt in dates:
-                dtl = dt
-                etmdt = "%s %s" % (dtl.strftime(etmdatefmt),
-                                   fmt_time(dtl, True, options=options))
-                sd = dtl.date()
-                st = dtl.time()
-                if typ == 'oc':
-                    st_fmt = ''
-                else:
-                    st_fmt = fmt_time(st, options=options)
-                summary = setSummary(hsh, dtl)
-                tmpl_hsh = {'i': uid, 'summary': summary,
-                            'start_date': fmt_date(dtl, True),
-                            'start_time': fmt_time(dtl, True, options=options)}
-                if 't' in hsh:
-                    tmpl_hsh['t'] = ', '.join(hsh['t'])
-                else:
-                    tmpl_hsh['t'] = ''
-                if 'e' in hsh:
-                    try:
-                        tmpl_hsh['e'] = fmt_period(hsh['e'])
-                        etl = (dtl + hsh['e'])
-                    except:
-                        logger.exception("Could not fmt hsh['e']=%s" % hsh['e'])
-                else:
-                    tmpl_hsh['e'] = ''
-                    etl = dtl
-                tmpl_hsh['time_span'] = setItemPeriod(
-                    hsh, dtl, etl, options=options)
-                tmpl_hsh['busy_span'] = setItemPeriod(
-                    hsh, dtl, etl, True, options=options)
-                for k in ['c', 'd', 'k', 'l', 'm', 'uid', 'z']:
-                    if k in hsh:
-                        tmpl_hsh[k] = hsh[k]
-                    else:
-                        tmpl_hsh[k] = ''
-                if '_a' in hsh and hsh['_a']:
-                    for alert in hsh['_a']:
-                        time_deltas, acts, arguments = alert
-                        if not acts:
-                            acts = options['alert_default']
-                        tmpl_hsh['alert_email'] = tmpl_hsh['alert_process'] = ''
-                        tmpl_hsh["_alert_action"] = acts
-                        tmpl_hsh["_alert_argument"] = arguments
-
-                        for td in time_deltas:
-                            adt = dtl - td
-                            if adt.date() == today_date:
-                                this_hsh = deepcopy(tmpl_hsh)
-                                this_hsh['alert_time'] = fmt_time(
-                                    adt, True, options=options)
-                                this_hsh['time_left'] = timedelta2Str(td)
-                                this_hsh['when'] = timedelta2Sentence(td)
-                                if adt.date() != dtl.date():
-                                    this_hsh['_event_time'] = fmt_period(td)
-                                else:
-                                    this_hsh['_event_time'] = fmt_time(
-                                        dtl, True, options=options)
-                                amn = adt.hour * 60 + adt.minute
-                                # we don't want ties in amn else add2list will try to sort on the hash and fail
-                                if amn in alert_minutes:
-                                    # add 6 seconds to avoid the tie
-                                    alert_minutes[amn] += .1
-                                else:
-                                    alert_minutes[amn] = amn
-                                # add2list(alerts, (amn, this_hsh, f), False)
-                                add2list(alerts, (alert_minutes[amn], this_hsh, f), False)
-                if (hsh['itemtype'] in ['+', '-', '%'] and
-                            dtl < today_datetime):
-                    time_diff = (dtl - today_datetime).days
-                    if time_diff == 0:
-                        time_str = fmt_period(hsh['e'])
-                        pastdue = False
-                    else:
-                        time_str = '%dd' % time_diff
-                        pastdue = True
-                    if hsh['itemtype'] == '%':
-                        if pastdue:
-                            typ = 'pd'
-                        else:
-                            typ = 'ds'
-                        cat = 'Delegated'
-                        sn = (2, tstr2SCI[typ][0])
-                    elif hsh['itemtype'] == '-':
-                        if pastdue:
-                            typ = 'pt'
-                        else:
-                            typ = 'av'
-                        cat = 'Available'
-                        sn = (1, tstr2SCI[typ][0])
-                    else:
-                        # group
-                        if 'prereqs' in hsh and hsh['prereqs']:
-                            if pastdue:
-                                typ = 'pc'
-                            else:
-                                typ = 'cs'
-                            cat = 'Waiting'
-                            sn = (2, tstr2SCI[typ][0])
-                        else:
-                            if pastdue:
-                                typ = 'pt'
-                            else:
-                                typ = 'av'
-                            cat = 'Available'
-                            sn = (1, tstr2SCI[typ][0])
-                    if 'f' in hsh and 'rrule' not in hsh:
-                        continue
-                    else:
-                        item = [
-                            ('now', sn, dtl, hsh['_p'], summary, f), (cat,),
-                            (uid, typ, summary, time_str, etmdt)]
-                    add2list(items, item)
-
-                if 'b' in hsh:
-                    time_diff = (dtl - today_datetime).days
-                    if time_diff > 0 and time_diff <= hsh['b']:
-                        extstr = '%dd' % time_diff
-                        exttd = 0 * oneday
-                        item = [('day',
-                                 today_datetime.strftime(sortdatefmt),
-                                 tstr2SCI['by'][0],
-                                 # tstr2SCI[typ][0],
-                                 time_diff,
-                                 hsh['_p'],
-                                 f),
-                                (fmt_date(today_datetime),),
-                                (uid, 'by', summary, extstr, etmdt)]
-                        add2list(items, item)
-
-                if hsh['itemtype'] == '!':
-                    typ = 'ns'
-                    item = [
-                        ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
-                         hsh['_p'], '', f),
-                        (fmt_date(dt),),
-                        (uid, typ, summary, '', etmdt)]
-                    add2list(items, item)
-                    continue
-                if hsh['itemtype'] == '^':
-                    typ = 'oc'
-                    item = [
-                        ('day', sd.strftime(sortdatefmt),
-                         tstr2SCI[typ][0], hsh['_p'], '', f),
-                        (fmt_date(dt),),
-                        (uid, typ, summary, '', etmdt)]
-                    add2list(items, item)
-                    add_occasion(uid, sd, summary, occasions, f)
-                    continue
-                if hsh['itemtype'] == '~':
-                    typ = 'ac'
-                    if 'e' in hsh:
-                        sdt = fmt_period(hsh['e'])
-                    else:
-                        sdt = ""
-                    item = [
-                        ('day', sd.strftime(sortdatefmt),
-                         tstr2SCI[typ][0], hsh['_p'], '', f),
-                        (fmt_date(dt),),
-                        (uid, 'ac', summary,
-                         sdt, etmdt)]
-                    add2list(items, item)
-                    continue
-                if hsh['itemtype'] == '*':
-                    sm = st.hour * 60 + st.minute
-                    ed = etl.date()
-                    et = etl.time()
-                    em = et.hour * 60 + et.minute
-                    evnt_summary = "%s: %s" % (
-                         tmpl_hsh['summary'], tmpl_hsh['busy_span'])
-                    if et != st:
-                        et_fmt = " ~ %s" % fmt_time(et, options=options)
-                    else:
-                        et_fmt = ''
-                    if ed > sd:
-                        # this event overlaps more than one day
-                        # first_min = 24*60 - sm
-                        # last_min = em
-                        # the first day tuple
-                        item = [
-                            ('day', sd.strftime(sortdatefmt),
-                             tstr2SCI[typ][0], hsh['_p'],
-                             st.strftime(sorttimefmt), f),
-                            (fmt_date(sd),),
-                            (uid, typ, summary, '%s ~ %s' %
-                                                (st_fmt,
-                                                 options['dayend_fmt']), etmdt)]
-                        add2list(items, item)
-                        add_busytime(uid, sd, sm, day_end_minutes,
-                                     evnt_summary, busytimes, busydays, f)
-                        sd += oneday
-                        i = 0
-                        item_copy = []
-                        while sd < ed:
-                            item_copy.append([x for x in item])
-                            item_copy[i][0] = list(item_copy[i][0])
-                            item_copy[i][1] = list(item_copy[i][1])
-                            item_copy[i][2] = list(item_copy[i][2])
-                            item_copy[i][0][1] = sd.strftime(sortdatefmt)
-                            item_copy[i][1][0] = fmt_date(sd)
-                            item_copy[i][2][3] = '%s ~ %s' % (
-                                options['daybegin_fmt'],
-                                options['dayend_fmt'])
-                            item_copy[i][0] = tuple(item_copy[i][0])
-                            item_copy[i][1] = tuple(item_copy[i][1])
-                            item_copy[i][2] = tuple(item_copy[i][2])
-                            add2list(items, item_copy[i])
-                            add_busytime(uid, sd, 0, day_end_minutes,
-                                         evnt_summary, busytimes, busydays,
-                                         f)
-                            sd += oneday
-                            i += 1
-                            # the last day tuple
-                        if em:
-                            item_copy.append([x for x in item])
-                            item_copy[i][0] = list(item_copy[i][0])
-                            item_copy[i][1] = list(item_copy[i][1])
-                            item_copy[i][2] = list(item_copy[i][2])
-                            item_copy[i][0][1] = sd.strftime(sortdatefmt)
-                            item_copy[i][1][0] = fmt_date(sd)
-                            item_copy[i][2][3] = '%s%s' % (
-                                options['daybegin_fmt'], et_fmt)
-                            item_copy[i][0] = tuple(item_copy[i][0])
-                            item_copy[i][1] = tuple(item_copy[i][1])
-                            item_copy[i][2] = tuple(item_copy[i][2])
-                            add2list(items, item_copy[i])
-                            add_busytime(uid, sd, 0, em, evnt_summary,
-                                         busytimes, busydays, f)
-                    else:
-                        # single day event or reminder
-                        item = [
-                            ('day', sd.strftime(sortdatefmt),
-                             tstr2SCI[typ][0], hsh['_p'],
-                             st.strftime(sorttimefmt), f),
-                            (fmt_date(sd),),
-                            (uid, typ, summary, '%s%s' % (
-                                st_fmt,
-                                et_fmt), etmdt)]
-                        add2list(items, item)
-                        add_busytime(uid, sd, sm, em, evnt_summary, busytimes, busydays, f)
-                        continue
-                        #--------------- other dated items ---------------#
-                if hsh['itemtype'] in ['+', '-', '%']:
-                    if 'e' in hsh:
-                        extstr = fmt_period(hsh['e'])
-                    else:
-                        extstr = ''
-                    if 'f' in hsh and hsh['f'][-1][1] == dtl:
-                        typ = 'fn'
-                    else:
-                        if hsh['itemtype'] == '%':
-                            typ = 'ds'
-                        elif hsh['itemtype'] == '+':
-                            if 'prereqs' in hsh and hsh['prereqs']:
-                                typ = 'cs'
-                            else:
-                                typ = 'av'
-                        else:
-                            typ = 'av'
-                    item = [
-                        ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
-                         hsh['_p'], '', f),
-                        (fmt_date(dt),),
-                        (uid, typ, summary, extstr, etmdt)]
-                    add2list(items, item)
-                    continue
-                if hsh['itemtype'] == '%':
-                    if 'f' in hsh:
-                        typ = 'fn'
-                    else:
-                        typ = 'ds'
-                    item = [
-                        ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
-                         hsh['_p'], '', f),
-                        (fmt_date(dt),),
-                        (uid, typ, summary, extstr, etmdt)]
-                    add2list(items, item)
-                    continue
-                if hsh['itemtype'] == '+':
-                    if 'prereqs' in hsh and hsh['prereqs']:
-                        typ = 'cs'
-                    else:
-                        if 'f' in hsh:
-                            typ = 'fn'
-                        else:
-                            typ = 'av'
-                    item = [
-                        ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
-                         hsh['_p'], '', f),
-                        (fmt_date(dt),),
-                        (uid, typ, summary, extstr, etmdt)]
-                    add2list(items, item)
-                    continue
     return items, busytimes, busydays, alerts, datetimes, occasions
 
 def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
@@ -5139,7 +5294,8 @@ class ETMCmd():
         cmd = arg_str[0]
         ret = []
         views = {
-            'd': 'day',  # day view in the GUI
+            # everything but agenda and week
+            'd': 'day',
             'p': 'folder',
             't': 'tag',
             'n': 'note',

@@ -137,7 +137,7 @@ class App(Tk):
     def __init__(self, path=None):
         Tk.__init__(self)
         # minsize: width, height
-        self.minsize(460, 480)
+        self.minsize(440, 460)
         self.uuidSelected = None
         self.timerItem = None
         self.actionTimer = Timer(self)
@@ -671,11 +671,7 @@ class App(Tk):
 
         # topbar.pack(side="top", fill="both", expand=0, padx=0, pady=0)
 
-        self.panedwindow = panedwindow = PanedWindow(self, orient="vertical",
-                                                     # showhandle=True,
-                                                     sashwidth=6, sashrelief='flat',
-                                                     )
-
+        self.panedwindow = panedwindow = PanedWindow(self, orient="vertical", sashwidth=6, sashrelief='flat')
         self.toppane = toppane = Frame(self.panedwindow, bd=0, highlightthickness=0, background=BGCOLOR)
         self.weekly = False
         self.tree = ttk.Treeview(toppane, show='tree', columns=["#1"], selectmode='browse')
@@ -1990,7 +1986,7 @@ or 0 to display all changes.""").format(title)
             numstr = "-l {0}".format(depth)
         command = loop.options['hg_history'].format(
             repo=loop.options['datadir'],
-            numchanges=numstr, rev="{rev}", desc="{desc}") + fn
+            numchanges=numstr, rev="{rev}", desc="{desc}", file=fn)
         logger.debug('history command: {0}'.format(command))
         p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
                              universal_newlines=True).stdout.read()

@@ -22,7 +22,6 @@ if __name__ == "__main__":
     etm = sys.argv[0]
     if len(sys.argv) > 1 and sys.argv[1] in log_levels:
         loglevel = sys.argv.pop(1)
-    setup_logging(level=loglevel)
 
     if len(sys.argv) > 1 and os.path.isdir(sys.argv[1]):
         temp = sys.argv.pop(1)
@@ -31,6 +30,8 @@ if __name__ == "__main__":
         newpath = os.path.join(temp, 'etmtk.cfg')
         if os.path.isfile(newpath) or os.path.isfile(oldpath):
             etmdir = temp
+
+    setup_logging(loglevel, etmdir)
 
     if len(sys.argv) > 1:
         logger.debug("calling data.main with etmdir: {0}, argv: {1}".format(etmdir, sys.argv))
