@@ -6,6 +6,7 @@ from __future__ import (absolute_import, division, print_function,
 import os
 import platform, sys
 import codecs
+from datetime import datetime, timedelta, time
 
 from copy import deepcopy
 # from view import AFTER
@@ -337,7 +338,6 @@ class ReportWindow(Toplevel):
         import csv as CSV
         c = CSV.writer(open(filename, "w"), delimiter=",")
         for line in data:
-            print(line)
             c.writerow(line)
 
     def confirm(self, parent=None, title="", prompt="", instance="xyz"):
@@ -466,7 +466,7 @@ class SimpleEditor(Toplevel):
             #   1: new
             #   2: replace
             #   3: new and replace
-            initfile = None
+            initfile = ensureMonthly(options=self.options, date=datetime.now())
             # logger.debug("newhsh: {0}".format(self.newhsh))
             # logger.debug("rephsh: {0}".format(self.rephsh))
             # set the mode
@@ -474,7 +474,6 @@ class SimpleEditor(Toplevel):
                 # we are creating a new item from scratch
                 self.mode = 1
                 self.edithsh = self.newhsh
-                initfile = ensureMonthly(options=self.options)
                 text = ''
             elif rephsh is None:  # newhsh is not None
                 # we are creating a new item as a copy
@@ -482,8 +481,6 @@ class SimpleEditor(Toplevel):
                 self.edithsh = self.newhsh
                 if ('fileinfo' in newhsh and newhsh['fileinfo']):
                     initfile = newhsh['fileinfo'][0]
-                else:
-                    initfile = ensureMonthly(options=self.options)
                 text = hsh2str(self.edithsh, self.options)
             elif newhsh is None: # rephsh
                 # we are editing and replacing rephsh - no file prompt
@@ -500,12 +497,10 @@ class SimpleEditor(Toplevel):
                 # self.repinfo = rephsh['fileinfo']
                 if 'fileinfo' in newhsh and newhsh['fileinfo'][0]:
                     initfile = self.newhsh['fileinfo'][0]
-                else:
-                    initfile = ensureMonthly(options=self.options)
                 text = hsh2str(self.edithsh, self.options)
 
-            if initfile:
-                self.initfile = os.path.join(self.options['datadir'], initfile)
+            # if initfile:
+            #     self.initfile = os.path.join(self.options['datadir'], initfile)
 
             logger.debug('mode: {0}; initfile: {1}; edit: {2}'.format(self.mode,  self.initfile,  self.edithsh))
         # logger.debug("setting text {0}:\n{1}".format(type(text), text))
@@ -691,6 +686,8 @@ class SimpleEditor(Toplevel):
                 filename = askopenfilename(**fileops)
                 if not (filename and os.path.isfile(filename)):
                     return False
+                else:
+                    self.text.focus_set()
             logger.debug('edithsh: {0}'.format(self.edithsh))
             ok = True
             if self.mode == 1:

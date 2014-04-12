@@ -912,7 +912,11 @@ a time period if "+" is used."""
 
     def newItem(self, e=None):
         logger.debug('newItem')
-        changed = SimpleEditor(parent=self, options=loop.options).changed
+        if self.weekly:
+            master = self.canvas
+        else:
+            master = self.tree
+        changed = SimpleEditor(parent=self, master=master,  options=loop.options).changed
         if changed:
             logger.debug('changed, reloading data')
             # FIXME: if updateDataFromFile doesn't work

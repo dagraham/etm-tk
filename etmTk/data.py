@@ -380,6 +380,7 @@ except ImportError:
     has_icalendar = False
 
 from datetime import datetime, timedelta, time
+from time import sleep
 import dateutil.rrule as dtR
 from dateutil.parser import parse as dparse
 from dateutil import __version__ as dateutil_version
@@ -5110,6 +5111,7 @@ def ensureMonthly(options, date=None):
             options['monthly'])
         if not os.path.isdir(monthly):
             os.makedirs(monthly)
+            sleep(0.5)
         if date is None:
             date = datetime.now().date()
         yr = date.year
@@ -5117,6 +5119,7 @@ def ensureMonthly(options, date=None):
         curryear = os.path.join(monthly, "%s" % yr)
         if not os.path.isdir(curryear):
             os.makedirs(curryear)
+            sleep(0.5)
         currfile = os.path.join(curryear, "%02d.txt" % mn)
         if not os.path.isfile(currfile):
             fo = codecs.open(currfile, 'w', options['encoding']['file'])
