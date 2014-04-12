@@ -1833,7 +1833,7 @@ Recursively process groups and accumulate the totals.
             hsh['hours'] = "%d:%02d" % (t[0] // 60, t[0] % 60)
         hsh['label'] = k
         lst.append(expand_template(action_template, hsh, complain=True))
-        if len(g) > 1:
+        if len(g) >= 1:
             doLeaf(g, lvl)
 
     def doGroups(tuple_list, lvl):
@@ -2879,15 +2879,15 @@ def str2opts(s, options=None):
             filters['grpby'].append(group[0])
         if include:
             if include == {'y', 'm', 'd'}:
-                grpby['include'] = "yyyy-MM-d"
+                grpby['include'] = "yyyy-MM-dd"
             elif include == {'m', 'd'}:
                 grpby['include'] = "MMM d"
             elif include == {'y', 'd'}:
-                grpby['include'] = "yyyy-MM-d"
+                grpby['include'] = "yyyy-MM-dd"
             elif include == set(['y', 'w']):
                 groupby['include'] = "w"
             elif include == {'d'}:
-                grpby['include'] = "MMM d"
+                grpby['include'] = "MMM dd"
             elif include == set(['w']):
                 grpby['include'] = "w"
             else:
@@ -3086,7 +3086,7 @@ def reportDT(dt, include, options=None):
     if dt.hour == 0 and dt.minute == 0:
         if not include:
             return ''
-        return d_to_str(dt, "yyyy-MM-d")
+        return d_to_str(dt, "yyyy-MM-dd")
     else:
         if options['ampm']:
             if include:
@@ -3299,7 +3299,7 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
     return tree
 
 
-@memoize
+# @memoize
 def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
                   colors=None):
     """
@@ -3409,6 +3409,7 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
             depth = min(grpby['depth'], len(grpby['lst']))
         else:
             depth = len(grpby['lst'])
+        logger.debug('using depth: {0}'.format(depth))
         if export:
             data = []
             # head = map(str, grpby['lst'][:depth])
@@ -3420,7 +3421,7 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
                 for row in items:
                     tup = ['"{0}"'.format(x) for x in row.pop(-1)[2:6]]
                     row.extend(tup)
-                    csv.append(row)
+                    data.append(row)
             else:
                 head.extend(['minutes', 'value', 'expense', 'charge'])
                 data.append(head)
