@@ -135,16 +135,16 @@ REPORTS = """\
 # put report specifications here, one per line. E.g.:
 
 # scheduled items this week:
-c ddd, MMM d yyyy -b mon - 7d -e +7
+c ddd, MMM dd yyyy -b mon - 7d -e +7
 
 # this and next week:
-c ddd, MMM d yyyy -b mon - 7d -e +14
+c ddd, MMM dd yyyy -b mon - 7d -e +14
 
 # this month:
-c ddd, MMM d yyyy -b 1 -e +1/1
+c ddd, MMM dd yyyy -b 1 -e +1/1
 
 # this and next month:
-c ddd, MMM d yyyy -b 1 -e +2/1
+c ddd, MMM dd yyyy -b 1 -e +2/1
 
 # last month's actions:
 a MMM yyyy; u; k[0]; k[1:] -b -1/1 -e 1
@@ -225,7 +225,6 @@ qt2dt = [
     ('MMMM', '%B'),
     ('MMM', '%b'),
     ('MM', '%m'),
-    ('M', '%m'),
     ('yyyy', '%Y'),
     ('yy', '%y'),
     ('hh', '%H'),
@@ -5746,11 +5745,9 @@ A *date specification* is either
 or a combination of one or more of the following:
     yy:   2-digit year
     yyyy:   4-digit year
-    M:   month: 1 - 12
     MM:   month: 01 - 12
     MMM:   locale specific abbreviated month name: Jan - Dec
     MMMM:   locale specific month name: January - December
-    d:   month day: 1 - 31
     dd:   month day: 01 - 31
     ddd:   locale specific abbreviated week day: Mon - Sun
     dddd:   locale specific week day: Monday - Sunday
