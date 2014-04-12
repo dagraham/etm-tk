@@ -13,11 +13,15 @@ import logging
 import logging.config
 logger = logging.getLogger()
 
-def setup_logging(level, etmdir):
+def setup_logging(level, etmdir=None):
     """
     Setup logging configuration. Override root:level in
     logging.yaml with default_level.
     """
+    if etmdir:
+        etmdir = os.path.abspath(etmdir)
+    else:
+        etmdir = os.path.join(os.path.expanduser("~/.etm"))
     log_levels = {
         '1': logging.DEBUG,
         '2': logging.INFO,
@@ -54,7 +58,7 @@ def setup_logging(level, etmdir):
               'version': 1}
 
     logging.config.dictConfig(config)
-    logger.info('logging enabled at level {0}'.format(loglevel))
+    logger.info('logging at level: {0}; exceptions to: {1}'.format(loglevel, logfile))
 
 import subprocess
 
@@ -445,97 +449,6 @@ def s2or3(s):
             return s.toUtf8()
     else:
         return s
-
-############ for indexableskiplist ###############
-
-from random import random
-from math import log
-
-class Node(object):
-    __slots__ = 'value', 'next', 'width'
-    def __init__(self, value, next, width):
-        self.value, self.next, self.width = value, next, width
-
-class End(object):
-    'Sentinel object that always compares greater than another object'
-    def __cmp__(self, other):
-        return 1
-
-NIL = Node(End(), [], [])               # Singleton terminator node
-
-class IndexableSkiplist:
-    'Sorted collection supporting O(lg n) insertion, removal, and lookup by rank.'
-
-    def __init__(self, expected_size=100):
-        self.size = 0
-        self.maxlevels = int(1 + log(expected_size, 2))
-        self.head = Node('HEAD', [NIL]*self.maxlevels, [1]*self.maxlevels)
-
-    def __len__(self):
-        return self.size
-
-    def __getitem__(self, i):
-        node = self.head
-        i += 1
-        for level in reversed(range(self.maxlevels)):
-            while node.width[level] <= i:
-                i -= node.width[level]
-                node = node.next[level]
-        return node.value
-
-    def insert(self, value):
-        # find first node on each level where node.next[levels].value > value
-        chain = [None] * self.maxlevels
-        steps_at_level = [0] * self.maxlevels
-        node = self.head
-        for level in reversed(range(self.maxlevels)):
-            while node.next[level].value <= value:
-                steps_at_level[level] += node.width[level]
-                node = node.next[level]
-            chain[level] = node
-
-        # insert a link to the newnode at each level
-        d = min(self.maxlevels, 1 - int(log(random(), 2.0)))
-        newnode = Node(value, [None]*d, [None]*d)
-        steps = 0
-        for level in range(d):
-            prevnode = chain[level]
-            newnode.next[level] = prevnode.next[level]
-            prevnode.next[level] = newnode
-            newnode.width[level] = prevnode.width[level] - steps
-            prevnode.width[level] = steps + 1
-            steps += steps_at_level[level]
-        for level in range(d, self.maxlevels):
-            chain[level].width[level] += 1
-        self.size += 1
-
-    def remove(self, value):
-        # find first node on each level where node.next[levels].value >= value
-        chain = [None] * self.maxlevels
-        node = self.head
-        for level in reversed(range(self.maxlevels)):
-            while node.next[level].value < value:
-                node = node.next[level]
-            chain[level] = node
-        if value != chain[0].next[0].value:
-            raise KeyError('Not Found')
-
-        # remove one link at each level
-        d = len(chain[0].next[0].next)
-        for level in range(d):
-            prevnode = chain[level]
-            prevnode.width[level] += prevnode.next[level].width[level] - 1
-            prevnode.next[level] = prevnode.next[level].next[level]
-        for level in range(d, self.maxlevels):
-            chain[level].width[level] -= 1
-        self.size -= 1
-
-    def __iter__(self):
-        'Iterate over values in sorted order'
-        node = self.head.next[0]
-        while node is not NIL:
-            yield node.value
-            node = node.next[0]
 
 ############ for indexableskiplist ###############
 
@@ -2354,7 +2267,6 @@ def process_data_file_list(filelist, options=None):
 def process_one_file(full_filename, rel_filename, options=None):
     if not options: options = {}
     file_items = getFileItems(full_filename, rel_filename)
-    logger.debug('file_items: {0}'.format(file_items))
     return items2Hashes(file_items, options)
 
 
@@ -3800,7 +3712,7 @@ def add2list(l, item, expand=True):
     """Add item to l if not already present using bisect to maintain order."""
     global last_added
     # ('add2list', item)
-    if expand and len(item) == 3:
+    if expand and len(item) == 3 and type(item[1]) is tuple:
         # this is a tree entry, so we need to expand the middle tuple
         # for makeTree
         try:
@@ -4194,7 +4106,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                          tstr2SCI[typ][0], hsh['_p'], '', f),
                         (fmt_date(d0),),
                         (uid, typ, setSummary(hsh, d0), '', d0.strftime(rfmt))]
-                    add2list(items, item)
+                    items.append(item)
                     add2Dates(datetimes, (d0, f))
                 if not due:
                     # add the last completion to folder view
@@ -4202,7 +4114,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         ('folder', (f, tstr2SCI[typ][0]), done,
                          hsh['_summary'], f), tuple(folders),
                         (uid, typ, setSummary(hsh, done), sdt, done.strftime(rfmt))]
-                    add2list(items, item)
+                    items.append(item)
 
             if due:
                 # add a due entry to folder view
@@ -4250,7 +4162,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     ('folder', (f, tstr2SCI[typ][0]), due,
                      hsh['_summary'], f), tuple(folders),
                     (uid, typ, setSummary(hsh, due), time_str, etmdt)]
-                add2list(items, item)
+                items.append(item)
                 if 'k' in hsh and hsh['k'] != 'none':
                     keywords = [x.strip() for x in hsh['k'].split(':')]
                     item = [
@@ -4258,7 +4170,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                          due, hsh['_summary'], f), tuple(keywords),
                         (uid, typ,
                          setSummary(hsh, due), time_str, etmdt)]
-                    add2list(items, item)
+                    items.append(item)
                 if 't' in hsh:
                     for tag in hsh['t']:
                         item = [
@@ -4266,7 +4178,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                              hsh['_summary'], f), (tag,),
                             (uid, typ,
                              setSummary(hsh, due), time_str, etmdt)]
-                        add2list(items, item)
+                        items.append(item)
             if not due and not done:  # undated
                 dts = "none"
                 dtl = today_datetime
@@ -4278,7 +4190,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                      hsh['_summary'], f),
                     tuple(folders),
                     (uid, typ, setSummary(hsh, ''), '')]
-                add2list(items, item)
+                items.append(item)
 
 
                 if 'k' in hsh and hsh['k'] != 'none':
@@ -4287,14 +4199,14 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         ('keyword', (hsh['k'], tstr2SCI[typ][0]), '',
                          hsh['_summary'], f), tuple(keywords),
                         (uid, typ, setSummary(hsh, ''), '', etmdt)]
-                    add2list(items, item)
+                    items.append(item)
                 if 't' in hsh:
                     for tag in hsh['t']:
                         item = [
                             ('tag', (tag, tstr2SCI[typ][0]), due,
                              hsh['_summary'], f), (tag,),
                             (uid, typ, setSummary(hsh, ''), '', etmdt)]
-                        add2list(items, item)
+                        items.append(item)
 
         else:  # not a task type
             if 's' in hsh:
@@ -4357,21 +4269,21 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 ('folder', (f, tstr2SCI[typ][0]), dt,
                  hsh['_summary'], f), tuple(folders),
                 (uid, typ, setSummary(hsh, dt), sdt, etmdt)]
-            add2list(items, item)
+            items.append(item)
             if 'k' in hsh and hsh['k'] != 'none':
                 keywords = [x.strip() for x in hsh['k'].split(':')]
                 item = [
                     ('keyword', (hsh['k'], tstr2SCI[typ][0]), dt,
                      hsh['_summary'], f), tuple(keywords),
                     (uid, typ, setSummary(hsh, dt), sdt, etmdt)]
-                add2list(items, item)
+                items.append(item)
             if 't' in hsh and hsh['t'] != 'none':
                 for tag in hsh['t']:
                     item = [
                         ('tag', (tag, tstr2SCI[typ][0]), dt,
                          hsh['_summary'], f), (tag,),
                         (uid, typ, setSummary(hsh, dt), sdt, etmdt)]
-                    add2list(items, item)
+                    items.append(item)
             if hsh['itemtype'] == '#':
                 # don't include deleted items in any other views
                 continue
@@ -4382,14 +4294,14 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 ('inbasket', (0, tstr2SCI['ib'][0]), dt,
                  hsh['_summary'], f),
                 (uid, 'ib', setSummary(hsh, dt), sdt, etmdt)]
-            add2list(items, item)
+            items.append(item)
             continue
         if hsh['itemtype'] == '?':
             item = [
                 ('someday', 2, (tstr2SCI['so'][0]), dt,
                  hsh['_summary'], f),
                 (uid, 'so', setSummary(hsh, dt), sdt, etmdt)]
-            add2list(items, item)
+            items.append(item)
             continue
         if hsh['itemtype'] == '!':
             if not ('k' in hsh and hsh['k']):
@@ -4399,7 +4311,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 ('note', (hsh['k'], tstr2SCI[typ][0]), '',
                  hsh['_summary'], f), tuple(keywords),
                 (uid, typ, setSummary(hsh, ''), '', etmdt)]
-            add2list(items, item)
+            items.append(item)
         #--------- make entry for next view ----------#
         if 's' not in hsh and hsh['itemtype'] in [u'+', u'-', u'%']:
             dts = "none"
@@ -4425,7 +4337,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 ('next', (1, hsh['c'], hsh['_p'], exttd),
                  tstr2SCI[typ][0], hsh['_p'], hsh['_summary'], f),
                 (hsh['c'],), (uid, typ, hsh['_summary'], extstr)]
-            add2list(items, item)
+            items.append(item)
             continue
         #---- make entries for day view and friends ----#
         dates = []
@@ -4553,7 +4465,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     item = [
                         ('now', sn, dtl, hsh['_p'], summary, f), (cat,),
                         (uid, typ, summary, time_str, etmdt)]
-                add2list(items, item)
+                items.append(item)
 
             if 'b' in hsh:
                 time_diff = (dtl - today_datetime).days
@@ -4569,7 +4481,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                              f),
                             (fmt_date(today_datetime),),
                             (uid, 'by', summary, extstr, etmdt)]
-                    add2list(items, item)
+                    items.append(item)
 
             if hsh['itemtype'] == '!':
                 typ = 'ns'
@@ -4578,7 +4490,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                      hsh['_p'], '', f),
                     (fmt_date(dt),),
                     (uid, typ, summary, '', etmdt)]
-                add2list(items, item)
+                items.append(item)
                 continue
             if hsh['itemtype'] == '^':
                 typ = 'oc'
@@ -4587,7 +4499,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                      tstr2SCI[typ][0], hsh['_p'], '', f),
                     (fmt_date(dt),),
                     (uid, typ, summary, '', etmdt)]
-                add2list(items, item)
+                items.append(item)
                 occasions.append([uid, sd, summary, f])
                 continue
             if hsh['itemtype'] == '~':
@@ -4602,7 +4514,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     (fmt_date(dt),),
                     (uid, 'ac', summary,
                      sdt, etmdt)]
-                add2list(items, item)
+                items.append(item)
                 continue
             if hsh['itemtype'] == '*':
                 sm = st.hour * 60 + st.minute
@@ -4628,7 +4540,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         (uid, typ, summary, '%s ~ %s' %
                                             (st_fmt,
                                              options['dayend_fmt']), etmdt)]
-                    add2list(items, item)
+                    items.append(item)
                     busytimes.append([uid, sd, sm, day_end_minutes,
                                  evnt_summary, f])
                     sd += oneday
@@ -4676,7 +4588,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         (uid, typ, summary, '%s%s' % (
                             st_fmt,
                             et_fmt), etmdt)]
-                    add2list(items, item)
+                    items.append(item)
                     busytimes.append([uid, sd, sm, em, evnt_summary, f])
                     continue
                     #--------------- other dated items ---------------#
@@ -4702,7 +4614,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                      hsh['_p'], '', f),
                     (fmt_date(dt),),
                     (uid, typ, summary, extstr, etmdt)]
-                add2list(items, item)
+                items.append(item)
                 continue
             if hsh['itemtype'] == '%':
                 if 'f' in hsh:
@@ -4714,7 +4626,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                      hsh['_p'], '', f),
                     (fmt_date(dt),),
                     (uid, typ, summary, extstr, etmdt)]
-                add2list(items, item)
+                items.append(item)
                 continue
             if hsh['itemtype'] == '+':
                 if 'prereqs' in hsh and hsh['prereqs']:
@@ -4729,7 +4641,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                      hsh['_p'], '', f),
                     (fmt_date(dt),),
                     (uid, typ, summary, extstr, etmdt)]
-                add2list(items, item)
+                items.append(item)
                 continue
     file2data[f] = [items, alerts, busytimes, datetimes, occasions]
 
@@ -4738,6 +4650,8 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None, file2data=No
     """
         Collect data on all items, apply filters later
     """
+    T0 = get_current_time()
+    t0 = T0.second*1000 + T0.microsecond // 1000
     if not file2uuids: file2uuids = {}
     if not uuid2hash: uuid2hash = {}
     if not options: options = {}
@@ -4755,17 +4669,23 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None, file2data=No
 
     for f in file2data:
         updateViewFromFile(f, items, alerts, busytimes, datetimes, occasions, file2data)
+    T1 = get_current_time()
+    t1 = T1.second*1000 + T1.microsecond // 1000
+    logger.info('elapsed clock time for getViewData in microseconds: {0}'.format(t1-t0))
+
+    tmplst = [len(x) for x in items]
+
     return items, alerts, busytimes, datetimes, occasions, file2data
 
 def updateViewFromFile(f, items, alerts, busytimes, datetimes, occasions, file2data):
     _items, _alerts, _busytimes, _datetimes, _occasions = file2data[f]
-    logger.debug('file: {0}\n    _busytimes: {1}'.format(f, _busytimes))
+    logger.debug('file: {0}'.format(f))
     for item in _items:
-        add2list(items, item, expand=False)
+        add2list(items, item)
     for alert in _alerts:
-        add2list(alerts, alert, expand=False)
+        add2list(alerts, alert)
     for dt in _datetimes:
-        add2list(datetimes, dt, expand=False)
+        add2list(datetimes, dt)
     for bt in _busytimes:
         uid, sd, sm, em, evnt_summary, rpth = bt
         add_busytime(uid, sd, sm, em, evnt_summary, rpth, busytimes)
@@ -4776,6 +4696,8 @@ def updateViewFromFile(f, items, alerts, busytimes, datetimes, occasions, file2d
 
 def updateViewData(f, bef, file2uuids=None, uuid2hash=None, options=None, file2data=None):
     logger.debug("file2data keys: {0}".format(file2data.keys()))
+    T0 = get_current_time()
+    t0 = T0.second*1000 + T0.microsecond // 1000
     if not file2uuids: file2uuids = {}
     if not uuid2hash: uuid2hash = {}
     if not options: options = {}
@@ -4793,6 +4715,9 @@ def updateViewData(f, bef, file2uuids=None, uuid2hash=None, options=None, file2d
     getDataFromFile(f, file2data, bef, file2uuids, uuid2hash, options)
     for f in file2data:
         updateViewFromFile(f, items, alerts, busytimes, datetimes, occasions, file2data)
+    T1 = get_current_time()
+    t1 = T1.second*1000 + T1.microsecond // 1000
+    logger.info('elapsed clock time for updateViewData in microseconds: {0}'.format(t1-t0))
     return items, alerts, busytimes, datetimes, occasions, file2data
 
 def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
@@ -5621,7 +5546,6 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
         # self.loadData()
 
     def replace_item(self, new_hsh):
-        logger.debug("new_hsh: {0}".format(new_hsh))
         new_item = hsh2str(new_hsh, self.options)
         logger.debug(new_item)
         newlines = new_item.split('\n')
@@ -5950,7 +5874,6 @@ Display information about etm and the operating system.""")
             mode = _("replaced item")
         else:
             mode = _("removed item")
-        logger.debug("calling safe_save with: {0}; mode: {1}".format(itemstr, mode))
         self.safe_save(fp, itemstr, mode=mode)
         return True
 
@@ -5986,10 +5909,16 @@ def main(etmdir='', argv=[]):
                 args.append(x)
             argstr = ' '.join(args)
             logger.debug('calling do_command: {0}'.format(argstr))
+            T0 = get_current_time()
+            t0 = T0.second*1000 + T0.microsecond // 1000
             c.loadData()
             res = c.do_command(argstr)
             if type(res) is dict:
                 res = "\n".join(tree2Text(res)[0])
+            T1 = get_current_time()
+            t1 = T1.second*1000 + T1.microsecond // 1000
+            logger.info('total elapsed clock time for cmd "{0}" in microseconds: {1}'.format(argstr, t1-t0))
+
             term_print(res)
         else:
             logger.warn("argv: {0}".format(argv))

@@ -2209,24 +2209,18 @@ or 0 to display all changes.""").format(title)
     def updateAlerts(self):
         self.update_idletasks()
         if loop.alerts:
-            logger.debug('updateAlerts 1: {0}'.format(len(loop.alerts)))
+            logger.debug('updateAlerts: {0}'.format(len(loop.alerts)))
         alerts = deepcopy(loop.alerts)
         if loop.options['calendars']:
-            # logger.debug("cal_regex: {0}".format(self.cal_regex))
             alerts = [x for x in alerts if self.cal_regex.match(x[-1])]
         if alerts:
             curr_minutes = datetime2minutes(self.now)
             td = -1
             while td < 0 and alerts:
                 file = alerts[0][-1]
-                logger.debug('file: {0}'.format(file))
                 td = alerts[0][0] - curr_minutes
-                logger.debug('curr_minutes: {0}; td: {1}'.format(
-                    curr_minutes, td))
                 if td < 0:
-                    logger.debug('including: {0}'.format(alerts[0]))
                     alerts.pop(0)
-            logger.debug('remaining: {0}'.format(alerts))
             if td == 0:
                 if ('alert_wakecmd' in loop.options and
                         loop.options['alert_wakecmd']):
@@ -2356,8 +2350,6 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
                     if not alerts:
                         break
                     td = alerts[0][0] - curr_minutes
-        if alerts:
-            logger.debug('updateAlerts 2: {0}'.format(len(alerts)))
         if alerts and len(alerts) > 0:
             self.pendingAlerts.set(len(alerts))
             self.pending.configure(state="normal")

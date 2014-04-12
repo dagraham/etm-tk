@@ -63,7 +63,7 @@ SAVESPECS = _("Save changes to report specifications")
 CLOSE = _("Close")
 
 
-from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, optionShortcut, CMD, relpath, completion_regex, getReportData, tree2Text, AFTER
+from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, optionShortcut, CMD, relpath, completion_regex, getReportData, tree2Text, AFTER, get_current_time
 
 from etmTk.dialog import BGCOLOR, OptionsDialog, ReadOnlyText
 
@@ -582,7 +582,7 @@ class SimpleEditor(Toplevel):
         self.fltr.pack(side="top", fill="x") #, expand=1, fill=X)
         self.fltr.icursor(END)
 
-        self.listbox = listbox = Listbox(acw, exportselection=False)
+        self.listbox = listbox = Listbox(acw, exportselection=False, width=36)
         listbox.pack(side="bottom", fill=BOTH, expand=True)
 
         self.autocompletewindow.bind("<Double-1>", self.completionSelected)
@@ -653,7 +653,6 @@ class SimpleEditor(Toplevel):
             self.wm_title(self.title)
 
     def onSave(self, e=None):
-        logger.debug('modified: {0}'.format(self.checkmodified()))
         e = None
         if not self.checkmodified():
             self.quit()
@@ -671,7 +670,6 @@ class SimpleEditor(Toplevel):
             # we are editing an item
             ok = self.onCheck(showreps=False, showres=False)
             if not ok:
-                logger.debug('not ok')
                 return "break"
             if self.mode in [1, 3]:  # new
                 dir = self.options['datadir']
@@ -698,26 +696,25 @@ class SimpleEditor(Toplevel):
             if self.mode == 1:
                 if self.loop.append_item(self.edithsh, filename):
                     self.update_idletasks()
-                    logger.debug('added: {0}'.format(self.edithsh))
+                    logger.debug('append mode: {0}'.format(self.mode))
                 else:
                     ok = False
             elif self.mode == 2:
                 if self.loop.replace_item(self.edithsh):
-                    logger.debug('replaced: {0}'.format(self.edithsh))
+                    logger.debug('replace mode: {0}'.format(self.mode))
                 else:
                     ok = False
             else:  # self.mode == 3
                 if self.loop.append_item(self.edithsh, filename):
                     self.update_idletasks()
-                    logger.debug('added: {0}'.format(self.edithsh))
+                    logger.debug('append mode: {0}'.format(self.mode))
                 else:
                     ok = False
                 if self.loop.replace_item(self.rephsh):
-                    logger.debug('replaced: {0}'.format(self.rephsh))
+                    logger.debug('replace mode: {0}'.format(self.mode))
                 else:
                     ok = False
 
-            logger.debug('ok: {0}'.format(ok))
             # update the return value so that when it is not null then modified
             # is false and when modified is true then it is null
             self.setmodified(False)
