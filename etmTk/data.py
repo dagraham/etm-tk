@@ -1865,9 +1865,6 @@ to be tallied.
 
 Recursively process groups and accumulate the totals.
     """
-    # print('staring list of tuples')
-    # for t in list_of_tuples:
-    #     print(t)
     if not options: options = {}
     if not max_level:
         max_level = len(list_of_tuples[0]) - 1
@@ -1930,23 +1927,13 @@ Recursively process groups and accumulate the totals.
         global row, rows
         hsh = {}
         lvl += 1
-        # print('lvl', lvl, max_level)
-        # if max_level and lvl > max_level - 1:
         if max_level and lvl > max_level - 1:
-            # print('using row', row)
             rows.append(deepcopy(row))
             return
-        # else:
-        #     print('skipping row', row)
-
-        # else:
-        #     rows.append(deepcopy(row))
         hsh['indent'] = tab * lvl
         for k, g, t in group_sort(tuple_list):
             row[lvl] = k[-1]
             row[-1] = t
-            # print('row', row)
-
             hsh['count'] = len(g)
             hsh['minutes'] = t[0]  # only 2 digits after the decimal point
             hsh['value'] = "%.2f" % t[1]
@@ -1962,7 +1949,6 @@ Recursively process groups and accumulate the totals.
                 hsh['hours'] = "%d:%02d" % (t[0] // 60, t[0] % 60)
 
             hsh['label'] = k[-1]
-            print('adding to lst', expand_template(action_template, hsh, complain=True))
             lst.append(expand_template(action_template, hsh, complain=True))
             if len(g) > 1:
                 doGroups(g, lvl)
@@ -1970,13 +1956,6 @@ Recursively process groups and accumulate the totals.
                 doLeaf(g[0], lvl)
 
     doGroups(list_of_tuples, level)
-    # print('rows')
-    # for row in rows:
-    #     print(row)
-    # print('lst')
-    # for row in lst:
-    #     print(lst)
-
     if export:
         return rows
         # return list_of_tuples
@@ -2365,7 +2344,7 @@ def process_data_file_list(filelist, options=None):
                 file2uuids.setdefault(r, []).append(uid)
         except Exception:
             fio = StringIO()
-            traceback.print_exc(file=fio)
+            # traceback.print_exc(file=fio)
             msg = fio.getvalue()
             bad_datafiles[r] = msg
             logger.error('Error processing: {0}\n{1}'.format(r, msg))
@@ -3239,7 +3218,6 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                 dates = []
                 if 'f' in hsh and hsh['f']:
                     next = getDoneAndTwo(hsh)[1]
-                    # print('next', hsh['_summary'], next)
                     if next: start = next
                 else:
                     start = parse(parse_dtstr(hsh['s'], hsh['z'])).astimezone(tzlocal()).replace(tzinfo=None)
@@ -3534,9 +3512,6 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
             else:
                 head.extend(['minutes', 'value', 'expense', 'charge'])
                 data.append(head)
-                # head = ['"{0}"'.format(x) for x in head]
-                # print('head', head)
-                # csv = [head]
                 lst = tallyByGroup(
                     items, max_level=depth, options=options, export=True)
                 for row in lst:
@@ -3544,7 +3519,6 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
                     #     continue
                     tup = [x for x in list(row.pop(-1))]
                     row.extend(tup)
-                    # print('row', row)
                     data.append(row)
             return data
         else:
@@ -4106,7 +4080,7 @@ def timedelta2Sentence(td):
         return str(_("{0} from now")).format(string)
 
 
-def add_busytime(uid, sd, sm, em, evnt_summary, busytimes, busydays, rpth):
+def add_busytime(uid, sd, sm, em, evnt_summary, rpth, busytimes):
     """
     key = (year, weeknum, weekdaynum with Monday=1, Sunday=7)
     value = [minute_total, list of (uid, start_minute, end_minute)]
@@ -4114,15 +4088,13 @@ def add_busytime(uid, sd, sm, em, evnt_summary, busytimes, busydays, rpth):
     timekey = sd.isocalendar()  # year, weeknum, weekdaynum
     daykey = sd
     busytimes.setdefault(timekey, [0, []])  # y, wn, wdn -> [tot, []]
-    busydays.setdefault(daykey, 0)
     if ((sm, em, uid, evnt_summary)) not in busytimes[timekey][1]:
         busytimes[timekey][0] += em - sm  # add minutes to tot
-        busydays[daykey] += em - sm       # add minutes to busydays total
         bisect.insort(
             busytimes[timekey][1], (sm, em, uid, evnt_summary, rpth))
 
 
-def add_occasion(uid, sd, evnt_summary, occasions, f):
+def add_occasion(uid, sd, evnt_summary, f, occasions):
     timekey = sd.isocalendar()  # year, weeknum, weekdaynum
     occasions.setdefault(timekey, [])
     if ((uid, evnt_summary)) not in occasions[timekey]:
@@ -4173,10 +4145,8 @@ def setItemPeriod(hsh, start, end, short=False, options=None):
 
     return period
 
-@memoize
-def getDataFromFile(f, file2data, bef, busytimes, busydays, occasions, file2uuids=None, uuid2hash=None, options=None):
-    # print('processing', f)
-    # print('busytimes', busytimes)
+# @memoize
+def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=None):
     if not options: options = {}
     if not file2uuids: file2uuids = {}
     if not uuid2hash: uuid2hash = {}
@@ -4186,11 +4156,9 @@ def getDataFromFile(f, file2data, bef, busytimes, busydays, occasions, file2uuid
     yearnum, weeknum, daynum = today_date.isocalendar()
     items = []       # [(view, sort(3|4), fn), (branches), (leaf)]
     datetimes = []
-    # busytimes = {}
-    # # isodate -> [(start_minutes, end_minutes, uuid, time period, subject, f)]
-    # busydays = {}   # date -> totalminutes
-    # occasions = {}  # isodate -> [(uuid, subject)]
-    alerts = []  # today only [(start_minutes, alert_minutes, action, uuid, f)]
+    busytimes = []
+    occasions = []
+    alerts = []
     alert_minutes = {}
     folders = expandPath(f)
     for uid in file2uuids[f]:
@@ -4620,7 +4588,7 @@ def getDataFromFile(f, file2data, bef, busytimes, busydays, occasions, file2uuid
                     (fmt_date(dt),),
                     (uid, typ, summary, '', etmdt)]
                 add2list(items, item)
-                add_occasion(uid, sd, summary, occasions, f)
+                occasions.append([uid, sd, summary, f])
                 continue
             if hsh['itemtype'] == '~':
                 typ = 'ac'
@@ -4661,8 +4629,8 @@ def getDataFromFile(f, file2data, bef, busytimes, busydays, occasions, file2uuid
                                             (st_fmt,
                                              options['dayend_fmt']), etmdt)]
                     add2list(items, item)
-                    add_busytime(uid, sd, sm, day_end_minutes,
-                                 evnt_summary, busytimes, busydays, f)
+                    busytimes.append([uid, sd, sm, day_end_minutes,
+                                 evnt_summary, f])
                     sd += oneday
                     i = 0
                     item_copy = []
@@ -4680,9 +4648,7 @@ def getDataFromFile(f, file2data, bef, busytimes, busydays, occasions, file2uuid
                         item_copy[i][1] = tuple(item_copy[i][1])
                         item_copy[i][2] = tuple(item_copy[i][2])
                         add2list(items, item_copy[i])
-                        add_busytime(uid, sd, 0, day_end_minutes,
-                                     evnt_summary, busytimes, busydays,
-                                     f)
+                        busytimes.append([uid, sd, 0, day_end_minutes, evnt_summary, f])
                         sd += oneday
                         i += 1
                         # the last day tuple
@@ -4699,8 +4665,7 @@ def getDataFromFile(f, file2data, bef, busytimes, busydays, occasions, file2uuid
                         item_copy[i][1] = tuple(item_copy[i][1])
                         item_copy[i][2] = tuple(item_copy[i][2])
                         add2list(items, item_copy[i])
-                        add_busytime(uid, sd, 0, em, evnt_summary,
-                                     busytimes, busydays, f)
+                        busytimes.append([uid, sd, 0, em, evnt_summary, f])
                 else:
                     # single day event or reminder
                     item = [
@@ -4712,7 +4677,7 @@ def getDataFromFile(f, file2data, bef, busytimes, busydays, occasions, file2uuid
                             st_fmt,
                             et_fmt), etmdt)]
                     add2list(items, item)
-                    add_busytime(uid, sd, sm, em, evnt_summary, busytimes, busydays, f)
+                    busytimes.append([uid, sd, sm, em, evnt_summary, f])
                     continue
                     #--------------- other dated items ---------------#
             if hsh['itemtype'] in ['+', '-', '%']:
@@ -4766,42 +4731,69 @@ def getDataFromFile(f, file2data, bef, busytimes, busydays, occasions, file2uuid
                     (uid, typ, summary, extstr, etmdt)]
                 add2list(items, item)
                 continue
-    file2data[f] = [items, alerts, datetimes]
+    file2data[f] = [items, alerts, busytimes, datetimes, occasions]
 
 # noinspection PyChainedComparisons
-def getViewData(bef, file2uuids=None, uuid2hash=None, options=None):
+def getViewData(bef, file2uuids=None, uuid2hash=None, options=None, file2data=None):
     """
         Collect data on all items, apply filters later
     """
-    if not options: options = {}
     if not file2uuids: file2uuids = {}
     if not uuid2hash: uuid2hash = {}
-    today_datetime = datetime.now().replace(
-        hour=0, minute=0, second=0, microsecond=0)
-    today_date = datetime.now().date()
-    yearnum, weeknum, daynum = today_date.isocalendar()
-    items = []       # [(view, sort(3|4), fn), (branches), (leaf)]
+    if not options: options = {}
+    # items: [(view,sort(3|4),fn),(branches),(leaf)]
+    file2data = {}
+    items = []
     datetimes = []
     busytimes = {}
-    # isodate -> [(start_minutes, end_minutes, uuid, time period, subject, f)]
-    busydays = {}   # date -> totalminutes
-    occasions = {}  # isodate -> [(uuid, subject)]
-    alerts = []  # today only [(start_minutes, alert_minutes, action, uuid, f)]
-    alert_minutes = {}
-    file2data = {}
+    # occasions: isodate -> [(uuid, subject)]
+    occasions = {}
+    # alerts: [(start_minutes, alert_minutes, action, uuid, f)]
+    alerts = []
     for f in file2uuids:
-        getDataFromFile(f, file2data, bef, busytimes, busydays, occasions, file2uuids, uuid2hash, options)
+        getDataFromFile(f, file2data, bef, file2uuids, uuid2hash, options)
 
-    # for f in file2data:
-        _items, _alerts, _datetimes = file2data[f]
-        for item in _items:
-            add2list(items, item, expand=False)
-        for alert in _alerts:
-            add2list(alerts, alert, expand=False)
-        for dt in _datetimes:
-            add2list(datetimes, dt, expand=False)
+    for f in file2data:
+        updateViewFromFile(f, items, alerts, busytimes, datetimes, occasions, file2data)
+    return items, alerts, busytimes, datetimes, occasions, file2data
 
-    return items, busytimes, busydays, alerts, datetimes, occasions
+def updateViewFromFile(f, items, alerts, busytimes, datetimes, occasions, file2data):
+    _items, _alerts, _busytimes, _datetimes, _occasions = file2data[f]
+    logger.debug('file: {0}\n    _busytimes: {1}'.format(f, _busytimes))
+    for item in _items:
+        add2list(items, item, expand=False)
+    for alert in _alerts:
+        add2list(alerts, alert, expand=False)
+    for dt in _datetimes:
+        add2list(datetimes, dt, expand=False)
+    for bt in _busytimes:
+        uid, sd, sm, em, evnt_summary, rpth = bt
+        add_busytime(uid, sd, sm, em, evnt_summary, rpth, busytimes)
+
+    for oc in _occasions:
+        uid, sd, evnt_summary, f = oc
+        add_occasion(uid, sd, evnt_summary, f, occasions)
+
+def updateViewData(f, bef, file2uuids=None, uuid2hash=None, options=None, file2data=None):
+    logger.debug("file2data keys: {0}".format(file2data.keys()))
+    if not file2uuids: file2uuids = {}
+    if not uuid2hash: uuid2hash = {}
+    if not options: options = {}
+    # clear data for this file
+    # file2data = deepcopy(f2d)
+    if f in file2data:
+        del file2data[f]
+    # clear all the data items
+    items = []
+    datetimes = []
+    busytimes = {}
+    occasions = {}
+    alerts = []
+    # update file2data[f]
+    getDataFromFile(f, file2data, bef, file2uuids, uuid2hash, options)
+    for f in file2data:
+        updateViewFromFile(f, items, alerts, busytimes, datetimes, occasions, file2data)
+    return items, alerts, busytimes, datetimes, occasions, file2data
 
 def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
     logger.debug("updateCurrent")
@@ -5263,6 +5255,7 @@ class ETMCmd():
         self.alerts = None
         self.dates = None
         self.occasions = None
+        self.file2data = None
         self.prevnext = None
         self.line_length = self.options['agenda_indent'] + self.options['agenda_width1'] + self.options['agenda_width2']
         self.currfile = ''  # ensureMonthly(options)
@@ -5360,11 +5353,10 @@ class ETMCmd():
         week_beg = now - days * oneday
         bef = (week_beg + (7 * (weeks_after + 1)) * oneday)
         self.options['bef'] = bef
+        self.file2data = {}
         uuid2hash, file2uuids, self.file2lastmodified, bad_datafiles, messages = \
             get_data(options=self.options, use_pickle=True)
-        (self.rows, self.busytimes, self.busydays, self.alerts, self.dates, self.occasions) = getViewData(
-            bef, file2uuids, uuid2hash, options=self.options,
-        )
+        (self.rows, self.alerts, self.busytimes, self.dates, self.occasions, self.file2data) = getViewData(bef, file2uuids, uuid2hash, self.options)
         updateCurrentFiles(
             self.rows, file2uuids, uuid2hash, self.options)
         self.file2uuids = file2uuids
@@ -5401,8 +5393,8 @@ class ETMCmd():
             self.uuid2hash[id] = hsh
         mtime = os.path.getmtime(fp)
         self.file2lastmodified[(fp, rp)] = mtime
-        (self.rows, self.busytimes, self.busydays, self.alerts, self.dates, self.occasions) = getViewData(bef, self.file2uuids, self.uuid2hash, options=self.options)
         dump_data(self.options, self.uuid2hash, self.file2uuids, self.file2lastmodified, [], [])
+        (self.rows, self.alerts, self.busytimes, self.dates, self.occasions, self.file2data) = updateViewData(rp, bef, self.file2uuids, self.uuid2hash, self.options, self.file2data)
 
     def edit_tmp(self):
         if not self.editcmd:
