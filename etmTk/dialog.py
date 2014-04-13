@@ -210,7 +210,7 @@ class MenuTree:
         return index
 
     def create_node(self, name, identifier=None, parent=None):
-        logger.debug("name: {0}, identifier: {1}; parent: {2}".format(name, identifier, parent))
+        # logger.debug("name: {0}, identifier: {1}; parent: {2}".format(name, identifier, parent))
 
         node = Node(name, identifier)
         self.nodes.append(node)
@@ -267,7 +267,7 @@ class Timer():
         self.starttime = datetime.now()
         self.timer_hsh = hsh
         text = hsh['_summary']
-        self.timer_hsh['s'] = self.starttime
+        # self.timer_hsh['s'] = self.starttime
         if 'e' in hsh:
             self.timer_delta = hsh['e']
         if len(text) > 16:
@@ -289,6 +289,7 @@ class Timer():
 
         self.timer_delta = max(self.timer_delta, ONEMINUTE)
         self.timer_hsh['e'] = self.timer_delta
+        self.timer_hsh['s'] = get_current_time()
         self.timer_hsh['itemtype'] = '~'
 
     def timer_toggle(self, hsh=None):

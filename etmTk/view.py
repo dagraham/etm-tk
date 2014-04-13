@@ -174,7 +174,6 @@ class App(Tk):
 
         # main menu
         menubar = Menu(self)
-        logger.debug('AFTER: {0}'.format(AFTER))
         menu = _("Menubar")
         self.add2menu(root, (menu,))
 
@@ -189,7 +188,7 @@ class App(Tk):
 
         label = _("Item")
         l, c = commandShortcut('i')
-        logger.debug("{0}: {1}, {2}".format(label, l, c))
+        # logger.debug("{0}: {1}, {2}".format(label, l, c))
         newmenu.add_command(label=label, command=self.newItem)
         self.bind(c, lambda e: self.after(AFTER, self.newItem))
         if not mac:
@@ -198,7 +197,7 @@ class App(Tk):
 
         label = _("Begin/Pause Action Timer")
         l, c = commandShortcut(',')
-        logger.debug("{0}: {1}, {2}".format(label, l, c))
+        # logger.debug("{0}: {1}, {2}".format(label, l, c))
         newmenu.add_command(label=label, command=self.startActionTimer)
         self.bind("<Control-comma>", lambda e: self.after(AFTER, self.startActionTimer))
         if not mac:
@@ -207,7 +206,7 @@ class App(Tk):
 
         label = _("Finish Action Timer")
         l, c = commandShortcut('.')
-        logger.debug("{0}: {1}, {2}".format(label, l, c))
+        # logger.debug("{0}: {1}, {2}".format(label, l, c))
         newmenu.add_command(label=label, command=self.startActionTimer)
         self.bind("<Control-period>", lambda e: self.after(AFTER, self.finishActionTimer))
         if not mac:
@@ -231,7 +230,7 @@ class App(Tk):
         self.add2menu(path, (label, l))
 
         l, c = commandShortcut('E')
-        logger.debug("config: {0}, {1}".format(l, c))
+        # logger.debug("config: {0}, {1}".format(l, c))
         file = loop.options['config']
         label = relpath(file, loop.options['etmdir'])
         openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x, config=True))
@@ -252,7 +251,7 @@ class App(Tk):
         l, c = commandShortcut('R')
         file = loop.options['report_specifications']
         label = relpath(file, loop.options['etmdir'])
-        logger.debug("{0}: {1}, {2}".format(label, l, c))
+        # logger.debug("{0}: {1}, {2}".format(label, l, c))
         openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x))
         self.bind(c, lambda e: openmenu.invoke(3))
         if not mac:
@@ -442,7 +441,7 @@ class App(Tk):
             #     l = "{0}, Return".format(l)
             else:
                 l, c = commandShortcut(k)
-            logger.debug('binding {0} to {1}'.format(c, self.edit2cmd[k]))
+            # logger.debug('binding {0} to {1}'.format(c, self.edit2cmd[k]))
             itemmenu.add_command(label=label, underline=0, command=self.edit2cmd[k])
             # if k != "delete":
             self.bind(c, lambda e, x=k: self.after(AFTER, self.edit2cmd[x]))
@@ -633,7 +632,7 @@ class App(Tk):
             label = self.vm_options[i][0]
             k = self.vm_options[i][1]
             l, c = commandShortcut(k)
-            logger.debug("k: {0}; l: {1}; c: {2}".format(k, l, c))
+            # logger.debug("k: {0}; l: {1}; c: {2}".format(k, l, c))
             self.bind(c, lambda e, x=k: self.after(AFTER, self.view2cmd[x]))
             self.vm["menu"].entryconfig(i, command=lambda x=k: self.after(AFTER, self.view2cmd[x]))
             self.add2menu(VIEWS, (self.vm_opts[i], l))
@@ -697,10 +696,7 @@ class App(Tk):
         self.tree.pack(fill="both", expand=1, padx=4, pady=0)
         panedwindow.add(self.toppane, padx=0, pady=0, stretch="first")
 
-        self.content = ReadOnlyText(panedwindow, wrap="word", padx=3, bd=2, relief="sunken",
-                                    # font=tkFont.Font(family="Lucida Sans Typewriter"), height=6,
-                                    font=tkfixedfont, height=4,
-                                    width=46, takefocus=False)
+        self.content = ReadOnlyText(panedwindow, wrap="word", padx=3, bd=2, relief="sunken", font=tkfixedfont, height=4, width=46, takefocus=False)
         self.content.bind('<Escape>', self.cleartext)
         # self.content.bind('<space>', self.goHome)
         self.content.bind('<Tab>', self.focus_next_window)
@@ -772,10 +768,8 @@ class App(Tk):
 
         # start clock
         self.updateClock()
-
-        # show default view
+        # showView will be called from updateClock
         self.updateAlerts()
-        self.showView()
 
     def closeItemMenu(self, event=None):
         if self.weekly:
@@ -799,7 +793,6 @@ class App(Tk):
             leaf = "{0}::{1}".format(child[0], child[1])
         else:
             leaf = "{0}::".format(child[0])
-        logger.debug('calling create_node. leaf: {0}, id: {1}, parent: {2}'.format(leaf, id,  parent))
         self.menutree.create_node(leaf, id, parent=parent)
 
 
@@ -1021,7 +1014,10 @@ a time period if "+" is used."""
             else:
                 self.showView(row=self.topSelected)
         else:
-            self.tree.focus_set()
+            if self.weekly:
+                self.canvas.focus_set()
+            else:
+                self.tree.focus_set()
 
     def deleteItem(self, e=None):
         logger.debug('{0}: {1}'.format(self.itemSelected['_summary'], self.dtSelected))
@@ -1058,7 +1054,7 @@ a time period if "+" is used."""
 
 
     def editItem(self, e=None):
-        logger.debug('{0}: {1}'.format(self.itemSelected['_summary'], self.dtSelected))
+        logger.debug('starting editItem: {0}; {1}'.format(self.itemSelected['_summary'], self.dtSelected))
         choice = 3
         title = ETM
         if 'r' in self.itemSelected:
@@ -1140,16 +1136,24 @@ a time period if "+" is used."""
 
         if changed:
             # loop.loadData()
+            logger.debug("starting if changed")
             self.updateAlerts()
             if self.weekly:
+                self.canvas.focus_set()
                 self.showWeek()
             else:
+                self.tree.focus_set()
                 self.showView(row=self.topSelected)
+                self.update_idletasks()
+            logger.debug("leaving if changed")
+
         else:
             if self.weekly:
                 self.canvas.focus_set()
             else:
                 self.tree.focus_set()
+        logger.debug('ending editItem')
+        return "break"
 
     def editFile(self, e=None, file=None, config=False):
         if e is not None:
@@ -1170,7 +1174,12 @@ a time period if "+" is used."""
             logger.debug("changed - calling loadData and updateAlerts")
             # loop.loadData()
             self.updateAlerts()
-            self.showView()
+            if self.weekly:
+                self.canvas.focus_set()
+                self.showWeek()
+            else:
+                self.tree.focus_set()
+                self.showView()
 
     def editData(self, e=None):
         initdir = self.options['datadir']
@@ -1201,8 +1210,10 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
         # loop.loadData()
         self.updateAlerts()
         if self.weekly:
+            self.canvas.focus_set()
             self.showWeek()
         else:
+            self.tree.focus_set()
             self.showView(row=self.topSelected)
 
     def rescheduleItem(self, e=None):
@@ -1235,8 +1246,10 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         # loop.loadData()
         self.updateAlerts()
         if self.weekly:
+            self.canvas.focus_set()
             self.showWeek()
         else:
+            self.tree.focus_set()
             self.showView(row=self.topSelected)
 
 
@@ -1280,10 +1293,10 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
     def setView(self, view, row=None):
         self.rowSelected = None
-        logger.debug("view: {0}".format(view))
         if view != WEEK and self.weekly:
             self.closeWeekly()
         self.view = view
+        logger.debug("setView view: {0}. Calling showView.".format(view))
         self.showView(row=row)
 
     def filterView(self, e, *args):
@@ -1297,7 +1310,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.process_input(event=e, cmd=cmd)
 
     def showView(self, e=None, row=None):
-        logger.debug("view: {0}".format(self.view))
+        logger.debug("starting showView: {0}".format(self.view))
         if self.weekly:
             return
         self.depth2id = {}
@@ -1308,10 +1321,9 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.mode = 'command'
         self.process_input(event=e, cmd=cmd)
         if row:
-            logger.debug("row: {0}".format(row))
-            # self.tree.see(max(0, self.rowSelected))
-            # self.tree.yview(max(0, row - 1))
-            self.tree.yview(max(0, row - 1))
+            row = max(0, row-1)
+            self.tree.yview(row)
+        logger.debug("ending showView row: {0}".format(row))
 
     def showBusyTimes(self, event=None):
         if self.busy_info is None:
@@ -1538,7 +1550,6 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
         theweek, weekdays, busy_lst, occasion_lst = self.setWeek(day)
         self.OnSelect()
-        # self.content.delete("0.0", END)
         self.canvas.delete("all")
         l = 50
         r = 8
@@ -1766,7 +1777,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
     def on_leave_item(self, e):
         id = self.canvas.find_withtag(CURRENT)[0]
-        self.content.delete("0.0", END)
+        self.content.delete("1.0", END)
 
         if id in self.busy_ids:
             tags = self.canvas.gettags(id)
@@ -1874,8 +1885,10 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
                 logger.debug('changed, updating alerts, ...')
                 # loop.loadData()
                 self.updateAlerts()
-                self.showView()
-                self.showWeek()
+                if self.weekly:
+                    self.showWeek()
+                else:
+                    self.showView()
 
     # noinspection PyShadowingNames
     def showCalendar(self, e=None):
@@ -2039,6 +2052,7 @@ or 0 to display all changes.""").format(title)
         """
         Tree row has gained selection.
         """
+        logger.debug("starting OnSelect on event: {0}; with uuid: {1}".format(event.widget, uuid))
         self.content.delete("1.0", END)
         if self.weekly: # week view
             if uuid is None:
@@ -2052,12 +2066,14 @@ or 0 to display all changes.""").format(title)
         elif uuid is None: # tree view
             item = self.tree.selection()[0]
             self.rowSelected = int(item)
+            logger.debug('tree rowSelected: {0}; open: {1}'.format(self.rowSelected, open))
             # type_chr is the actual type, e.g., "-"
             # show_chr is what's displayed in the tree, e.g., "X"
             type_chr = show_chr = self.tree.item(item)['text'][0]
             uuid, dt, hsh = self.getInstance(item)
             if hsh:
                 type_chr = hsh['itemtype']
+        self.update_idletasks()
 
         if uuid is not None:
             # self.itemmenu.configure(state="normal")
@@ -2113,10 +2129,10 @@ or 0 to display all changes.""").format(title)
             self.topSelected = int(r)
         else:
             self.topSelected = 1
-
         logger.debug("top: {3}; row: '{0}'; uuid: '{1}'; instance: '{2}'".format(self.rowSelected, self.uuidSelected, self.dtSelected,  self.topSelected));
-        self.content.delete("1.0", END)
-        self.insert = self.content.insert(INSERT, text)
+        self.content.insert(INSERT, text)
+        self.update_idletasks()
+        logger.debug('ending OnSelect')
         return "break"
 
     def OnActivate(self, event):
@@ -2132,6 +2148,7 @@ or 0 to display all changes.""").format(title)
         logger.debug("id: {0}, coords: {1}, {2}".format(id, x, y))
         self.itemmenu.post(x, y)
         self.itemmenu.focus_set()
+        return "break"
 
     def OnDoubleClick(self, event):
         """
@@ -2147,17 +2164,21 @@ or 0 to display all changes.""").format(title)
 
     def getInstance(self, item):
         instance = self.count2id[item]
-        if instance is None:
+        logger.debug('starting getInstance: {0}; {1}'.format(item, instance))
+        if instance is not None:
+            uuid, dt = self.count2id[item].split("::")
+            hsh = loop.uuid2hash[uuid]
+            logger.debug('returning uuid: {0}, dt: {1}'.format(uuid, dt))
+            return uuid, dt, hsh
+        else:
+            logger.debug('returning None')
             return None, None, None
-        uuid, dt = self.count2id[item].split("::")
-        hsh = loop.uuid2hash[uuid]
-        logger.debug('item: {0}; uuid: {1}, dt: {2}'.format(item, uuid, dt))
-        return uuid, dt, hsh
 
     def updateClock(self):
         self.now = get_current_time()
         self.current_minutes = self.now.hour * 60 + self.now.minute
         nxt = (60 - self.now.second) * 1000 - self.now.microsecond // 1000
+        logger.debug('next update in {0} milliseconds.'.format(nxt))
         self.after(nxt, self.updateClock)
         nowfmt = "{0} {1}".format(
             s2or3(self.now.strftime(loop.options['reprtimefmt']).lower()),
@@ -2171,12 +2192,19 @@ or 0 to display all changes.""").format(title)
         new, modified, deleted = get_changes(
             self.options, loop.file2lastmodified)
         if newday or new or modified or deleted:
-            logger.debug('updating: newday or new: {0}; modified: {1}; deleted: {2}'
-                         .format(new, modified, deleted))
+            if newday: logger.debug('newday')
+            if new:
+                logger.debug('new: {0}'.format(len(new)))
+            if modified:
+                logger.debug('modified: {0}'.format(len(modified)))
+            if deleted:
+                logger.debug('deleted: {2}'.format(len(deleted)))
             loop.loadData()
             if self.weekly:
+                logger.debug('calling showWeek')
                 self.showWeek()
             else:
+                logger.debug('calling showView')
                 self.showView()
         elif self.today_col is not None:
             xy = self.get_timeline()
@@ -2205,10 +2233,8 @@ or 0 to display all changes.""").format(title)
                                 loop.options['action_timer']['paused']):
                             tcmd = loop.options['action_timer']['paused']
                             # process.startDetached(tcmd)
-                            logger.debug('running: {0}'.format(tcmd))
+                            logger.debug('paused: {0}'.format(tcmd))
                             subprocess.call(tcmd, shell=True)
-
-        logger.debug("next update in {0} milliseconds".format(nxt))
 
     def updateAlerts(self):
         self.update_idletasks()
@@ -2496,7 +2522,10 @@ Relative dates and fuzzy parsing are supported.""")
             self.newmenu.entryconfig(2, state="disabled")
             # loop.loadData()
             self.updateAlerts()
-            self.showView(row=self.topSelected)
+            if self.weekly:
+                self.showWeek()
+            else:
+                self.showView(row=self.topSelected)
         else:
             # edit canceled
             ans = self.confirm(

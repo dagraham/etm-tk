@@ -674,7 +674,7 @@ class SimpleEditor(Toplevel):
                 dir, initfile = os.path.split(file)
                 # we need a filename for the new item
                 # make datadir the root
-                logger.debug('initial dir and file: "{0}"; "{1}"'.format(dir, file))
+                logger.debug('initial dir and file: "{0}"; "{1}"'.format(dir, initfile))
                 fileops = {'defaultextension': '.txt',
                            'filetypes': [('text files', '.txt')],
                            'initialdir': dir,

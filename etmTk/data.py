@@ -881,10 +881,10 @@ actions = ["s", "d", "e", "p", "v"]
 def get_options(d=''):
     """
     """
+    logger.debug('starting get_options with directory: "{0}"'.format(d))
     global parse, s2or3, term_encoding, file_encoding
     from locale import getpreferredencoding
     from sys import stdout
-    logger.debug('in get_options with d: {0}'.format(d))
     try:
         dterm_encoding = stdout.term_encoding
     except AttributeError:
@@ -908,7 +908,7 @@ def get_options(d=''):
     oldconfig = os.path.join(etmdir, OLDCFG)
     datafile = os.path.join(etmdir, ".etmtkdata.pkl")
     default_datadir = os.path.join(etmdir, 'data')
-    logger.debug('will check first for: {0}; then: {1}'.format(newconfig, oldconfig))
+    logger.debug('checking first for: {0}; then: {1}'.format(newconfig, oldconfig))
 
     locale_cfg = os.path.join(etmdir, 'locale.cfg')
     if os.path.isfile(locale_cfg):
@@ -1067,7 +1067,7 @@ def get_options(d=''):
         options.update(user_options)
     else:
         user_options = {}
-    logger.debug("user_options: {0}".format(user_options))
+    # logger.debug("user_options: {0}".format(user_options))
 
     for key in default_options:
         if key == 'show_finished':
@@ -1160,7 +1160,7 @@ def get_options(d=''):
     setup_parse(options['dayfirst'], options['yearfirst'])
     term_encoding = options['encoding']['term']
     file_encoding = options['encoding']['file']
-    logger.debug("options: {0}".format(user_options))
+    logger.debug("ending get_options")
     return user_options, options, use_locale
 
 
@@ -4672,7 +4672,7 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None, file2data=No
         updateViewFromFile(f, items, alerts, busytimes, datetimes, occasions, file2data)
     T1 = get_current_time()
     t1 = T1.second*1000 + T1.microsecond // 1000
-    logger.info('elapsed clock time for getViewData in microseconds: {0}'.format(t1-t0))
+    logger.info('elapsed clock time for getViewData in milliseconds: {0}'.format(t1-t0))
 
     tmplst = [len(x) for x in items]
 
@@ -4718,7 +4718,7 @@ def updateViewData(f, bef, file2uuids=None, uuid2hash=None, options=None, file2d
         updateViewFromFile(f, items, alerts, busytimes, datetimes, occasions, file2data)
     T1 = get_current_time()
     t1 = T1.second*1000 + T1.microsecond // 1000
-    logger.info('elapsed clock time for updateViewData in microseconds: {0}'.format(t1-t0))
+    logger.info('elapsed clock time for updateViewData in milliseconds: {0}'.format(t1-t0))
     return items, alerts, busytimes, datetimes, occasions, file2data
 
 def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
@@ -5295,6 +5295,7 @@ class ETMCmd():
             return self.mk_rep(self.last_rep)
 
     def updateDataFromFile(self, fp, rp):
+        logger.debug('starting updateDataFromFile: {0}'.format(rp))
         self.count2id = {}
         now = datetime.now()
         year, wn, dn = now.isocalendar()
@@ -5323,6 +5324,7 @@ class ETMCmd():
         self.file2lastmodified[(fp, rp)] = mtime
         dump_data(self.options, self.uuid2hash, self.file2uuids, self.file2lastmodified, [], [])
         (self.rows, self.alerts, self.busytimes, self.dates, self.occasions, self.file2data) = updateViewData(rp, bef, self.file2uuids, self.uuid2hash, self.options, self.file2data)
+        logger.debug('ended updateDataFromFile')
 
     def edit_tmp(self):
         if not self.editcmd:
@@ -5379,6 +5381,7 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
             Try writing the s to tmpfile and then, if it succeeds,
             copy tmpfile to file.
         """
+        logger.debug('starting safe_save: {0}, {1}'.format(file, mode))
         try:
             fo = codecs.open(self.tmpfile, 'w', file_encoding)
             fo.write(s)
@@ -5395,6 +5398,7 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
             rp = relpath(fp, self.options['datadir'])
             # this is a data file
             self.updateDataFromFile(fp, rp)
+        logger.debug('ended safe_save')
         return self.commit(file, mode)
 
 
@@ -5573,7 +5577,7 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
         logger.debug('saving {0} to {1}, mode: {2}'.format(itemstr, file, mode))
         self.safe_save(file, itemstr, mode=mode)
         # self.loadData()
-        return True
+        return "break"
 
     def cmd_do_finish(self, dt):
         """
@@ -5876,7 +5880,7 @@ Display information about etm and the operating system.""")
         else:
             mode = _("removed item")
         self.safe_save(fp, itemstr, mode=mode)
-        return True
+        return "break"
 
 
 def main(etmdir='', argv=[]):
@@ -5918,7 +5922,7 @@ def main(etmdir='', argv=[]):
                 res = "\n".join(tree2Text(res)[0])
             T1 = get_current_time()
             t1 = T1.second*1000 + T1.microsecond // 1000
-            logger.info('total elapsed clock time for cmd "{0}" in microseconds: {1}'.format(argstr, t1-t0))
+            logger.info('total elapsed clock time for cmd "{0}" in milliseconds: {1}'.format(argstr, t1-t0))
 
             term_print(res)
         else:
