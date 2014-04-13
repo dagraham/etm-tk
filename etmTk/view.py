@@ -2198,7 +2198,7 @@ or 0 to display all changes.""").format(title)
             if modified:
                 logger.debug('modified: {0}'.format(len(modified)))
             if deleted:
-                logger.debug('deleted: {2}'.format(len(deleted)))
+                logger.debug('deleted: {0}'.format(len(deleted)))
             loop.loadData()
             if self.weekly:
                 logger.debug('calling showWeek')
