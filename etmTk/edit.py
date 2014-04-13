@@ -466,7 +466,7 @@ class SimpleEditor(Toplevel):
             #   1: new
             #   2: replace
             #   3: new and replace
-            initfile = ensureMonthly(options=self.options, date=datetime.now())
+            self.initfile = initfile = ensureMonthly(options=self.options, date=datetime.now())
             # logger.debug("newhsh: {0}".format(self.newhsh))
             # logger.debug("rephsh: {0}".format(self.rephsh))
             # set the mode
@@ -498,9 +498,6 @@ class SimpleEditor(Toplevel):
                 if 'fileinfo' in newhsh and newhsh['fileinfo'][0]:
                     initfile = self.newhsh['fileinfo'][0]
                 text = hsh2str(self.edithsh, self.options)
-
-            # if initfile:
-            #     self.initfile = os.path.join(self.options['datadir'], initfile)
 
             logger.debug('mode: {0}; initfile: {1}; edit: {2}'.format(self.mode,  self.initfile,  self.edithsh))
         # logger.debug("setting text {0}:\n{1}".format(type(text), text))
@@ -670,17 +667,18 @@ class SimpleEditor(Toplevel):
                 dir = self.options['datadir']
                 if 's' in self.edithsh and self.edithsh['s']:
                     dt = self.edithsh['s']
-                    file = relpath(ensureMonthly(self.options, dt.date()), dir)
+                    file = ensureMonthly(self.options, dt.date())
                 else:
                     dt = None
-                    file = relpath(self.initfile, dir)
+                    file = ensureMonthly(self.options)
+                dir, initfile = os.path.split(file)
                 # we need a filename for the new item
                 # make datadir the root
                 logger.debug('initial dir and file: "{0}"; "{1}"'.format(dir, file))
                 fileops = {'defaultextension': '.txt',
                            'filetypes': [('text files', '.txt')],
                            'initialdir': dir,
-                           'initialfile': file,
+                           'initialfile': initfile,
                            'title': 'etmtk data files',
                            'parent': self}
                 filename = askopenfilename(**fileops)
