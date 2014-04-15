@@ -2052,7 +2052,7 @@ or 0 to display all changes.""").format(title)
         """
         Tree row has gained selection.
         """
-        logger.debug("starting OnSelect on event: {0}; with uuid: {1}".format(event.widget, uuid))
+        logger.debug("starting OnSelect with uuid: {0}".format(uuid))
         self.content.delete("1.0", END)
         if self.weekly: # week view
             if uuid is None:

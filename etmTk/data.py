@@ -3746,8 +3746,21 @@ def add2Dates(l, tup):
     bisect.insort(l, (d, f))
 
 
-def getPrevNext(l):
-    l = [x[0] for x in l]
+def getPrevNext(l, cal_regex):
+    # print('getPrevNext', len(l), l[0])
+    # l = [x[0] for x in l]
+    result = []
+    seen = []
+    for xx in l:
+        if cal_regex and not cal_regex.match(xx[1]):
+            continue
+        x = xx[0]
+        i = bisect.bisect_left(seen, x)
+        if i == len(seen) or seen[i] != x:
+            seen.insert(i, x)
+            result.append(x)
+    l = result
+
     prevnext = {}
     if not l:
         return {}
@@ -3766,11 +3779,14 @@ def getPrevNext(l):
             curr = i
             prev = max(0, i - 1)
             nxt = min(len(l) - 1, j)
+            # print(d, 'is in the list', l[prev], l[curr], l[nxt])
         else:
             # d is not in the list
             curr = last_prev
             prev = last_prev
+            # print(d, 'is not in the list', l[prev], l[curr], l[nxt])
         prevnext[d] = [l[prev], l[curr], l[nxt]]
+        # print("prevnext", d, prevnext[d])
         d += oneday
     return prevnext
 
@@ -4653,6 +4669,7 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None, file2data=No
     """
     T0 = get_current_time()
     t0 = T0.second*1000 + T0.microsecond // 1000
+    logger.debug('started')
     if not file2uuids: file2uuids = {}
     if not uuid2hash: uuid2hash = {}
     if not options: options = {}
@@ -4670,6 +4687,7 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None, file2data=No
 
     for f in file2data:
         updateViewFromFile(f, items, alerts, busytimes, datetimes, occasions, file2data)
+    logger.debug('ended')
     T1 = get_current_time()
     t1 = T1.second*1000 + T1.microsecond // 1000
     logger.info('elapsed clock time for getViewData in milliseconds: {0}'.format(t1-t0))
@@ -4696,9 +4714,9 @@ def updateViewFromFile(f, items, alerts, busytimes, datetimes, occasions, file2d
         add_occasion(uid, sd, evnt_summary, f, occasions)
 
 def updateViewData(f, bef, file2uuids=None, uuid2hash=None, options=None, file2data=None):
-    logger.debug("file2data keys: {0}".format(file2data.keys()))
     T0 = get_current_time()
     t0 = T0.second*1000 + T0.microsecond // 1000
+    logger.debug("started with file2data keys: {0}".format(file2data.keys()))
     if not file2uuids: file2uuids = {}
     if not uuid2hash: uuid2hash = {}
     if not options: options = {}
@@ -4716,6 +4734,7 @@ def updateViewData(f, bef, file2uuids=None, uuid2hash=None, options=None, file2d
     getDataFromFile(f, file2data, bef, file2uuids, uuid2hash, options)
     for f in file2data:
         updateViewFromFile(f, items, alerts, busytimes, datetimes, occasions, file2data)
+    logger.debug('ended')
     T1 = get_current_time()
     t1 = T1.second*1000 + T1.microsecond // 1000
     logger.info('elapsed clock time for updateViewData in milliseconds: {0}'.format(t1-t0))
@@ -5139,6 +5158,11 @@ class ETMCmd():
         self.options = options
         self.calendars = deepcopy(options['calendars'])
         self.cal_regex = None
+        # if self.calendars:
+        #     cal_pattern = r'^%s' % '|'.join(
+        #         [x[2] for x in self.calendars if x[1]])
+        #     self.cal_regex = re.compile(cal_pattern)
+        #     logger.debug("cal_pattern: {0}".format(cal_pattern))
         self.messages = []
         self.cmdDict = {
             '?': self.do_help,
@@ -5324,6 +5348,8 @@ class ETMCmd():
         self.file2lastmodified[(fp, rp)] = mtime
         dump_data(self.options, self.uuid2hash, self.file2uuids, self.file2lastmodified, [], [])
         (self.rows, self.alerts, self.busytimes, self.dates, self.occasions, self.file2data) = updateViewData(rp, bef, self.file2uuids, self.uuid2hash, self.options, self.file2data)
+        updateCurrentFiles(
+            self.rows, self.file2uuids, self.uuid2hash, self.options)
         logger.debug('ended updateDataFromFile')
 
     def edit_tmp(self):
@@ -5777,7 +5803,12 @@ Example:
 """)
 
     def do_d(self, arg_str):
-        self.prevnext = getPrevNext(self.dates)
+        if self.calendars:
+            cal_pattern = r'^%s' % '|'.join(
+                [x[2] for x in self.calendars if x[1]])
+            self.cal_regex = re.compile(cal_pattern)
+            logger.debug("cal_pattern: {0}".format(cal_pattern))
+        self.prevnext = getPrevNext(self.dates, self.cal_regex)
         return self.mk_rep('d {0}'.format(arg_str))
 
     @staticmethod

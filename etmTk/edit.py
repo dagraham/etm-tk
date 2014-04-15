@@ -674,7 +674,7 @@ class SimpleEditor(Toplevel):
                 dir, initfile = os.path.split(file)
                 # we need a filename for the new item
                 # make datadir the root
-                logger.debug('initial dir and file: "{0}"; "{1}"'.format(dir, initfile))
+                logger.debug('opening file dialog with dir and file: "{0}"; "{1}"'.format(dir, initfile))
                 fileops = {'defaultextension': '.txt',
                            'filetypes': [('text files', '.txt')],
                            'initialdir': dir,
@@ -686,11 +686,11 @@ class SimpleEditor(Toplevel):
                     return False
                 else:
                     self.text.focus_set()
+
             logger.debug('edithsh: {0}'.format(self.edithsh))
             ok = True
             if self.mode == 1:
                 if self.loop.append_item(self.edithsh, filename):
-                    self.update_idletasks()
                     logger.debug('append mode: {0}'.format(self.mode))
                 else:
                     ok = False
@@ -701,7 +701,6 @@ class SimpleEditor(Toplevel):
                     ok = False
             else:  # self.mode == 3
                 if self.loop.append_item(self.edithsh, filename):
-                    self.update_idletasks()
                     logger.debug('append mode: {0}'.format(self.mode))
                 else:
                     ok = False
