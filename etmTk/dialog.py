@@ -289,7 +289,7 @@ class Timer():
 
         self.timer_delta = max(self.timer_delta, ONEMINUTE)
         self.timer_hsh['e'] = self.timer_delta
-        self.timer_hsh['s'] = get_current_time()
+        self.timer_hsh['s'] = self.starttime
         self.timer_hsh['itemtype'] = '~'
 
     def timer_toggle(self, hsh=None):

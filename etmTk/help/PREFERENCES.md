@@ -362,7 +362,7 @@ If *Mercurial* is installed on your system, then the default versions of the `hg
 
 The command to commit changes to the repository.
 
-    hg_commit: hg commit -A -R {repo} -m '{mesg}'
+    hg_commit: hg commit -q -A -R {repo} -m '{mesg}'
 
 
 #### hg_history
@@ -371,7 +371,7 @@ The command to show the history of changes for a particular data file.
 
     hg_history: 'hg log --style compact \
         --template `{rev}: {desc}\n` \
-        -R {repo} -p -r `tip`:0 {file}'
+        -R {repo} -p {numchanges}'
 
 #### hg_init
 

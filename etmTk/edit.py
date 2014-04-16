@@ -171,7 +171,10 @@ class ReportWindow(Toplevel):
         self.bind("<Control-q>", self.quit)
         self.specs = ['']
         if ('report_specifications' in self.options and os.path.isfile(self.options['report_specifications'])):
-            with open(self.options['report_specifications']) as fo:
+            rf = self.options['report_specifications']
+            logger.info('Using report specifications file: {0}'.format(rf))
+
+            with open(rf) as fo:
                 tmp = fo.readlines()
             self.specs = [str(x).rstrip() for x in tmp if x.strip() and x[0] != "#"]
         logger.debug('specs: {0}'.format(self.specs))
@@ -674,7 +677,7 @@ class SimpleEditor(Toplevel):
                 dir, initfile = os.path.split(file)
                 # we need a filename for the new item
                 # make datadir the root
-                logger.debug('opening file dialog with dir and file: "{0}"; "{1}"'.format(dir, initfile))
+                logger.debug('initial dir and file: "{0}"; "{1}"'.format(dir, initfile))
                 fileops = {'defaultextension': '.txt',
                            'filetypes': [('text files', '.txt')],
                            'initialdir': dir,
@@ -686,7 +689,6 @@ class SimpleEditor(Toplevel):
                     return False
                 else:
                     self.text.focus_set()
-
             logger.debug('edithsh: {0}'.format(self.edithsh))
             ok = True
             if self.mode == 1:

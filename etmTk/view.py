@@ -232,7 +232,7 @@ class App(Tk):
         l, c = commandShortcut('E')
         # logger.debug("config: {0}, {1}".format(l, c))
         file = loop.options['config']
-        label = relpath(file, loop.options['etmdir'])
+        label = "etmtk.cfg"
         openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x, config=True))
         self.bind(c, lambda e: openmenu.invoke(1))
         if not mac:
@@ -506,6 +506,14 @@ class App(Tk):
             toolsmenu.entryconfig(4, accelerator=l)
         self.add2menu(path, (label, l))
 
+        ## show alerts
+        l, c = commandShortcut("A")
+        label = _("Show remaining alerts for today")
+        toolsmenu.add_command(label=label, underline=1, command=self.showAlerts)
+        self.bind(c, self.showAlerts)
+        if not mac:
+            toolsmenu.entryconfig(5, accelerator=l)
+        self.add2menu(path, (label, l))
         menubar.add_cascade(label=path, menu=toolsmenu, underline=0)
 
         # help
@@ -1159,9 +1167,10 @@ a time period if "+" is used."""
         if e is not None:
             logger.debug('event: {0}'.format(e))
             e = None
-        relfile = relpath(file, self.options['etmdir'])
+        # titlefile = relpath(file, self.options['etmdir'])
+        titlefile = os.path.abspath(file)
         logger.debug('file: {0}; config: {1}'.format(file, config))
-        changed = SimpleEditor(parent=self, file=file, options=loop.options, title=relfile).changed
+        changed = SimpleEditor(parent=self, file=file, options=loop.options, title=titlefile).changed
         if changed:
             logger.debug("config: {0}".format(config))
             if config:
@@ -1266,9 +1275,9 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             s = '%s\n%s\n%s' % (
                 header, divider, "\n".join(
                     ["{0:^7}\t{1:^7}\t{2:<8}{3:<26}".format(
-                        x[1]['alert_time'], x[1]['_event_time'],
-                        ", ".join(x[1]['_alert_action']),
-                        utf8(x[1]['summary'][:26])) for x in self.activeAlerts]))
+                        x[2]['alert_time'], x[2]['_event_time'],
+                        ", ".join(x[2]['_alert_action']),
+                        utf8(x[2]['summary'][:26])) for x in self.activeAlerts]))
         else:
             s = _("none")
         self.textWindow(self, t, s, opts=self.options)
@@ -1408,7 +1417,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
             if isokey in loop.busytimes:
                 bt = []
-                for item in loop.busytimes[isokey][1]:
+                for item in loop.busytimes[isokey]:
                     it = list(item)
                     if it[0] == it[1]:
                         # skip reminders
@@ -1741,7 +1750,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.canvas.tag_lower('current_day')
         self.canvas.tag_raise('current_time')
         if id in self.busyHsh:
-            self.OnSelect(uuid=self.busyHsh[id][0], dt=self.busyHsh[id][-1])
+            # self.OnSelect(uuid=self.busyHsh[id][0], dt=self.busyHsh[id][-1])
+            self.OnSelect(uuid=self.busyHsh[id][-4], dt=self.busyHsh[id][-1])
 
     def setFocus(self, e):
         self.canvas.focus()
@@ -1773,7 +1783,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         if id in self.busyHsh:
             self.canvas_idpos = self.canvas_ids.index(id)
             # self.content.delete("1.0", END)
-            self.OnSelect(uuid=self.busyHsh[id][0], dt=self.busyHsh[id][-1])
+            # self.OnSelect(uuid=self.busyHsh[id][0], dt=self.busyHsh[id][-1])
+            self.OnSelect(uuid=self.busyHsh[id][-4], dt=self.busyHsh[id][-1])
 
     def on_leave_item(self, e):
         id = self.canvas.find_withtag(CURRENT)[0]
@@ -1831,8 +1842,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         if not id:
             return
         # x1, y1, x2, y2 = self.canvas.coords(id)
-        logger.debug("id: {0}, coords: {1}, {2}".format(id, x, y))
-        self.uuidSelected = uuid = self.busyHsh[id][0]
+        logger.debug("id: {0}, coords: {1}, {2}\n    {3}".format(id, x, y, self.busyHsh[id]))
+        self.uuidSelected = uuid = self.busyHsh[id][1]
         self.itemSelected = hsh = loop.uuid2hash[uuid]
         self.dtSelected = dt = fmt_datetime(self.busyHsh[id][-1], options=loop.options)
         self.itemmenu.post(x, y)
@@ -2007,7 +2018,11 @@ or 0 to display all changes.""").format(title)
         logger.debug('history command: {0}'.format(command))
         p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
                              universal_newlines=True).stdout.read()
+        if not p:
+            p = 'no output from command:\n    {0}'.format(command)
+
         self.textWindow(parent=self, title=title, prompt=str(p), opts=self.options)
+
 
     def focus_next_window(self, event):
         event.widget.tk_focusNext().focus()
@@ -2257,7 +2272,7 @@ or 0 to display all changes.""").format(title)
                     cmd = loop.options['alert_wakecmd']
                     subprocess.call(cmd, shell=True)
                 while td == 0:
-                    hsh = alerts[0][1]
+                    hsh = alerts[0][2]
                     alerts.pop(0)
                     actions = hsh['_alert_action']
                     if 's' in actions:
@@ -2557,7 +2572,7 @@ Relative dates and fuzzy parsing are supported.""")
     def process_input(self, event=None, cmd=None):
         """
         """
-        logger.debug('process_input cmd: {0}'.format(cmd))
+        logger.debug('process_input cmd: {0}, mode: "{1}"'.format(cmd, self.mode))
         if not cmd:
             return True
         if self.mode == 'command':
@@ -2584,6 +2599,7 @@ Relative dates and fuzzy parsing are supported.""")
             except:
                 return _('could not process command "{0}"').format(cmd)
 
+        # FIXME: is this used?
         elif self.mode == 'edit':
             res = loop.cmd_do_edit(cmd)
 
@@ -2600,6 +2616,8 @@ Relative dates and fuzzy parsing are supported.""")
 
         if not res:
             res = _('command "{0}" returned no output').format(cmd)
+
+            logger.debug('no output')
             # MessageWindow(self, 'info', res)
             self.clearTree()
             return ()
@@ -2641,6 +2659,7 @@ or 0 to expand all branches completely.""")
         # only makes sense for schedule
         logger.debug("DAY: {0}; date: {1}".format(self.view == DAY, date))
         if self.view != DAY or date not in loop.prevnext:
+            print('not in prevnext')
             return ()
         active_date = loop.prevnext[date][1]
         if active_date not in self.date2id:

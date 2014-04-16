@@ -2,7 +2,7 @@
 
 To create a report press *Ctrl-R* in the GUI. If you have entries in your report specifications file, `~./etm/reports.cfg` by default, you can choose one of them in the selection box at the bottom of the report window.
 
-You can also add report specifications to the list by selecting any item from the list and then replacing the content with anything you like. Press *Return* to *add* your specification temporarily to the list. *Note that the original entry will not be affected.*  When you close the report window you will have an opportunity to save the additions you have made. To modify or delete existing specifications, you must open the reports specification file itself using *Shift Ctrl-R* from the main window.
+You can also add report specifications to the list by selecting any item from the list and then replacing the content with anything you like. Press *Return* to *add* your specification temporarily to the list. *Note that the original entry will not be affected.*  When you close the report window you will have an opportunity to save the additions you have made. If you choose "Yes", your additions will be inserted into the list and it will be opened for editing. You can also edit this file by pressing *Shift Ctrl-R* when the report window is closed.
 
 When you have selected a report specification, press *Return* to generate the report and display it.
 
@@ -20,7 +20,7 @@ Together, the type character, groupby setting and options determine which items 
 
 - **c**: composite report.
 
-    Any item types, including actions, but without `action_template` computations and expansions.
+    Any item types, including actions, but without `action_template` computations and expansions. Note that only unfinished tasks and unfinished instances of repeating tasks will be displayed.
 
 ## Groupby setting
 
@@ -46,15 +46,11 @@ or a combination of one or more of the following:
 
 - yyyy:   4-digit year
 
-- M:   month: 1 - 12
-
 - MM:   month: 01 - 12
 
 - MMM:   locale specific abbreviated month name: Jan - Dec
 
 - MMMM:   locale specific month name: January - December
-
-- d:   month day: 1 - 31
 
 - dd:   month day: 01 - 31
 
@@ -62,7 +58,7 @@ or a combination of one or more of the following:
 
 - dddd:   locale specific week day: Monday - Sunday
 
-For example, the report specification `c ddd, MMM d yyyy` would group by year, month and day together to give output such as
+For example, the report specification `c ddd, MMM dd yyyy` would group by year, month and day together to give output such as
 
     Fri, Apr 1 2011
         items for April 1

@@ -58,7 +58,8 @@ def setup_logging(level, etmdir=None):
               'version': 1}
 
     logging.config.dictConfig(config)
-    logger.info('logging at level: {0}; exceptions to: {1}'.format(loglevel, logfile))
+    logger.info('logging at level: {0}\n    writing exceptions to: {1}'.format(loglevel,
+                                                                       logfile))
 
 import subprocess
 
@@ -80,6 +81,159 @@ else:
     # noinspection PyPep8Naming
     import cPickle as pickle
     _ = gettext.lgettext
+
+#######################################################
+############ begin IndexableSkipList ##################
+#######################################################
+
+from random import random
+from math import log
+
+class Node(object):
+    __slots__ = 'value', 'next', 'width'
+    def __init__(self, value, next, width):
+        self.value, self.next, self.width = value, next, width
+
+class End(object):
+    """
+    Sentinel object that always compares greater than another object.
+    Replaced __cmp__ to work with python3.x
+    """
+
+    def __eq__(self, other):
+        return 0
+
+    def __ne__(self, other):
+        return 1
+
+    def __gt__(self, other):
+        return 1
+
+    def __ge__(self, other):
+        return 1
+
+    def __le__(self, other):
+        return 0
+
+    def __lt__(self, other):
+        return 0
+
+# Singleton terminator node
+NIL = Node(End(), [], [])
+
+class IndexableSkiplist:
+    """Sorted collection supporting O(lg n) insertion, removal, and lookup by rank."""
+
+    def __init__(self, expected_size=100, type=""):
+        self.size = 0
+        self.type = type
+        self.maxlevels = int(1 + log(expected_size, 2))
+        self.head = Node('HEAD', [NIL]*self.maxlevels, [1]*self.maxlevels)
+
+    def __len__(self):
+        return self.size
+
+    def __getitem__(self, i):
+        node = self.head
+        i += 1
+        for level in reversed(range(self.maxlevels)):
+            while node.width[level] <= i:
+                i -= node.width[level]
+                node = node.next[level]
+        return node.value
+
+    def insert(self, value):
+        # find first node on each level where node.next[levels].value > value
+        chain = [None] * self.maxlevels
+        steps_at_level = [0] * self.maxlevels
+        node = self.head
+        for level in reversed(range(self.maxlevels)):
+            try:
+                while node.next[level].value <= value:
+                    steps_at_level[level] += node.width[level]
+                    node = node.next[level]
+                chain[level] = node
+            except:
+                logger.exception('Error comparing {0}:\n    {1}\n    with the value to be inserted\n    {2}'.format(self.type, node.next[level].value, value))
+                return
+
+        # insert a link to the newnode at each level
+        d = min(self.maxlevels, 1 - int(log(random(), 2.0)))
+        newnode = Node(value, [None]*d, [None]*d)
+        steps = 0
+        for level in range(d):
+            prevnode = chain[level]
+            newnode.next[level] = prevnode.next[level]
+            prevnode.next[level] = newnode
+            newnode.width[level] = prevnode.width[level] - steps
+            prevnode.width[level] = steps + 1
+            steps += steps_at_level[level]
+        for level in range(d, self.maxlevels):
+            chain[level].width[level] += 1
+        self.size += 1
+
+    def remove(self, value):
+        # find first node on each level where node.next[levels].value >= value
+        chain = [None] * self.maxlevels
+        node = self.head
+        for level in reversed(range(self.maxlevels)):
+            try:
+                while node.next[level].value < value:
+                    node = node.next[level]
+                chain[level] = node
+            except:
+                logger.exception('Error comparing {0}:\n    {1}\n    with the value to be removed\n    {2}'.format(self.type, node.next[level].value, value))
+        if value != chain[0].next[0].value:
+            raise KeyError('Not Found')
+
+        # remove one link at each level
+        d = len(chain[0].next[0].next)
+        for level in range(d):
+            prevnode = chain[level]
+            prevnode.width[level] += prevnode.next[level].width[level] - 1
+            prevnode.next[level] = prevnode.next[level].next[level]
+        for level in range(d, self.maxlevels):
+            chain[level].width[level] -= 1
+        self.size -= 1
+
+    def __iter__(self):
+        'Iterate over values in sorted order'
+        node = self.head.next[0]
+        while node is not NIL:
+            yield node.value
+            node = node.next[0]
+
+# initial instances
+
+itemsSL = IndexableSkiplist(5000, "items")
+alertsSL = IndexableSkiplist(100, "alerts")
+datetimesSL = IndexableSkiplist(1000, "datetimes")
+datesSL = IndexableSkiplist(1000, "dates")
+busytimesSL = {}
+occasionsSL = {}
+items = []
+alerts = []
+datetimes = []
+busytimes = {}
+occasions = {}
+file2uuids = {}
+uuid2hash = {}
+file2data = {}
+
+name2list = {
+    "items": items,
+    "alerts": alerts,
+    "datetimes": datetimes
+}
+name2SL = {
+    "items": itemsSL,
+    "alerts": alertsSL,
+    "datetimes": datetimesSL
+}
+
+#######################################################
+############## end IndexableSkipList ##################
+#######################################################
 
 dayfirst = False
 yearfirst = True
@@ -1028,7 +1182,7 @@ def get_options(d=''):
 
     if os.path.isfile(newconfig):
         try:
-            logger.info('user options from: {0}'.format(newconfig))
+            logger.info('user options: {0}'.format(newconfig))
             fo = codecs.open(newconfig, 'r', dfile_encoding)
             user_options = yaml.load(fo)
             fo.close()
@@ -1039,7 +1193,7 @@ def get_options(d=''):
     elif os.path.isfile(oldconfig):
         try:
             using_oldcfg = True
-            logger.info('user options from: {0}'.format(oldconfig))
+            logger.info('user options: {0}'.format(oldconfig))
             fo = codecs.open(oldconfig, 'r', dfile_encoding)
             user_options = yaml.load(fo)
             fo.close()
@@ -3115,6 +3269,7 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
         hour=0, minute=0, second=0, microsecond=0)
     today_date = datetime.now().date()
     tups = []
+    tupsSL = IndexableSkiplist()
     for uid in uuids:
         try:
             hsh = {}
@@ -3128,6 +3283,7 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                 hsh['t'] = []
             if dated['grpby']:
                 dates = []
+                datesSL = IndexableSkiplist()
                 if 'f' in hsh and hsh['f']:
                     next = getDoneAndTwo(hsh)[1]
                     if next: start = next
@@ -3139,17 +3295,20 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                     for date in hsh['rrule'].between(start, dated['e'], inc=True):
                         # on or after start but before 'e'
                         if date < dated['e']:
-                            bisect.insort(dates, date)
+                            # bisect.insort(dates, date)
+                            datesSL.insert(date)
                 elif 's' in hsh and hsh['s'] and 'f' not in hsh:
                     if hsh['s'] < dated['e'] and hsh['s'] >= dated['b']:
                         bisect.insort(dates, start)
+                        # datesSL.insert(start)
                 if 'f' in hsh and hsh['f']:
                     dt = parse(parse_dtstr(
                         hsh['f'][-1][0], hsh['z'])).astimezone(
                         tzlocal()).replace(tzinfo=None)
                     if dt <= dated['e'] and dt >= dated['b']:
                         bisect.insort(dates, dt)
-                for dt in dates:
+                        # datesSL.insert(dt)
+                for dt in list(datesSL):
                     item = []
                     # ('dt', type(dt), dt)
                     for g in grpby['tuples']:
@@ -3167,6 +3326,7 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                         uid])
                     # ('insort', tuple(item))
                     bisect.insort(tups, tuple(item))
+                    # tupsSL.insert(tuple(item))
 
             else:  # no date spec in grpby
                 item = []
@@ -3227,9 +3387,11 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                     dtstr,
                     uid])
                 bisect.insort(tups, tuple(item))
+                # tupsSL.insert(tuple(item))
         except:
             logger.exception('Error processing: {0}, {1}'.format(hsh['_summary'], hsh['fileinfo']))
     return tups
+    # return list(tupsSL)
 
 
 def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
@@ -3712,7 +3874,6 @@ last_added = None
 def add2list(l, item, expand=True):
     """Add item to l if not already present using bisect to maintain order."""
     global last_added
-    # ('add2list', item)
     if expand and len(item) == 3 and type(item[1]) is tuple:
         # this is a tree entry, so we need to expand the middle tuple
         # for makeTree
@@ -3725,36 +3886,46 @@ def add2list(l, item, expand=True):
             logger.exception('error expanding: {0}'.formt(item))
             return ()
     try:
-        i = bisect.bisect_left(l, item)
+        # i = bisect.bisect_left(name2list[l], item)
+        name2SL[l].insert(item)
     except:
         logger.exception("error adding:\n{0}\n\n    last added:\n{1}".format(item, last_added))
         return ()
 
-    if i != len(l) and l[i] == item:
-        return ()
-    last_added = item
-    bisect.insort(l, item)
     return True
 
-
-def add2Dates(l, tup):
-    dt, f = tup
-    d = dt.date()
-    i = bisect.bisect_left(l, (d, f))
-    if i != len(l) and l[i] == d:
+def removeFromlist(l, item, expand=True):
+    """Add item to l if not already present using bisect to maintain order."""
+    global last_added
+    if expand and len(item) == 3 and type(item[1]) is tuple:
+        # this is a tree entry, so we need to expand the middle tuple
+        # for makeTree
+        try:
+            entry = [item[0]]
+            entry.extend(list(item[1]))
+            entry.append(item[2])
+            item = entry
+        except:
+            logger.exception('error expanding: {0}'.formt(item))
+            return ()
+    try:
+        # i = bisect.bisect_left(name2list[l], item)
+        # print('removing item', item, 'from', l)
+        name2SL[l].remove(item)
+    except:
+        logger.exception("error adding:\n{0}\n\n    last added:\n{1}".format(item, last_added))
         return ()
-    bisect.insort(l, (d, f))
 
+    return True
 
 def getPrevNext(l, cal_regex):
-    # print('getPrevNext', len(l), l[0])
-    # l = [x[0] for x in l]
     result = []
     seen = []
+    # remove duplicates
     for xx in l:
         if cal_regex and not cal_regex.match(xx[1]):
             continue
-        x = xx[0]
+        x = xx[0].date()
         i = bisect.bisect_left(seen, x)
         if i == len(seen) or seen[i] != x:
             seen.insert(i, x)
@@ -4009,26 +4180,34 @@ def timedelta2Sentence(td):
         return str(_("{0} from now")).format(string)
 
 
-def add_busytime(uid, sd, sm, em, evnt_summary, rpth, busytimes):
+def add_busytime(key, sm, em, evnt_summary, uid, rpth):
     """
     key = (year, weeknum, weekdaynum with Monday=1, Sunday=7)
     value = [minute_total, list of (uid, start_minute, end_minute)]
     """
-    timekey = sd.isocalendar()  # year, weeknum, weekdaynum
-    daykey = sd
-    busytimes.setdefault(timekey, [0, []])  # y, wn, wdn -> [tot, []]
-    if ((sm, em, uid, evnt_summary)) not in busytimes[timekey][1]:
-        busytimes[timekey][0] += em - sm  # add minutes to tot
-        bisect.insort(
-            busytimes[timekey][1], (sm, em, uid, evnt_summary, rpth))
+    # key = tuple(sd.isocalendar())  # year, weeknum, weekdaynum
+    entry = (sm, em, evnt_summary, uid, rpth)
+    logger.debug("adding busytime: {0}; {1}".format(key, evnt_summary))
+    busytimesSL.setdefault(key, IndexableSkiplist(2000, "busytimes")).insert(entry)
 
+def remove_busytime(key, bt):
+    """
+    key = (year, weeknum, weekdaynum with Monday=1, Sunday=7)
+    value = [minute_total, list of (uid, start_minute, end_minute)]
+    """
+    # sm, em, uid, evnt_summary, rpth = bt
+    # timekey = sd.isocalendar()  # year, weeknum, weekdaynum
+    # daykey = sd
+    busytimesSL[key].remove(bt)
 
-def add_occasion(uid, sd, evnt_summary, f, occasions):
-    timekey = sd.isocalendar()  # year, weeknum, weekdaynum
-    occasions.setdefault(timekey, [])
-    if ((uid, evnt_summary)) not in occasions[timekey]:
-        bisect.insort(occasions[timekey], (uid, evnt_summary, f))
+def add_occasion(key, evnt_summary, uid, f):
+    # key = tuple(sd.isocalendar())  # year, weeknum, weekdaynum
+    logger.debug("adding occasion: {0}; {1}".format(key, evnt_summary))
+    occasionsSL.setdefault(key, IndexableSkiplist(1000, "occasions")).insert((evnt_summary, uid, f))
 
+def remove_occasion(key, oc):  # sd, evnt_summary, uid, f):
+    logger.debug("removing occasion: {0}, {1}".format(key, oc))
+    occasionsSL[key].remove(oc)
 
 def setSummary(hsh, dt):
     if not dt:
@@ -4074,7 +4253,6 @@ def setItemPeriod(hsh, start, end, short=False, options=None):
 
     return period
 
-# @memoize
 def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=None):
     if not options: options = {}
     if not file2uuids: file2uuids = {}
@@ -4124,7 +4302,10 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         (fmt_date(d0),),
                         (uid, typ, setSummary(hsh, d0), '', d0.strftime(rfmt))]
                     items.append(item)
-                    add2Dates(datetimes, (d0, f))
+                    # add2Dates(datetimes, (d0, f))
+                    # add2list("datetimes", (d0, f))
+                    datetimes.append((d0, f))
+                    # datetimes.append((d0, f))
                 if not due:
                     # add the last completion to folder view
                     item = [
@@ -4361,7 +4542,8 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
         if 'rrule' in hsh:
             gotall, dates = get_reps(bef, hsh)
             for date in dates:
-                add2Dates(datetimes, (date, f))
+                # add2list("datetimes", (date, f))
+                datetimes.append((date, f))
 
         elif 's' in hsh and hsh['s'] and 'f' not in hsh:
             thisdate = parse(
@@ -4369,7 +4551,8 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     hsh['s'], hsh['z'])).astimezone(
                 tzlocal()).replace(tzinfo=None)
             dates.append(thisdate)
-            add2Dates(datetimes, (thisdate, f))
+            # add2list("datetimes", (thisdate, f))
+            datetimes.append((thisdate, f))
         for dt in dates:
             dtl = dt
             etmdt = "%s %s" % (dtl.strftime(etmdatefmt),
@@ -4418,6 +4601,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     for td in time_deltas:
                         adt = dtl - td
                         if adt.date() == today_date:
+                            tmp = []
                             this_hsh = deepcopy(tmpl_hsh)
                             this_hsh['alert_time'] = fmt_time(
                                 adt, True, options=options)
@@ -4436,7 +4620,8 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                             else:
                                 alert_minutes[amn] = amn
                             # add2list(alerts, (amn, this_hsh, f), False)
-                            add2list(alerts, (alert_minutes[amn], this_hsh, f), False)
+                            # add2list("alerts", (alert_minutes[amn], this_hsh['i'], this_hsh, f), False)
+                            alerts.append((alert_minutes[amn], this_hsh['i'], this_hsh, f))
             if (hsh['itemtype'] in ['+', '-', '%'] and
                         dtl < today_datetime):
                 time_diff = (dtl - today_datetime).days
@@ -4517,7 +4702,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     (fmt_date(dt),),
                     (uid, typ, summary, '', etmdt)]
                 items.append(item)
-                occasions.append([uid, sd, summary, f])
+                occasions.append([sd, summary, uid, f])
                 continue
             if hsh['itemtype'] == '~':
                 typ = 'ac'
@@ -4558,8 +4743,8 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                                             (st_fmt,
                                              options['dayend_fmt']), etmdt)]
                     items.append(item)
-                    busytimes.append([uid, sd, sm, day_end_minutes,
-                                 evnt_summary, f])
+                    busytimes.append([sd, sm, day_end_minutes,
+                                 evnt_summary, uid, f])
                     sd += oneday
                     i = 0
                     item_copy = []
@@ -4576,8 +4761,9 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         item_copy[i][0] = tuple(item_copy[i][0])
                         item_copy[i][1] = tuple(item_copy[i][1])
                         item_copy[i][2] = tuple(item_copy[i][2])
-                        add2list(items, item_copy[i])
-                        busytimes.append([uid, sd, 0, day_end_minutes, evnt_summary, f])
+                        # add2list("items", item_copy[i])
+                        items.append(item_copy[i])
+                        busytimes.append([sd, 0, day_end_minutes, evnt_summary, uid, f])
                         sd += oneday
                         i += 1
                         # the last day tuple
@@ -4593,8 +4779,9 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         item_copy[i][0] = tuple(item_copy[i][0])
                         item_copy[i][1] = tuple(item_copy[i][1])
                         item_copy[i][2] = tuple(item_copy[i][2])
-                        add2list(items, item_copy[i])
-                        busytimes.append([uid, sd, 0, em, evnt_summary, f])
+                        # add2list("items", item_copy[i])
+                        items.append(item_copy[i])
+                        busytimes.append([sd, 0, em, evnt_summary, uid, f])
                 else:
                     # single day event or reminder
                     item = [
@@ -4606,7 +4793,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                             st_fmt,
                             et_fmt), etmdt)]
                     items.append(item)
-                    busytimes.append([uid, sd, sm, em, evnt_summary, f])
+                    busytimes.append([sd, sm, em, evnt_summary, uid, f])
                     continue
                     #--------------- other dated items ---------------#
             if hsh['itemtype'] in ['+', '-', '%']:
@@ -4669,76 +4856,107 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None, file2data=No
     """
     T0 = get_current_time()
     t0 = T0.second*1000 + T0.microsecond // 1000
-    logger.debug('started')
     if not file2uuids: file2uuids = {}
     if not uuid2hash: uuid2hash = {}
     if not options: options = {}
-    # items: [(view,sort(3|4),fn),(branches),(leaf)]
     file2data = {}
-    items = []
-    datetimes = []
-    busytimes = {}
-    # occasions: isodate -> [(uuid, subject)]
-    occasions = {}
-    # alerts: [(start_minutes, alert_minutes, action, uuid, f)]
-    alerts = []
     for f in file2uuids:
         getDataFromFile(f, file2data, bef, file2uuids, uuid2hash, options)
 
     for f in file2data:
-        updateViewFromFile(f, items, alerts, busytimes, datetimes, occasions, file2data)
-    logger.debug('ended')
+        updateViewFromFile(f, file2data)
     T1 = get_current_time()
     t1 = T1.second*1000 + T1.microsecond // 1000
-    logger.info('elapsed clock time for getViewData in milliseconds: {0}'.format(t1-t0))
-
     tmplst = [len(x) for x in items]
+    logger.info("items: {0}\n    datetimes: {1}\n    alerts: {2}\n    busytimes: {3}\n    occasions: {4}\n    elapsed time: {5} milliseconds".format(len(list(itemsSL)), len(list(datetimesSL)), len(list(alertsSL)), len(busytimesSL.keys()), len(occasionsSL.keys()), t1-t0))
 
-    return items, alerts, busytimes, datetimes, occasions, file2data
+    return file2data
 
-def updateViewFromFile(f, items, alerts, busytimes, datetimes, occasions, file2data):
+def updateViewFromFile(f, file2data):
     _items, _alerts, _busytimes, _datetimes, _occasions = file2data[f]
     logger.debug('file: {0}'.format(f))
     for item in _items:
-        add2list(items, item)
+        logger.debug('adding item: {0}'.format(item))
+        add2list("items", item)
     for alert in _alerts:
-        add2list(alerts, alert)
+        logger.debug('adding alert: {0}'.format(alert))
+        add2list("alerts", alert)
     for dt in _datetimes:
-        add2list(datetimes, dt)
+        logger.debug('adding datetime: {0}'.format(dt))
+        add2list("datetimes", dt)
     for bt in _busytimes:
-        uid, sd, sm, em, evnt_summary, rpth = bt
-        add_busytime(uid, sd, sm, em, evnt_summary, rpth, busytimes)
-
+        logger.debug('adding busytime: {0}'.format(bt))
+        sd, sm, em, evnt_summary, uid, rpth = bt
+        key = sd.isocalendar()
+        add_busytime(key, sm, em, evnt_summary, uid, rpth)
     for oc in _occasions:
-        uid, sd, evnt_summary, f = oc
-        add_occasion(uid, sd, evnt_summary, f, occasions)
+        logger.debug('adding occasion: {0}'.format(oc))
+        sd, evnt_summary, uid, f = oc
+        key = sd.isocalendar()
+        add_occasion(key, evnt_summary, uid, f)
 
 def updateViewData(f, bef, file2uuids=None, uuid2hash=None, options=None, file2data=None):
     T0 = get_current_time()
     t0 = T0.second*1000 + T0.microsecond // 1000
-    logger.debug("started with file2data keys: {0}".format(file2data.keys()))
     if not file2uuids: file2uuids = {}
     if not uuid2hash: uuid2hash = {}
     if not options: options = {}
     # clear data for this file
-    # file2data = deepcopy(f2d)
     if f in file2data:
+        _items, _alerts, _busytimes, _datetimes, _occasions = file2data[f]
+        for item in _items:
+            logger.debug('removing item: {0}'.format(item))
+            removeFromlist("items", item)
+            # itemsSL.remove(item)
+        for alert in _alerts:
+            logger.debug('removing alert: {0}'.format(alert))
+            removeFromlist("alerts", alert)
+            # alertsSL.remove(alert)
+        for datetime in _datetimes:
+            logger.debug('removing datetime: {0}'.format(datetime))
+            removeFromlist("datetimes", datetime)
+            # datetimesSL.remove(datetime)
+        for bt in _busytimes:
+            bt = list(bt)
+            sd = bt.pop(0)
+            bt = tuple(bt)
+            key = sd.isocalendar()
+            # print('busy', key, type(key), bt)
+            logger.debug('removing busytime: {0}: {1}'.format(key, bt))
+            remove_busytime(key, bt)
+        for oc in _occasions:
+            oc = list(oc)
+            sd = oc.pop(0)
+            oc = tuple(oc)
+            key = sd.isocalendar()
+            # print('occasion', key, type(key), oc)
+            logger.debug('removing occasion: {0}: {1}'.format(key, oc))
+            remove_occasion(key, oc)
+
+        # remove the old entry for f in file2data
         del file2data[f]
-    # clear all the data items
-    items = []
-    datetimes = []
-    busytimes = {}
-    occasions = {}
-    alerts = []
-    # update file2data[f]
+
+    # update file2data
     getDataFromFile(f, file2data, bef, file2uuids, uuid2hash, options)
-    for f in file2data:
-        updateViewFromFile(f, items, alerts, busytimes, datetimes, occasions, file2data)
-    logger.debug('ended')
+    # update itemsSL, ...
+    updateViewFromFile(f, file2data)
+
+    rows = list(itemsSL)
+    alerts = list(alertsSL)
+    datetimes = list(datetimesSL)
+    busytimes = {}
+    for key in busytimesSL:
+        busytimes[key] = list(busytimesSL[key])
+    occasions = {}
+    for key in occasionsSL:
+        occasions[key] = list(occasionsSL[key])
+
     T1 = get_current_time()
     t1 = T1.second*1000 + T1.microsecond // 1000
-    logger.info('elapsed clock time for updateViewData in milliseconds: {0}'.format(t1-t0))
-    return items, alerts, busytimes, datetimes, occasions, file2data
+    # logger.info('elapsed clock time for updateViewData in milliseconds: {0}'.format(t1-t0))
+    logger.info("items: {0}\n    datetimes: {1}\n    alerts: {2}\n    busytimes: {3}\n    occasions: {4}\n    elapsed time: {5} milliseconds".format(len(_items), len(_datetimes), len(_alerts), len(_busytimes), len(_occasions), t1-t0))
+
+    return rows, alerts, busytimes, datetimes, occasions, file2data
 
 def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
     logger.debug("updateCurrent")
@@ -5157,12 +5375,8 @@ class ETMCmd():
         if not options: options = {}
         self.options = options
         self.calendars = deepcopy(options['calendars'])
+
         self.cal_regex = None
-        # if self.calendars:
-        #     cal_pattern = r'^%s' % '|'.join(
-        #         [x[2] for x in self.calendars if x[1]])
-        #     self.cal_regex = re.compile(cal_pattern)
-        #     logger.debug("cal_pattern: {0}".format(cal_pattern))
         self.messages = []
         self.cmdDict = {
             '?': self.do_help,
@@ -5205,7 +5419,6 @@ class ETMCmd():
         self.busytimes = None
         self.busydays = None
         self.alerts = None
-        self.dates = None
         self.occasions = None
         self.file2data = None
         self.prevnext = None
@@ -5293,7 +5506,7 @@ class ETMCmd():
             ret.append(s)
         return '\n'.join(ret)
 
-    def loadData(self, file=None):
+    def loadData(self):
         self.count2id = {}
         now = datetime.now()
         year, wn, dn = now.isocalendar()
@@ -5306,9 +5519,18 @@ class ETMCmd():
         bef = (week_beg + (7 * (weeks_after + 1)) * oneday)
         self.options['bef'] = bef
         self.file2data = {}
-        uuid2hash, file2uuids, self.file2lastmodified, bad_datafiles, messages = \
-            get_data(options=self.options, use_pickle=True)
-        (self.rows, self.alerts, self.busytimes, self.dates, self.occasions, self.file2data) = getViewData(bef, file2uuids, uuid2hash, self.options)
+        uuid2hash, file2uuids, self.file2lastmodified, bad_datafiles, messages = get_data(options=self.options, use_pickle=True)
+        self.file2data = getViewData(bef, file2uuids, uuid2hash, self.options)
+        self.rows = list(itemsSL)
+        self.alerts = list(alertsSL)
+        self.datetimes = list(datetimesSL)
+        self.busytimes = {}
+        for key in busytimesSL:
+            self.busytimes[key] = list(busytimesSL[key])
+        self.occasions = {}
+        for key in occasionsSL:
+            self.occasions[key] = list(occasionsSL[key])
+
         updateCurrentFiles(
             self.rows, file2uuids, uuid2hash, self.options)
         self.file2uuids = file2uuids
@@ -5319,6 +5541,10 @@ class ETMCmd():
             return self.mk_rep(self.last_rep)
 
     def updateDataFromFile(self, fp, rp):
+        """
+        Called from safe_save. Calls process_one_file to produce hashes
+        for the items in the file
+        """
         logger.debug('starting updateDataFromFile: {0}'.format(rp))
         self.count2id = {}
         now = datetime.now()
@@ -5335,21 +5561,37 @@ class ETMCmd():
             ids = self.file2uuids[rp]
         else:
             ids = []
-        logger.debug('fp: {0}; rp: {1}'.format(fp, rp))
+        logger.debug('rp: {0}; ids: {1}'.format(rp, ids))
+        # remove the old
+        logger.debug('removing the relevant entries in uuid2hash')
         for id in ids:
             del self.uuid2hash[id]
+        logger.debug('removing the relevant entry in file2uuids')
         self.file2uuids[rp] = []
+
         loh = [x for x in process_one_file(fp, rp, self.options)[1] if x]
         for hsh in loh:
+            if hsh['itemtype'] == '=':
+                continue
+            logger.debug('adding: {0}, {1}'.format(hsh['i'], hsh['_summary']))
             id = hsh['i']
-            self.file2uuids[rp].append(id)
             self.uuid2hash[id] = hsh
+            self.file2uuids.setdefault(rp, []).append(id)
         mtime = os.path.getmtime(fp)
         self.file2lastmodified[(fp, rp)] = mtime
         dump_data(self.options, self.uuid2hash, self.file2uuids, self.file2lastmodified, [], [])
-        (self.rows, self.alerts, self.busytimes, self.dates, self.occasions, self.file2data) = updateViewData(rp, bef, self.file2uuids, self.uuid2hash, self.options, self.file2data)
-        updateCurrentFiles(
-            self.rows, self.file2uuids, self.uuid2hash, self.options)
+
+        # self.rows = list(itemsSL)
+        # self.alerts = list(alertsSL)
+        # self.datetimes = list(datetimesSL)
+        # self.busytimes = {}
+        # for key in busytimesSL:
+        #     self.busytimes[key] = list(busytimesSL[key])
+        # self.occasions = {}
+        # for key in occasionsSL:
+        #     self.occasions[key] = list(occasionsSL[key])
+
+        (self.rows, self.alerts, self.busytimes, self.datetimes, self.occasions, self.file2data) = updateViewData(rp, bef, self.file2uuids, self.uuid2hash, self.options, self.file2data)
         logger.debug('ended updateDataFromFile')
 
     def edit_tmp(self):
@@ -5422,7 +5664,7 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
             # this is a data file
             fp = file
             rp = relpath(fp, self.options['datadir'])
-            # this is a data file
+            # this will update self.uuid2hash, ...
             self.updateDataFromFile(fp, rp)
         logger.debug('ended safe_save')
         return self.commit(file, mode)
@@ -5808,7 +6050,7 @@ Example:
                 [x[2] for x in self.calendars if x[1]])
             self.cal_regex = re.compile(cal_pattern)
             logger.debug("cal_pattern: {0}".format(cal_pattern))
-        self.prevnext = getPrevNext(self.dates, self.cal_regex)
+        self.prevnext = getPrevNext(self.datetimes, self.cal_regex)
         return self.mk_rep('d {0}'.format(arg_str))
 
     @staticmethod
@@ -5822,7 +6064,6 @@ Show the day view with dated items grouped and sorted by date and type, optional
 """)
 
     def do_p(self, arg_str):
-        # self.prevnext = getPrevNext(self.dates)
         return self.mk_rep('p {0}'.format(arg_str))
 
     @staticmethod
@@ -5836,7 +6077,6 @@ Show items grouped and sorted by file path, optionally limited to those containi
 """)
 
     def do_t(self, arg_str):
-        # self.prevnext = getPrevNext(self.dates)
         return self.mk_rep('t {0}'.format(arg_str))
 
     @staticmethod
