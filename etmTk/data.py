@@ -353,6 +353,10 @@ c u
 # empty lines and lines that begin with '#' are ignored.
 """
 
+# TODO: add Ctrl-F in week view to show a list of free times.
+
+# TODO: put the last report spec chosen in the CLI m command into the clipboard to paste into an r command
+
 # command line usage
 USAGE = """\
 Usage:
@@ -374,17 +378,18 @@ execute the remaining arguments without opening the GUI.
 
     a ARG   display the agenda view using ARG, if given, as a filter.
     d ARG   display the day view using ARG, if given, as a filter.
-    k ARG   display the keywords view using ARG, if given, as a filter.
-    n ARGS  Create a new item using the remaining arguments as the item
-            specification. (Enclose ARGS in quotes to prevent shell
+    i ARGS  Create a new item using the remaining arguments as the item
+            specification. (Enclose ARGS in single quotes to prevent shell
             expansion.)
+    k ARG   display the keywords view using ARG, if given, as a filter.
     m INT   display a report using the remaining argument, which must be a
             positive integer, to display a report using the corresponding
             entry from the file given by report_specifications in etmtk.cfg.
             Use ? m to display the numbered list of entries from this file.
+    n ARG   display the notes view using ARG, if given, as a filter.
     p ARG   display the path view using ARG, if given, as a filter.
     r ARGS  display a report using the remaining arguments as the report
-            specification. (Enclose ARGS in quotes to prevent shell
+            specification. (Enclose ARGS in single quotes to prevent shell
             expansion.)
     t ARG   display the tags view using ARG, if given, as a filter.
     v       display information about etm and the operating system.
@@ -5410,6 +5415,7 @@ class ETMCmd():
             '?': self.do_help,
             'a': self.do_a,
             'd': self.do_d,
+            'i': self.do_i,
             'k': self.do_k,
             'm': self.do_m,
             'n': self.do_n,
@@ -5423,6 +5429,7 @@ class ETMCmd():
             'help': self.help_help,
             'a': self.help_a,
             'd': self.help_d,
+            'i': self.help_i,
             'k': self.help_k,
             'm': self.help_m,
             'n': self.help_n,
@@ -5674,12 +5681,12 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
             os.system(cmd)
             return True
 
-    def safe_save(self, file, s, mode=""):
+    def safe_save(self, file, s, mode="", cli=False):
         """
             Try writing the s to tmpfile and then, if it succeeds,
             copy tmpfile to file.
         """
-        logger.debug('starting safe_save: {0}, {1}'.format(file, mode))
+        logger.debug('starting safe_save: {0}, {1}, cli: {2}'.format(file, mode, cli))
         try:
             fo = codecs.open(self.tmpfile, 'w', file_encoding)
             fo.write(s)
@@ -5690,7 +5697,7 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
         shutil.copy2(self.tmpfile, file)
         logger.debug("modified file: '{0}'".format(file))
         pathname, ext = os.path.splitext(file)
-        if ext == ".txt":
+        if not cli and ext == ".txt":
             # this is a data file
             fp = file
             rp = relpath(fp, self.options['datadir'])
@@ -5863,7 +5870,7 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
         # self.loadData()
         return True
 
-    def append_item(self, new_hsh, file):
+    def append_item(self, new_hsh, file, cli=False):
         """
         """
         new_item = hsh2str(new_hsh, self.options)
@@ -5873,7 +5880,7 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
         itemstr = "\n".join(items)
         mode = _("added item")
         logger.debug('saving {0} to {1}, mode: {2}'.format(itemstr, file, mode))
-        self.safe_save(file, itemstr, mode=mode)
+        self.safe_save(file, itemstr, mode=mode, cli=cli)
         # self.loadData()
         return "break"
 
@@ -5977,7 +5984,22 @@ where N is the number of a report specification from the file {0}:\n """.format(
         return "\n".join(res)
         # return(res)
 
-    def do_n(self, arg_str='', itemstr=""):
+    def do_n(self, arg_str):
+        # self.prevnext = getPrevNext(self.dates)
+        return self.mk_rep('n {0}'.format(arg_str))
+
+    @staticmethod
+    def help_n():
+        return ("""\
+Usage:
+
+    etm n [FILTER]
+
+Show notes grouped and sorted by keyword optionally limited to those containing a case insenstive match for the regex FILTER.\
+""")
+
+
+    def do_i(self, arg_str='', itemstr=""):
         logger.debug('arg_str: {0}'.format(arg_str))
         if arg_str:
             new_item = s2or3(arg_str)
@@ -5987,20 +6009,20 @@ where N is the number of a report specification from the file {0}:\n """.format(
                 return "\n".join(msg)
             if 's' not in new_hsh:
                 new_hsh['s'] = None
-            res = self.append_item(new_hsh, self.currfile)
+            res = self.append_item(new_hsh, self.currfile, cli=True)
             if res:
                 return _("item saved")
 
     @staticmethod
-    def help_n():
+    def help_i():
         return _("""\
 Usage:
 
-    etm n ITEM
+    etm i ITEM
 
 Create a new item from ITEM. E.g.,
 
-    etm n '* meeting @s +0 4p @e 1h30m'
+    etm i '* meeting @s +0 4p @e 1h30m'
 
 The item will be appended to the monthly file for the current month.\
 """)
@@ -6188,7 +6210,7 @@ def main(etmdir='', argv=[]):
     logger.debug("data.main etmdir: {0}, argv: {1}".format(etmdir, argv))
     use_locale = ()
     (user_options, options, use_locale) = get_options(etmdir)
-    ARGS = ['a', 'k', 'm', 'n', 'p', 'r', 'd', 't', 'v']
+    ARGS = ['a', 'k', 'm', 'n', 'i', 'p', 'r', 'd', 't', 'v']
     if len(argv) > 1:
         c = ETMCmd(options)
         c.loop = False
