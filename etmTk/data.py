@@ -3298,7 +3298,6 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
         hour=0, minute=0, second=0, microsecond=0)
     today_date = datetime.now().date()
     tups = []
-    tupsSL = IndexableSkiplist()
     for uid in uuids:
         try:
             hsh = {}
@@ -3312,7 +3311,6 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                 hsh['t'] = []
             if dated['grpby']:
                 dates = []
-                datesSL = IndexableSkiplist()
                 if 'f' in hsh and hsh['f']:
                     next = getDoneAndTwo(hsh)[1]
                     if next: start = next
@@ -3324,8 +3322,7 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                     for date in hsh['rrule'].between(start, dated['e'], inc=True):
                         # on or after start but before 'e'
                         if date < dated['e']:
-                            # bisect.insort(dates, date)
-                            datesSL.insert(date)
+                            bisect.insort(dates, date)
                 elif 's' in hsh and hsh['s'] and 'f' not in hsh:
                     if hsh['s'] < dated['e'] and hsh['s'] >= dated['b']:
                         bisect.insort(dates, start)
@@ -3336,8 +3333,7 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                         tzlocal()).replace(tzinfo=None)
                     if dt <= dated['e'] and dt >= dated['b']:
                         bisect.insort(dates, dt)
-                        # datesSL.insert(dt)
-                for dt in list(datesSL):
+                for dt in dates:
                     item = []
                     # ('dt', type(dt), dt)
                     for g in grpby['tuples']:
@@ -3353,9 +3349,7 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                         dt,
                         reportDT(dt, grpby['include'], options),
                         uid])
-                    # ('insort', tuple(item))
                     bisect.insort(tups, tuple(item))
-                    # tupsSL.insert(tuple(item))
 
             else:  # no date spec in grpby
                 item = []
@@ -3416,11 +3410,9 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                     dtstr,
                     uid])
                 bisect.insort(tups, tuple(item))
-                # tupsSL.insert(tuple(item))
         except:
             logger.exception('Error processing: {0}, {1}'.format(hsh['_summary'], hsh['fileinfo']))
     return tups
-    # return list(tupsSL)
 
 
 def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
