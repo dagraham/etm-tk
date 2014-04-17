@@ -6,9 +6,7 @@ The goals and initial results for this version:
 
 - easier installation
 
-    - The only requirement for the nrew GUI is tkinter and Tcl/Tk which are often already available and, if not, easily installed. *Sip, Qt and PyQt are not used.*
-
-    - Completely self contained packages made using cx_freeze are available for both Darwin (OSX Mavericks) and Linux (Ubuntu 12.04 - 32bit). A package for Windows may be available soon.
+    The only requirement for the nrew GUI is tkinter and Tcl/Tk which are often already available and, if not, easily installed. *Sip, Qt and PyQt are not used.*
 
 
 - leaner and meaner
@@ -17,12 +15,7 @@ The goals and initial results for this version:
 
     - smaller files
 
-        - source tarball: 254k for Tk vs. 20.5mb for Qt
-
-        - Darwin: 8.2mb freeze tarball for Tk vs. 23mb app dmg for Qt
-
-        - Linux: 3.6mb freeze tarball for Tk (nothing comparable was available for Qt)
-
+        The source tarball is only 254k for Tk vs. 20.5mb for Qt
 
 - more informative display
 
@@ -52,7 +45,7 @@ The goals and initial results for this version:
 
         - Double clicking or control clicking a free area in the week view begins a dialog to create a new event for that date and time.
 
-    See Views under Main below for a complete list of the available views.
+    See Views under Menubar below for a complete list of the available views.
 
 
 - more intuitive interface
@@ -133,6 +126,7 @@ Note: Most dialogs can be closed by pressing Escape.
             Create report                               Ctrl-R
             Show history of changes                     Ctrl-H
             Export active calendars as iCal            Shift-F6
+            Show remaining alerts for today           Shift-Ctrl-A
         Help
             Search
             Help                                          F1

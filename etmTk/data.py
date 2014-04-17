@@ -231,6 +231,35 @@ name2SL = {
     "datetimes": datetimesSL
 }
 
+def clear_all_data():
+    global itemsSL, alertsSL, datetimesSL, datesSL, busytimesSL, occasionsSL, items, alerts, datetimes, busytimes, occasions, file2uuids, uuid2hash, file2data, name2list, name2SL
+    itemsSL = IndexableSkiplist(5000, "items")
+    alertsSL = IndexableSkiplist(100, "alerts")
+    datetimesSL = IndexableSkiplist(1000, "datetimes")
+    datesSL = IndexableSkiplist(1000, "dates")
+    busytimesSL = {}
+    occasionsSL = {}
+    items = []
+    alerts = []
+    datetimes = []
+    busytimes = {}
+    occasions = {}
+    file2uuids = {}
+    uuid2hash = {}
+    file2data = {}
+
+
+    name2list = {
+        "items": items,
+        "alerts": alerts,
+        "datetimes": datetimes
+    }
+    name2SL = {
+        "items": itemsSL,
+        "alerts": alertsSL,
+        "datetimes": datetimesSL
+    }
+
 #######################################################
 ############## end IndexableSkipList ##################
 #######################################################
@@ -3983,10 +4012,12 @@ def get_data(options=None, dirty=False, use_pickle=True):
     if not options: options = {}
     objects = None
     bad_datafiles = []
-    logger.debug("dirty: {0}".format(dirty))
+    logger.debug("initial value of dirty: {0}".format(dirty))
+
     if use_pickle and os.path.isfile(options['datafile']):
         objects = load_data(options)
     if objects is None:
+        logger.debug('no pickle; loading data using process_all_files')
         (uuid2hash, file2uuids, file2lastmodified, bad_datafiles, messages) = process_all_datafiles(options)
         dirty = True
     else:  # objects is not None
@@ -3994,14 +4025,17 @@ def get_data(options=None, dirty=False, use_pickle=True):
             new, modified, deleted = get_changes(options, objects[2])
             dirty = new or modified or deleted
         if dirty:
+            logger.debug('pickle but dirty; calling process_all_files')
             (uuid2hash, file2uuids, file2lastmodified,
              bad_datafiles, messages) = process_all_datafiles(options)
         else:
+            logger.debug('pickle ok; loading data from pickle file')
             (uuid2hash, file2uuids, file2lastmodified,
              bad_datafiles, messages) = objects
     if bad_datafiles:
         logger.warn("bad data files: {0}".format(bad_datafiles))
     if dirty and not messages:
+        logger.debug("writing pickle file")
         dump_data(options, uuid2hash, file2uuids, file2lastmodified,
                   bad_datafiles, messages)
     return uuid2hash, file2uuids, file2lastmodified, bad_datafiles, messages
@@ -4187,7 +4221,7 @@ def add_busytime(key, sm, em, evnt_summary, uid, rpth):
     """
     # key = tuple(sd.isocalendar())  # year, weeknum, weekdaynum
     entry = (sm, em, evnt_summary, uid, rpth)
-    logger.debug("adding busytime: {0}; {1}".format(key, evnt_summary))
+    # logger.debug("adding busytime: {0}; {1}".format(key, evnt_summary))
     busytimesSL.setdefault(key, IndexableSkiplist(2000, "busytimes")).insert(entry)
 
 def remove_busytime(key, bt):
@@ -4202,11 +4236,11 @@ def remove_busytime(key, bt):
 
 def add_occasion(key, evnt_summary, uid, f):
     # key = tuple(sd.isocalendar())  # year, weeknum, weekdaynum
-    logger.debug("adding occasion: {0}; {1}".format(key, evnt_summary))
+    # logger.debug("adding occasion: {0}; {1}".format(key, evnt_summary))
     occasionsSL.setdefault(key, IndexableSkiplist(1000, "occasions")).insert((evnt_summary, uid, f))
 
 def remove_occasion(key, oc):  # sd, evnt_summary, uid, f):
-    logger.debug("removing occasion: {0}, {1}".format(key, oc))
+    # logger.debug("removing occasion: {0}, {1}".format(key, oc))
     occasionsSL[key].remove(oc)
 
 def setSummary(hsh, dt):
@@ -4860,9 +4894,11 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None, file2data=No
     if not uuid2hash: uuid2hash = {}
     if not options: options = {}
     file2data = {}
+    clear_all_data()
+    logger.debug('calling getDataFromFile for {0} files'.format(len(file2uuids.keys())))
     for f in file2uuids:
         getDataFromFile(f, file2data, bef, file2uuids, uuid2hash, options)
-
+    logger.debug('calling updateViewFromFile for {0} files'.format(len(file2uuids.keys())))
     for f in file2data:
         updateViewFromFile(f, file2data)
     T1 = get_current_time()
@@ -4874,23 +4910,23 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None, file2data=No
 
 def updateViewFromFile(f, file2data):
     _items, _alerts, _busytimes, _datetimes, _occasions = file2data[f]
-    logger.debug('file: {0}'.format(f))
+    # logger.debug('file: {0}'.format(f))
     for item in _items:
-        logger.debug('adding item: {0}'.format(item))
+        # logger.debug('adding item: {0}'.format(item))
         add2list("items", item)
     for alert in _alerts:
-        logger.debug('adding alert: {0}'.format(alert))
+        # logger.debug('adding alert: {0}'.format(alert))
         add2list("alerts", alert)
     for dt in _datetimes:
-        logger.debug('adding datetime: {0}'.format(dt))
+        # logger.debug('adding datetime: {0}'.format(dt))
         add2list("datetimes", dt)
     for bt in _busytimes:
-        logger.debug('adding busytime: {0}'.format(bt))
+        # logger.debug('adding busytime: {0}'.format(bt))
         sd, sm, em, evnt_summary, uid, rpth = bt
         key = sd.isocalendar()
         add_busytime(key, sm, em, evnt_summary, uid, rpth)
     for oc in _occasions:
-        logger.debug('adding occasion: {0}'.format(oc))
+        # logger.debug('adding occasion: {0}'.format(oc))
         sd, evnt_summary, uid, f = oc
         key = sd.isocalendar()
         add_occasion(key, evnt_summary, uid, f)
@@ -5506,7 +5542,7 @@ class ETMCmd():
             ret.append(s)
         return '\n'.join(ret)
 
-    def loadData(self):
+    def loadData(self, e=None):
         self.count2id = {}
         now = datetime.now()
         year, wn, dn = now.isocalendar()
@@ -5519,7 +5555,9 @@ class ETMCmd():
         bef = (week_beg + (7 * (weeks_after + 1)) * oneday)
         self.options['bef'] = bef
         self.file2data = {}
-        uuid2hash, file2uuids, self.file2lastmodified, bad_datafiles, messages = get_data(options=self.options, use_pickle=True)
+        logger.debug('calling get_data')
+        uuid2hash, file2uuids, self.file2lastmodified, bad_datafiles, messages = get_data(options=self.options)
+        logger.debug('calling getViewData')
         self.file2data = getViewData(bef, file2uuids, uuid2hash, self.options)
         self.rows = list(itemsSL)
         self.alerts = list(alertsSL)

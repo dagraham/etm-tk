@@ -514,6 +514,16 @@ class App(Tk):
         if not mac:
             toolsmenu.entryconfig(5, accelerator=l)
         self.add2menu(path, (label, l))
+
+        ## load data
+        l, c = commandShortcut("L")
+        label = _("Reload data from files")
+        toolsmenu.add_command(label=label, underline=1, command=loop.loadData)
+        self.bind(c, loop.loadData)
+        if not mac:
+            toolsmenu.entryconfig(6, accelerator=l)
+        self.add2menu(path, (label, l))
+
         menubar.add_cascade(label=path, menu=toolsmenu, underline=0)
 
         # help
@@ -1180,7 +1190,7 @@ a time period if "+" is used."""
                 loop.options = options
                 if options['calendars'] != current_options['calendars']:
                     self.updateCalendars()
-            logger.debug("changed - calling loadData and updateAlerts")
+            logger.debug("changed - calling updateAlerts")
             # loop.loadData()
             self.updateAlerts()
             if self.weekly:
@@ -2081,7 +2091,7 @@ or 0 to display all changes.""").format(title)
         elif uuid is None: # tree view
             item = self.tree.selection()[0]
             self.rowSelected = int(item)
-            logger.debug('tree rowSelected: {0}; open: {1}'.format(self.rowSelected, open))
+            logger.debug('tree rowSelected: {0}'.format(self.rowSelected))
             # type_chr is the actual type, e.g., "-"
             # show_chr is what's displayed in the tree, e.g., "X"
             type_chr = show_chr = self.tree.item(item)['text'][0]
@@ -2209,11 +2219,12 @@ or 0 to display all changes.""").format(title)
         if newday or new or modified or deleted:
             if newday: logger.debug('newday')
             if new:
-                logger.debug('new: {0}'.format(len(new)))
+                logger.debug('{0} new files'.format(len(new)))
             if modified:
-                logger.debug('modified: {0}'.format(len(modified)))
+                logger.debug('{0} modified files'.format(len(modified)))
             if deleted:
-                logger.debug('deleted: {0}'.format(len(deleted)))
+                logger.debug('{0} deleted files'.format(len(deleted)))
+            logger.debug('calling loadData')
             loop.loadData()
             if self.weekly:
                 logger.debug('calling showWeek')
