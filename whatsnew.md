@@ -127,6 +127,7 @@ Note: Most dialogs can be closed by pressing Escape.
             Show history of changes                     Ctrl-H
             Export active calendars as iCal            Shift-F6
             Show remaining alerts for today           Shift-Ctrl-A
+            Reload data from files                    Shift-Ctrl-L
         Help
             Search
             Help                                          F1
