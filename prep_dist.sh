@@ -143,8 +143,12 @@ if asksure; then
     cd "$home/dist/etmtk-${tag}"
     pwd
     if [ "$plat" = 'Darwin' ]; then
-        echo "installing etmtk for python 2" && sudo python2 setup.py install
-        echo "installing etmtk for python 3" && sudo python3 setup.py install
+        echo
+        echo "Installing etmtk for python 2" && sudo python2 setup.py install
+        echo
+        echo "Installing etmtk for python 3.3" && sudo python3.3 setup.py install
+        echo
+        echo "Installing etmtk for python 3.4" && sudo python3.4 setup.py install
         echo "Doing system installation" >> $logfile
     else
         echo "installing etmtk for python 2" && sudo python setup.py install

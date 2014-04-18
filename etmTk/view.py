@@ -391,6 +391,14 @@ class App(Tk):
         self.bind(c, lambda event: self.after(AFTER, self.showBusyTimes))
         self.add2menu(path, (label, l))
 
+        l, c = commandShortcut("f")
+        label=_("List free times in week")
+        viewmenu.add_command(label=label, underline=5, command=self.showFreeTimes)
+        if not mac:
+            viewmenu.entryconfig(13, accelerator=l)
+        self.bind(c, lambda event: self.after(AFTER, self.showFreeTimes))
+        self.add2menu(path, (label, l))
+
         # viewmenu.add_cascade(label=path, menu=viewmenu, underline=0)
 
         # self.viewmenu.entryconfig(0, state="normal")
@@ -1348,6 +1356,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         if self.busy_info is None:
             return()
         theweek, weekdays, busy_lst, occasion_lst = self.busy_info
+        theweek = _("Busy times in {0}").format(theweek)
 
         lines = [theweek, '-'*len(theweek)]
         ampm = loop.options['ampm']
@@ -1384,6 +1393,71 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
                 lines.append("%s: %s" % (weekdays[i], "; ".join(times)))
         s = "\n".join(lines)
         self.textWindow(parent=self, title=_('busy times'), prompt=s, opts=self.options)
+
+    def showFreeTimes(self, event=None):
+        if self.busy_info is None or 'freetimes' not in loop.options:
+            return()
+        ampm = loop.options['ampm']
+        om = loop.options['freetimes']['opening']
+        cm = loop.options['freetimes']['closing']
+        mm = loop.options['freetimes']['minimum']
+        wm = loop.options['freetimes']['wrap']
+        prompt = _("""\
+Enter the shortest time period you want displayed in minutes.""")
+        mm = GetInteger(
+            parent=self,
+            title=_("depth"), prompt=prompt, opts=[0], default=mm).value
+        if mm is None:
+            return ()
+        theweek, weekdays, busy_lst, occasion_lst = self.busy_info
+        theweek = _("Free times in {0}").format(theweek)
+        lines = [theweek, '-'*len(theweek)]
+        s1 = s2 = ''
+        for i in range(7):
+            times = []
+            busy = []
+            for tup in busy_lst[i]:
+                t1 = max(om, tup[0] - wm)
+                t2 = min(cm, max(om, tup[1]) + wm)
+                if t2 > t1:
+                    busy.append((t1, t2))
+            lastend = om
+            free = []
+            for tup in busy:
+                if tup[0] - lastend >= mm:
+                    free.append((lastend, tup[0]))
+                lastend = tup[1]
+            if cm - lastend >= mm:
+                free.append((lastend, cm))
+            for tup in free:
+                t1, t2 = tup
+                if t1 != t2:
+                    t1h, t1m = (t1 // 60, t1 % 60)
+                    t2h, t2m = (t2 // 60, t2 % 60)
+                    if ampm:
+                        if t1h == 12:
+                            s1 = 'pm'
+                        elif t1h > 12:
+                            t1h -= 12
+                            s1 = 'pm'
+                        else:
+                            s1 = 'am'
+                        if t2h == 12:
+                            s2 = 'pm'
+                        elif t2h > 12:
+                            t2h -= 12
+                            s2 = 'pm'
+                        else:
+                            s2 = 'am'
+                    T1 = "%d:%02d%s" % (t1h, t1m, s1)
+                    T2 = "%d:%02d%s" % (t2h, t2m, s2)
+                    times.append("%s-%s" % (T1, T2))
+            if times:
+                lines.append("%s: %s" % (weekdays[i], "; ".join(times)))
+        lines.append('-'*len(theweek))
+        lines.append("Only periods of at least {0} minutes are displayed.".format(mm))
+        s = "\n".join(lines)
+        self.textWindow(parent=self, title=_('free times'), prompt=s, opts=self.options)
 
     def setWeek(self, chosen_day=None):
         if chosen_day is None:
@@ -2751,7 +2825,7 @@ or 0 to expand all branches completely.""")
                         if d not in self.date2id:
                             self.date2id[d] = parent
                     except:
-                        logger.warn('could not parse: {0}'.format(dt))
+                        logger.exception('could not parse: {0}'.format(dt))
 
 loop = None
 

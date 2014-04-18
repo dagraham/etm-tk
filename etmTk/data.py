@@ -82,6 +82,29 @@ else:
     import cPickle as pickle
     _ = gettext.lgettext
 
+
+class TimeIt(object):
+    def __init__(self, loglevel=1, label=""):
+        self.loglevel = loglevel
+        self.label = label
+        msg = "{0} timer started".format(self.label)
+        if self.loglevel == 1:
+            logger.debug(msg)
+        elif self.loglevel == 2:
+            logger.info(msg)
+        self.start = timer()
+
+    def stop(self, *args):
+        self.end = timer()
+        self.secs = self.end - self.start
+        self.msecs = self.secs * 1000  # millisecs
+        msg = "{0} timer stopped; elapsed time: {1} milliseconds".format(self.label, self.msecs)
+        if self.loglevel == 1:
+            logger.debug(msg)
+        elif self.loglevel == 2:
+            logger.info(msg)
+
+
 #######################################################
 ############ begin IndexableSkipList ##################
 #######################################################
@@ -353,8 +376,6 @@ c u
 # empty lines and lines that begin with '#' are ignored.
 """
 
-# TODO: add Ctrl-F in week view to show a list of free times.
-
 # TODO: put the last report spec chosen in the CLI m command into the clipboard to paste into an r command
 
 # command line usage
@@ -568,6 +589,7 @@ except ImportError:
 
 from datetime import datetime, timedelta, time
 from time import sleep
+from time import time as timer
 import dateutil.rrule as dtR
 from dateutil.parser import parse as dparse
 from dateutil import __version__ as dateutil_version
@@ -1169,7 +1191,7 @@ def get_options(d=''):
                      'term': dterm_encoding},
         'filechange_alert': '',
         'fontsize': default_fontsize,
-
+        'freetimes' : {'opening': 8*60, 'closing': 17*60, 'minimum': 30, 'wrap': 15},
         'hg_command': hg_command,
         'hg_commit': hg_commit,
         'hg_history': hg_history,
@@ -4885,8 +4907,7 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None, file2data=No
     """
         Collect data on all items, apply filters later
     """
-    T0 = get_current_time()
-    t0 = T0.second*1000 + T0.microsecond // 1000
+    tt = TimeIt(loglevel=2, label="getViewData")
     if not file2uuids: file2uuids = {}
     if not uuid2hash: uuid2hash = {}
     if not options: options = {}
@@ -4898,10 +4919,11 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None, file2data=No
     logger.debug('calling updateViewFromFile for {0} files'.format(len(file2uuids.keys())))
     for f in file2data:
         updateViewFromFile(f, file2data)
-    T1 = get_current_time()
-    t1 = T1.second*1000 + T1.microsecond // 1000
+    numfiles = len(file2uuids.keys())
+    numitems = len(uuid2hash.keys())
     tmplst = [len(x) for x in items]
-    logger.info("items: {0}\n    datetimes: {1}\n    alerts: {2}\n    busytimes: {3}\n    occasions: {4}\n    elapsed time: {5} milliseconds".format(len(list(itemsSL)), len(list(datetimesSL)), len(list(alertsSL)), len(busytimesSL.keys()), len(occasionsSL.keys()), t1-t0))
+    logger.info("files: {0}\n    file items: {1}\n    view items: {2}\n    datetimes: {3}\n    alerts: {4}\n    busytimes: {5}\n    occasions: {6}".format(numfiles, numitems, len(list(itemsSL)), len(list(datetimesSL)), len(list(alertsSL)), len(busytimesSL.keys()), len(occasionsSL.keys())))
+    tt.stop()
 
     return file2data
 
@@ -4929,8 +4951,7 @@ def updateViewFromFile(f, file2data):
         add_occasion(key, evnt_summary, uid, f)
 
 def updateViewData(f, bef, file2uuids=None, uuid2hash=None, options=None, file2data=None):
-    T0 = get_current_time()
-    t0 = T0.second*1000 + T0.microsecond // 1000
+    tt = TimeIt(loglevel=2, label="updateViewData")
     if not file2uuids: file2uuids = {}
     if not uuid2hash: uuid2hash = {}
     if not options: options = {}
@@ -4984,10 +5005,10 @@ def updateViewData(f, bef, file2uuids=None, uuid2hash=None, options=None, file2d
     for key in occasionsSL:
         occasions[key] = list(occasionsSL[key])
 
-    T1 = get_current_time()
-    t1 = T1.second*1000 + T1.microsecond // 1000
-    # logger.info('elapsed clock time for updateViewData in milliseconds: {0}'.format(t1-t0))
-    logger.info("items: {0}\n    datetimes: {1}\n    alerts: {2}\n    busytimes: {3}\n    occasions: {4}\n    elapsed time: {5} milliseconds".format(len(_items), len(_datetimes), len(_alerts), len(_busytimes), len(_occasions), t1-t0))
+    t1 = timer()
+    numitems = len(file2uuids[f])
+    logger.info("file: {0}\n    file items: {1}\n    view items: {2}\n    datetimes: {3}\n    alerts: {4}\n    busytimes: {5}\n    occasions: {5}".format(f, numitems, len(_items), len(_datetimes), len(_alerts), len(_busytimes), len(_occasions)))
+    tt.stop()
 
     return rows, alerts, busytimes, datetimes, occasions, file2data
 
@@ -6236,16 +6257,12 @@ def main(etmdir='', argv=[]):
                 x = s2or3(x)
                 args.append(x)
             argstr = ' '.join(args)
-            logger.debug('calling do_command: {0}'.format(argstr))
-            T0 = get_current_time()
-            t0 = T0.second*1000 + T0.microsecond // 1000
+            tt = TimeIt(loglevel=2, label="cmd '{0}'".format(argstr))
             c.loadData()
             res = c.do_command(argstr)
             if type(res) is dict:
                 res = "\n".join(tree2Text(res)[0])
-            T1 = get_current_time()
-            t1 = T1.second*1000 + T1.microsecond // 1000
-            logger.info('total elapsed clock time for cmd "{0}" in milliseconds: {1}'.format(argstr, t1-t0))
+            tt.stop()
 
             term_print(res)
         else:
