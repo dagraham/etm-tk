@@ -5998,7 +5998,8 @@ This option requires a valid report_specifications setting in etmtk.cfg.""")
             self.file2uuids,
             self.uuid2hash,
             self.options)
-        return text
+        header = "{0}: {1}".format(_("report"), rep_spec)
+        return "{0}\n{1}\n{2}".format(header, "-"*len(header), text)
 
     def help_m(self):
         res = []
@@ -6082,6 +6083,8 @@ The item will be appended to the monthly file for the current month.\
             self.file2uuids,
             self.uuid2hash,
             self.options)
+        header = "{0}: {1}".format(_("report"), arg)
+        return "{0}\n{1}\n{2}".format(header, "-"*len(header), text)
         return text
 
     @staticmethod
@@ -6129,7 +6132,7 @@ Options include:
 
 Example:
 
-    etm r 'c ddd, MMM d yyyy -b 1 -e +1/1'
+    etm r 'c ddd, MMM dd yyyy -b 1 -e +1/1'
 """)
 
     def do_d(self, arg_str):
