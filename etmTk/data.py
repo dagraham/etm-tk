@@ -1150,6 +1150,8 @@ def get_options(d=''):
 
     hg_command, hg_history, hg_commit, hg_init = getMercurial()
 
+    default_freetimes = {'opening': 8*60, 'closing': 17*60, 'minimum': 30, 'buffer': 15}
+
     default_options = {
         'action_markups': {'default': 1.0, },
         'action_minutes': 6,
@@ -1192,7 +1194,7 @@ def get_options(d=''):
                      'term': dterm_encoding},
         'filechange_alert': '',
         'fontsize': default_fontsize,
-        'freetimes' : {'opening': 8*60, 'closing': 17*60, 'minimum': 30, 'wrap': 15},
+        'freetimes' : default_freetimes,
         'hg_command': hg_command,
         'hg_commit': hg_commit,
         'hg_history': hg_history,
@@ -1304,9 +1306,21 @@ def get_options(d=''):
     for key in remove_keys:
         del options[key]
 
+    # check freetimes
+    for key in default_freetimes:
+        if key not in options['freetimes']:
+            options['freetimes'][key] = default_freetimes[key]
+            changed = True
+    free_keys = [x for x in options['freetimes'].keys()]
+    for key in free_keys:
+        if key not in default_freetimes:
+            del options['freetimes'][key]
+            changed = True
+
     logger.debug('changed: {0}; user: {1}; options: {2}'.format(changed, (user_options != default_options), (options != default_options)))
     if changed or using_oldcfg:
         # save options to newconfig even if user options came from oldconfig
+        logger.info('Writing etmtk.cfg changes to {0}'.format(newconfig))
         fo = codecs.open(newconfig, 'w', options['encoding']['file'])
         yaml.safe_dump(options, fo)
         fo.close()

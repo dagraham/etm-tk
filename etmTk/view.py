@@ -385,18 +385,18 @@ class App(Tk):
 
         l, c = commandShortcut("b")
         label=_("List busy times in week")
-        viewmenu.add_command(label=label, underline=5, command=self.showBusyTimes)
+        viewmenu.add_command(label=label, underline=5, command=self.showBusyPeriods)
         if not mac:
             viewmenu.entryconfig(13, accelerator=l)
-        self.bind(c, lambda event: self.after(AFTER, self.showBusyTimes))
+        self.bind(c, lambda event: self.after(AFTER, self.showBusyPeriods))
         self.add2menu(path, (label, l))
 
         l, c = commandShortcut("f")
         label=_("List free times in week")
-        viewmenu.add_command(label=label, underline=5, command=self.showFreeTimes)
+        viewmenu.add_command(label=label, underline=5, command=self.showFreePeriods)
         if not mac:
             viewmenu.entryconfig(13, accelerator=l)
-        self.bind(c, lambda event: self.after(AFTER, self.showFreeTimes))
+        self.bind(c, lambda event: self.after(AFTER, self.showFreePeriods))
         self.add2menu(path, (label, l))
 
         # viewmenu.add_cascade(label=path, menu=viewmenu, underline=0)
@@ -1352,11 +1352,11 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             self.tree.yview(row)
         logger.debug("ending showView row: {0}".format(row))
 
-    def showBusyTimes(self, event=None):
+    def showBusyPeriods(self, event=None):
         if self.busy_info is None:
             return()
         theweek, weekdays, busy_lst, occasion_lst = self.busy_info
-        theweek = _("Busy times in {0}").format(theweek)
+        theweek = _("Busy periods in {0}").format(theweek)
 
         lines = [theweek, '-'*len(theweek)]
         ampm = loop.options['ampm']
@@ -1394,31 +1394,29 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         s = "\n".join(lines)
         self.textWindow(parent=self, title=_('busy times'), prompt=s, opts=self.options)
 
-    def showFreeTimes(self, event=None):
+    def showFreePeriods(self, event=None):
         if self.busy_info is None or 'freetimes' not in loop.options:
             return()
         ampm = loop.options['ampm']
         om = loop.options['freetimes']['opening']
         cm = loop.options['freetimes']['closing']
         mm = loop.options['freetimes']['minimum']
-        wm = loop.options['freetimes']['wrap']
+        bm = loop.options['freetimes']['buffer']
         prompt = _("""\
 Enter the shortest time period you want displayed in minutes.""")
-        mm = GetInteger(
-            parent=self,
-            title=_("depth"), prompt=prompt, opts=[0], default=mm).value
+        mm = GetInteger(parent=self, title=_("depth"), prompt=prompt, opts=[0], default=mm).value
         if mm is None:
             return ()
         theweek, weekdays, busy_lst, occasion_lst = self.busy_info
-        theweek = _("Free times in {0}").format(theweek)
+        theweek = _("Free periods in {0}").format(theweek)
         lines = [theweek, '-'*len(theweek)]
         s1 = s2 = ''
         for i in range(7):
             times = []
             busy = []
             for tup in busy_lst[i]:
-                t1 = max(om, tup[0] - wm)
-                t2 = min(cm, max(om, tup[1]) + wm)
+                t1 = max(om, tup[0] - bm)
+                t2 = min(cm, max(om, tup[1]) + bm)
                 if t2 > t1:
                     busy.append((t1, t2))
             lastend = om
