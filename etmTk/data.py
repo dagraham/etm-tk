@@ -1259,7 +1259,7 @@ def get_options(d=''):
                 'Exception loading {0}. Using default options.'.format(oldconfig))
             user_options = {}
     else:
-        logger.info('using default user options')
+        logger.info('using default options')
         user_options = {'datadir': default_datadir}
         fo = codecs.open(newconfig, 'w', dfile_encoding)
         # fo = open(config, 'w')
@@ -1355,6 +1355,7 @@ def get_options(d=''):
         sample = os.path.join(options['datadir'], 'sample.txt')
         with open(sample, 'w') as fo:
             fo.write(SAMPLE)
+    logger.info('using datadir: {0}'.format(options['datadir']))
 
     if not os.path.isfile(options['auto_completions']):
         fo = open(options['auto_completions'], 'w')

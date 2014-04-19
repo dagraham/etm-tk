@@ -2277,7 +2277,8 @@ or 0 to display all changes.""").format(title)
         self.after(nxt, self.updateClock)
         nowfmt = "{0} {1}".format(
             s2or3(self.now.strftime(loop.options['reprtimefmt']).lower()),
-            s2or3(self.now.strftime("%a %b %d %Z")))
+            s2or3(self.now.strftime("%a %b %d")))
+            # s2or3(self.now.strftime("%a %b %d %Z")))
         nowfmt = leadingzero.sub("", nowfmt)
         self.currentTime.set("{0}".format(nowfmt))
         today = self.now.date()
@@ -2841,7 +2842,7 @@ def main(dir=None):  # debug, info, warn, error, critical
     # For testing override etmdir:
     if dir is not None:
         etmdir = dir
-    logger.debug('using etmdir: {0}'.format(etmdir))
+        logger.debug('using etmdir: {0}'.format(etmdir))
     init_localization()
     (user_options, options, use_locale) = data.get_options(etmdir)
     loop = data.ETMCmd(options=options)
