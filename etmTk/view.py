@@ -52,7 +52,7 @@ from dateutil.parser import parse
 from decimal import Decimal
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, zfmt, rfmt, efmt, hsh2str, str2hsh, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, fmt_datetime, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator, AFTER, export_ical_item, export_ical, fmt_time)
+    init_localization, fmt_weekday, fmt_dt, zfmt, rfmt, efmt, hsh2str, str2hsh, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, fmt_datetime, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator, AFTER, export_ical_item, export_ical, fmt_time, TimeIt)
 
 from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES, REPORTS)
 
@@ -2269,6 +2269,7 @@ or 0 to display all changes.""").format(title)
             return None, None, None
 
     def updateClock(self):
+        tt = TimeIt(loglevel=2, label="updateClock")
         self.now = get_current_time()
         self.current_minutes = self.now.hour * 60 + self.now.minute
         nxt = (60 - self.now.second) * 1000 - self.now.microsecond // 1000
@@ -2330,6 +2331,7 @@ or 0 to display all changes.""").format(title)
                             # process.startDetached(tcmd)
                             logger.debug('paused: {0}'.format(tcmd))
                             subprocess.call(tcmd, shell=True)
+        tt.stop()
 
     def updateAlerts(self):
         self.update_idletasks()

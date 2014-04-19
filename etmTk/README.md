@@ -1,3 +1,34 @@
+## Screen shots ##
+
+<table align="center" hspace="10" vspace="10" width="100%">
+<tr>
+    <td>
+    <img src="images/agenda.gif" /></a>
+    </td>
+    <td>
+    <img src="images/context.gif" /></a>
+    </td>
+</tr>
+<tr>
+    <td>
+    <img src="images/day.gif"/></a>
+    </td>
+    <td>
+    <img src="images/week.gif"/></a>
+    </td>
+</tr>
+<tr>
+    <td>
+    <img src="images/completion.gif"/></a>
+    </td>
+    <td>
+    <img src="images/report-a.gif"/></a>
+    </td>
+</tr>
+</table>
+
+<hr/>
+
 ## Sample entries ##
 
 Items in *etm* begin with a type character such as an asterisk (event) and continue on one or more lines either until the end of the file is reached or another line is found that begins with a type character. The beginning type character for each item is followed by the item summary and then, perhaps, by one or more `@key value` pairs. The order in which such pairs are entered does not matter.
@@ -40,37 +71,6 @@ Items in *etm* begin with a type character such as an asterisk (event) and conti
 
         - join the etm discussion group @s +1/1
           @g http://groups.google.com/group/eventandtaskmanager/topics
-
-## Screen shots ##
-
-<table align="center" hspace="10" vspace="10" width="100%">
-<tr>
-    <td>
-    <img src="images/agenda.gif" /></a>
-    </td>
-    <td>
-    <img src="images/context.gif" /></a>
-    </td>
-</tr>
-<tr>
-    <td>
-    <img src="images/day.gif"/></a>
-    </td>
-    <td>
-    <img src="images/week.gif"/></a>
-    </td>
-</tr>
-<tr>
-    <td>
-    <img src="images/completion.gif"/></a>
-    </td>
-    <td>
-    <img src="images/report-a.gif"/></a>
-    </td>
-</tr>
-</table>
-
-<hr/>
 
 ## Installation ##
 
