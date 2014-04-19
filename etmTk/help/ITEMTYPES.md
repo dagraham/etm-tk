@@ -10,6 +10,8 @@ A record of the expenditure of time (`@e`) and/or money (`@x`). Actions are not 
 
 Entries such as `@s mon 3p`, `@e 1h15m` and `@x 127.32` are discussed below under *Item details*. Action entries form the basis for time and expense billing using action reports - see [Reports](#reports) for details.
 
+Tip: You can use either path or keyword or a combination of the two to organize your actions.
+
 ## * Event
 
 Something that will happen on particular day(s) and time(s).  Event lines begin with an asterick, `*`.
@@ -36,7 +38,9 @@ On July 4, 2013, this would appear as `The 237th Independence Day`. Here !1776!`
 
 A record of some useful information. Note lines begin with an exclamation point, `!`.
 
-    ! xyz software @d user: dnlg, pw: abc123def
+    ! xyz software @k software:passwords @d user: dnlg, pw: abc123def
+
+Tip: Since both the GUI and CLI note views group and sort by keyword, it is a good idea to use keywords to organize your notes.
 
 ## - Task
 

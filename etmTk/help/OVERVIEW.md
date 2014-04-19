@@ -76,17 +76,18 @@ You can add a command to use the CLI instead of the GUI. For example, to get the
 
         a ARG   display the agenda view using ARG, if given, as a filter.
         d ARG   display the day view using ARG, if given, as a filter.
-        k ARG   display the keywords view using ARG, if given, as a filter.
-        n ARGS  Create a new item using the remaining arguments as the item
-                specification. (Enclose ARGS in quotes to prevent shell
+        i ARGS  Create a new item using the remaining arguments as the item
+                specification. (Enclose ARGS in single quotes to prevent shell
                 expansion.)
+        k ARG   display the keywords view using ARG, if given, as a filter.
         m INT   display a report using the remaining argument, which must be a
                 positive integer, to display a report using the corresponding
                 entry from the file given by report_specifications in etmtk.cfg.
                 Use ? m to display the numbered list of entries from this file.
+        n ARG   display the notes view using ARG, if given, as a filter.
         p ARG   display the path view using ARG, if given, as a filter.
         r ARGS  display a report using the remaining arguments as the report
-                specification. (Enclose ARGS in quotes to prevent shell
+                specification. (Enclose ARGS in single quotes to prevent shell
                 expansion.)
         t ARG   display the tags view using ARG, if given, as a filter.
         v       display information about etm and the operating system.
@@ -94,7 +95,7 @@ You can add a command to use the CLI instead of the GUI. For example, to get the
                 if ARGS = X where X is one of the above commands, then display
                 details about command X. 'X ?' is equivalent to '? X'.
 
-For another example, you can print your agenda to the terminal window by adding the letter "a":
+For example, you can print your agenda to the terminal window by adding the letter "a":
 
     $ etm a
     Sun Apr 06, 2014
@@ -180,6 +181,12 @@ Or you can add a question mark to a command to get details about the commmand, e
 
 Note: The CLI offers the same views and reporting, with the exception of week view, as the GUI. It is also possible to create new items in the CLI with the `n` command. Other modifications such as copying, deleting, finishing and so forth, can only be done in the GUI or, perhaps, in your favorite text editor. An advantage to using the GUI is that it provides validation.
 
+Tip: If you have a terminal open, you can create a new item or put something to finish later in your inbox quickly and easily with the "i" command. For example,
+
+        etm i '123 456-7890'
+
+would create an entry in your inbox with this phone number. (With no type character an "$" would be supplied automatically to make the item an inbox entry and no further validation would be done.)
+
 ## Views
 
 All views, including week view, display only items consistent with the current choices of active calendars.
@@ -189,6 +196,8 @@ If a (case-insensitive) filter is entered then the display in all views other th
 In day and week views, pressing the space bar will move the display to the current date. In all other views, pressing the space bar will move the display to the first item in the outline.
 
 In day and week views, pressing *Ctrl-J* will first prompt for a fuzzy-parsed date and then "jump" to the specified date.
+
+In all views, pressing *Return* with an item selected or double clicking an item or a busy period in week view will open a context menu with options to copy, delete, edit and so forth.
 
 ### Agenda View
 
@@ -240,7 +249,7 @@ Note: Items that you have "commented out" by beginning the item with a `#` will 
 
 ### Week View
 
-Events and occasions displayed graphically by week. Left and right cursor keys change, respectively, to the previous and next week. Up and down cursor keys select, respectively, the previous and next items within the given week. Items can also be selected by moving the mouse over the item. The summary and time period for the selected item is displayed at the bottom of the screen. Pressing return with an item selected or control-clicking an item opens a context menu. Control-clicking an unscheduled time opens a dialog to create an event for that date and time.
+Events and occasions displayed graphically by week. Left and right cursor keys change, respectively, to the previous and next week. Up and down cursor keys select, respectively, the previous and next items within the given week. Items can also be selected by moving the mouse over the item. The summary and time period for the selected item is displayed at the bottom of the screen. Pressing return with an item selected or double-clicking an item opens a context menu. Control-clicking an unscheduled time opens a dialog to create an event for that date and time.
 
 Press *Ctrl-B* to display a list of busy times for the selected week.
 
@@ -256,7 +265,7 @@ The timer starts automatically when you close the dialog. Once the timer is runn
 
 While a timer is active, the title, elapsed time and status - running or paused - is displayed in the status bar.
 
-Tip: When creating a repeating item, press *Validate* to check your entry and see a list of the instances that will be generated.
+Tip: When creating or editing a repeating item, press *Validate* to check your entry and see a list of the instances that it will generate.
 
 ## Editing Existing Items
 

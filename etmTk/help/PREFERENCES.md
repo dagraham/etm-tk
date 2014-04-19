@@ -354,6 +354,43 @@ The command to be executed when etm detects an external change in any of its dat
 
 Use this font size in the gui treeviews.
 
+### freetimes
+
+    freetimes:
+        opening: 8*60  # 8am
+        closing: 17*60 # 5pm
+        minimum: 30    # 30 minutes
+        wrap:    15    # 15 minutes
+
+When displaying the list of free times for a week, only display times between *opening* and *closing* that last at least *minimum* after subtracting *wrap* from the starting time of busy periods and adding *wrap* to the ending time of busy periods. When displaying free times you will be prompted for the minimum period using *minimum* as the default.
+
+E.g., with the above settings and this list of busytimes
+
+    Busy times in Week 16: Apr 14 - 20, 2014
+    ----------------------------------------
+    Mon 14: 10:30am-11:00am; 12:00pm-1:00pm; 5:00pm-6:00pm
+    Tue 15: 9:00am-10:00am
+    Wed 16: 8:30am-9:30am; 2:00pm-3:00pm; 5:00pm-6:00pm
+    Thu 17: 11:00am-12:00pm; 6:00pm-7:00pm; 7:00pm-9:00pm
+    Fri 18: 3:00pm-4:00pm; 5:00pm-6:00pm
+    Sat 19: 9:00am-10:30am; 7:30pm-10:00pm
+
+This would be the corresponding list of free times:
+
+    Free times in Week 16: Apr 14 - 20, 2014
+    ----------------------------------------
+    Mon 14: 8:00am-10:15am; 11:15am-11:45am; 1:15pm-4:45pm
+    Tue 15: 8:00am-8:45am; 10:15am-5:00pm
+    Wed 16: 9:45am-1:45pm; 3:15pm-4:45pm
+    Thu 17: 8:00am-10:45am; 12:15pm-5:00pm
+    Fri 18: 8:00am-2:45pm; 4:15pm-4:45pm
+    Sat 19: 8:00am-8:45am; 10:45am-5:00pm
+    Sun 20: 8:00am-5:00pm
+    ----------------------------------------
+    Only periods of at least 30 minutes are displayed.
+
+Tip: Need to tell someone when you're free in a given week? Jump to that week in week view, press *Ctrl-F*, choose the minimum period and then copy and paste the resulting list into an email.
+
 ### Mercurial commands
 
 If *Mercurial* is installed on your system, then the default versions of the `hg` commands given below should work without modification. If you want to use another version control system, then enter the commands for your version control system. `{repo}` will be replaced with the internally generated name of the repository in `hg_commit` and `hg_history`, `{file}` with the internally generated file name in `hg_history`, `{mesg}` with the internally generated commit message in `hg_commit` and `{0}` with the name of the repository in `hg_init`.
