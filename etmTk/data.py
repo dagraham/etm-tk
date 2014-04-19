@@ -376,8 +376,6 @@ c u
 # empty lines and lines that begin with '#' are ignored.
 """
 
-# TODO: put the last report spec chosen in the CLI m command into the clipboard to paste into an r command
-
 # command line usage
 USAGE = """\
 Usage:

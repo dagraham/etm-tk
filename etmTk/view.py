@@ -44,9 +44,6 @@ else:
 
 tkversion = tkinter.Tcl().eval('info patchlevel')
 
-# TODO: provide method to save changes to report specs
-
-
 import etmTk.data as data
 # from data import init_localization
 
@@ -2681,10 +2678,6 @@ Relative dates and fuzzy parsing are supported.""")
                 res = loop.do_command(cmd)
             except:
                 return _('could not process command "{0}"').format(cmd)
-
-        # FIXME: is this used?
-        elif self.mode == 'edit':
-            res = loop.cmd_do_edit(cmd)
 
         elif self.mode == 'delete':
             loop.cmd_do_delete(cmd)
