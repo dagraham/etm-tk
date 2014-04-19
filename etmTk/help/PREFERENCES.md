@@ -262,6 +262,13 @@ Up and down arrow keys change the selection and either *Tab* or *Return* inserts
 
 To edit the auto_completions file, press *Shift-Control-C* in the main window or from the main menu under *File/Open*.
 
+### shared_completions
+
+        auto_completions: ''
+
+The absolute path to an optional file to be used to augment autocompletions. Each line in the file provides a possible completion.
+
+
 ### calendars
 
     calendars:
