@@ -82,29 +82,6 @@ else:
     import cPickle as pickle
     _ = gettext.lgettext
 
-
-class TimeIt(object):
-    def __init__(self, loglevel=1, label=""):
-        self.loglevel = loglevel
-        self.label = label
-        msg = "{0} timer started".format(self.label)
-        if self.loglevel == 1:
-            logger.debug(msg)
-        elif self.loglevel == 2:
-            logger.info(msg)
-        self.start = timer()
-
-    def stop(self, *args):
-        self.end = timer()
-        self.secs = self.end - self.start
-        self.msecs = self.secs * 1000  # millisecs
-        msg = "{0} timer stopped; elapsed time: {1} milliseconds".format(self.label, self.msecs)
-        if self.loglevel == 1:
-            logger.debug(msg)
-        elif self.loglevel == 2:
-            logger.info(msg)
-
-
 #######################################################
 ############ begin IndexableSkipList ##################
 #######################################################
@@ -551,8 +528,10 @@ from re import split as rsplit
 sys_platform = platform.system()
 if sys_platform in ('Windows', 'Microsoft'):
     windoz = True
+    from time import clock as timer
 else:
     windoz = False
+    from time import time as timer
 
 if sys.platform == 'darwin':
     mac = True
@@ -566,6 +545,28 @@ if mac:
     AFTER = 200
 else:
     AFTER = 1
+
+
+class TimeIt(object):
+    def __init__(self, loglevel=1, label=""):
+        self.loglevel = loglevel
+        self.label = label
+        msg = "{0} timer started".format(self.label)
+        if self.loglevel == 1:
+            logger.debug(msg)
+        elif self.loglevel == 2:
+            logger.info(msg)
+        self.start = timer()
+
+    def stop(self, *args):
+        self.end = timer()
+        self.secs = self.end - self.start
+        self.msecs = self.secs * 1000  # millisecs
+        msg = "{0} timer stopped; elapsed time: {1} milliseconds".format(self.label, self.msecs)
+        if self.loglevel == 1:
+            logger.debug(msg)
+        elif self.loglevel == 2:
+            logger.info(msg)
 
 
 
@@ -587,7 +588,6 @@ except ImportError:
 
 from datetime import datetime, timedelta, time
 from time import sleep
-from time import time as timer
 import dateutil.rrule as dtR
 from dateutil.parser import parse as dparse
 from dateutil import __version__ as dateutil_version
