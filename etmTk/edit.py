@@ -434,20 +434,43 @@ class SimpleEditor(Toplevel):
         text.pack(side="bottom", padx=4, pady=3, expand=1, fill=BOTH)
         self.text = text
 
+        self.completions = []
+        completions = set([])
         if self.options['auto_completions']:
             cf = self.options['auto_completions']
             if os.path.isfile(cf):
                 logger.debug("auto_completions: {0}".format(cf))
                 fe = self.options['encoding']['file']
-                completions = []
                 with codecs.open(cf, 'r', fe) as fo:
-                    self.completions = [x.rstrip() for x in fo.readlines() if x
-                        .rstrip() and x[0].strip() != "#"]
+                    for x in fo.readlines():
+                        x = x.rstrip()
+                        if x and x[0] != "#":
+                            completions.add(x)
                 logger.info('Using completions file: {0}'.format(cf))
             else:
                 logger.warn("Could not find completions file: {0}".format(cf))
         else:
             logger.info("auto_completions not specified in etmtk.cfg")
+
+        if self.options['shared_completions']:
+            cf = self.options['shared_completions']
+            if os.path.isfile(cf):
+                logger.debug("shared_completions: {0}".format(cf))
+                fe = self.options['encoding']['file']
+                with codecs.open(cf, 'r', fe) as fo:
+                    for x in fo.readlines():
+                        x = x.rstrip()
+                        if x and x[0] != "#":
+                            completions.add(x)
+                logger.info('Using shared completions file: {0}'.format(cf))
+            else:
+                logger.warn("Could not find shared completions file: {0}".format(cf))
+        else:
+            logger.info("optional shared_completions not specified in etmtk.cfg")
+
+        if completions:
+            self.completions = list(completions)
+            self.completions.sort()
 
 
         if title is not None:

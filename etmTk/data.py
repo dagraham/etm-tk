@@ -1173,6 +1173,7 @@ def get_options(d=''):
 
         'ampm': True,
         'auto_completions': os.path.join(etmdir, 'completions.cfg'),
+        'shared_completions' : '',
         'calendars': [],
 
         'current_textfile': '',

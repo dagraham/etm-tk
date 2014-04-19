@@ -112,6 +112,7 @@ Note: Most dialogs can be closed by pressing Escape.
             Previous item in week                         Up
             Next item in week                            Down
             List busy times in week                     Ctrl-B
+            List free times in week                     Ctrl-F
         Item
             Copy                                        Ctrl-C
             Delete                                    Ctrl-BackSpace
