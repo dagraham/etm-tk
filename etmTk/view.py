@@ -2807,16 +2807,20 @@ or 0 to expand all branches completely.""")
                 # oid = self.tree.insert(parent, 'end', text=col1, open=True, value=[col2])
                 self.count2id[oid] = "{0}::{1}".format(uuid, dt)
                 if dt:
-                    try:
-                        if item_type == 'by':
-                            # we want today, not the starting date for this
-                            d = get_current_time().date()
-                        else:
-                            d = parse(dt[:10]).date()
-                        if d not in self.date2id:
-                            self.date2id[d] = parent
-                    except:
-                        logger.exception('could not parse: {0}'.format(dt))
+                    if item_type == 'by':
+                        # we want today, not the starting date for this
+                        d = get_current_time().date()
+                    else:
+                        try:
+                            # split into date and time
+                            d1 = dt.split(" ")[0]
+                            # parse the date part
+                            d = parse(d1).date()
+                        except:
+                            logger.exception('could not parse: {0}'.format(dt))
+                            d = None
+                    if d and d not in self.date2id:
+                        self.date2id[d] = parent
 
 loop = None
 

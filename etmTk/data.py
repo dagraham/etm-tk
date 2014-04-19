@@ -2536,34 +2536,6 @@ def getFiles(root):
     return common_prefix, filelist
 
 
-# def removeIds(root):
-#     prefix, filelist = getFiles(root)
-#     for filename, relname in filelist:
-#         try:
-#             logger.debug("Removing id lines from {0}".format(filename))
-#             filename = str(filename)
-#             pathname, ext = os.path.splitext(filename)
-#             directory, name = os.path.split(pathname)
-#             bakfile = os.path.join(directory, "%s.bak" % name)
-#             shutil.copy2(filename, bakfile)
-#
-#             fin = open(bakfile)
-#             fout = open(filename, "w")
-#
-#             count = 0
-#             for line in fin.readlines():
-#                 if id_regex.match(line):
-#                     count += 1
-#                 else:
-#                     fout.write(line)
-#             fin.close()
-#             fout.close()
-#             os.remove(bakfile)
-#             logger.debug("removed %s idlines" % count)
-#         except:
-#             logger.warn('error processing', filename)
-#
-
 def lines2Items(lines):
     """
         Group the lines into logical items and return them.
