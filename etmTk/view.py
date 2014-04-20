@@ -65,7 +65,7 @@ import gettext
 _ = gettext.gettext
 
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 
 ETM = "etm"
 
@@ -145,6 +145,7 @@ class App(Tk):
         self.menu_lst = []
         self.menutree = MenuTree()
         self.chosen_day = None
+        self.active_date = None
         self.busy_info = None
         self.weekly = False # showWeekly
         self.today_col = None
@@ -1466,6 +1467,7 @@ Enter the shortest time period you want displayed in minutes.""")
         else:
             days = 0
         self.week_beg = weekbeg = chosen_day - days * ONEDAY
+        logger.debug('week_beg: {0}'.format(self.week_beg))
         weekend = chosen_day + (6 - days) * ONEDAY
         weekdays = []
 
@@ -1564,6 +1566,7 @@ Enter the shortest time period you want displayed in minutes.""")
         """
         Open the canvas at the current week
         """
+        logger.debug("chosen_day: {0}; active_date: {1}".format(chosen_day, self.active_date))
         if self.weekly:
             # we're in weekview already
             return
@@ -1577,12 +1580,12 @@ Enter the shortest time period you want displayed in minutes.""")
         self.currentView.set(WEEK)
 
         # self.current_day = get_current_time().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
-        self.chosen_day = chosen_day
-        if chosen_day is None:
-            self.chosen_day = get_current_time()
-        else:
+        if chosen_day is not None:
             self.chosen_day = chosen_day
-        # self.selectedId = None
+        elif self.active_date:
+            self.chosen_day = datetime.combine(self.active_date, time())
+        else:
+            self.chosen_day = get_current_time()
 
         self.canvas = canvas = Canvas(self.toppane, background="white", bd=2, relief="sunken")
         canvas.configure(highlightthickness=0)
@@ -1635,6 +1638,8 @@ Enter the shortest time period you want displayed in minutes.""")
             day = self.chosen_day
         else:
             return "break"
+        self.active_date = self.chosen_day.date()
+        logger.debug('week active_date: {0}'.format(self.active_date))
 
         theweek, weekdays, busy_lst, occasion_lst = self.setWeek(day)
         self.OnSelect()
@@ -2160,11 +2165,19 @@ or 0 to display all changes.""").format(title)
         elif uuid is None: # tree view
             item = self.tree.selection()[0]
             self.rowSelected = int(item)
-            logger.debug('tree rowSelected: {0}'.format(self.rowSelected))
             # type_chr is the actual type, e.g., "-"
             # show_chr is what's displayed in the tree, e.g., "X"
             type_chr = show_chr = self.tree.item(item)['text'][0]
             uuid, dt, hsh = self.getInstance(item)
+            logger.debug('tree rowSelected: {0}; {1}; {2}'.format(self.rowSelected, self.tree.item(item)['text'], dt))
+            if self.view == DAY:
+                if dt is not None:
+                    # we have an item
+                    self.active_date = parse(dt).date()
+                else:
+                    # we have the date selected
+                   self.active_date = parse(self.tree.item(item)['text']).date()
+                logger.debug('active_date: {0}'.format(self.active_date))
             if hsh:
                 type_chr = hsh['itemtype']
         self.update_idletasks()
@@ -2507,6 +2520,7 @@ Relative dates and fuzzy parsing are supported.""")
         logger.debug('day: {0}'.format(day))
         if day is not None:
             self.chosen_day = day
+            # self.active_date = day.date()
             if self.weekly:
                 self.showWeek(event=e, week=None)
             else:
@@ -2738,12 +2752,12 @@ or 0 to expand all branches completely.""")
         # only makes sense for schedule
         logger.debug("DAY: {0}; date: {1}".format(self.view == DAY, date))
         if self.view != DAY or date not in loop.prevnext:
-            print('not in prevnext')
             return ()
         active_date = loop.prevnext[date][1]
         if active_date not in self.date2id:
             return ()
         uid = self.date2id[active_date]
+        self.active_date = active_date
         self.scrollToId(uid)
 
     def scrollToId(self, uid):
@@ -2765,7 +2779,10 @@ or 0 to expand all branches completely.""")
         # self.l.configure(state="disabled")
         if event is None:
             # view selected from menu
-            self.goHome()
+            if self.active_date:
+                self.scrollToDate(self.active_date)
+            else:
+                self.goHome()
 
     def clearTree(self):
         """
