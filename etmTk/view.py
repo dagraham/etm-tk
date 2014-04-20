@@ -1478,6 +1478,7 @@ Enter the shortest time period you want displayed in minutes.""")
         weekdays = []
 
         day = weekbeg
+        self.active_date = weekbeg.date()
         busy_lst = []
         occasion_lst = []
         matching = self.cal_regex is not None and self.default_regex is not None
@@ -1646,7 +1647,7 @@ Enter the shortest time period you want displayed in minutes.""")
             day = self.chosen_day
         else:
             return "break"
-        self.active_date = self.chosen_day.date()
+        # self.active_date = self.chosen_day.date()
         logger.debug('week active_date: {0}'.format(self.active_date))
 
         theweek, weekdays, busy_lst, occasion_lst = self.setWeek(day)
