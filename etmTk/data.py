@@ -58,12 +58,12 @@ def setup_logging(level, etmdir=None):
               'version': 1}
 
     logging.config.dictConfig(config)
-    logger.info('logging at level: {0}\n    writing exceptions to: {1}'.format(loglevel,
-                                                                       logfile))
+    logger.info('logging at level: {0}\n    writing exceptions to: {1}'.format(loglevel, logfile))
 
 import subprocess
 
 import gettext
+
 if platform.python_version() >= '3':
     python_version = 3
     python_version2 = False
@@ -567,10 +567,6 @@ class TimeIt(object):
             logger.debug(msg)
         elif self.loglevel == 2:
             logger.info(msg)
-
-
-
-import traceback
 
 has_icalendar = False
 try:
@@ -2481,7 +2477,6 @@ def process_data_file_list(filelist, options=None):
                 file2uuids.setdefault(r, []).append(uid)
         except Exception:
             fio = StringIO()
-            # traceback.print_exc(file=fio)
             msg = fio.getvalue()
             bad_datafiles[r] = msg
             logger.error('Error processing: {0}\n{1}'.format(r, msg))
@@ -3864,7 +3859,6 @@ def str2hsh(s, uid=None, options=None):
     except:
         fio = StringIO()
         logger.exception('exception procsessing "{0}"'.format(s))
-        traceback.print_exc(file=fio)
         msg.append(fio.getvalue())
     return hsh, msg
 
