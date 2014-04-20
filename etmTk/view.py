@@ -170,6 +170,12 @@ class App(Tk):
         # leaf: (parent, (option, [accelerator])
         # menuwidth = 9
 
+        self.outline_depths = {}
+        for view in KEYWORDS, NOTES, PATHS:
+            # set all to the default
+            logger.debug('Setting depth for {0} to {1}'.format(view, loop.options['outline_depth']))
+            self.outline_depths[view] = loop.options['outline_depth']
+
         # main menu
         menubar = Menu(self)
         menu = _("Menubar")
@@ -1335,7 +1341,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.process_input(event=e, cmd=cmd)
 
     def showView(self, e=None, row=None):
-        logger.debug("starting showView: {0}".format(self.view))
+        tt = TimeIt(loglevel=2, label="{0} view".format(self.view))
         if self.weekly:
             return
         self.depth2id = {}
@@ -1348,7 +1354,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         if row:
             row = max(0, row-1)
             self.tree.yview(row)
-        logger.debug("ending showView row: {0}".format(row))
+        tt.stop()
 
     def showBusyPeriods(self, event=None):
         if self.busy_info is None:
@@ -1566,6 +1572,7 @@ Enter the shortest time period you want displayed in minutes.""")
         """
         Open the canvas at the current week
         """
+        tt = TimeIt(loglevel=2, label="week view")
         logger.debug("chosen_day: {0}; active_date: {1}".format(chosen_day, self.active_date))
         if self.weekly:
             # we're in weekview already
@@ -1614,6 +1621,7 @@ Enter the shortest time period you want displayed in minutes.""")
             self.viewmenu.entryconfig(i, state="normal")
         self.canvas.focus_set()
         self.showWeek()
+        tt.stop()
 
     def showWeek(self, event=None, week=None):
         self.canvas.focus_set()
@@ -2733,6 +2741,8 @@ or 0 to expand all branches completely.""")
             return ()
         maxdepth = max([k for k in self.depth2id])
         logger.debug('expand2Depth: {0}/{1}'.format(depth, maxdepth))
+        if self.view in [KEYWORDS, NOTES, PATHS]:
+            self.outline_depths[self.view] = depth
         if depth == 0:
             # expand all
             for k in self.depth2id:
@@ -2779,9 +2789,18 @@ or 0 to expand all branches completely.""")
         # self.l.configure(state="disabled")
         if event is None:
             # view selected from menu
-            if self.active_date:
+            if self.view == DAY and self.active_date:
                 self.scrollToDate(self.active_date)
             else:
+                if self.view in [KEYWORDS, NOTES, PATHS]:
+                    depth = self.outline_depths[self.view] - 1
+                    maxdepth = max([k for k in self.depth2id])
+                    for i in range(depth):
+                        for item in self.depth2id[i]:
+                            self.tree.item(item, open=True)
+                    for i in range(depth, maxdepth+1):
+                        for item in self.depth2id[i]:
+                            self.tree.item(item, open=False)
                 self.goHome()
 
     def clearTree(self):

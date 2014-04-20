@@ -1201,7 +1201,7 @@ def get_options(d=''):
 
         # 'monthly': os.path.join('personal', 'monthly'),
         'monthly': 'monthly',
-
+        'outline_depth': 2,
         'report_begin': '1',
         'report_end': '+1/1',
         'report_colors': 2,
