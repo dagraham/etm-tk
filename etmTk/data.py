@@ -1304,11 +1304,22 @@ def get_options(d=''):
     for key in default_freetimes:
         if key not in options['freetimes']:
             options['freetimes'][key] = default_freetimes[key]
+            logger.warn('A value was not provided for freetimes[{0}] - using the default value.'.format(key))
             changed = True
+        else:
+            if type(options['freetimes'][key]) is not int:
+                changed = True
+                try:
+                    options['freetimes'][key] = int(eval(options['freetimes'][key]))
+                except:
+                    logger.warn('The value provided for freetimes[{0}], "{1}", could not be converted to an integer - using the default value instead.'.format(key, options['freetimes'][key]))
+                    options['freetimes'][key] = default_freetimes[key]
+
     free_keys = [x for x in options['freetimes'].keys()]
     for key in free_keys:
         if key not in default_freetimes:
             del options['freetimes'][key]
+            logger.warn('A value was provided for freetimes[{0}], but this is an invalid option and has been deleted.'.format(key))
             changed = True
 
     logger.debug('changed: {0}; user: {1}; options: {2}'.format(changed, (user_options != default_options), (options != default_options)))
