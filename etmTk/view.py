@@ -37,7 +37,7 @@ else:
     import ttk
     import tkFont
     from tkMessageBox import askokcancel
-    from tkFileDialog import askopenfilename, asksaveasfilename, filedialog
+    from tkFileDialog import askopenfilename, asksaveasfilename
     # import tkSimpleDialog
     def utf8(s):
         return s
