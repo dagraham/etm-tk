@@ -99,6 +99,8 @@ The repetition that was due on 10/25 was completed on 10/24. The next repetition
 
 The path to a file or a URL to be opened using the system default application when the user presses *Control-G* in the GUI.
 
+Tip. Have a pdf file with the agenda for a meeting? Stick an @g entry with the path to the file in the event you create for the meeting. Then whenever the meeting is selected, *Control-G* will bring up the agenda.
+
 ## @j job
 
 Component tasks or jobs within a task group are given by `@j job` entries. `@key value` entries prior to the first `@j` become the defaults for the jobs that follow. `&key value` entries given in jobs use `&` rather than `@` and apply only to the specific job.

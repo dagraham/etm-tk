@@ -264,7 +264,7 @@ To edit the auto_completions file, press *Shift-Control-C* in the main window or
 
 ### shared_completions
 
-        auto_completions: ''
+        shared_completions: ''
 
 The absolute path to an optional file to be used to augment autocompletions. Each line in the file provides a possible completion.
 
@@ -364,17 +364,17 @@ Use this font size in the gui treeviews.
 ### freetimes
 
     freetimes:
-        opening: 8*60  # 8am
-        closing: 17*60 # 5pm
-        minimum: 30    # 30 minutes
-        wrap:    15    # 15 minutes
+        opening:  480  # 8*60 minutes after midnight = 8am
+        closing: 1020  # 17*60 minutes after midnight = 5pm
+        minimum:   30  # 30 minutes
+        buffer:    15  # 15 minutes
 
-When displaying the list of free times for a week, only display times between *opening* and *closing* that last at least *minimum* after subtracting *wrap* from the starting time of busy periods and adding *wrap* to the ending time of busy periods. When displaying free times you will be prompted for the minimum period using *minimum* as the default.
+Only display free periods between *opening* and *closing* that last at least *minimum* minutes and preserve at least *buffer* minutes between events. Note that each of these settings must be an *interger* number of minutes.
 
-E.g., with the above settings and this list of busytimes
+E.g., with the above settings and these busy periods:
 
-    Busy times in Week 16: Apr 14 - 20, 2014
-    ----------------------------------------
+    Busy periods in Week 16: Apr 14 - 20, 2014
+    ------------------------------------------
     Mon 14: 10:30am-11:00am; 12:00pm-1:00pm; 5:00pm-6:00pm
     Tue 15: 9:00am-10:00am
     Wed 16: 8:30am-9:30am; 2:00pm-3:00pm; 5:00pm-6:00pm
@@ -382,10 +382,10 @@ E.g., with the above settings and this list of busytimes
     Fri 18: 3:00pm-4:00pm; 5:00pm-6:00pm
     Sat 19: 9:00am-10:30am; 7:30pm-10:00pm
 
-This would be the corresponding list of free times:
+This would be the corresponding list of free periods:
 
-    Free times in Week 16: Apr 14 - 20, 2014
-    ----------------------------------------
+    Free periods in Week 16: Apr 14 - 20, 2014
+    ------------------------------------------
     Mon 14: 8:00am-10:15am; 11:15am-11:45am; 1:15pm-4:45pm
     Tue 15: 8:00am-8:45am; 10:15am-5:00pm
     Wed 16: 9:45am-1:45pm; 3:15pm-4:45pm
@@ -396,7 +396,9 @@ This would be the corresponding list of free times:
     ----------------------------------------
     Only periods of at least 30 minutes are displayed.
 
-Tip: Need to tell someone when you're free in a given week? Jump to that week in week view, press *Ctrl-F*, choose the minimum period and then copy and paste the resulting list into an email.
+When displaying free times in week view you will be prompted for the shortest period to display using the setting for *minimum* as the default.
+
+Tip: Need to tell someone when you're free in a given week? Jump to that week in week view, press *Ctrl-F*, set the minimum period and then copy and paste the resulting list into an email.
 
 ### Mercurial commands
 
@@ -452,6 +454,12 @@ Relative path from `datadir`. With the settings above and for `datadir` the sugg
     ~/.etm/data/monthly/2012/10.txt
 
 The directories `monthly` and `2012` and the file `10.txt` would, if necessary, be created. The user could either accept this default or choose a different file.
+
+### outline_depth
+
+    outline_depth: 2
+
+The default outline depth to use when opening keyword, note or path view. Once a view is opened, use Ctrl-O to change the depth for that view.
 
 ### report
 

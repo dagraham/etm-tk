@@ -4947,36 +4947,38 @@ def updateViewData(f, bef, file2uuids=None, uuid2hash=None, options=None, file2d
     if not uuid2hash: uuid2hash = {}
     if not options: options = {}
     # clear data for this file
+    _items = _alerts = _busytimes = _datetimes = _occasions = []
     if f in file2data:
         _items, _alerts, _busytimes, _datetimes, _occasions = file2data[f]
-        for item in _items:
-            logger.debug('removing item: {0}'.format(item))
-            removeFromlist("items", item)
-            # itemsSL.remove(item)
-        for alert in _alerts:
-            logger.debug('removing alert: {0}'.format(alert))
-            removeFromlist("alerts", alert)
-            # alertsSL.remove(alert)
-        for datetime in _datetimes:
-            logger.debug('removing datetime: {0}'.format(datetime))
-            removeFromlist("datetimes", datetime)
-            # datetimesSL.remove(datetime)
-        for bt in _busytimes:
-            bt = list(bt)
-            sd = bt.pop(0)
-            bt = tuple(bt)
-            key = sd.isocalendar()
-            # print('busy', key, type(key), bt)
-            logger.debug('removing busytime: {0}: {1}'.format(key, bt))
-            remove_busytime(key, bt)
-        for oc in _occasions:
-            oc = list(oc)
-            sd = oc.pop(0)
-            oc = tuple(oc)
-            key = sd.isocalendar()
-            # print('occasion', key, type(key), oc)
-            logger.debug('removing occasion: {0}: {1}'.format(key, oc))
-            remove_occasion(key, oc)
+        if _items:
+            for item in _items:
+                logger.debug('removing item: {0}'.format(item))
+                removeFromlist("items", item)
+                # itemsSL.remove(item)
+            for alert in _alerts:
+                logger.debug('removing alert: {0}'.format(alert))
+                removeFromlist("alerts", alert)
+                # alertsSL.remove(alert)
+            for datetime in _datetimes:
+                logger.debug('removing datetime: {0}'.format(datetime))
+                removeFromlist("datetimes", datetime)
+                # datetimesSL.remove(datetime)
+            for bt in _busytimes:
+                bt = list(bt)
+                sd = bt.pop(0)
+                bt = tuple(bt)
+                key = sd.isocalendar()
+                # print('busy', key, type(key), bt)
+                logger.debug('removing busytime: {0}: {1}'.format(key, bt))
+                remove_busytime(key, bt)
+            for oc in _occasions:
+                oc = list(oc)
+                sd = oc.pop(0)
+                oc = tuple(oc)
+                key = sd.isocalendar()
+                # print('occasion', key, type(key), oc)
+                logger.debug('removing occasion: {0}: {1}'.format(key, oc))
+                remove_occasion(key, oc)
 
         # remove the old entry for f in file2data
         del file2data[f]

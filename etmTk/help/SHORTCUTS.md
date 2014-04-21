@@ -1,13 +1,12 @@
 # Menu Shortcuts
 
-Note: Most dialogs can be closed by pressing Escape.
-
     Menubar
         File
             New
                 Item                                    Ctrl-I
                 Begin/Pause Action Timer                Ctrl-,
                 Finish Action Timer                     Ctrl-.
+                File                                  Shift-Ctrl-N
             Open
                 Data file ...                         Shift-Ctrl-F
                 etmtk.cfg                             Shift-Ctrl-E
@@ -74,3 +73,4 @@ Note: Most dialogs can be closed by pressing Escape.
         Save changes to report specifications           Ctrl-W
         Expand report list                               Down
         Quit                                            Ctrl-Q
+
