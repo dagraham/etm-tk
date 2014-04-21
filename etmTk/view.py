@@ -222,7 +222,7 @@ class App(Tk):
         newmenu.add_command(label=label, command=self.newData)
         self.bind(c, lambda e: newmenu.invoke(3))
         if not mac:
-            openmenu.entryconfig(0, accelerator=l)
+            newmenu.entryconfig(0, accelerator=l)
         self.add2menu(path, (label, l))
 
         filemenu.add_cascade(label=NEW, menu=newmenu)

@@ -27,7 +27,7 @@ Dates in the examples below are entered using *fuzzy parsing* - e.g., `+7` for s
 
         - get haircut @s 24 @r d &i 14 @o r
 
-* Payday (an occassion) on the last week day of each month. The `&s -1` part of the entry extracts the last date which is both a weekday and falls within the last three days of the month):
+* Payday (an occasion) on the last week day of each month. The `&s -1` part of the entry extracts the last date which is both a weekday and falls within the last three days of the month):
 
         ^ payday @s 1/1 @r m &w MO, TU, WE, TH, FR
           &m -1, -2, -3 &s -1
@@ -36,11 +36,11 @@ Dates in the examples below are entered using *fuzzy parsing* - e.g., `+7` for s
 
         * take Rx @s +0 @r d &h 10, 14, 18, 22 &u +4 @a 0
 
-* Move the water sprinker (a reminder) every thiry mi[n]utes on Sunday afternoons using the default alert zero minutes before each reminder:
+* Move the water sprinkler (a reminder) every thirty mi[n]utes on Sunday afternoons using the default alert zero minutes before each reminder:
 
-        * Move sprinker @s 1 @r w &w SU &h 14, 15, 16, 17 &n 0, 30 @a 0
+        * Move sprinkler @s 1 @r w &w SU &h 14, 15, 16, 17 &n 0, 30 @a 0
 
-    To limit the sprinker movement reminders to the [M]onths of April through September each year change the @r entry to this:
+    To limit the sprinkler movement reminders to the [M]onths of April through September each year change the @r entry to this:
 
         @r w &w SU &h 14, 15, 16, 17 &n 0, 30 &M 4, 5, 6, 7, 8, 9
 
