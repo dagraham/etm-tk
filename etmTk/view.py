@@ -26,7 +26,7 @@ if platform.python_version() >= '3':
     from tkinter import ttk
     from tkinter import font as tkFont
     from tkinter.messagebox import askokcancel
-    from tkinter.filedialog import askopenfilename
+    from tkinter.filedialog import askopenfilename, asksaveasfilename, FileDialog
     utf8 = lambda x: x
     # from tkinter import simpledialog as tkSimpleDialog
 else:
@@ -37,7 +37,7 @@ else:
     import ttk
     import tkFont
     from tkMessageBox import askokcancel
-    from tkFileDialog import askopenfilename
+    from tkFileDialog import askopenfilename, asksaveasfilename, filedialog
     # import tkSimpleDialog
     def utf8(s):
         return s
@@ -215,6 +215,14 @@ class App(Tk):
         self.bind("<Control-period>", lambda e: self.after(AFTER, self.finishActionTimer))
         if not mac:
             newmenu.entryconfig(2, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        l, c = commandShortcut('N')
+        label = _("File")
+        newmenu.add_command(label=label, command=self.newData)
+        self.bind(c, lambda e: newmenu.invoke(3))
+        if not mac:
+            openmenu.entryconfig(0, accelerator=l)
         self.add2menu(path, (label, l))
 
         filemenu.add_cascade(label=NEW, menu=newmenu)
@@ -1224,6 +1232,26 @@ a time period if "+" is used."""
         if not (filename and os.path.isfile(filename)):
             return False
         self.editFile(e, file=filename)
+
+    def newData(self, e=None):
+        initdir = self.options['datadir']
+        fileops = {'defaultextension': '.txt',
+                   'filetypes': [('text files', '.txt')],
+                   'initialdir': initdir,
+                   'initialfile': "",
+                   'title': 'etmtk data files',
+                   'parent': self}
+        filename = asksaveasfilename(**fileops)
+        if not filename:
+            return
+        fo = codecs.open(filename, 'w', self.options['encoding']['file'])
+        fo.write("")
+        fo.close()
+        relname = relpath(filename, self.options['datadir'])
+        prompt = _('created: {0}').format(relname)
+        MessageWindow(self, title=_("new file"), prompt=prompt)
+
+        # self.newFile(e, file=filename)
 
     def finishItem(self, e=None):
         if not (self.itemSelected and self.itemSelected['itemtype'] in ['-', '+', '%']):

@@ -58,9 +58,21 @@ Items in *etm* begin with a type character such as an asterisk (event) and conti
 
         ^ payday @s 1/1 @r m &w MO, TU, WE, TH, FR &m -1, -2, -3 &s -1
 
-* Take a prescribed medication daily (a reminder) [s]tarting today and [r]epeating (d)aily at [h]ours 10am, 2pm, 6pm and 10pm [u]ntil (12am on) the fourth day from today. Trigger the default [a]lert zero minutes before each event:
+* Take a prescribed medication daily (a reminder) [s]tarting today and [r]epeating (d)aily at [h]ours 10am, 2pm, 6pm and 10pm [u]ntil (12am on) the fourth day from today. Trigger the default [a]lert zero minutes before each reminder:
 
         * take Rx @s +0 @r d &h 10, 14, 18, 22 &u +4 @a 0
+
+* Move the water sprinker (a reminder) every thiry mi[n]utes on Sunday afternoons using the default alert zero minutes before each reminder:
+
+        * Move sprinker @s 1 @r w &w SU &h 14, 15, 16, 17 &n 0, 30 @a 0
+
+    To limit the sprinker movement reminders to the [M]onths of April through September each year change the @r entry to this:
+
+        @r w &w SU &h 14, 15, 16, 17 &n 0, 30 &M 4, 5, 6, 7, 8, 9
+
+     or this:
+
+        @r n &i 30 &w SU &h 14, 15, 16, 17 &M 4, 5, 6, 7, 8, 9
 
 * Presidential election day (an occasion) every four years on the first Tuesday after a Monday in November:
 
