@@ -74,6 +74,17 @@ An elaboration of the details of the item to complement the summary.
 
 A time period string such as `1d2h` (1 day 2 hours). For an action, this would be the elapsed time. For a task, this could be an estimate of the time required for completion. For an event, this would be the duration. The ending time of the event would be this much later than the starting datetime.
 
+Tip. Need to determine the appropriate value for `@e` for a flight when you have the departure and arrival datetimes but the timezones are different?  The date calculator (shortcut F5) will accept timezone information so that, e.g., entering the arrival time minus the departure time
+
+    4/20 6:15p US/Central - 4/20 4:50p Asia/Shanghai
+
+into the calculator would give
+
+    14h25m
+
+as the flight time.
+
+
 ## @f done[; due]
 
 Datetimes; tasks, delegated tasks and task groups only. When a task is completed an `@f done` entry is added to the task. When the task has a due date, `; due` is appended to the entry. Similarly, when a job from a task group is completed in etm,  an `&f done` or `&f done; due` entry is appended to the job and it is removed from the list of prerequisites for the other jobs. In both cases `done` is the completion datetime and `due`, if added, is the datetime that the task or job was due. The completed task or job is shown as finished on the completion date. When the last job in a task group is finished an `@f done` or `@f done; due` entry is added to the task group itself reflecting the datetime that the last job was done and, if the task group is repeating, the `&f` entries are removed from the individual jobs.
@@ -97,7 +108,10 @@ The repetition that was due on 10/25 was completed on 10/24. The next repetition
 
 ## @g goto
 
-The path to a file or a URL to be opened using the system default application when the user presses *Control-G* in the GUI.
+The path to a file or a URL to be opened using the system default application when the user presses *Control-G* in the GUI. E.g., here's a task to join the etm discussion group with the URL of the group as the link. In this case, pressing *Control-G* would open the URL in your default browser.
+
+    - join the etm discussion group @s +1/1
+      @g http://groups.google.com/group/eventandtaskmanager/topics
 
 Tip. Have a pdf file with the agenda for a meeting? Stick an @g entry with the path to the file in the event you create for the meeting. Then whenever the meeting is selected, *Control-G* will bring up the agenda.
 
@@ -257,6 +271,12 @@ Actions only. A currency amount such as `27.50`. Used in conjunction with @w abo
 ## @z time zone
 
 The time zone of the item, e.g., US/Eastern. The starting and other datetimes in the item will be interpreted as belonging to this time zone.
+
+Tip. You live in the US/Eastern time zone but a flight that departs Sydney on April 20 at 9pm bound for New York with a flight duration of 14 hours and 30 minutes. The hard way is to convert this to US/Eastern time and enter the flight using that time zone. The easy way is to use Australia/Sydney and skip the conversion:
+
+    * Sydney to New York @s 2014-04-23 9pm @e 14h30m @z Australia/Sydney
+
+This flight will be displayed while you're in the Australia/Sydney time zone as extending from 9pm on April 23 until 11:30am on April 24, but in the US/Eastern time zone it will be displayed as extending from 7am until 9:30pm on April 23.
 
 ## @+ include
 

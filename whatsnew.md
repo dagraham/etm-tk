@@ -45,6 +45,8 @@ The goals and initial results for this version:
 
         - Double clicking or control clicking a free area in the week view begins a dialog to create a new event for that date and time.
 
+        - Get a list of busy or free periods for the active week by pressing, respectively, *Ctrl-B* or *Ctrl-F*.
+
     See Views under Menubar below for a complete list of the available views.
 
 

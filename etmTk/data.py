@@ -891,22 +891,32 @@ def date_calculator(s, options=None):
         where x is a datetime and y is either a datetime or a timeperiod
     :param s:
     """
-    date_calc_regex = re.compile(r'^\s*(.+)([+-])(.*)$')
     m = date_calc_regex.match(s)
     if not m:
-        return "", 'error: could not parse "%s"' % s
+        return 'Could not parse "%s"' % s
     x, pm, y = [z.strip() for z in m.groups()]
+    print("x: {0}; pm: {1}; y: {2}".format(x, pm, y))
+    xz = ''
+    nx = timezone_regex.match(x)
+    if nx:
+        x, xz = nx.groups()
+    yz = ''
+    ny = timezone_regex.match(y)
+    if ny:
+        y, yz = ny.groups()
+    # print("x: {0}; xz: {1}; pm: {2}; y: {3}; yz: {4}".format(x, xz, pm, y, yz))
     try:
-        dt_x = parse(parse_dtstr(x))
+        dt_x = parse(parse_dtstr(x, timezone=xz))
+
         pmy = "%s%s" % (pm, y)
         if period_string_regex.match(pmy):
             return fmt_datetime(dt_x + parse_period(pmy), options)
         else:
-            dt_y = parse(parse_dtstr(y))
+            dt_y = parse(parse_dtstr(y, timezone=yz))
             if pm == '-':
                 return fmt_period(dt_x - dt_y)
             else:
-                return "", 'error: datetimes cannot be added'
+                return 'error: datetimes cannot be added'
     except ValueError:
         return 'error parsing "%s"' % s
 
@@ -1019,7 +1029,9 @@ week_regex = re.compile(r'[+-]?(\d+)w', flags=re.I)
 day_regex = re.compile(r'[+-]?(\d+)d', flags=re.I)
 hour_regex = re.compile(r'[+-]?(\d+)h', flags=re.I)
 minute_regex = re.compile(r'[+-]?(\d+)m', flags=re.I)
+date_calc_regex = re.compile(r'^\s*(.+)\s*([+-])\s*(.+)\s*$')
 period_string_regex = re.compile(r'^\s*([+-]?(\d+[wWdDhHmM]?)+\s*$)')
+timezone_regex = re.compile(r'^(.+)\s+([A-Za-z]+/[A-Za-z]+)$')
 int_regex = re.compile(r'^\s*([+-]?\d+)\s*$')
 leadingzero = re.compile(r'(?<!(:|\d|-))0+(?=\d)')
 trailingzeros = re.compile(r'(:00)')
@@ -1131,7 +1143,11 @@ def get_options(d=''):
         tmp = locale.getdefaultlocale()
         dgui_encoding = tmp[1]
 
-    dgui_encoding = codecs.lookup(dgui_encoding).name
+    # dgui_encoding = codecs.lookup(dgui_encoding).name
+    try:
+        dgui_encoding = codecs.lookup(dgui_encoding).name
+    except (TypeError, LookupError):
+        dgui_encoding = codecs.lookup(locale.getpreferredencoding()).name
 
     time_zone = get_localtz()[0]
 

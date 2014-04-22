@@ -42,6 +42,17 @@ then the data file would contain
 
 but this item would be displayed as starting at ` 8:50am 2013-02-15` on the system in the `US/Eastern` time zone.
 
+Tip. Need to determine the flight time when the departing timezone is different that the arriving timezone?  The date calculator (shortcut F5) will accept timezone information so that, e.g., entering the arrival time minus the departure time
+
+    4/20 6:15p US/Central - 4/20 4:50p Asia/Shanghai
+
+into the calculator would give
+
+    14h25m
+
+as the flight time.
+
+
 ## Anniversary substitutions
 
 An anniversary substitution is an expression of the form `!YYYY!` that appears in an item summary. Consider, for example, the occassion

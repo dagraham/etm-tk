@@ -265,7 +265,7 @@ Note: Items that you have "commented out" by beginning the item with a `#` will 
 
 Events and occasions displayed graphically by week. Left and right cursor keys change, respectively, to the previous and next week. Up and down cursor keys select, respectively, the previous and next items within the given week. Items can also be selected by moving the mouse over the item. The summary and time period for the selected item is displayed at the bottom of the screen. Pressing return with an item selected or double-clicking an item opens a context menu. Control-clicking an unscheduled time opens a dialog to create an event for that date and time.
 
-Press *Ctrl-B* to display a list of busy times for the selected week.
+Tip. Press *Ctrl-B* to display a list of busy times for the selected week or *Ctrl-F* and provide the needed period in minutes to display a list of free times that would accomodate the requirement.
 
 ## Creating New Items
 
