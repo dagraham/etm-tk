@@ -609,7 +609,7 @@ class DialogWindow(Dialog):
     # noinspection PyAttributeOutsideInit
     def body(self, master):
         self.entry = Entry(master)
-        self.entry.pack(side="bottom", padx=5, pady=5)
+        self.entry.pack(side="bottom", padx=5, pady=5, fill=X)
         Label(master, text=self.prompt, justify='left', highlightbackground=BGCOLOR, background=BGCOLOR).pack(side="top", fill=tkinter.BOTH, expand=1, padx=10, pady=5)
         if self.default is not None:
             self.entry.insert(0, self.default)
