@@ -400,31 +400,6 @@ When displaying free times in week view you will be prompted for the shortest pe
 
 Tip: Need to tell someone when you're free in a given week? Jump to that week in week view, press *Ctrl-F*, set the minimum period and then copy and paste the resulting list into an email.
 
-### Mercurial commands
-
-If *Mercurial* is installed on your system, then the default versions of the `hg` commands given below should work without modification. If you want to use another version control system, then enter the commands for your version control system. `{repo}` will be replaced with the internally generated name of the repository in `hg_commit` and `hg_history`, `{file}` with the internally generated file name in `hg_history`, `{mesg}` with the internally generated commit message in `hg_commit` and `{0}` with the name of the repository in `hg_init`.
-
-#### hg_commit
-
-The command to commit changes to the repository.
-
-    hg_commit: hg commit -q -A -R {repo} -m '{mesg}'
-
-
-#### hg_history
-
-The command to show the history of changes for a particular data file.
-
-    hg_history: 'hg log --style compact \
-        --template `{rev}: {desc}\n` \
-        -R {repo} -p {numchanges}'
-
-#### hg_init
-
-The command to initialize or create a repository.
-
-    hg_init: hg init {0}
-
 ### iCalendar files
 
 #### icscal_file
@@ -518,6 +493,12 @@ Required settings for text messaging in alerts. Enter the 10-digit area code and
     sundayfirst: false
 
 The setting affects only the twelve month calendar display.
+
+### vcs_system
+
+    vcs_system: [git|mercurial]
+
+If you specify either git or mercurial here (and have it installed on your system), then etm will automatically commit any changes you make to any of your data files. The history of these changes is available in the GUI with the show changes command (*Ctrl-H*) and you can, of course, use any git or mercurial commands in your terminal to, for example, restore a previous version of a file.
 
 ### weeks_after
 

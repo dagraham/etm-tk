@@ -714,12 +714,27 @@ def pathSearch(filename):
 def getMercurial():
     hg = pathSearch('hg')
     if hg:
-        base_command = """%s -R {repp}""" % hg
+        base_command = """%s -R {repo}""" % hg
         history_command = """\
-%s log --style compact --template "{rev}: {desc}\\n" -R {repo} -p {numchanges}
-""" % hg
+%s log --style compact --template "{desc}\\n" -R {repo} -p {numchanges} {file}""" % hg
         commit_command = '%s commit -q -A -R {repo} -m "{mesg}"' % hg
         init_command = '%s init {0}' % hg
+    else:
+        base_command = history_command = commit_command = init_command = ''
+    return base_command, history_command, commit_command, init_command
+
+def getGit():
+    git = pathSearch('git')
+    if git:
+        base_command = """%s -C {repo}""" % git
+        history_command = """\
+%s -C {repo} log --pretty=format:"%%ar, %%an %%s" -p {numchanges} {file}""" % git
+        init = '%s init {repo}' % git
+        add = '%s -C {repo} add */\*.txt' % git
+        commit = '%s -C {repo} commit -a -m "{mesg}"' % git
+        commit_command = '%s && %s' % (add, commit)
+        init_command = '%s; %s; %s' % (init, add, commit)
+        logger.debug('init_command: {0}'.format(init_command))
     else:
         base_command = history_command = commit_command = init_command = ''
     return base_command, history_command, commit_command, init_command
@@ -1158,7 +1173,7 @@ def get_options(d=''):
     else:  # linux
         default_fontsize = 10
 
-    hg_command, hg_history, hg_commit, hg_init = getMercurial()
+    default_vcs = 'git'
 
     default_freetimes = {'opening': 8*60, 'closing': 17*60, 'minimum': 30, 'buffer': 15}
 
@@ -1205,10 +1220,6 @@ def get_options(d=''):
         'filechange_alert': '',
         'fontsize': default_fontsize,
         'freetimes' : default_freetimes,
-        'hg_command': hg_command,
-        'hg_commit': hg_commit,
-        'hg_history': hg_history,
-        'hg_init': hg_init,
         'icscal_file': os.path.join(etmdir, 'etmcal.ics'),
         'icsitem_file': os.path.join(etmdir, 'etmitem.ics'),
         'icsimport_dir': etmdir,
@@ -1242,6 +1253,7 @@ def get_options(d=''):
         'sms_subject': '!time_span!',
 
         'sundayfirst': False,
+        'vcs_system': default_vcs,
         'weeks_after': 52,
         'yearfirst': yearfirst}
 
@@ -1347,6 +1359,26 @@ def get_options(d=''):
         fo.close()
 
     # add derived options
+    if options['vcs_system'] == 'git':
+        git_command, git_history, git_commit, git_init = getGit()
+        if git_command:
+            options['vcs'] = {'command': git_command, 'history': git_history, 'commit': git_commit, 'init': git_init, 'dir': '.git', 'limit': '-n', 'file': ""}
+            logger.info('{0} options: {1}'.format(options['vcs_system'], options['vcs']))
+        else:
+            logger.warn('could not setup "git" vcs')
+            options['vcs'] = {}
+    elif options['vcs_system'] == 'mercurial':
+        hg_command, hg_history, hg_commit, hg_init = getMercurial()
+        if hg_command:
+            options['vcs'] = {'command': hg_command, 'history': hg_history, 'commit': hg_commit, 'init': hg_init, 'dir': '.hg', 'limit': '-l', 'file': ' -f '}
+            logger.info('{0} options: {1}'.format(options['vcs_system'], options['vcs']))
+        else:
+            logger.warn('could not setup "mercurial" vcs')
+            options['vcs'] = {}
+    else:
+        options['vcs'] = {}
+
+
     (options['daybegin_fmt'], options['dayend_fmt'], options['reprtimefmt'],
      options['reprdatetimefmt'], options['etmdatetimefmt'],
      options['rfmt'], options['efmt']) = get_fmts(options)
@@ -1390,10 +1422,12 @@ def get_options(d=''):
         fo.write(REPORTS)
         fo.close()
 
-    if hg_init:
-        hg_dir = os.path.join(options['datadir'], ".hg")
-        if not os.path.isdir(hg_dir):
-            command = hg_init.format(options['datadir'])
+    if 'vcs' in options and options['vcs']:
+        vcs_dir = os.path.join(options['datadir'], options['vcs']['dir'])
+        if not os.path.isdir(vcs_dir):
+            init = options['vcs']['init']
+            command = init.format(repo=options['datadir'], mesg="initial commit")
+            logger.debug('initializing repo: {0}'.format(command))
             run_cmd(command)
 
     if use_locale:
@@ -4005,14 +4039,11 @@ def getPrevNext(l, cal_regex):
             curr = i
             prev = max(0, i - 1)
             nxt = min(len(l) - 1, j)
-            # print(d, 'is in the list', l[prev], l[curr], l[nxt])
         else:
             # d is not in the list
             curr = last_prev
             prev = last_prev
-            # print(d, 'is not in the list', l[prev], l[curr], l[nxt])
         prevnext[d] = [l[prev], l[curr], l[nxt]]
-        # print("prevnext", d, prevnext[d])
         d += oneday
     return prevnext
 
@@ -4984,7 +5015,6 @@ def updateViewData(f, bef, file2uuids=None, uuid2hash=None, options=None, file2d
                 sd = bt.pop(0)
                 bt = tuple(bt)
                 key = sd.isocalendar()
-                # print('busy', key, type(key), bt)
                 logger.debug('removing busytime: {0}: {1}'.format(key, bt))
                 remove_busytime(key, bt)
             for oc in _occasions:
@@ -4992,7 +5022,6 @@ def updateViewData(f, bef, file2uuids=None, uuid2hash=None, options=None, file2d
                 sd = oc.pop(0)
                 oc = tuple(oc)
                 key = sd.isocalendar()
-                # print('occasion', key, type(key), oc)
                 logger.debug('removing occasion: {0}: {1}'.format(key, oc))
                 remove_occasion(key, oc)
 
@@ -5696,18 +5725,18 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
         return lines, new_hsh
 
     def commit(self, file, mode=""):
-        if 'hg_commit' in self.options and self.options['hg_commit']:
+        if 'vcs' in self.options:
             # hack to avoid unicode in .format() for python 2
             mesg = u"{0}: {1}".format(mode, file)
             if python_version == 2 and type(mesg) == unicode:
-                cmd = self.options['hg_commit'].format(
+                cmd = self.options['vcs']['commit'].format(
                     repo=self.options['datadir'], mesg="XXX")
                 cmd = cmd.replace("XXX", mesg)
             else:
-                cmd = self.options['hg_commit'].format(
+                cmd = self.options['vcs']['commit'].format(
                     repo=self.options['datadir'], mesg="{0}: {1}".format(
                         mode, file))
-            logger.debug("hg commit: {0}".format(mesg))
+            logger.debug("vcs commit: {0}".format(mesg))
             os.system(cmd)
             return True
 
@@ -5719,7 +5748,8 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
         logger.debug('starting safe_save: {0}, {1}, cli: {2}'.format(file, mode, cli))
         try:
             fo = codecs.open(self.tmpfile, 'w', file_encoding)
-            fo.write(s)
+            # add a trailing newline to make diff happy
+            fo.write("{0}\n".format(s.rstrip()))
             fo.close()
         except:
             return 'error writing to file - aborted'

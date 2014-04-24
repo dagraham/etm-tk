@@ -2105,9 +2105,14 @@ Enter the shortest time period you want displayed in minutes.""")
         self.textWindow(parent=self, title='etm', prompt=res, opts=self.options)
 
     def showChanges(self, event=None):
+        if 'vcs' not in loop.options:
+            prompt("""An entry for 'vcs' in etmtk.cfg is required but missing.""")
+            self.textWindow(parent=self, title=title, prompt=str(p), opts=self.options)
+            return
+
         if self.itemSelected:
             f = self.itemSelected['fileinfo'][0]
-            fn = " -f {0}".format(os.path.join(self.options['datadir'], f))
+            fn = " {0}{1}".format(self.options['vcs']['file'], os.path.join(self.options['datadir'], f))
             title = _("Showing changes for {0}.").format(f)
 
         else:
@@ -2132,11 +2137,11 @@ or 0 to display all changes.""").format(title)
             # all changes
             numstr = ""
         else:
-            numstr = "-l {0}".format(depth)
-        command = loop.options['hg_history'].format(
+            numstr = "{0} {1}".format(loop.options['vcs']['limit'], depth)
+        command = loop.options['vcs']['history'].format(
             repo=loop.options['datadir'],
             numchanges=numstr, rev="{rev}", desc="{desc}", file=fn)
-        logger.debug('history command: {0}'.format(command))
+        logger.debug('vcs history command: {0}'.format(command))
         p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
                              universal_newlines=True).stdout.read()
         if not p:

@@ -22,7 +22,24 @@
     <img src="images/completion.gif"/></a>
     </td>
     <td>
-    <img src="images/report-a.gif"/></a>
+    <center><img src="images/date_calculator_entry.gif"/></a>
+    <img src="images/date_calculator_result.gif"/></a></center>
+    </td>
+</tr>
+<tr>
+    <td>
+    <center><img src="images/report-a.gif"/></a></center>
+    </td>
+    <td>
+    <center><img src="images/report-d3.gif"/></a></center
+    </td>
+</tr>
+<tr>
+    <td>
+    <center><img src="images/report-text.gif"/></a></center>
+    </td>
+    <td>
+    <center><img src="images/report-csv.gif"/></a></center>
     </td>
 </tr>
 </table>

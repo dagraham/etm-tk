@@ -42,12 +42,14 @@ return $retval
 
 logfile="prep_dist.txt"
 # get the current major.minor.patch tag
-vinfo=`cat etmTk/v.py | head -1 | sed 's/\"//g' | sed 's/^.*= *//g'`
+vinfo=`cat etmTk/v.py | head -1 | sed 's/\"//g' | sed 's/^.*= *//g' | sed 's/-.*$//g'`
 now=`date`
-status=`hg status`
-version=`hg tip --template '{rev}'`
-versioninfo=`hg tip --template '{rev}: {date|isodate}'`
-echo "Started: $now" > $logfile
+#status=`hg status`
+status=`git status -s`
+#version=`hg tip --template '{rev}'`
+#versioninfo=`hg tip --template '{rev}: {date|isodate}'`
+versioninfo=`git log --pretty=format:"%ai" -n 1`
+echo "Started: $now" >> $logfile
 #echo "Current version: $vinfo ($versioninfo)" >> $logfile
 
 echo "The current version number is $vinfo ($versioninfo)."
@@ -63,24 +65,32 @@ if asksure; then
     tag=$major.$minor.$newpatch
     change="incrementing the current version $vinfo.
 Edit etmTk/v.py to change the major and minor numbers."
-    hg tag $tag -f
-    echo "version = \"$tag\"" > /Users/dag/etm-tk/etmTk/v.py
+#    hg tag $tag -f
+    git tag -a $tag -m "$versioninfo" HEAD
     echo "Updated to $tag [$versioninfo]" >> $logfile
 else
-    tag=$major.$minor.$patch
+#    tag=$major.$minor.$patch
+#    atag=`git describe`
+    tag=`git describe | sed 's/-[^-]*$//g'`  # something like 0.0.65-2
     change="retaining version $vinfo."
-    echo "Kept $tag [$versioninfo]" >> $logfile
+    echo "Using $tag [$versioninfo]" >> $logfile
     # hg tag $tag -f
 fi
+echo "version = \"$tag\"" > /Users/dag/etm-tk/etmTk/v.py
 echo "version = \"$tag [$versioninfo]\"" > etmTk/version.py
 echo "$tag [$versioninfo]" > version.txt
 
 echo $tag > etmTk/v.txt
 
 # echo "RECENT CHANGES" > /Users/dag/etm-qt/CHANGES
-echo "RECENT CHANGES" > CHANGES
-hg log --template '{rev} {date|shortdate} [{tags}]\n\t{desc|fill68|tabindent}\n' -r tip:-30 >> "$home/CHANGES"
-cp CHANGES ./etmTk/CHANGES
+echo "RECENT CHANGES" > CHANGES.txt
+#hg log --template '{rev} {date|shortdate} [{tags}]\n\t{desc|fill68|tabindent}\n' -r tip:-30 >> "$home/CHANGES"
+git log --pretty=format:"%ai: %an%n%w(70,4,8)%s" -n 30 >> "$home/CHANGES.txt"
+# TODO: remove this eventually
+echo "" >> $home/CHANGES.txt
+echo "### mercurial logs ###" >> $home/CHANGES.txt
+hg log --template '{rev} {date|shortdate} [{tags}]\n\t{desc|fill68|tabindent}\n' -r tip:-30 >> "$home/CHANGES.txt"
+cp CHANGES.txt ./etmTk/CHANGES
 
 echo "Creating $tag from tip: $version - $change"
 echo "Edit etmTk/v.py to change the major and minor numbers."
@@ -90,8 +100,8 @@ echo
 #"$home"/mk_docs.sh
 # update the sample files
 # cp /Users/dag/etm-qt/etm-sample/data/shared/sample_datafile.txt.orig /Users/dag/etm-qt/etm-sample/data/shared/sample_datafile.txt
-echo "Updating etm-sample"
-cp "$home/etm-sample/data/shared/sample_datafile.txt.orig" "$home/etm-sample/data/shared/sample_datafile.txt"
+#echo "Updating etm-sample"
+#cp "/Users/dag/etm-sample/data/shared/sample_datafile.txt.orig" "$home/etm-sample/data/shared/sample_datafile.txt"
 
 cd "$home/etmTk"
 pwd

@@ -606,7 +606,6 @@ class TextVariableWindow(Dialog):
 
 class DialogWindow(Dialog):
     # master will be a frame in Dialog
-    # noinspection PyAttributeOutsideInit
     def body(self, master):
         self.entry = Entry(master)
         self.entry.pack(side="bottom", padx=5, pady=5, fill=X)
