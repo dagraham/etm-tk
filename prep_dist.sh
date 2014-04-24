@@ -86,9 +86,10 @@ echo "$tag [$versioninfo]" > version.txt
 echo $tag > etmTk/v.txt
 
 # echo "RECENT CHANGES" > /Users/dag/etm-qt/CHANGES
-echo "RECENT CHANGES" > CHANGES.txt
+echo "CHANGES: $now " > CHANGES.txt
 #hg log --template '{rev} {date|shortdate} [{tags}]\n\t{desc|fill68|tabindent}\n' -r tip:-30 >> "$home/CHANGES"
-git log --pretty=format:"%ai: %an%n%w(70,4,8)%s" -n 30 >> "$home/CHANGES.txt"
+#git log --pretty=format:"%ai: %an%n%w(70,4,8)%s" -n 30 >> "$home/CHANGES.txt"
+git log --pretty=format:'- %ar%d: %an%n%w(70,3,3)%s' >> "$home/CHANGES.txt"
 # TODO: remove this eventually
 echo "" >> $home/CHANGES.txt
 #echo "### mercurial logs ###" >> $home/CHANGES.txt

@@ -728,7 +728,9 @@ def getGit():
     if git:
         base_command = """%s -C {repo}""" % git
         history_command = """\
-%s -C {repo} log --pretty=format:"%%ar, %%an %%s" -p {numchanges} {file}""" % git
+%s -C {repo} log --pretty=format:'- %%ar%%d: %%an%%n%%w(70,4,4)%s' >> "$home/CHANGES.txt"
+
+        """
         init = '%s init {repo}' % git
         add = '%s -C {repo} add */\*.txt' % git
         commit = '%s -C {repo} commit -a -m "{mesg}"' % git
@@ -1173,9 +1175,18 @@ def get_options(d=''):
     else:  # linux
         default_fontsize = 10
 
-    default_vcs = 'git'
 
     default_freetimes = {'opening': 8*60, 'closing': 17*60, 'minimum': 30, 'buffer': 15}
+
+    git_command, git_history, git_commit, git_init = getGit()
+    hg_command, hg_history, hg_commit, hg_init = getMercurial()
+
+    if hg_command:
+        default_vcs = 'mercurial'
+    elif git_command:
+        default_vcs = 'git'
+    else:
+        default_vcs = ''
 
     default_options = {
         'action_markups': {'default': 1.0, },
@@ -1360,7 +1371,6 @@ def get_options(d=''):
 
     # add derived options
     if options['vcs_system'] == 'git':
-        git_command, git_history, git_commit, git_init = getGit()
         if git_command:
             options['vcs'] = {'command': git_command, 'history': git_history, 'commit': git_commit, 'init': git_init, 'dir': '.git', 'limit': '-n', 'file': ""}
             logger.info('{0} options: {1}'.format(options['vcs_system'], options['vcs']))
@@ -1368,7 +1378,6 @@ def get_options(d=''):
             logger.warn('could not setup "git" vcs')
             options['vcs'] = {}
     elif options['vcs_system'] == 'mercurial':
-        hg_command, hg_history, hg_commit, hg_init = getMercurial()
         if hg_command:
             options['vcs'] = {'command': hg_command, 'history': hg_history, 'commit': hg_commit, 'init': hg_init, 'dir': '.hg', 'limit': '-l', 'file': ' -f '}
             logger.info('{0} options: {1}'.format(options['vcs_system'], options['vcs']))

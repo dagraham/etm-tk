@@ -145,9 +145,59 @@ or
 
 from this directory.
 
-### Installing Mercurial
+### Installing Git or Mercurial
 
-**Optional but strongly recommended!**
+*Having one of these version control systems is optional but strongly recommended!*
+
+With either progam installed, etm will automatically commit any change made to any data file. You can see the history of your changes either to a specific file or to any file from the GUI and, of course, you have the entire range of possibilities for showing changes, restoring previous versions and so forth from the command line.
+
+#### Git
+
+Download Git from
+
+    http://git-scm.com/downloads
+
+Install git and then in a terminal enter your personal information
+
+    $ git config --global user.name "John Doe"
+    $ git config --global user.email johndoe@example.com
+
+the editor you would like to use
+
+    $ git config --global core.editor vim
+
+and the diff program
+
+    $ git config --global merge.tool vimdiff
+
+Usage information can be obtained in several ways from the terminal
+
+    $ git help <verb>
+    $ git <verb> --help
+    $ man git-<verb>
+
+Finally, *Pro Git* by Scott Chacon is available to read or download at:
+
+    http://git-scm.com/book/en
+
+If you have been using Mercurial and would like to give Git a try, you can import your etm Mercurial records into Git as follows:
+
+    $ cd
+    $ git clone git://repo.or.cz/fast-export.git
+    $ git init new_temp_repo
+    $ cd new_temp_repo
+    $ ~/fast-export/hg-fast-export.sh -r /path/to/etm/datadir
+    $ git checkout HEAD
+
+If an "unnamed head" error is reported, try adding `--force` to the end of the fast-export line.
+
+At this point, you should have a copy of your etm datadir in `new_temp_repo` along with a directory, `.git`, that you can copy to the root of your etm datadir where it will join its Mercurial counterpart, `.hg`. You can then delete `new_temp_repo`.
+
+You can now open `etmtk.cfg` for editing and change the setting for `vcs_system` to
+
+    vcs_system: git
+
+#### Mercurial
 
 Download Mercurial from
 
@@ -158,8 +208,6 @@ install it and then create the file *~/.hgrc*, if it doesn't already exist, with
     [ui]
     username = Your Name <your email address>
 
-Mercurial is used to keep a record of changes to your etm data
-files.
 
 ### New etm users
 
