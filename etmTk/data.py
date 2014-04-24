@@ -728,9 +728,8 @@ def getGit():
     if git:
         base_command = """%s -C {repo}""" % git
         history_command = """\
-%s -C {repo} log --pretty=format:'- %%ar%%d: %%an%%n%%w(70,4,4)%s' >> "$home/CHANGES.txt"
-
-        """
+%s -C {repo} log --pretty=format:'- %%ar: %%an%%n%%w(70,0,4)%%s' -U1 {numchanges} {file}\
+        """ % git
         init = '%s init {repo}' % git
         add = '%s -C {repo} add */\*.txt' % git
         commit = '%s -C {repo} commit -a -m "{mesg}"' % git
