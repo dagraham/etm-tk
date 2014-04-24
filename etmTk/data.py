@@ -13,6 +13,8 @@ import logging
 import logging.config
 logger = logging.getLogger()
 
+# TODO: put beginbys with contexts into Next
+
 def setup_logging(level, etmdir=None):
     """
     Setup logging configuration. Override root:level in
