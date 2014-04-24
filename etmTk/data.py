@@ -913,7 +913,7 @@ def date_calculator(s, options=None):
     if not m:
         return 'Could not parse "%s"' % s
     x, pm, y = [z.strip() for z in m.groups()]
-    print("x: {0}; pm: {1}; y: {2}".format(x, pm, y))
+    # print("x: {0}; pm: {1}; y: {2}".format(x, pm, y))
     xz = ''
     nx = timezone_regex.match(x)
     if nx:
@@ -1266,6 +1266,7 @@ def get_options(d=''):
 
         'sundayfirst': False,
         'vcs_system': default_vcs,
+        'vcs_commands': {'command': '', 'commit': '', 'dir': '', 'file': '', 'history': '', 'init': '', 'limit': ''},
         'weeks_after': 52,
         'yearfirst': yearfirst}
 
@@ -1367,7 +1368,7 @@ def get_options(d=''):
         # save options to newconfig even if user options came from oldconfig
         logger.info('Writing etmtk.cfg changes to {0}'.format(newconfig))
         fo = codecs.open(newconfig, 'w', options['encoding']['file'])
-        yaml.safe_dump(options, fo)
+        yaml.safe_dump(options, fo, default_flow_style=False)
         fo.close()
 
     # add derived options
@@ -1387,6 +1388,14 @@ def get_options(d=''):
             options['vcs'] = {}
     else:
         options['vcs'] = {}
+
+    # overrule the defaults if any custom settings are given
+    if options['vcs_commands']:
+        for key in options['vcs_commands']:
+            if options['vcs_commands'][key]:
+                options['vcs'][key] = options['vcs_commands'][key]
+                # print('set', key, options['vcs'][key])
+    # print(yaml.dump(options['vcs'], default_flow_style=False))
 
 
     (options['daybegin_fmt'], options['dayend_fmt'], options['reprtimefmt'],
