@@ -808,6 +808,22 @@ class App(Tk):
         self.updateClock()
         # showView will be called from updateClock
         self.updateAlerts()
+        self.etmgeo = os.path.join(loop.options['etmdir'], ".etmgeo")
+        self.restoreGeometry()
+
+    def saveGeometry(self):
+        fo = open(self.etmgeo, 'w')
+        fo.write(self.geometry())
+        fo.close()
+
+    def restoreGeometry(self):
+        if os.path.isfile(self.etmgeo):
+            fo = open(self.etmgeo, "r")
+            lines = fo.readlines()
+            fo.close()
+            if lines:
+                self.geometry(lines[0])
+
 
     def closeItemMenu(self, event=None):
         if self.weekly:
@@ -877,6 +893,8 @@ class App(Tk):
             prompt=_("Do you really want to quit?"),
             parent=self)
         if ans:
+            print('geometry:', self.geometry())
+            self.saveGeometry()
             self.destroy()
 
     def donothing(self, e=None):
@@ -2135,6 +2153,7 @@ or 0 to display all changes.""").format(title)
             numstr = ""
         else:
             numstr = "{0} {1}".format(loop.options['vcs']['limit'], depth)
+        logger.debug('history command: {0}'.format(loop.options['vcs']['history']))
         command = loop.options['vcs']['history'].format(
             repo=loop.options['datadir'],
             numchanges=numstr, rev="{rev}", desc="{desc}", file=fn)

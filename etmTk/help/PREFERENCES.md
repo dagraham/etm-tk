@@ -494,6 +494,35 @@ Required settings for text messaging in alerts. Enter the 10-digit area code and
 
 The setting affects only the twelve month calendar display.
 
+### vcs_commands
+
+    vcs_commands:
+      command: ''
+      commit: ''
+      dir: ''
+      file: ''
+      history: ''
+      init: ''
+      limit: ''
+
+Default values will be provided for these settings based on the choice of `vcs_system` below. Any of the settings that you define here will overrule the defaults.
+
+Here, for example, are the default values of these settings for git on OS X:
+
+    vcs_commands:
+        command: '/usr/bin/git -C {repo}'
+        commit: '/usr/bin/git -C {repo} add */\*.txt && /usr/bin/git -C {repo}
+            commit -a -m "{mesg}"'
+        dir: '.git'
+        file: ''
+        history: '/usr/bin/git -C {repo} log --pretty=format:"- %ar:
+            %an%n%w(70,0,4)%s" -U1  {numchanges} {file}'
+        init: '/usr/bin/git init {repo}; /usr/bin/git -C {repo} add */\*.txt;
+            /usr/bin/git -C {repo} commit -a -m "{mesg}"'
+        limit: '-n'
+
+In these settings, `{repo}` will be replaced with your etmdata directory, `{mesg}` with an internally generated commit message, `{numchanges}` with an expression that depends upon `limit` that determines  how many changes to show and, when a file is selected, `{file}` will be replaced with the corresponding path. Leave these settings empty to use the defaults.
+
 ### vcs_system
 
     vcs_system: [git|mercurial]
