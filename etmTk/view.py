@@ -342,7 +342,7 @@ class App(Tk):
         l, c = commandShortcut('f')
         label=_("Set outline filter")
         viewmenu.add_command( label=label, underline=1,  command=self.setFilter)
-        self.bind(c, lambda event: self.after(AFTER, self.setFilter))
+        self.bind(c, self.setFilter)
         if not mac:
             viewmenu.entryconfig(5, accelerator=l)
         self.add2menu(path, (label, l))
@@ -408,7 +408,7 @@ class App(Tk):
         viewmenu.add_command(label=label, underline=5, command=self.showFreePeriods)
         if not mac:
             viewmenu.entryconfig(13, accelerator=l)
-        self.bind(c, lambda event: self.after(AFTER, self.showFreePeriods))
+        # set binding in showWeekly
         self.add2menu(path, (label, l))
 
         # viewmenu.add_cascade(label=path, menu=viewmenu, underline=0)
@@ -893,7 +893,6 @@ class App(Tk):
             prompt=_("Do you really want to quit?"),
             parent=self)
         if ans:
-            print('geometry:', self.geometry())
             self.saveGeometry()
             self.destroy()
 
@@ -1605,12 +1604,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
         for i in [3, 4, 5, 7]:
             self.viewmenu.entryconfig(i, state="normal")
-
-        # self.fltr.configure(state="normal")
-        # self.fltrbtn.configure(state="normal")
-        # if self.filter_active:
-        #     self.fltr.configure(bg="white")
-
+        self.bind("<Control-f>", self.setFilter)
 
     def showWeekly(self, event=None, chosen_day=None):
         """
@@ -1656,6 +1650,8 @@ Enter the shortest time period you want displayed in minutes.""")
         # canvas.bind('<space>', (lambda e: self.showWeek(event=e, week=0)))
         canvas.bind('<Up>', (lambda e: self.selectId(event=e, d=-1)))
         canvas.bind('<Down>', (lambda e: self.selectId(event=e, d=1)))
+
+        self.bind("<Control-f>", lambda event: self.after(AFTER, self.showFreePeriods))
 
         if self.options['ampm']:
             self.hours = ["{0}am".format(i) for i in range(7,12)] + ['12pm'] + ["{0}pm".format(i) for i in range(1,12)]

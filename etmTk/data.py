@@ -1855,7 +1855,7 @@ def makeTree(list_of_lists, view=None, calendars=None, sort=True, fltr=None):
             continue
         if filter_regex is not None:
             s = "{0} {1}".format(pc[-1][2], " ".join(pc[1:-1]))
-            logger.debug('looing in "{0}"'.format(s))
+            logger.debug('looking in "{0}"'.format(s))
             m = filter_regex.search(s)
             # m = filter_regex.search(pc[-1][2])
             # ok if (mtch and m) or (not mtch and not m):
