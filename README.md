@@ -3,23 +3,23 @@
 <table align="center" hspace="10" vspace="10" width="100%">
 <tr>
     <td>
-    <img src="images/agenda.gif" /></a>
+    <center><img src="images/agenda.gif" /></a></center>
     </td>
     <td>
-    <img src="images/context.gif" /></a>
-    </td>
-</tr>
-<tr>
-    <td>
-    <img src="images/day.gif"/></a>
-    </td>
-    <td>
-    <img src="images/week.gif"/></a>
+    <center><img src="images/context.gif" /></a></center>
     </td>
 </tr>
 <tr>
     <td>
-    <img src="images/completion.gif"/></a>
+    <center><img src="images/day.gif"/></a></center>
+    </td>
+    <td>
+    <center><img src="images/week.gif"/></a></center>
+    </td>
+</tr>
+<tr>
+    <td>
+    <center><img src="images/completion.gif"/></a></center>
     </td>
     <td>
     <center><img src="images/date_calculator_entry.gif"/></a>
