@@ -4,7 +4,7 @@
 cd /Users/dag/etm-tk
 
 echo "Processing what's new"
-pandoc -s -B ~/etm-tk/etmTk/style-before -f markdown -t html -o WhatsNew.html whatsnew.md
+pandoc -s -B ~/etm-tk/style-before -f markdown -t html -o WhatsNew.html whatsnew.md
 
 pandoc -s -f markdown -t plain -o WhatsNew.txt whatsnew.md
 
@@ -60,11 +60,10 @@ pdflatex UserManual.tex
 # pandoc -s --toc --toc-depth=3 -f markdown -t html -o help.html  help.md overview.md data.md views.md reports.md shortcuts.md preferences.md
 # pdflatex help.tex
 
-cd ..
+cd ~/etm-tk
 echo Creating HEADER and README
-cd ~/etm-tk/etmTk
 for file in HEADER README; do
-    pandoc -s --toc -B ~/etm-tk/etmTk/style-before -f markdown -t html -o $file.html $file.md
+    pandoc -s --toc -B ~/etm-tk/style-before -f markdown -t html -o $file.html $file.md
 done
 
 
