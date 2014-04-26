@@ -913,7 +913,6 @@ def date_calculator(s, options=None):
     if not m:
         return 'Could not parse "%s"' % s
     x, pm, y = [z.strip() for z in m.groups()]
-    # print("x: {0}; pm: {1}; y: {2}".format(x, pm, y))
     xz = ''
     nx = timezone_regex.match(x)
     if nx:
@@ -922,7 +921,6 @@ def date_calculator(s, options=None):
     ny = timezone_regex.match(y)
     if ny:
         y, yz = ny.groups()
-    # print("x: {0}; xz: {1}; pm: {2}; y: {3}; yz: {4}".format(x, xz, pm, y, yz))
     try:
         dt_x = parse(parse_dtstr(x, timezone=xz))
 
@@ -1213,6 +1211,8 @@ def get_options(d=''):
         'ampm': True,
         'auto_completions': os.path.join(etmdir, 'completions.cfg'),
         'shared_completions' : '',
+        'completions_width': 36,
+
         'calendars': [],
 
         'current_textfile': '',
@@ -1224,6 +1224,9 @@ def get_options(d=''):
 
         'datadir': default_datadir,
         'dayfirst': dayfirst,
+
+        'details_rows': 4,
+
         'edit_cmd': '',
         'email_template': "!time_span!\n!l!\n\n!d!",
         'etmdir': etmdir,
@@ -1394,8 +1397,6 @@ def get_options(d=''):
         for key in options['vcs_commands']:
             if options['vcs_commands'][key]:
                 options['vcs'][key] = options['vcs_commands'][key]
-                # print('set', key, options['vcs'][key])
-    # print(yaml.dump(options['vcs'], default_flow_style=False))
 
 
     (options['daybegin_fmt'], options['dayend_fmt'], options['reprtimefmt'],
@@ -4017,8 +4018,6 @@ def removeFromlist(l, item, expand=True):
             logger.exception('error expanding: {0}'.formt(item))
             return ()
     try:
-        # i = bisect.bisect_left(name2list[l], item)
-        # print('removing item', item, 'from', l)
         name2SL[l].remove(item)
     except:
         logger.exception("error adding:\n{0}\n\n    last added:\n{1}".format(item, last_added))

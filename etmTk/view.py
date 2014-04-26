@@ -708,8 +708,8 @@ class App(Tk):
 
         # topbar.pack(side="top", fill="both", expand=0, padx=0, pady=0)
 
-        self.panedwindow = panedwindow = PanedWindow(self, orient="vertical", sashwidth=6, sashrelief='flat')
-        self.toppane = toppane = Frame(self.panedwindow, bd=0, highlightthickness=0, background=BGCOLOR)
+        panedwindow = PanedWindow(self, orient="vertical", sashwidth=6, sashrelief='flat')
+        self.toppane = toppane = Frame(panedwindow, bd=0, highlightthickness=0, background=BGCOLOR)
         self.weekly = False
         self.tree = ttk.Treeview(toppane, show='tree', columns=["#1"], selectmode='browse')
         self.tree.column('#0', minwidth=200, width=260, stretch=1)
@@ -734,7 +734,7 @@ class App(Tk):
         self.tree.pack(fill="both", expand=1, padx=4, pady=0)
         panedwindow.add(self.toppane, padx=0, pady=0, stretch="first")
 
-        self.content = ReadOnlyText(panedwindow, wrap="word", padx=3, bd=2, relief="sunken", font=tkfixedfont, height=4, width=46, takefocus=False)
+        self.content = ReadOnlyText(panedwindow, wrap="word", padx=3, bd=2, relief="sunken", font=tkfixedfont, height=loop.options['details_rows'], width=46, takefocus=False)
         self.content.bind('<Escape>', self.cleartext)
         # self.content.bind('<space>', self.goHome)
         self.content.bind('<Tab>', self.focus_next_window)
@@ -773,6 +773,7 @@ class App(Tk):
 
         panedwindow.pack(side="top", fill="both", expand=1, padx=2, pady=0)
         panedwindow.configure(background=BGCOLOR)
+        self.panedwindow = panedwindow
 
         # set cal_regex here and update it in updateCalendars
         self.cal_regex = None
@@ -812,18 +813,19 @@ class App(Tk):
         self.restoreGeometry()
 
     def saveGeometry(self):
+        str = self.geometry()
         fo = open(self.etmgeo, 'w')
-        fo.write(self.geometry())
+        fo.write(str)
         fo.close()
 
     def restoreGeometry(self):
         if os.path.isfile(self.etmgeo):
             fo = open(self.etmgeo, "r")
-            lines = fo.readlines()
+            str = fo.read()
             fo.close()
-            if lines:
-                self.geometry(lines[0])
-
+            tup = [x.strip() for x in str.split(',')]
+            if tup:
+                self.geometry(tup[0])
 
     def closeItemMenu(self, event=None):
         if self.weekly:

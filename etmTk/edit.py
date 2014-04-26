@@ -591,6 +591,9 @@ class SimpleEditor(Toplevel):
         logger.debug("found match '{0}' in line '{1}'".format(match, line))
 
         self.autocompletewindow = acw = Toplevel(master=self.text)
+        acw.geometry("+%d+%d" % (self.text.winfo_rootx() + 50,
+                          self.text.winfo_rooty() + 50))
+
         self.autocompletewindow.wm_attributes("-topmost", 1)
 
         self.filterValue = StringVar(self)
@@ -600,7 +603,7 @@ class SimpleEditor(Toplevel):
         self.fltr.pack(side="top", fill="x") #, expand=1, fill=X)
         self.fltr.icursor(END)
 
-        self.listbox = listbox = Listbox(acw, exportselection=False, width=36)
+        self.listbox = listbox = Listbox(acw, exportselection=False, width=self.loop.options['completions_width'])
         listbox.pack(side="bottom", fill=BOTH, expand=True)
 
         self.autocompletewindow.bind("<Double-1>", self.completionSelected)

@@ -264,10 +264,15 @@ To edit the auto_completions file, press *Shift-Control-C* in the main window or
 
 ### shared_completions
 
-        shared_completions: ''
+     shared_completions: ''
 
 The absolute path to an optional file to be used to augment autocompletions. Each line in the file provides a possible completion.
 
+### completions_width
+
+    completions_width: 36
+
+The width in characters of the auto completions popup window.
 
 ### calendars
 
@@ -306,6 +311,12 @@ All etm data files are in this directory.
     dayfirst: false
 
 If dayfirst is False, the MM-DD-YYYY format will have precedence over DD-MM-YYYY in an ambiguous date. See also `yearfirst`.
+
+### details_rows
+
+    details_rows: 4
+
+The number of rows to display in the bottom, details panel of the main window.
 
 ### edit_cmd
 
