@@ -584,10 +584,18 @@ class App(Tk):
         self.now = get_current_time()
         self.today = self.now.date()
         self.options = loop.options
+
         tkfixedfont = tkFont.nametofont("TkFixedFont")
-        tkfixedfont.configure(size=self.options['fontsize'])
-        logger.debug("fixedfont: {0}".format(tkfixedfont.actual()))
+        if 'fontsize_fixed' in self.options and self.options['fontsize_fixed']:
+            tkfixedfont.configure(size=self.options['fontsize_fixed'])
+        logger.info("using fixedfont size: {0}".format(tkfixedfont.actual()['size']))
         self.tkfixedfont = tkfixedfont
+
+        tktreefont = tkFont.nametofont("TkDefaultFont")
+        if 'fontsize_tree' in self.options and self.options['fontsize_tree']:
+            tktreefont.configure(size=self.options['fontsize_tree'])
+        logger.info("using treefont size: {0}".format(tktreefont.actual()['size']))
+        self.tktreefont = tktreefont
 
         self.popup = ''
         self.value = ''
@@ -2832,6 +2840,7 @@ or 0 to expand all branches completely.""")
         self.count2id = {}
         self.addToTree(u'', tree[self.root], tree)
         loop.count2id = self.count2id
+        self.tree.tag_configure('treefont', font=self.tktreefont)
         # self.l.configure(state="normal")
         self.content.delete("0.0", END)
         # self.l.configure(state="disabled")
@@ -2890,7 +2899,7 @@ or 0 to expand all branches completely.""")
                 else:
                     col2 = s2or3(col2)
 
-                oid = self.tree.insert(parent, 'end', iid=self.count, text=col1, open=(depth <= max_depth), value=[col2], tags=(item_type))
+                oid = self.tree.insert(parent, 'end', iid=self.count, text=col1, open=(depth <= max_depth), value=[col2], tags=(item_type, 'treefont'))
                 # oid = self.tree.insert(parent, 'end', text=col1, open=True, value=[col2])
                 self.count2id[oid] = "{0}::{1}".format(uuid, dt)
                 if dt:

@@ -272,7 +272,7 @@ The absolute path to an optional file to be used to augment autocompletions. Eac
 
     completions_width: 36
 
-The width in characters of the auto completions popup window.
+The width in characters of the auto completions
 
 ### calendars
 
@@ -366,11 +366,17 @@ The encodings to be used for file IO, the GUI and terminal IO.
 
 The command to be executed when etm detects an external change in any of its data files. Leave this command empty to disable the notification.
 
-### fontsize
+### fontsize_fixed
 
-    fontsize: 13
+    fontsize_fixed: 0
 
-Use this font size in the gui treeviews.
+Use this font size in the details panel, editor and reports. Use 0 to keep the system default.
+
+### fontsize_tree
+
+    fontsize_tree: 0
+
+Use this font size in the gui treeviews. Use 0 to keep the system default.
 
 ### freetimes
 

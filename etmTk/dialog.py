@@ -620,7 +620,7 @@ class TextDialog(Dialog):
 
     def body(self, master):
         tkfixedfont = tkFont.nametofont("TkFixedFont")
-        tkfixedfont.configure(size=self.options['fontsize'])
+        tkfixedfont.configure(size=self.options['fontsize_fixed'])
         lines = self.prompt.split('\n')
         height = min(25, len(lines) + 1)
         lengths = [len(line) for line in lines]
