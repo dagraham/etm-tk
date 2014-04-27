@@ -46,7 +46,7 @@ for file in OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS; do
     sed '1 s/%/##/' <$file.md >> UserManual.md
 done
 echo Creating UserManual.html
-pandoc -s --toc --toc-depth=2 -B ~/etm-tk/etmTk/style-before -f markdown -t html -o UserManual.html  UserManual.md
+pandoc -s --toc --toc-depth=2 -B ~/etm-tk/style-before -f markdown -t html -o UserManual.html  UserManual.md
 
 echo Creating UserManual.tex
 pandoc -s --toc --toc-depth=2 -f markdown -t latex -o UserManual.tex UserManual.md
@@ -66,6 +66,9 @@ for file in HEADER README; do
     pandoc -s --toc -B ~/etm-tk/style-before -f markdown -t html -o $file.html $file.md
 done
 
+# readme needs editing after the following:
+# pandoc -s -f markdown -t plain HEADER.md > README.txt
+# pandoc -s -f markdown -t plain README.md >> README.txt
 
 ## TODO: fix INSTALL
 #cd /Users/dag/etm-tk/etmTk

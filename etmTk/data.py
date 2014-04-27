@@ -1167,14 +1167,6 @@ def get_options(d=''):
 
     time_zone = get_localtz()[0]
 
-    if windoz:
-        default_fontsize = 10
-    elif mac:
-        default_fontsize = 13
-    else:  # linux
-        default_fontsize = 10
-
-
     default_freetimes = {'opening': 8*60, 'closing': 17*60, 'minimum': 30, 'buffer': 15}
 
     git_command, git_history, git_commit, git_init = getGit()
@@ -1233,7 +1225,8 @@ def get_options(d=''):
         'encoding': {'file': dfile_encoding, 'gui': dgui_encoding,
                      'term': dterm_encoding},
         'filechange_alert': '',
-        'fontsize': default_fontsize,
+        'fontsize_fixed': 0,
+        'fontsize_tree': 0,
         'freetimes' : default_freetimes,
         'icscal_file': os.path.join(etmdir, 'etmcal.ics'),
         'icsitem_file': os.path.join(etmdir, 'etmitem.ics'),
@@ -1321,7 +1314,7 @@ def get_options(d=''):
     # logger.debug("user_options: {0}".format(user_options))
 
     for key in default_options:
-        if key == 'show_finished':
+        if key in ['show_finished', 'fontsize_fixed', 'fontsize_tree']:
             if key not in user_options:
                 # we want to allow 0 as an entry
                 options[key] = default_options[key]
@@ -1369,7 +1362,7 @@ def get_options(d=''):
     logger.debug('changed: {0}; user: {1}; options: {2}'.format(changed, (user_options != default_options), (options != default_options)))
     if changed or using_oldcfg:
         # save options to newconfig even if user options came from oldconfig
-        logger.info('Writing etmtk.cfg changes to {0}'.format(newconfig))
+        logger.debug('Writing etmtk.cfg changes to {0}'.format(newconfig))
         fo = codecs.open(newconfig, 'w', options['encoding']['file'])
         yaml.safe_dump(options, fo, default_flow_style=False)
         fo.close()
@@ -1378,14 +1371,14 @@ def get_options(d=''):
     if options['vcs_system'] == 'git':
         if git_command:
             options['vcs'] = {'command': git_command, 'history': git_history, 'commit': git_commit, 'init': git_init, 'dir': '.git', 'limit': '-n', 'file': ""}
-            logger.info('{0} options: {1}'.format(options['vcs_system'], options['vcs']))
+            logger.debug('{0} options: {1}'.format(options['vcs_system'], options['vcs']))
         else:
             logger.warn('could not setup "git" vcs')
             options['vcs'] = {}
     elif options['vcs_system'] == 'mercurial':
         if hg_command:
             options['vcs'] = {'command': hg_command, 'history': hg_history, 'commit': hg_commit, 'init': hg_init, 'dir': '.hg', 'limit': '-l', 'file': ' -f '}
-            logger.info('{0} options: {1}'.format(options['vcs_system'], options['vcs']))
+            logger.debug('{0} options: {1}'.format(options['vcs_system'], options['vcs']))
         else:
             logger.warn('could not setup "mercurial" vcs')
             options['vcs'] = {}

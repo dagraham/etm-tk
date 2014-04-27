@@ -82,7 +82,7 @@ class ReportWindow(Toplevel):
         self.options = options
         self.modified = False
         self.tkfixedfont = tkFont.nametofont("TkFixedFont")
-        self.tkfixedfont.configure(size=self.options['fontsize'])
+        self.tkfixedfont.configure(size=self.options['fontsize_fixed'])
         # self.text_value.trace_variable("w", self.setSaveStatus)
         btnwdth = 5
         topbar = Frame(self, bd=0, relief=FLAT)
@@ -243,7 +243,7 @@ class ReportWindow(Toplevel):
         win = Toplevel()
         win.title(title)
         tkfixedfont = tkFont.nametofont("TkFixedFont")
-        tkfixedfont.configure(size=self.options['fontsize'])
+        tkfixedfont.configure(size=self.options['fontsize_fixed'])
         # win.minsize(444, 430)
         # win.minsize(450, 450)
         f = Frame(win)
@@ -393,7 +393,7 @@ class SimpleEditor(Toplevel):
         self.value = ''
         self.options = options
         self.tkfixedfont = tkFont.nametofont("TkFixedFont")
-        self.tkfixedfont.configure(size=self.options['fontsize'])
+        self.tkfixedfont.configure(size=self.options['fontsize_fixed'])
         # self.text_value.trace_variable("w", self.setSaveStatus)
         frame = Frame(self, bd=0, relief=FLAT)
         frame.pack(side="bottom", fill=X, padx=4, pady=0)
