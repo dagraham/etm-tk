@@ -84,6 +84,8 @@ echo "$tag [$versioninfo]" > version.txt
 
 echo $tag > etmTk/v.txt
 
+./mk_docs.sh
+
 echo "# Changes in the 4 weeks preceding $now:" > CHANGES.txt
      #Changes in the 4 weeks :
 #hg log --template '{rev} {date|shortdate} [{tags}]\n\t{desc|fill68|tabindent}\n' -r tip:-30 >> "$home/CHANGES"
