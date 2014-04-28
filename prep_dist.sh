@@ -69,7 +69,7 @@ if asksure; then
     change="incrementing the current version $vinfo.
 Edit etmTk/v.py to change the major and minor numbers."
 #    hg tag $tag -f
-    git tag -a $tag -m "$versioninfo" HEAD
+#    git tag -a $tag -m "$versioninfo" HEAD
     echo "Updated to $tag [$versioninfo]" >> $logfile
 else
     # drop the abbrev header and a trailing -0, if there is one
@@ -81,6 +81,9 @@ fi
 echo "version = \"$tag\"" > /Users/dag/etm-tk/etmTk/v.py
 echo "version = \"$tag [$versioninfo]\"" > etmTk/version.py
 echo "$tag [$versioninfo]" > version.txt
+git add etmTk/v.py etmTk/version.py
+git commit -a -m "updated version number"
+git tag -a $tag -m "$versioninfo" HEAD
 
 echo $tag > etmTk/v.txt
 

@@ -746,6 +746,7 @@ class App(Tk):
         self.content.bind('<Escape>', self.cleartext)
         # self.content.bind('<space>', self.goHome)
         self.content.bind('<Tab>', self.focus_next_window)
+        self.content.bind("<FocusIn>", self.editItem)
 
         panedwindow.add(self.content, padx=3, pady=0, stretch="never")
 
