@@ -2159,9 +2159,9 @@ or 0 to display all changes.""").format(title)
             numstr = ""
         else:
             numstr = "{0} {1}".format(loop.options['vcs']['limit'], depth)
-        logger.debug('history command: {0}'.format(loop.options['vcs']['history']))
         command = loop.options['vcs']['history'].format(
-            repo=loop.options['datadir'],
+            repo=loop.options['vcs']['repo'],
+            work=loop.options['vcs']['work'],
             numchanges=numstr, rev="{rev}", desc="{desc}", file=fn)
         logger.debug('vcs history command: {0}'.format(command))
         p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,

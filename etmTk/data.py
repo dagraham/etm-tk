@@ -716,10 +716,10 @@ def pathSearch(filename):
 def getMercurial():
     hg = pathSearch('hg')
     if hg:
-        base_command = """%s -R {repo}""" % hg
+        base_command = """%s -R {work}""" % hg
         history_command = """\
-%s log --style compact --template "{desc}\\n" -R {repo} -p {numchanges} {file}""" % hg
-        commit_command = '%s commit -q -A -R {repo} -m "{mesg}"' % hg
+%s log --style compact --template "{desc}\\n" -R {work} -p {numchanges} {file}""" % hg
+        commit_command = '%s commit -q -A -R {work} -m "{mesg}"' % hg
         init_command = '%s init {0}' % hg
     else:
         base_command = history_command = commit_command = init_command = ''
@@ -728,13 +728,13 @@ def getMercurial():
 def getGit():
     git = pathSearch('git')
     if git:
-        base_command = """%s -C {repo}""" % git
+        base_command = """%s --git-dir {repo} --work-tree {work}""" % git
         history_command = """\
-%s -C {repo} log --pretty=format:'- %%ar: %%an%%n%%w(70,0,4)%%s' -U1 {numchanges} {file}\
+%s --git-dir {repo} --work-tree {work} log --pretty=format:'- %%ar: %%an%%n%%w(70,4,4)%%s' -p {numchanges} {file}\
         """ % git
         init = '%s init {repo}' % git
-        add = '%s -C {repo} add */\*.txt' % git
-        commit = '%s -C {repo} commit -a -m "{mesg}"' % git
+        add = '%s --git-dir {repo} --work-tree {work} add */\*.txt' % git
+        commit = '%s --git-dir {repo} --work-tree {work} commit -a -m "{mesg}"' % git
         commit_command = '%s && %s' % (add, commit)
         init_command = '%s; %s; %s' % (init, add, commit)
         logger.debug('init_command: {0}'.format(init_command))
@@ -1262,7 +1262,7 @@ def get_options(d=''):
 
         'sundayfirst': False,
         'vcs_system': default_vcs,
-        'vcs_commands': {'command': '', 'commit': '', 'dir': '', 'file': '', 'history': '', 'init': '', 'limit': ''},
+        'vcs_settings': {'command': '', 'commit': '', 'dir': '', 'file': '', 'history': '', 'init': '', 'limit': ''},
         'weeks_after': 52,
         'yearfirst': yearfirst}
 
@@ -1371,25 +1371,33 @@ def get_options(d=''):
     if options['vcs_system'] == 'git':
         if git_command:
             options['vcs'] = {'command': git_command, 'history': git_history, 'commit': git_commit, 'init': git_init, 'dir': '.git', 'limit': '-n', 'file': ""}
+            repo = os.path.join(options['datadir'], options['vcs']['dir'])
+            work = options['datadir']
             logger.debug('{0} options: {1}'.format(options['vcs_system'], options['vcs']))
         else:
             logger.warn('could not setup "git" vcs')
             options['vcs'] = {}
     elif options['vcs_system'] == 'mercurial':
         if hg_command:
-            options['vcs'] = {'command': hg_command, 'history': hg_history, 'commit': hg_commit, 'init': hg_init, 'dir': '.hg', 'limit': '-l', 'file': ' -f '}
+            options['vcs'] = {'command': hg_command, 'history': hg_history, 'commit': hg_commit, 'init': hg_init, 'dir': '', 'limit': '-l', 'file': ' -f '}
+            repo = options['datadir']
+            work = options['datadir']
             logger.debug('{0} options: {1}'.format(options['vcs_system'], options['vcs']))
         else:
             logger.warn('could not setup "mercurial" vcs')
             options['vcs'] = {}
     else:
+        repo = work = ''
         options['vcs'] = {}
 
     # overrule the defaults if any custom settings are given
-    if options['vcs_commands']:
-        for key in options['vcs_commands']:
-            if options['vcs_commands'][key]:
-                options['vcs'][key] = options['vcs_commands'][key]
+    if options['vcs_settings']:
+        for key in options['vcs_settings']:
+            if options['vcs_settings'][key]:
+                options['vcs'][key] = options['vcs_settings'][key]
+        # add the derived options
+        options['vcs']['repo'] = repo
+        options['vcs']['work'] = work
 
 
     (options['daybegin_fmt'], options['dayend_fmt'], options['reprtimefmt'],
@@ -1436,10 +1444,9 @@ def get_options(d=''):
         fo.close()
 
     if 'vcs' in options and options['vcs']:
-        vcs_dir = os.path.join(options['datadir'], options['vcs']['dir'])
         if not os.path.isdir(vcs_dir):
             init = options['vcs']['init']
-            command = init.format(repo=options['datadir'], mesg="initial commit")
+            command = init.format(repo=options['vcs']['repo'], mesg="initial commit")
             logger.debug('initializing repo: {0}'.format(command))
             run_cmd(command)
 
@@ -5741,13 +5748,17 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
             mesg = u"{0}: {1}".format(mode, file)
             if python_version == 2 and type(mesg) == unicode:
                 cmd = self.options['vcs']['commit'].format(
-                    repo=self.options['datadir'], mesg="XXX")
+                    repo=self.options['vcs']['repo'],
+                    work=self.options['vcs']['work'],
+                    mesg="XXX")
                 cmd = cmd.replace("XXX", mesg)
             else:
                 cmd = self.options['vcs']['commit'].format(
-                    repo=self.options['datadir'], mesg="{0}: {1}".format(
+                    repo=self.options['vcs']['repo'],
+                    work=self.options['vcs']['work'],
+                    mesg="{0}: {1}".format(
                         mode, file))
-            logger.debug("vcs commit: {0}".format(mesg))
+            logger.debug("vcs commit command: {0}".format(cmd))
             os.system(cmd)
             return True
 
