@@ -736,7 +736,7 @@ def getGit():
     if git:
         base_command = """%s --git-dir {repo} --work-tree {work}""" % git
         history_command = """\
-%s --git-dir {repo} --work-tree {work} log --pretty=format:'- %%ar: %%an%%n%%w(70,4,4)%%s' -p {numchanges} {file}\
+%s --git-dir {repo} --work-tree {work} log --pretty=format:'- %%ai %%an: %%s' -U0 {numchanges} {file}\
         """ % git
         init = '%s init {work}' % git
         add = '%s --git-dir {repo} --work-tree {work} add */\*.txt' % git
@@ -5762,7 +5762,8 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
     def commit(self, file, mode=""):
         if 'vcs' in self.options:
             # hack to avoid unicode in .format() for python 2
-            mesg = u"{0}: {1}".format(mode, file)
+            # rf = relpath(file, self.options['datadir'])
+            mesg = u"{0}".format(mode)
             if python_version == 2 and type(mesg) == unicode:
                 cmd = self.options['vcs']['commit'].format(
                     repo=self.options['vcs']['repo'],
@@ -5773,8 +5774,7 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
                 cmd = self.options['vcs']['commit'].format(
                     repo=self.options['vcs']['repo'],
                     work=self.options['vcs']['work'],
-                    mesg="{0}: {1}".format(
-                        mode, file))
+                    mesg=mesg)
             logger.debug("vcs commit command: {0}".format(cmd))
             os.system(cmd)
             return True

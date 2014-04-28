@@ -2172,6 +2172,8 @@ or 0 to display all changes.""").format(title)
         if not p:
             p = 'no output from command:\n    {0}'.format(command)
 
+        p = "\n".join(x for x in p.split('\n') if not (x.startswith('index') or x.startswith('diff') or x.startswith('\ No newline')))
+
         self.textWindow(parent=self, title=title, prompt=str(p), opts=self.options)
 
 

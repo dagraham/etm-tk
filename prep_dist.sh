@@ -82,7 +82,7 @@ echo "version = \"$tag\"" > /Users/dag/etm-tk/etmTk/v.py
 echo "version = \"$tag [$versioninfo]\"" > etmTk/version.py
 echo "$tag [$versioninfo]" > version.txt
 git add etmTk/v.py etmTk/version.py
-git commit -a -m "updated version number"
+git commit -a -m "tagged version $tag"
 git tag -a $tag -m "$versioninfo" HEAD
 
 echo $tag > etmTk/v.txt
