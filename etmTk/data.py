@@ -271,6 +271,11 @@ yearfirst = True
 # bgclr = "#e9e9e9"
 # BGCOLOR = "#ebebeb"
 
+IGNORE = """\
+syntax: glob
+.*
+"""
+
 # this task will be created for first time users
 SAMPLE ="""\
 # Sample entries - this file can be edited or deleted at your pleasure
@@ -720,7 +725,8 @@ def getMercurial():
         history_command = """\
 %s log --style compact --template "{desc}\\n" -R {work} -p {numchanges} {file}""" % hg
         commit_command = '%s commit -q -A -R {work} -m "{mesg}"' % hg
-        init_command = '%s init {0}' % hg
+        init = '%s init {work}' % hg
+        init_command = "%s; %s" % (init, commit_command)
     else:
         base_command = history_command = commit_command = init_command = ''
     return base_command, history_command, commit_command, init_command
@@ -732,12 +738,11 @@ def getGit():
         history_command = """\
 %s --git-dir {repo} --work-tree {work} log --pretty=format:'- %%ar: %%an%%n%%w(70,4,4)%%s' -p {numchanges} {file}\
         """ % git
-        init = '%s init {repo}' % git
+        init = '%s init {work}' % git
         add = '%s --git-dir {repo} --work-tree {work} add */\*.txt' % git
         commit = '%s --git-dir {repo} --work-tree {work} commit -a -m "{mesg}"' % git
         commit_command = '%s && %s' % (add, commit)
         init_command = '%s; %s; %s' % (init, add, commit)
-        logger.debug('init_command: {0}'.format(init_command))
     else:
         base_command = history_command = commit_command = init_command = ''
     return base_command, history_command, commit_command, init_command
@@ -1159,7 +1164,6 @@ def get_options(d=''):
         tmp = locale.getdefaultlocale()
         dgui_encoding = tmp[1]
 
-    # dgui_encoding = codecs.lookup(dgui_encoding).name
     try:
         dgui_encoding = codecs.lookup(dgui_encoding).name
     except (TypeError, LookupError):
@@ -1379,7 +1383,7 @@ def get_options(d=''):
             options['vcs'] = {}
     elif options['vcs_system'] == 'mercurial':
         if hg_command:
-            options['vcs'] = {'command': hg_command, 'history': hg_history, 'commit': hg_commit, 'init': hg_init, 'dir': '', 'limit': '-l', 'file': ' -f '}
+            options['vcs'] = {'command': hg_command, 'history': hg_history, 'commit': hg_commit, 'init': hg_init, 'dir': '.hg', 'limit': '-l', 'file': ' -f '}
             repo = os.path.join(options['datadir'], options['vcs']['dir'])
             work = options['datadir']
             logger.debug('{0} options: {1}'.format(options['vcs_system'], options['vcs']))
@@ -1395,9 +1399,9 @@ def get_options(d=''):
         for key in options['vcs_settings']:
             if options['vcs_settings'][key]:
                 options['vcs'][key] = options['vcs_settings'][key]
-        # add the derived options
-        options['vcs']['repo'] = repo
-        options['vcs']['work'] = work
+    # add the derived options
+    options['vcs']['repo'] = repo
+    options['vcs']['work'] = work
 
 
     (options['daybegin_fmt'], options['dayend_fmt'], options['reprtimefmt'],
@@ -1443,11 +1447,24 @@ def get_options(d=''):
         fo.write(REPORTS)
         fo.close()
 
-    if 'vcs' in options and options['vcs']:
+    if 'vcs_system' in options and options['vcs_system']:
+        logger.debug('vcs_system: {0}'.format(options['vcs_system']))
+        f = ''
+        if options['vcs_system'] == 'mercurial':
+            f = os.path.join(options['datadir'], '.hgignore')
+        elif options['vcs_system'] == 'git':
+            f = os.path.join(options['datadir'], '.gitignore')
+        if f and not os.path.isfile(f):
+            fo = open(f, 'w')
+            fo.write(IGNORE)
+            fo.close()
+            logger.info('created: {0}'.format(f))
+        logger.debug('checking for {0}'.format(options['vcs']['repo']))
         if not os.path.isdir(options['vcs']['repo']):
             init = options['vcs']['init']
-            command = init.format(repo=options['vcs']['work'], mesg="initial commit")
-            logger.debug('initializing repo: {0}'.format(command))
+            # work = (options['vcs']['work'])
+            command = init.format(work=options['vcs']['work'], repo=options['vcs']['repo'], mesg="initial commit")
+            logger.debug('initializing vcs: {0}'.format(command))
             run_cmd(command)
 
     if use_locale:

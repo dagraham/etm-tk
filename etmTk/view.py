@@ -2164,8 +2164,10 @@ or 0 to display all changes.""").format(title)
             work=loop.options['vcs']['work'],
             numchanges=numstr, rev="{rev}", desc="{desc}", file=fn)
         logger.debug('vcs history command: {0}'.format(command))
+        tt = TimeIt(loglevel=2, label="showChanges")
         p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
                              universal_newlines=True).stdout.read()
+        tt.stop()
         if not p:
             p = 'no output from command:\n    {0}'.format(command)
 
