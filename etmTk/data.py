@@ -918,22 +918,31 @@ def date_calculator(s, options=None):
     if not m:
         return 'Could not parse "%s"' % s
     x, pm, y = [z.strip() for z in m.groups()]
-    xz = ''
+    xz = tzlocal()
+    xzs = ''
     nx = timezone_regex.match(x)
     if nx:
-        x, xz = nx.groups()
-    yz = ''
+        x, xzs = nx.groups()
+        xz = gettz(xzs)
+    yz = tzlocal()
+    yzs = ''
     ny = timezone_regex.match(y)
     if ny:
-        y, yz = ny.groups()
+        y, yzs = ny.groups()
+        yz = gettz(yzs)
     try:
-        dt_x = parse(parse_dtstr(x, timezone=xz))
-
+        dt_x = parse(parse_dtstr(x, timezone=xzs))
+        # print('dt_x', dt_x.strftime("%Y-%m-%d %I:%M%z"))
+        # print('pm y yz', pm, y, yz)
         pmy = "%s%s" % (pm, y)
         if period_string_regex.match(pmy):
-            return fmt_datetime(dt_x + parse_period(pmy), options)
+            dt = (dt_x + parse_period(pmy))
+            # print('dt_y xz', dt.strftime("%Y-%m-%d %H:%M%z"))
+            dt = (dt_x + parse_period(pmy)).astimezone(yz)
+            # print('dt_y yz', dt.strftime("%Y-%m-%d %H:%M%z"))
+            return dt.strftime("%Y-%m-%d %H:%M%z")
         else:
-            dt_y = parse(parse_dtstr(y, timezone=yz))
+            dt_y = parse(parse_dtstr(y, timezone=yzs))
             if pm == '-':
                 return fmt_period(dt_x - dt_y)
             else:

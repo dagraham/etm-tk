@@ -935,9 +935,14 @@ class App(Tk):
 
     def dateCalculator(self, event=None):
         prompt = """\
-Enter an expression of the form "x [+-] y" where x is a date
-and y is either a date or a time period if "-" is used and
-a time period if "+" is used."""
+Enter an expression of the form "x [+-] y" where x is a date and y is
+either a date or a time period if "-" is used and a time period if "+"
+is used. Both x and y can be followed by timezones, e.g.,
+     4/20 6:15p US/Central - 4/20 4:50p Asia/Shanghai
+                       = 14h25m
+     4/20 4:50p Asia/Shanghai + 14h25m US/Central
+              = 2014-04-20 18:15-0500
+The local timezone is used when none is given."""
         value = GetString(parent=self, title=_('date calculator'),  prompt=prompt, opts={}).value
         if not value:
             return
