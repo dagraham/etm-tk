@@ -1380,7 +1380,7 @@ def get_options(d=''):
     elif options['vcs_system'] == 'mercurial':
         if hg_command:
             options['vcs'] = {'command': hg_command, 'history': hg_history, 'commit': hg_commit, 'init': hg_init, 'dir': '', 'limit': '-l', 'file': ' -f '}
-            repo = options['datadir']
+            repo = os.path.join(options['datadir'], options['vcs']['dir'])
             work = options['datadir']
             logger.debug('{0} options: {1}'.format(options['vcs_system'], options['vcs']))
         else:
@@ -1444,9 +1444,9 @@ def get_options(d=''):
         fo.close()
 
     if 'vcs' in options and options['vcs']:
-        if not os.path.isdir(vcs_dir):
+        if not os.path.isdir(options['vcs']['repo']):
             init = options['vcs']['init']
-            command = init.format(repo=options['vcs']['repo'], mesg="initial commit")
+            command = init.format(repo=options['vcs']['work'], mesg="initial commit")
             logger.debug('initializing repo: {0}'.format(command))
             run_cmd(command)
 
