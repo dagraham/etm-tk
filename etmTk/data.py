@@ -5768,12 +5768,15 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
         """
         logger.debug('starting safe_save: {0}, {1}, cli: {2}'.format(file, mode, cli))
         try:
-            with codecs.open(self.tmpfile, 'w', file_encoding) as fo:
-                # add a trailing newline to make diff happy
-                fo.write("{0}\n".format(s.rstrip()))
+            fo = codecs.open(self.tmpfile, 'w', file_encoding)
+            # add a trailing newline to make diff happy
+            fo.write("{0}\n".format(s.rstrip()))
+            fo.close()
+            # with codecs.open(self.tmpfile, 'w', file_encoding) as fo:
+            #     # add a trailing newline to make diff happy
+            #     fo.write("{0}\n".format(s.rstrip()))
         except:
             return 'error writing to file - aborted'
-            return False
         shutil.copy2(self.tmpfile, file)
         logger.debug("modified file: '{0}'".format(file))
         pathname, ext = os.path.splitext(file)
