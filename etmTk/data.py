@@ -13,8 +13,6 @@ import logging
 import logging.config
 logger = logging.getLogger()
 
-# TODO: put beginbys with contexts into Next
-
 def setup_logging(level, etmdir=None):
     """
     Setup logging configuration. Override root:level in
@@ -37,7 +35,7 @@ def setup_logging(level, etmdir=None):
     else:
         loglevel = log_levels['3']
 
-    logfile = os.path.join(etmdir, "etmtk_log.txt")
+    logfile = os.path.normpath(os.path.join(etmdir, "etmtk_log.txt"))
 
     config = {'disable_existing_loggers': False,
               'formatters': {'simple': {
@@ -932,14 +930,10 @@ def date_calculator(s, options=None):
         yz = gettz(yzs)
     try:
         dt_x = parse(parse_dtstr(x, timezone=xzs))
-        # print('dt_x', dt_x.strftime("%Y-%m-%d %I:%M%z"))
-        # print('pm y yz', pm, y, yz)
         pmy = "%s%s" % (pm, y)
         if period_string_regex.match(pmy):
             dt = (dt_x + parse_period(pmy))
-            # print('dt_y xz', dt.strftime("%Y-%m-%d %H:%M%z"))
             dt = (dt_x + parse_period(pmy)).astimezone(yz)
-            # print('dt_y yz', dt.strftime("%Y-%m-%d %H:%M%z"))
             return dt.strftime("%Y-%m-%d %H:%M%z")
         else:
             dt_y = parse(parse_dtstr(y, timezone=yzs))
@@ -954,13 +948,6 @@ def date_calculator(s, options=None):
 def mail_report(message, smtp_from=None, smtp_server=None,
                 smtp_id=None, smtp_pw=None, smtp_to=None):
     """
-
-    :param message:
-    :param smtp_from:
-    :param smtp_server:
-    :param smtp_id:
-    :param smtp_pw:
-    :param smtp_to:
     """
     import smtplib
     from email.MIMEMultipart import MIMEMultipart
@@ -987,17 +974,6 @@ def mail_report(message, smtp_from=None, smtp_server=None,
 def send_mail(smtp_to, subject, message, files=None, smtp_from=None, smtp_server=None,
               smtp_id=None, smtp_pw=None):
     """
-
-
-    :type smtp_server: object
-    :param smtp_to: address of recipient
-    :param subject:
-    :param message:
-    :param files:
-    :param smtp_from:
-    :param smtp_server:
-    :param smtp_id:
-    :param smtp_pw:
     """
     if not files: files = []
     import smtplib
@@ -2217,7 +2193,7 @@ def group_sort(row_lst):
 
 def dump_data(options, uuid2hashes, file2uuids, file2lastmodified,
               bad_datafiles, messages):
-    logger.debug("last_version: {0}".format(last_version))
+    logger.info("dumping data to: {0}".format(options['datafile']))
     ouf = open(options['datafile'], "wb")
     pickle.dump(uuid2hashes, ouf)
     pickle.dump(file2uuids, ouf)
@@ -5682,7 +5658,7 @@ class ETMCmd():
         Called from safe_save. Calls process_one_file to produce hashes
         for the items in the file
         """
-        logger.debug('starting updateDataFromFile: {0}'.format(rp))
+        logger.debug('starting updateDataFromFile: {0}; {1}'.format(fp, rp))
         self.count2id = {}
         now = datetime.now()
         year, wn, dn = now.isocalendar()
@@ -5792,10 +5768,9 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
         """
         logger.debug('starting safe_save: {0}, {1}, cli: {2}'.format(file, mode, cli))
         try:
-            fo = codecs.open(self.tmpfile, 'w', file_encoding)
-            # add a trailing newline to make diff happy
-            fo.write("{0}\n".format(s.rstrip()))
-            fo.close()
+            with codecs.open(self.tmpfile, 'w', file_encoding) as fo:
+                # add a trailing newline to make diff happy
+                fo.write("{0}\n".format(s.rstrip()))
         except:
             return 'error writing to file - aborted'
             return False

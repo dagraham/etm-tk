@@ -714,6 +714,8 @@ class SimpleEditor(Toplevel):
                 if not (filename and os.path.isfile(filename)):
                     return False
                 else:
+                    filename = os.path.normpath(filename)
+                    logger.debug('saving to: {0}'.format(filename))
                     self.text.focus_set()
             logger.debug('edithsh: {0}'.format(self.edithsh))
             ok = True

@@ -2376,12 +2376,14 @@ or 0 to display all changes.""").format(title)
             self.options, loop.file2lastmodified)
         if newday or new or modified or deleted:
             if newday: logger.info('newday')
+            logger.info("new: {0}; modified: {1}; deleted: {2}".format(len(new),  len(modified),  len(deleted)))
             if new:
-                logger.info('{0} new files'.format(len(new)))
+                logger.debug('{0} new files: {1}'.format(len(new), [x[0] for x in new]))
             if modified:
-                logger.info('{0} modified files'.format(len(modified)))
+                logger.debug('{0} modified files: {1}'.format(len(modified), [x[0] for x in  modified]))
             if deleted:
-                logger.info('{0} deleted files'.format(len(deleted)))
+                logger.debug('{0} deleted files: {1}'.format(len(deleted), [x[0] for x
+                                                                            in deleted]))
             logger.debug('calling loadData')
             loop.loadData()
             if self.weekly:
