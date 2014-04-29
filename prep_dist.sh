@@ -3,7 +3,7 @@ yes=$1
 #tag=$1
 home=`pwd`
 plat=`uname`
-echo "home: $home; plat: $plat"
+#echo "home: $home; plat: $plat"
 # etm's version numbering now uses the `major.minor.patch` format where each of the three components is an integer:
 
 # - Major version numbers change whenever there is something significant, a large or potentially backward-incompatible change.
@@ -42,7 +42,16 @@ return $retval
 
 logfile="prep_dist.txt"
 # get the current major.minor.patch tag
+#vinfo=`cat etmTk/v.py | head -1 | sed 's/\"//g' | sed 's/^.*= *//g'`
 vinfo=`cat etmTk/v.py | head -1 | sed 's/\"//g' | sed 's/^.*= *//g' | sed 's/-.*$//g'`
+patch=${vinfo#*.*.}
+major=${vinfo%%.*.*}
+mm=${vinfo#*.}
+minor=${mm%.*}
+if [ "$patch" == "x" ]; then
+    patch=-1
+fi
+vinfo=$major.$minor.$patch
 now=`date`
 #status=`hg status`
 status=`git status -s`
@@ -57,11 +66,6 @@ otag=`git describe --tags --long | sed 's/-[^-]*$//g'`
 
 echo "The current version number is $vinfo ($otag $versioninfo)."
 echo -n "Do you want to increment the patch number?"
-
-patch=${vinfo#*.*.}
-major=${vinfo%%.*.*}
-mm=${vinfo#*.}
-minor=${mm%.*}
 
 if asksure; then
     newpatch=$(($patch +1))
