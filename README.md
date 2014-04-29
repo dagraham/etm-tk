@@ -238,6 +238,18 @@ Please share your ideas in the discussion group at [GoogleGroups][].
 
 [GoogleGroups]: http://groups.google.com/group/eventandtaskmanager
 
+## Version numbers ##
+
+*etm*'s version numbering uses the `major.minor.patch` format where each of the three components is an integer:
+
+- Major version numbers change whenever there is a large or potentially backward-incompatible change.
+
+- Minor version numbers change when a new, minor feature or a set of smaller features is introduced or when a status change has occured. A change in the minor version from zero to one, for example, indicates a change in the status of the major version from alpha to beta. Minor version numbers greater than one indicate production/stable status.
+
+- Patch numbers change for new builds involving small bugfixes or the like. Some new builds may not be released.
+
+When the major version number is incremented, both the minor version number and patch number are reset to zero. Similarly, when the minor version number is incremented, the patch number is reset to zero. All increments are by one.
+
 ## License ##
 
 Copyright (c) 2009-2014 [Daniel Graham]. All rights reserved.

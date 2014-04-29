@@ -524,9 +524,11 @@ The setting affects only the twelve month calendar display.
       init: ''
       limit: ''
 
+These settings are ignored unless the setting for `vcs_system` below is either `git` or `mercurial`.
+
 Default values will be provided for these settings based on the choice of `vcs_system` below. Any of the settings that you define here will overrule the defaults.
 
-Here, for example, are the default values of these settings for git on OS X:
+Here, for example, are the default values of these settings for git under OS X:
 
     vcs_settings:
         command: '/usr/bin/git --git-dir {repo} --work-dir {work}'
@@ -545,11 +547,15 @@ Here, for example, are the default values of these settings for git on OS X:
 
 In these settings, `{mesg}` will be replaced with an internally generated commit message, `{numchanges}` with an expression that depends upon `limit` that determines  how many changes to show and, when a file is selected, `{file}` with the corresponding path. If `~/.etm/data` is your etm datadir, the `{repo}` would be replaced with `~/.etm/data/.git` and {work} with `~/.etm/data`.
 
+
 Leave these settings empty to use the defaults.
+
 
 ### vcs_system
 
-    vcs_system: [git|mercurial]
+    vcs_system: ''
+
+This setting must be either `''` or `git` or `mercurial`.
 
 If you specify either git or mercurial here (and have it installed on your system), then etm will automatically commit any changes you make to any of your data files. The history of these changes is available in the GUI with the show changes command (*Ctrl-H*) and you can, of course, use any git or mercurial commands in your terminal to, for example, restore a previous version of a file.
 
