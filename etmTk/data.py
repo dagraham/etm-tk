@@ -737,8 +737,8 @@ def getGit():
 %s --git-dir {repo} --work-tree {work} log --pretty=format:'- %%ai %%an: %%s' -U0 {numchanges} {file}\
         """ % git
         init = '%s init {work}' % git
-        add = '%s --git-dir {repo} --work-tree {work} add */\*.txt' % git
-        commit = '%s --git-dir {repo} --work-tree {work} commit -a -m "{mesg}"' % git
+        add = '%s --git-dir {repo} --work-tree {work} add */\*.txt > /dev/null'  % git
+        commit = '%s --git-dir {repo} --work-tree {work} commit -a -m "{mesg}" > /dev/null' % git
         commit_command = '%s && %s' % (add, commit)
         init_command = '%s; %s; %s' % (init, add, commit)
     else:
