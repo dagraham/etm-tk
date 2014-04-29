@@ -1748,7 +1748,7 @@ Enter the shortest time period you want displayed in minutes.""")
             start_x = l + i * x
             end_x = start_x + x
             for tup in occasions:
-                xy = start_x, t, end_x, t+y*16
+                xy = int(start_x), int(t), int(end_x), int(t+y*16)
                 id = self.canvas.create_rectangle(xy, fill=OCCASIONFILL, outline="", width=0, tag='occasion')
                 tmp = list(tup)
                 tmp.append(day)
@@ -1770,7 +1770,7 @@ Enter the shortest time period you want displayed in minutes.""")
             end_x = start_x + x
             if day == self.current_day:
                 self.today_col = i
-                xy = start_x, t, end_x, t+y*16
+                xy = int(start_x), int(t), int(end_x), int(t+y*16)
                 self.canvas.create_rectangle(xy, fill=CURRENTFILL, outline="", width=0, tag='current_day')
             if not busy_times and self.today_col is None:
                 continue
@@ -1788,7 +1788,7 @@ Enter the shortest time period you want displayed in minutes.""")
                 # t1 = t + tup[0] * y_per_minute
                 t2 = t + min(23 * 60, max(7 * 60, tup[1]) - 7 * 60) * y_per_minute
                 # t2 = t + tup[1] * y_per_minute
-                xy = start_x, max(t, t1), end_x, min(t2, t+y*16)
+                xy = int(start_x), int(max(t, t1)), int(end_x), int(min(t2, t+y*16))
                 conf = self.canvas.find_overlapping(*xy)
                 id = self.canvas.create_rectangle(xy, fill=busyColor, width=0, tag=ttag)
                 conf = [z for z in conf if z in busy_ids]
@@ -1823,27 +1823,27 @@ Enter the shortest time period you want displayed in minutes.""")
         self.canvas_ids.sort()
         self.canvas_idpos = None
         # border
-        xy = l, t, l+x*7, t+y*16
+        xy = int(l), int(t), int(l+x*7), int(t+y*16)
         self.canvas.create_rectangle(xy, tag="grid")
 
         # verticals
         for i in range(1,7):
             # x = X
-            xy = l+x*i, t, l+x*i, t+y*16
+            xy = int(l+x*i), int(t), int(l+x*i), int(t+y*16)
             self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
         # horizontals
         for j in range(1,16):
-            xy = l, t+y*j, l+x*7, t+y*j
+            xy = int(l), int(t+y*j), int(l+x*7), int(t+y*j)
             self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
         # hours
         for j in range(17):
             if j%2:
-                p = l-5, t+y*j
+                p = int(l-5), int(t+y*j)
                 self.canvas.create_text(p, text=self.hours[j], anchor="e")
         # days
         for i in range(7):
             # x = X
-            p = l + x/2 + x*i, t-13
+            p = int(l + x/2 + x*i), int(t-13)
             # logger.debug("x: {0}, i: {1}, p: {2}".format(x, i, p))
             if self.today_col and i == self.today_col:
                 self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=CURRENTLINE)
@@ -1865,7 +1865,7 @@ Enter the shortest time period you want displayed in minutes.""")
         end_x = l + x * 7
         # t1 = t + (max(7 * 60, current_minutes) - 7 * 60 ) * y_per_minute
         t1 = t + (current_minutes - 7 * 60 ) * self.y_per_minute
-        xy = start_x, t1, end_x, t1
+        xy = int(start_x), int(t1), int(end_x), int(t1)
         return xy
 
     def selectId(self, event, d=1):
