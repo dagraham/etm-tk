@@ -1185,12 +1185,7 @@ def get_options(d=''):
     git_command, git_history, git_commit, git_init = getGit()
     hg_command, hg_history, hg_commit, hg_init = getMercurial()
 
-    if hg_command:
-        default_vcs = 'mercurial'
-    elif git_command:
-        default_vcs = 'git'
-    else:
-        default_vcs = ''
+    default_vcs = ''
 
     default_options = {
         'action_markups': {'default': 1.0, },
@@ -1400,17 +1395,19 @@ def get_options(d=''):
             logger.warn('could not setup "mercurial" vcs')
             options['vcs'] = {}
     else:
-        repo = work = ''
+        options['vcs_system'] = ''
         options['vcs'] = {}
 
     # overrule the defaults if any custom settings are given
-    if options['vcs_settings']:
-        for key in options['vcs_settings']:
-            if options['vcs_settings'][key]:
-                options['vcs'][key] = options['vcs_settings'][key]
-    # add the derived options
-    options['vcs']['repo'] = repo
-    options['vcs']['work'] = work
+    if options['vcs_system']:
+        if options['vcs_settings']:
+            # update any settings with custom modifications
+            for key in options['vcs_settings']:
+                if options['vcs_settings'][key]:
+                    options['vcs'][key] = options['vcs_settings'][key]
+        # add the derived options
+        options['vcs']['repo'] = repo
+        options['vcs']['work'] = work
 
 
     (options['daybegin_fmt'], options['dayend_fmt'], options['reprtimefmt'],
@@ -5769,7 +5766,7 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
         return lines, new_hsh
 
     def commit(self, file, mode=""):
-        if 'vcs' in self.options:
+        if self.options['vcs_system']:
             # hack to avoid unicode in .format() for python 2
             # rf = relpath(file, self.options['datadir'])
             mesg = u"{0}".format(mode)
@@ -5786,7 +5783,7 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
                     mesg=mesg)
             logger.debug("vcs commit command: {0}".format(cmd))
             os.system(cmd)
-            return True
+        return True
 
     def safe_save(self, file, s, mode="", cli=False):
         """

@@ -88,12 +88,12 @@ git tag -a $tag -m "$versioninfo" HEAD
 echo $tag > etmTk/v.txt
 
 ./mk_docs.sh
-
-echo "# Changes in the 4 weeks preceding $now:" > CHANGES.txt
+weeks=2
+echo "# Changes in the $weeks weeks preceding $now:" > CHANGES.txt
      #Changes in the 4 weeks :
 #hg log --template '{rev} {date|shortdate} [{tags}]\n\t{desc|fill68|tabindent}\n' -r tip:-30 >> "$home/CHANGES"
 #git log --pretty=format:"%ai: %an%n%w(70,4,8)%s" -n 30 >> "$home/CHANGES.txt"
-git log --pretty=format:'- %ar%d: %an%n%w(70,3,3)%s' --since="4 weeks ago" >> "$home/CHANGES.txt"
+git log --pretty=format:'- %ai%d: %an%n%w(70,3,3)%s' --since="$weeks weeks ago" >> "$home/CHANGES.txt"
 # TODO: remove this eventually
 echo "" >> $home/CHANGES.txt
 #echo "### mercurial logs ###" >> $home/CHANGES.txt

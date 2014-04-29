@@ -507,14 +507,14 @@ class App(Tk):
         self.add2menu(path, (label, l))
 
         # changes
-        l, c = commandShortcut('h')
-        label = _("Show history of changes")
-        toolsmenu.add_command(label=label, underline=1, command=self.showChanges)
-        self.bind(c, lambda event: self.after(AFTER, self.showChanges))
-        if not mac:
-            toolsmenu.entryconfig(3, accelerator=l)
-        self.add2menu(path, (label, l))
-
+        if loop.options['vcs_system']:
+            l, c = commandShortcut('h')
+            label = _("Show history of changes")
+            toolsmenu.add_command(label=label, underline=1, command=self.showChanges)
+            self.bind(c, lambda event: self.after(AFTER, self.showChanges))
+            if not mac:
+                toolsmenu.entryconfig(3, accelerator=l)
+            self.add2menu(path, (label, l))
 
         ## export
         l = "Shift-F6"
@@ -2132,9 +2132,9 @@ Enter the shortest time period you want displayed in minutes.""")
         self.textWindow(parent=self, title='etm', prompt=res, opts=self.options)
 
     def showChanges(self, event=None):
-        if 'vcs' not in loop.options:
-            prompt("""An entry for 'vcs' in etmtk.cfg is required but missing.""")
-            self.textWindow(parent=self, title=title, prompt=str(p), opts=self.options)
+        if not loop.options['vcs_system']:
+            prompt = """An entry for 'vcs_system' in etmtk.cfg is required but missing."""
+            self.textWindow(parent=self, title="etm", prompt=prompt, opts=loop.options)
             return
 
         if self.itemSelected:
@@ -2375,13 +2375,13 @@ or 0 to display all changes.""").format(title)
         new, modified, deleted = get_changes(
             self.options, loop.file2lastmodified)
         if newday or new or modified or deleted:
-            if newday: logger.debug('newday')
+            if newday: logger.info('newday')
             if new:
-                logger.debug('{0} new files'.format(len(new)))
+                logger.info('{0} new files'.format(len(new)))
             if modified:
-                logger.debug('{0} modified files'.format(len(modified)))
+                logger.info('{0} modified files'.format(len(modified)))
             if deleted:
-                logger.debug('{0} deleted files'.format(len(deleted)))
+                logger.info('{0} deleted files'.format(len(deleted)))
             logger.debug('calling loadData')
             loop.loadData()
             if self.weekly:
