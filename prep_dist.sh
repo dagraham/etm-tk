@@ -77,9 +77,10 @@ Edit etmTk/v.py to change the major and minor numbers."
     echo "Updated to $tag [$versioninfo]" >> $logfile
 else
     # drop the abbrev header and a trailing -0, if there is one
-    tag=`git describe --tags --long | sed 's/-[^\-]*$//g' | sed 's/-0$//g'`  # something like 0.0.65-2
+#    tag=`git describe --tags --long | sed 's/-[^\-]*$//g' | sed 's/-0$//g'`  # something like 0.0.65-2
+    tag=$vinfo
     change="retaining version $vinfo."
-    echo "Using $tag [$versioninfo]" >> $logfile
+    echo "Using $vinfo [$versioninfo]" >> $logfile
     # hg tag $tag -f
 fi
 echo "version = \"$tag\"" > /Users/dag/etm-tk/etmTk/v.py
