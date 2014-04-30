@@ -1122,6 +1122,8 @@ The local timezone is used when none is given."""
 
 
     def editItem(self, e=None):
+        if not self.itemSelected:
+            return
         logger.debug('starting editItem: {0}; {1}'.format(self.itemSelected['_summary'], self.dtSelected))
         choice = 3
         title = ETM
