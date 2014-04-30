@@ -1828,14 +1828,15 @@ amp_keys = {
 }
 
 @memoize
-def makeTree(list_of_rows, view=None, calendars=None, sort=True, fltr=None):
+def makeTree(tree_rows, view=None, calendars=None, sort=True, fltr=None):
     tree = {}
     lofl = []
     root = '_'
     empty = True
     cal_regex = None
     log_msg = []
-    tree_rows = deepcopy(list_of_rows)
+    # tree_rows = deepcopy(list_of_rows)
+    # tree_rows = [x for x in list_of_rows]
     if calendars:
         cal_pattern = r'^%s' % '|'.join([x[2] for x in calendars if x[1]])
         cal_regex = re.compile(cal_pattern)
@@ -5598,8 +5599,9 @@ class ETMCmd():
                     f = None
                 if not self.rows:
                     return "no output"
+                rows = deepcopy(self.rows)
                 return (makeTree(
-                    self.rows,
+                    rows,
                     view=view,
                     calendars=self.calendars,
                     fltr=f))
@@ -5634,7 +5636,7 @@ class ETMCmd():
         uuid2hash, file2uuids, self.file2lastmodified, bad_datafiles, messages = get_data(options=self.options)
         logger.debug('calling getViewData')
         self.file2data = getViewData(bef, file2uuids, uuid2hash, self.options)
-        self.rows = list(itemsSL)
+        self.rows = tuple(itemsSL)
         self.alerts = list(alertsSL)
         self.datetimes = list(datetimesSL)
         self.busytimes = {}
