@@ -22,12 +22,6 @@ else
     fi
     mkdir ~/.TEMP
     mkdir ~/.TEMP/images
-#    mkdir ~/.TEMP/help
-#    mkdir ~/.TEMP/help/images
-#    mkdir ~/.TEMP/language
-#    mkdir ~/.TEMP/language/images
-#    mkdir ~/.TEMP/sample
-#    mkdir ~/.TEMP/sounds
 
     while getopts "DLWbdeilps" Option
     do
@@ -51,8 +45,6 @@ else
         echo "### copying version $version base files ###"
         cp -p version.txt ~/.TEMP/version.txt
         cp -p CHANGES dist/etmtk-$version.tar.gz dist/etm_tk-$version.zip  ~/.TEMP/
-#        ln -sf ~/.TEMP/etm_tk-$version.tar.gz ~/.TEMP/etm_tk-current.tar.gz
-#        ln -sf ~/.TEMP/etm_tk-$version.zip ~/.TEMP/etm_tk-current.zip
         copy=1
         ;;
         d)
@@ -90,15 +82,15 @@ else
 #        copy=1
 #        ;;
 #        # not yet ready
-#        p)
-#        # echo "etm version $version"
-#        echo "### uploading version $version to pypi ###"
-#        # python setup.py register sdist upload
-#        echo "### using python3 and -0 switch"
-#        # python3 -O setup.py register sdist upload
-#        python3 -O setup.py register sdist upload
-#        /usr/bin/afplay -v 2 ~/.etm/sounds/etm_ding.m4a
-#        ;;
+        p)
+        # echo "etm version $version"
+        echo "### uploading version $version to pypi ###"
+        # python setup.py register sdist upload
+        echo "### using python3 and -0 switch"
+        # python3 -O setup.py register sdist upload
+        python3 -O setup.py register sdist upload
+        /usr/bin/afplay -v 2 ~/.etm/sounds/etm_ding.m4a
+        ;;
 #        s)
 #        echo "### copying sound files ###"
 #        cp -p etmTk/sounds/*.m4a ~/.TEMP/sounds/

@@ -1827,15 +1827,15 @@ amp_keys = {
         u'q'],  # j queue position
 }
 
-
-def makeTree(list_of_lists, view=None, calendars=None, sort=True, fltr=None):
+# @memoize
+# @profile
+def makeTree(tree_rows, view=None, calendars=None, sort=True, fltr=None):
     tree = {}
     lofl = []
     root = '_'
     empty = True
     cal_regex = None
     log_msg = []
-    tree_rows = deepcopy(list_of_lists)
     if calendars:
         cal_pattern = r'^%s' % '|'.join([x[2] for x in calendars if x[1]])
         cal_regex = re.compile(cal_pattern)
@@ -4408,7 +4408,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         ('day', d0.strftime(sortdatefmt),
                          tstr2SCI[typ][0], hsh['_p'], '', f),
                         (fmt_date(d0),),
-                        (uid, typ, setSummary(hsh, d0), '', d0.strftime(rfmt))]
+                        (uid, typ, setSummary(hsh, d0), '', d0)]
                     items.append(item)
                     # add2Dates(datetimes, (d0, f))
                     # add2list("datetimes", (d0, f))
@@ -4419,7 +4419,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     item = [
                         ('folder', (f, tstr2SCI[typ][0]), done,
                          hsh['_summary'], f), tuple(folders),
-                        (uid, typ, setSummary(hsh, done), sdt, done.strftime(rfmt))]
+                        (uid, typ, setSummary(hsh, done), sdt, done)]
                     items.append(item)
 
             if due:
@@ -4467,7 +4467,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 item = [
                     ('folder', (f, tstr2SCI[typ][0]), due,
                      hsh['_summary'], f), tuple(folders),
-                    (uid, typ, setSummary(hsh, due), time_str, etmdt)]
+                    (uid, typ, setSummary(hsh, due), time_str, dtl)]
                 items.append(item)
                 if 'k' in hsh and hsh['k'] != 'none':
                     keywords = [x.strip() for x in hsh['k'].split(':')]
@@ -4475,7 +4475,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         ('keyword', (hsh['k'], tstr2SCI[typ][0]),
                          due, hsh['_summary'], f), tuple(keywords),
                         (uid, typ,
-                         setSummary(hsh, due), time_str, etmdt)]
+                         setSummary(hsh, due), time_str, dtl)]
                     items.append(item)
                 if 't' in hsh:
                     for tag in hsh['t']:
@@ -4483,7 +4483,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                             ('tag', (tag, tstr2SCI[typ][0]), due,
                              hsh['_summary'], f), (tag,),
                             (uid, typ,
-                             setSummary(hsh, due), time_str, etmdt)]
+                             setSummary(hsh, due), time_str, dtl)]
                         items.append(item)
             if not due and not done:  # undated
                 dts = "none"
@@ -4504,14 +4504,14 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     item = [
                         ('keyword', (hsh['k'], tstr2SCI[typ][0]), '',
                          hsh['_summary'], f), tuple(keywords),
-                        (uid, typ, setSummary(hsh, ''), '', etmdt)]
+                        (uid, typ, setSummary(hsh, ''), '', dtl)]
                     items.append(item)
                 if 't' in hsh:
                     for tag in hsh['t']:
                         item = [
                             ('tag', (tag, tstr2SCI[typ][0]), due,
                              hsh['_summary'], f), (tag,),
-                            (uid, typ, setSummary(hsh, ''), '', etmdt)]
+                            (uid, typ, setSummary(hsh, ''), '', dtl)]
                         items.append(item)
 
         else:  # not a task type
@@ -4574,21 +4574,21 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
             item = [
                 ('folder', (f, tstr2SCI[typ][0]), dt,
                  hsh['_summary'], f), tuple(folders),
-                (uid, typ, setSummary(hsh, dt), sdt, etmdt)]
+                (uid, typ, setSummary(hsh, dt), sdt, dt)]
             items.append(item)
             if 'k' in hsh and hsh['k'] != 'none':
                 keywords = [x.strip() for x in hsh['k'].split(':')]
                 item = [
                     ('keyword', (hsh['k'], tstr2SCI[typ][0]), dt,
                      hsh['_summary'], f), tuple(keywords),
-                    (uid, typ, setSummary(hsh, dt), sdt, etmdt)]
+                    (uid, typ, setSummary(hsh, dt), sdt, dt)]
                 items.append(item)
             if 't' in hsh and hsh['t'] != 'none':
                 for tag in hsh['t']:
                     item = [
                         ('tag', (tag, tstr2SCI[typ][0]), dt,
                          hsh['_summary'], f), (tag,),
-                        (uid, typ, setSummary(hsh, dt), sdt, etmdt)]
+                        (uid, typ, setSummary(hsh, dt), sdt, dt)]
                     items.append(item)
             if hsh['itemtype'] == '#':
                 # don't include deleted items in any other views
@@ -4599,14 +4599,14 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
             item = [
                 ('inbasket', (0, tstr2SCI['ib'][0]), dt,
                  hsh['_summary'], f),
-                (uid, 'ib', setSummary(hsh, dt), sdt, etmdt)]
+                (uid, 'ib', setSummary(hsh, dt), sdt, dt)]
             items.append(item)
             continue
         if hsh['itemtype'] == '?':
             item = [
                 ('someday', 2, (tstr2SCI['so'][0]), dt,
                  hsh['_summary'], f),
-                (uid, 'so', setSummary(hsh, dt), sdt, etmdt)]
+                (uid, 'so', setSummary(hsh, dt), sdt, dt)]
             items.append(item)
             continue
         if hsh['itemtype'] == '!':
@@ -4616,7 +4616,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
             item = [
                 ('note', (hsh['k'], tstr2SCI[typ][0]), '',
                  hsh['_summary'], f), tuple(keywords),
-                (uid, typ, setSummary(hsh, ''), '', etmdt)]
+                (uid, typ, setSummary(hsh, ''), '', dt)]
             items.append(item)
         #--------- make entry for next view ----------#
         if 's' not in hsh and hsh['itemtype'] in [u'+', u'-', u'%']:
@@ -4774,7 +4774,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 else:
                     item = [
                         ('now', sn, dtl, hsh['_p'], summary, f), (cat,),
-                        (uid, typ, summary, time_str, etmdt)]
+                        (uid, typ, summary, time_str, dtl)]
                 items.append(item)
 
             if 'b' in hsh:
@@ -4790,7 +4790,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                              hsh['_p'],
                              f),
                             (fmt_date(today_datetime),),
-                            (uid, 'by', summary, extstr, etmdt)]
+                            (uid, 'by', summary, extstr, dtl)]
                     items.append(item)
 
             if hsh['itemtype'] == '!':
@@ -4799,7 +4799,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
                      hsh['_p'], '', f),
                     (fmt_date(dt),),
-                    (uid, typ, summary, '', etmdt)]
+                    (uid, typ, summary, '', dtl)]
                 items.append(item)
                 continue
             if hsh['itemtype'] == '^':
@@ -4808,7 +4808,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     ('day', sd.strftime(sortdatefmt),
                      tstr2SCI[typ][0], hsh['_p'], '', f),
                     (fmt_date(dt),),
-                    (uid, typ, summary, '', etmdt)]
+                    (uid, typ, summary, '', dtl)]
                 items.append(item)
                 occasions.append([sd, summary, uid, f])
                 continue
@@ -4823,7 +4823,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                      tstr2SCI[typ][0], hsh['_p'], '', f),
                     (fmt_date(dt),),
                     (uid, 'ac', summary,
-                     sdt, etmdt)]
+                     sdt, dtl)]
                 items.append(item)
                 continue
             if hsh['itemtype'] == '*':
@@ -4849,7 +4849,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         (fmt_date(sd),),
                         (uid, typ, summary, '%s ~ %s' %
                                             (st_fmt,
-                                             options['dayend_fmt']), etmdt)]
+                                             options['dayend_fmt']), dtl)]
                     items.append(item)
                     busytimes.append([sd, sm, day_end_minutes,
                                  evnt_summary, uid, f])
@@ -4899,7 +4899,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         (fmt_date(sd),),
                         (uid, typ, summary, '%s%s' % (
                             st_fmt,
-                            et_fmt), etmdt)]
+                            et_fmt), dtl)]
                     items.append(item)
                     busytimes.append([sd, sm, em, evnt_summary, uid, f])
                     continue
@@ -4925,7 +4925,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
                      hsh['_p'], '', f),
                     (fmt_date(dt),),
-                    (uid, typ, summary, extstr, etmdt)]
+                    (uid, typ, summary, extstr, dtl)]
                 items.append(item)
                 continue
             if hsh['itemtype'] == '%':
@@ -4937,7 +4937,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
                      hsh['_p'], '', f),
                     (fmt_date(dt),),
-                    (uid, typ, summary, extstr, etmdt)]
+                    (uid, typ, summary, extstr, dtl)]
                 items.append(item)
                 continue
             if hsh['itemtype'] == '+':
@@ -4952,7 +4952,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
                      hsh['_p'], '', f),
                     (fmt_date(dt),),
-                    (uid, typ, summary, extstr, etmdt)]
+                    (uid, typ, summary, extstr, dtl)]
                 items.append(item)
                 continue
     file2data[f] = [items, alerts, busytimes, datetimes, occasions]
@@ -5515,7 +5515,7 @@ class ETMCmd():
             'v': self.help_v,
         }
         self.ruler = '-'
-        self.rows = []
+        # self.rows = []
         self.file2uuids = {}
         self.file2lastmodified = {}
         self.uuid2hash = {}
@@ -5542,7 +5542,7 @@ class ETMCmd():
         self.tmpfile = os.path.join(self.options['etmdir'], '.temp.txt')
 
     def do_command(self, s):
-        logger.debug('processing command: {0}'.format(s))
+        # logger.debug('processing command: {0}'.format(s))
         args = s.split(' ')
         cmd = args.pop(0)
         if args:

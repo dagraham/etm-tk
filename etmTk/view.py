@@ -2744,7 +2744,7 @@ Relative dates and fuzzy parsing are supported.""")
     def process_input(self, event=None, cmd=None):
         """
         """
-        logger.debug('process_input cmd: {0}, mode: "{1}"'.format(cmd, self.mode))
+        # logger.debug('process_input cmd: {0}, mode: "{1}"'.format(cmd, self.mode))
         if not cmd:
             return True
         if self.mode == 'command':
@@ -2878,6 +2878,7 @@ or 0 to expand all branches completely.""")
         for child in self.tree.get_children():
             self.tree.delete(child)
 
+    # @profile
     def addToTree(self, parent, elements, tree, depth=0):
         max_depth = 100
         for text in elements:
@@ -2886,7 +2887,7 @@ or 0 to expand all branches completely.""")
             # these keys are (parent, item) tuples
             if text in tree:
                 # this is a branch
-                item = " " + text[1]  # this is the label of the parent
+                item = " {0}".format(text[1])  # this is the label of the parent
                 children = tree[text]  # this are the children tuples of item
                 oid = self.tree.insert(parent, 'end', iid=self.count, text=item,
                                        open=(depth <= max_depth))
@@ -2903,7 +2904,7 @@ or 0 to expand all branches completely.""")
                     uuid, item_type, col1, col2, dt = text[1]
 
                 # This hack avoids encoding issues under python 2
-                col1 = "{0} ".format(id2Type[item_type]) + col1
+                col1 = "{0} {1}".format(id2Type[item_type], col1)
 
                 if type(col2) == int:
                     col2 = '%s' % col2
@@ -2919,12 +2920,9 @@ or 0 to expand all branches completely.""")
                         d = get_current_time().date()
                     else:
                         try:
-                            # split into date and time
-                            d1 = dt.split(" ")[0]
-                            # parse the date part
-                            d = parse(d1).date()
+                            d = dt.date()
                         except:
-                            logger.exception('could not parse: {0}'.format(dt))
+                            logger.exception('not a datetime: {0}; {1}'.format(dt, text))
                             d = None
                     if d and d not in self.date2id:
                         self.date2id[d] = parent
