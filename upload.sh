@@ -12,7 +12,10 @@ if [ -z "$1" ]; then
 else
     copy=0
     # version=`cat v.txt`
-    version=`cat etmTk/v.py | head -1 | sed 's/\"//g' | sed 's/^.*= *//g'`
+#    version=`cat etmTk/v.py | head -1 | sed 's/\"//g' | sed 's/^.*= *//g'`
+    version=`cat etmTk/v.py | head -1 | sed 's/\"//g' | sed 's/^.*= *//g' | sed 's/-.*$//g'`
+
+    echo $version
     if [ -d ~/.TEMP ]
     then
         rm -Rf ~/.TEMP
