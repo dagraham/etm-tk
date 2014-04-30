@@ -1827,15 +1827,15 @@ amp_keys = {
         u'q'],  # j queue position
 }
 
-# @memoize
-# @profile
-def makeTree(tree_rows, view=None, calendars=None, sort=True, fltr=None):
+@memoize
+def makeTree(list_of_rows, view=None, calendars=None, sort=True, fltr=None):
     tree = {}
     lofl = []
     root = '_'
     empty = True
     cal_regex = None
     log_msg = []
+    tree_rows = deepcopy(list_of_rows)
     if calendars:
         cal_pattern = r'^%s' % '|'.join([x[2] for x in calendars if x[1]])
         cal_regex = re.compile(cal_pattern)
