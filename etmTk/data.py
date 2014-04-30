@@ -511,15 +511,15 @@ def get_week(dt):
     mend = weekend.month
     if mbeg == mend:
         header = "{0} - {1}".format(
-            fmt_dt(weekbeg, '%b %d'), fmt_dt(weekend, '%d, %Y'))
+            fmt_dt(weekbeg, '%b %d'), fmt_dt(weekend, '%d'))
     elif ybeg == yend:
         header = "{0} - {1}".format(
-            fmt_dt(weekbeg, '%b %d'), fmt_dt(weekend, '%b %d, %Y'))
+            fmt_dt(weekbeg, '%b %d'), fmt_dt(weekend, '%b %d'))
     else:
         header = "{0} - {1}".format(
             fmt_dt(weekbeg, '%b %d, %Y'), fmt_dt(weekend, '%b %d, %Y'))
     header = leadingzero.sub('', header)
-    theweek = "{0} {1}: {2}".format(_("Week"), wn, header)
+    theweek = "{0} {1}: {2}".format(_("{0} Week".format(yn)), "{0:02d}".format(wn), header)
     return theweek
 
 
