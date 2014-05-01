@@ -189,7 +189,7 @@ The `@r frequency` entry can, optionally, be followed by one or more `&key value
 
     &i: interval (positive integer, default = 1) E.g, with frequency w, interval 3 would repeat every three weeks.
     &t: total (positive integer) Include no more than this total number of repetitions.
-    &s: bysetpos (integer) See the payday example below for an illustration of bysetpos.
+    &s: bysetpos (integer). When multiple dates satisfy the rule, take the date from this position in the list, e.g, &s 1 would choose the first element and &s -1 the last. See the payday example below for an illustration of bysetpos.
     &u: until  (datetime) Only include repetitions falling **before** (not including) this datetime.
     &M: bymonth (1, 2, ..., 12)
     &m: bymonthday (1, 2, ..., 31) Use, e.g., -1 for the last day of the month.

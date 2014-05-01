@@ -81,6 +81,9 @@ done
 #cd /Users/dag/etm-tk
 #pdflatex cheatsheet.tex
 
+cd /Users/dag/etm-tk
+pdflatex cheatsheet.tex
+
 echo Cleaning up
 cd ~/etm-tk
 rm -fR *.ps

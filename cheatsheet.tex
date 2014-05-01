@@ -1,0 +1,950 @@
+\documentclass[9pt,landscape]{article}
+\usepackage{multicol}
+\usepackage{calc}
+\usepackage{ifthen}
+\usepackage[landscape]{geometry}
+\usepackage{paralist}
+
+\ifthenelse{\lengthtest { \paperwidth = 11in}}
+	{ \geometry{top=.4in,left=.4in,right=.4in,bottom=.4in} }
+	{\ifthenelse{ \lengthtest{ \paperwidth = 297mm}}
+		{\geometry{top=1cm,left=1cm,right=1cm,bottom=1cm} }
+		{\geometry{top=1cm,left=1cm,right=1cm,bottom=1cm} }
+	}
+
+\pagestyle{empty}
+
+
+\makeatletter
+\renewcommand{\section}{\@startsection{section}{1}{0mm}%
+                                {-1ex plus -.5ex minus -.2ex}%
+                                {0.5ex plus .2ex}%x
+                                {\normalfont\large\bfseries}}
+\renewcommand{\subsection}{\@startsection{subsection}{2}{0mm}%
+                                {-1explus -.5ex minus -.2ex}%
+                                {0.5ex plus .2ex}%
+                                {\normalfont\normalsize\bfseries}}
+\renewcommand{\subsubsection}{\@startsection{subsubsection}{3}{0mm}%
+                                {-1ex plus -.5ex minus -.2ex}%
+                                {1ex plus .2ex}%
+                                {\normalfont\small\bfseries}}
+\makeatother
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\setcounter{secnumdepth}{0}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt plus 0.5ex}
+
+
+% -----------------------------------------------------------------------
+
+\begin{document}
+
+\raggedright
+\footnotesize
+\begin{multicols}{3}
+
+\setlength{\premulticols}{1pt}
+\setlength{\postmulticols}{1pt}
+\setlength{\multicolsep}{1pt}
+\setlength{\columnsep}{2pt}
+
+\begin{center}
+     \Large{\textbf{etm cheat sheet}} \\
+\end{center}
+
+\section{Data}
+
+Data items begin with a data type character and continue on one or more lines either until the end of the file is reached or another line is found that begins with a type character. The beginning type character for each item is followed by the item summary and then, perhaps, by one or more \verb!@key value! options.
+\vskip 3pt
+
+\begin{tabular}{@{}ll@{}}
+\verb!action!  & Begins with \verb!~! (tilde). A record of time \\
+               & or money spent. \\
+\verb!event!   & Begins with \verb!*! (asterick). Happens on a \\
+               & particular day and time. \\
+\verb!occasion! & Begins with \verb!^! (caret sign). Marks a date \\
+               & such as a  holiday, anniversary or birthday. \\
+\verb!note!   & Begins with \verb'!' (exclamation point). A \\
+              & record of some useful information. \\
+\verb!task!   & Begins with \verb!-! (minus sign). Something  \\
+              & that needs to be done. \\
+\verb!delegated task!   & Begins with \verb!%! (percent sign). Something \\
+              & assigned to someone else to be done. \\
+\verb!task group!   & Begins with \verb!+! (plus sign). Related tasks, \\
+              & some may be prerequisites for others. \\
+\verb!inbasket!   & Begins with \verb!$! (dollar sign). Quick entry \\
+              & to be edited later when time permits. \\
+\verb!someday maybe!   & Begins with \verb!?! (question mark). Remember \\
+              & but don't show in the common views. \\
+\verb!hidden!   & Begins with \verb!#! (hash mark). Hidden from \\
+              & all etm views except folder view. \\
+\verb!defaults!   & Begins with \verb!=! (equal sign). Sets default \\
+              & options for subsequent entries. \\
+\end{tabular}
+
+
+\subsection{\texttt{@key value} options}
+\newlength{\MyLen}
+\settowidth{\MyLen}{\texttt{letterpaper}/\texttt{a4paper} \ }
+% \begin{tabular}{@{}p{\the\MyLen}%
+%                 @{}p{\linewidth-\the\MyLen}@{}}
+\begin{tabular}{@{}ll@{}}
+\texttt{@a} & alert (see alerts below). \\
+\texttt{@b} & beginby. An integer number of days before the starting \\
+            & datetime to begin displaying an upcoming notification. \\
+\texttt{@c} & context. E.g., errands, home, office, phone. \\
+\texttt{@d} & description. An elaboration of the details of the item. \\
+\texttt{@e} & extent. A time period (see fuzzy datetimes and time \\
+            & periods below).\\
+\texttt{@f} & done; due. Fuzzy datetimes specifying when a task was \\
+            & finished and when it was due. \\
+\texttt{@g} & goto. A file path or url to be opened using the system \\
+            & default application when the user presses \emph{Ctrl-G} \\
+            & in the details view of the item. \\
+\texttt{@j} & job. Group tasks only. A component task. \\
+\texttt{@k} & keyword. A heirarchial classifier for an item using a \\
+            & format such as \texttt{client:project}. \\
+\texttt{@l} & location. The location at which, for example, an event \\
+            & will take place. \\
+\texttt{@m} & memo. Further details about the item not included in \\
+            & the summary or the description. \\
+\texttt{@o} & overdue. Repeating tasks only (see repetition rules \\
+            & below). \\
+\texttt{@p} & priority. Either 0 (no priority) or an integer between \\
+            & 1 (highest priority) and 9 (lowest priority). \\
+\end{tabular}
+
+\begin{tabular}{@{}ll@{}}
+\texttt{@r} & repetition rule. The specification of how an item is to \\
+            & repeat (see repetition rules). \\
+\texttt{@s} & starting datetime. When an action is started, an event \\
+            & begins or a task is due. \\
+\texttt{@t} & tags. A tag or a comma separated list of tags. \\
+\texttt{@u} & user. A user or a comma separated list of users. \\
+\texttt{@v} & value. A key from \texttt{values} in \texttt{etm.cfg} used in actions to \\
+            & specify the billing rate to be applied to the time spent. \\
+\texttt{@w} & weight. A key from \texttt{weights} in \texttt{etm.cfg} used in actions to \\
+            & specify the markup rate to be applied to @x expenses. \\
+\texttt{@x} & expense. A currency amount. Used in conjunction with \\
+& @w markup.\\
+\texttt{@z} & time zone. A time zone such as \texttt{US/Eastern}. \\
+\texttt{@+} & include. Repeated items only. A datetime or list of \\
+            & datetimes to be added to the repetitons generated by \\
+            & the repetition rule. If an explicit times is not \\
+            & entered, 12:00am will be the assumed time.\\
+\texttt{@-} & exclude. Repeated items only. A datetime or list of \\
+            & datetimes to be removed from the repetitons generated \\
+            & by the repetition rule. If an explicit time is not \\
+            & entered, 12:00am will be the assumed time. \\
+
+\end{tabular}
+
+
+\subsection{alerts}
+
+Examples:
+\begin{compactdesc}
+  \item[\texttt{@a 10m,5m}] Trigger the default alert ten minutes and five minutes before the starting datetime of the item.
+  \item[\texttt{@a 1h:s}] Trigger a sound alert one hour before the starting datetime.
+  \item[\texttt{@a 2d:e;who@what.com;filepath}] Send an email to the listed recipient exactly 2 days (48 hours) before the starting time of the item.
+\end{compactdesc}
+
+The format for each of these:
+\vskip 3pt
+\texttt{@a <trigger times>[:action[;arguments]]}
+\vskip 3pt
+
+Possible values for \verb!action!:
+\vskip 3pt
+
+\begin{tabular}{@{}ll@{}}
+\texttt{d} & display. Execute \verb!alert_displaycmd! in \verb!etm.cfg!. \\
+\texttt{e} & email. \verb!:e;recipients[;attachments]!. Send an email to \\
+           & \verb!recipients! optionally attaching \verb!attachments!.\\
+\texttt{m} & message. Display an internal etm message box. \\
+\texttt{s} & sound. Execute \verb!alert_soundcmd! in \verb!etm.cfg!. \\
+\texttt{t} & text message. \verb!:t[;phonenumbers]!. Send a text message \\
+           & to \verb'phonenumbers' using the \verb'sms' settings from \verb'etm.cfg'. \\
+           & If no numbers are given, then the setting for \verb'sms.phone' \\
+           & will be used. \\
+\texttt{v} & voice. Execute \verb!alert_voicecmd! in \verb!etm.cfg! \\
+\texttt{p} & process. \verb!:p;process!. Execute \verb!process!.  \\
+\end{tabular}
+
+\vskip 3pt
+
+Actions \verb!e! and \verb!p! can be combined with other actions in a single alert but not with one another.
+
+
+\subsection{fuzzy datetimes and time periods}
+
+Suppose, for example, that it is currently 8:30am on Wednesday, November 14, 2012. Then, in any \verb!@key! calling for a datetime, \verb!value! would expand as follows:
+\vskip 3pt
+
+\begin{tabular}{@{}ll@{}}
+\texttt{mon 2p} & 2:00pm Monday, November 19 \\
+\texttt{fri} & 12:00am Friday, November 16. \\
+\texttt{9a -1/1} & 9:00am Monday, October 1. \\
+\texttt{+2/15} & 12:00am Tuesday, January 15 2013. \\
+\texttt{8p +7} & 8:00pm Monday, November 26.\\
+\texttt{-14} & 12:00am Monday, November 5. \\
+\texttt{now} & 8:30am Wednesday, November 14. \\
+\end{tabular}
+
+\vskip 3pt
+In any \verb!@key! calling for a time period, \verb!value! would expand as follows:
+\vskip 3pt
+
+\begin{tabular}{@{}ll@{}}
+\texttt{2h30m} & 2 hours and thirty minutes. \\
+\texttt{7d} & 7 days. \\
+\texttt{45} & 45 minutes. \\
+\end{tabular}
+
+
+\subsection{repetition rules}
+
+The specification of how an item is to repeat. Repeating items must have an \verb!@s! entry as well as one or more \verb!@r! entries. Generated datetimes are those satisfying any of the \verb!@r! entries and falling \emph{on or after} the datetime given in \verb!@s!.
+\vskip 3pt
+A repetition rule begins with \verb!@r frequency! where \verb!frequency! is one of the following characters:
+\vskip 3pt
+\begin{tabular}{@{}ll@{}}
+\texttt{y} & yearly. \\
+\texttt{m} & monthly. \\
+\texttt{w} & weekly. \\
+\texttt{d} & daily. \\
+\texttt{l} & list (a list of datetimes will be provided using \verb!@+!). \\
+\end{tabular}
+
+\vskip 3pt
+The \verb!@r frequency! entry can, optionally, be followed by one or more
+\verb!&key value! pairs:
+\vskip 3pt
+
+\begin{tabular}{@{}ll@{}}
+\texttt{\&i} & interval (positive integer, default = 1) E.g, with frequency \verb!w!, \\
+             & interval 3 would repeat every three weeks. \\
+\texttt{\&t} & total (positive integer) Include no more than this total \\
+             & number of repetitions. \\
+\texttt{\&s} & bysetpos (integer). When multiple dates satisfy the rule, take \\
+             & the date from this position in the list, e.g, \verb!&s 1! would\\
+             & choose the first element and \verb!&s -1! the last. \\
+\texttt{\&u} & until (datetime). Only include repetitions falling \emph{before} \\
+             & (not including) this datetime. \\
+\texttt{\&M} & bymonth (1, 2, ..., 12) \\
+\texttt{\&m} & bymonthday (1, 2, ..., 31) \\
+\texttt{\&W} & byweekno (1, 2, ..., 53) \\
+\texttt{\&w} & byweekday (English weekday abbreviation SU ... SA). \\
+             & Use, e.g., 3WE for the third Wednesday or -1FR for \\
+             & the last Friday in each month. \\
+\texttt{\&h} & byhour (0 ... 23) \\
+\texttt{\&n} & byminute (0 ... 59) \\
+\end{tabular}
+
+\vskip 4pt
+\textbf{examples}
+\vskip 3pt
+
+\begin{compactdesc}
+  \item[\texttt{@r d \&h 10, 14 18, 22}:]
+    Daily at 10am, 2pm, 6pm and 10pm.
+  \item[\texttt{@r y \&i 4 \&M 11 \&m range(2,9) \&w TU}:]
+    The first Tuesday after a Monday in November every four years (presidential election day).
+  \item[\texttt{@r m \&w MO, TU, WE, TH, FR \&m -1, -2, -3 \&s -1}:]
+    The last weekday of each month. (The \verb!&s -1! entry extracts the last date which is both a weekday and falls within the last three days of the month.)
+\end{compactdesc}
+
+% \vskip pt
+\textbf{overdue}
+
+A repeating \emph{task} may optionally also include an \verb!@o <k|s|r>! entry (default: \verb'k'):
+
+\begin{compactdesc}
+   \item[\texttt{@o k}] Keep the current due date if it becomes overdue and use the next due date from the recurrence rule if it is finished early.
+   \item[\texttt{@o r}] Restart the repetitions based on the last completion date.
+   \item[\texttt{@o s}] Skip overdue due dates and set the due date for the next repetition to the first due date from the recurrence rule on or after the current date.
+\end{compactdesc}
+
+
+\section{Views}
+
+\begin{compactdesc}
+  \item[day] All scheduled (dated) items appear in this view, grouped by date and sorted by starting time and item type.
+  \item[week] A graphical view of a week showing scheduled events and free periods.
+  \item[month] A monthly calendar view with the date numbers colored to indicate the amount of scheduled time for events for that date.
+  \item[now] All dated tasks whose due dates have passed including delegated tasks and waiting tasks (tasks with unfinished prerequisites) grouped by available, delegated and waiting and, within each group, by the due date.
+  \item[next] All undated tasks grouped by context (home, office, phone, computer, errands and so forth) and sorted by priority.
+  \item[folder] All items grouped by folder (project file path) and sorted by type and \emph{relevant datetime}, i.e., the past due date for any past due tasks, the starting datetime for any non-repeating items and the datetime of the next instance for any repeating items.
+  \item[keyword] All items grouped by keyword and sorted by type and \emph{relevant datetime}.
+  \item[tag] All items with tag entries grouped by tag and sorted by type and \emph{relevant datetime}. Note that items with multiple tags will be listed under each tag.
+\end{compactdesc}
+
+\section{Reports}
+
+A \emph{report specification} is created by entering a report type character followed by a groupby setting and, perhaps, by one or more report options. Together, the type character, groupby setting and options determine which items will appear in the report and how they will be organized and displayed.
+
+\vskip 3pt
+There are two possible report type characters, \emph{a} and \emph{c}:
+
+\begin{compactdesc}
+\item[\texttt{a}:] actions only with totals.
+\item[\texttt{c}:] any item types without totals.
+\end{compactdesc}
+
+\subsection{groupby}
+
+A semicolon separated list of elements that determine how items will be grouped and sorted. Possible elements include \emph{date specifications} and elements from
+
+\begin{tabular}{@{}ll@{}}
+\texttt{c} & context. \\
+\texttt{f} & file path. \\
+\texttt{k} & keyword. \\
+% \texttt{l} & location. \\
+\texttt{t} & tag. \\
+\texttt{u} & user. \\
+\end{tabular}
+
+\vskip3pt
+A \emph{date specification} is a combination of one or more of the following:
+\vskip3pt
+
+\begin{tabular}{@{}ll@{}}
+\texttt{yy} & 2-digit year, e.g., 13. \\
+\texttt{yyyy} & 4-digit year, e.g., 2013. \\
+\texttt{M} & month, 1 - 12. \\
+\texttt{MM} & month, 01 - 12. \\
+\texttt{MMM} & locale specific abbreviated month name, e.g., Jan. \\
+\texttt{MMMM} & locale specific month name, e.g., January. \\
+\end{tabular}
+\begin{tabular}{@{}ll@{}}
+\texttt{d} & month day, 1 - 31. \\
+\texttt{dd} & month day, 01 - 31. \\
+\texttt{ddd} & locale specific abbreviated week day, e.g, Mon. \\
+\texttt{dddd} & locale specific week day, e.g., Monday. \\
+\end{tabular}
+
+\vskip3pt
+For example, suppose that keywords have the format \verb!client:project!. Then \verb!c MMM yyyy; k[0]; k[1] ...! would group by year and month, then client and finally project:
+\begin{verbatim}
+  Apr 2011
+      client a
+          project 1
+              items for client a, project 1 in April
+          project 2
+              items for client a, project 2 in April
+      client b
+          project i
+              items for client b, project i in April
+          ...
+\end{verbatim}
+
+Items that are missing an element specified in \verb'groupby' will be omitted from the output, e.g., items without \verb'keywords' will be omitted if \verb'k' is included. Similarly, undated items will be omitted when a date specification is included.
+%When a date specification is not included, undated notes and tasks will be potentially included, but only those instances of dated items that correspond to the \emph{relevant datetime} of the item of the item will be included, i.e., the past due date for any past due tasks, the starting datetime for any non-repeating item and the datetime of the next instance for any repeating item.
+
+\subsection{omit}
+
+Show/hide a)ctions, d)elegated tasks, e)vents, g)roup tasks, n)otes, o)ccasions and/or other t)asks. E.g. use \verb'-o on' to omit occasions and notes and \verb'-o !on' to show only occasions and notes.
+
+\subsection{options}
+
+Report options are listed below. Report type \textbf{c} supports all options except \emph{-d}. Report type \textbf{a} supports all options except \emph{-o} and \emph{-h}.
+%\vskip3pt
+\begin{tabular}{@{}ll@{}}
+\texttt{-b} & begin (datetime). Limit the display of dated items to \\
+           & those with datestimes falling \emph{on or after} this datetime. \\
+\texttt{-c} & context (regular expression). \\
+\texttt{-d} & depth (integer). The default, \verb'-d 0', includes all outline \\
+            & levels. Use \verb'-d 1' to include only level 1, \verb'-d 2' to include \\
+            & levels 1 and 2 and so forth. \\
+\texttt{-e} & end (datetime). Limit the display of dated items to those \\
+          & with datetimes falling \emph{before} this datetime.\\
+\texttt{-f} & file (relative file path).\\
+\texttt{-h} & hue (0, 1 or 2). \verb'-h 2', uses all possible colors for leaf fonts,\\
+            & \verb'-h 1' uses red for past due items and black for everything \\
+            & else and \verb'-h 0' uses black for everything. \\
+\texttt{-k} & keyword (regular expression). \\
+\texttt{-l} & location (regular expression). \\
+\texttt{-o} & omit (see omit below). \\
+\texttt{-s} & summary (regular expression). \\
+\texttt{-t} & tags (comma separated list of regular expressions). \\
+\texttt{-u} & user (regular expression). \\
+\texttt{-w} & width1 (integer number of characters for column 1). \\
+\texttt{-W} & width2 (integer number of characters for column 2). \\
+\end{tabular}
+%\vskip3pt
+With regular expressions, you can use \verb'!' (exclamation point) as a prefix to negate the result. E.g., \verb'-t tag1, !tag2' would select items with one or more tags that match \verb!tag1! but none that match \verb!tag2!.
+
+\section{Shortcuts}
+
+On Mac OS X, use the \emph{Command} key instead of the \emph{Ctrl} key.
+
+\subsection{general}
+
+\begin{tabular}{@{}ll@{}}
+\emph{F1} & Show this help information. \\
+\emph{F2}               & Show information about etm. \\
+\emph{F3}               & Check for a newer version of etm. \\
+\emph{F4}               & Display a twelve month calendar. Use \emph{Left} and \\
+                        & \emph{Right} cursor keys to change years and \emph{Space} to \\
+                        & return to the current year. \\
+\emph{F5}               & Open the date calculator. \\
+\emph{F6}               & Show local Yahoo weather information. \\
+\emph{F7}               & Show local USNO sun and moon data. \\
+\emph{Comma}            & Switch to the \emph{day} view. \\
+\emph{Period}           & Switch to the \emph{week} view. \\
+\emph{Slash}            & Switch to the \emph{month} view. \\
+\end{tabular}
+\begin{tabular}{@{}ll@{}}
+\emph{Semicolon}        & Switch to the \emph{now} view. \\
+\emph{Apostrophe}       & Switch to the \emph{next} view. \\
+\emph{Left Bracket}     & Switch to the \emph{folder} view. \\
+\emph{Right Bracket}    & Switch to the \emph{keyword} view. \\
+\emph{Back Slash}       & Switch to the \emph{tag} view. \\
+\emph{Space}         & Display the current date in the day, week and \\
+                        & month views. See also \emph{Ctrl-J} below. \\
+\emph{Escape}           & Clear the pattern filter and return focus to the \\
+                        & view menu. \\
+\emph{Tab}              & Toggle the focus between the view menu and the \\
+                        & main window. \\
+\emph{Ctrl-A}        & Show the remaining alerts for today, if any. \\
+\emph{Ctrl-C}        & If you have a entry for \emph{calendars} in your   \verb!etm.cfg! \\
+                        & file, then open a dialog to choose which calendars \\
+                        & to display. \\
+\end{tabular}
+\begin{tabular}{@{}ll@{}}
+\emph{Ctrl-E}        & Show the list of error messages, if any, that were \\
+                        & when data files were last loaded.  \\
+\emph{Ctrl-F}        & Enter an expression in the pattern filter to limit \\
+                        & the display to items with matching summaries  \\
+                        & (titles) or branches. \\
+\emph{Ctrl-J}        & Enter a fuzzy parsed date to be shown in the day, \\
+                        & week and month views. Relative days and months \\
+                        & can be entered in this dialog. E.g., \verb'+21' to go \\
+                        & forward 21 days or \verb'-1/1' to go to the first day \\
+                        & of the previous month. See also \emph{Space} above. \\
+\emph{Ctrl-L}        & Activate the view menu pop up list. \\
+\emph{Ctrl-N}        & Create a new event, note or task. \\
+\end{tabular}
+\begin{tabular}{@{}ll@{}}
+
+\emph{Ctrl-P}        & Open the etm scratch pad. \\
+\emph{Ctrl-R}        & Create a custom report. \\
+\end{tabular}
+\begin{tabular}{@{}ll@{}}
+\emph{Ctrl-S}        & Show the current schedule. \\
+\emph{Ctrl-T}        & If the action timer is inactive, create a new action \\
+                        & timer. Otherwise toggle the timer between paused \\
+                        & and running. \\
+\end{tabular}
+\begin{tabular}{@{}ll@{}}
+\emph{Shift-Ctrl-H}  & Select a file to edit from those recently changed. \\
+\emph{Shift-Ctrl-O}  & Edit \verb'etm.cfg'. \\
+\emph{Shift-Ctrl-C}  & Edit \verb'auto_completions'. \\
+\emph{Shift-Ctrl-R}  & Edit \verb'report_specifications'. \\
+\emph{Shift-Ctrl-T}  & If the action timer is active, stop the timer and \\
+                        & record the action. \\
+\end{tabular}
+
+\subsection{day view}
+
+\begin{tabular}{@{}ll@{}}
+\emph{Return}     & If a leaf is selected, open the details view for \\
+                  & the leaf. \\
+\emph{LeftArrow}  & Display the last date with scheduled items \\
+                  & before the current. Display the week containing \\
+                  & this date in week view and the month containing \\
+                  & this date in month view. \\
+\emph{RightArrow} & Display the first date with scheduled items after \\
+                  & the current. Display the week containing this \\
+                  & date in week view and the month containing this \\
+                  & date in month view. \\
+\end{tabular}
+
+
+\subsection{week view}
+
+\begin{tabular}{@{}ll@{}}
+\emph{Double-Click} & In a busy time slot, open the details dialog for \\
+                    & the relevant event. \\
+                    & In an empty time slot, open a dialog to create \\
+                    & a new event for the relevant date and time. \\
+\emph{LeftArrow}    & Display the previous week. \\
+\emph{RightArrow}   & Display the next week. \\
+\emph{Control-B}    & Open a display showing the periods during the \\
+                    & week when you are busy. \\
+\end{tabular}
+
+\subsection{month view}
+
+\begin{tabular}{@{}ll@{}}
+\emph{Double-Click} & Make the selected date visible in both the day \\
+                    & and week views and switch to the week view. \\
+\emph{LeftArrow}    & Move the selection to the previous month. \\
+\emph{RightArrow}   & Move the selection to the next month. \\
+\emph{UpArrow}      & Move the selection to the previous week. \\
+\emph{DownArrow}    & Move the selection to the next week. \\
+\end{tabular}
+
+\subsection{tree views}
+
+% \vskip3pt
+\begin{tabular}{@{}ll@{}}
+\emph{Double-Click}
+    & On a branch, toggle between expanded and \\
+    & collapsed. \\
+    & On a leaf, open the details dialog for the \\
+    & selected item. \\
+\end{tabular}
+\begin{tabular}{@{}ll@{}}
+\emph{Return}
+    & When a leaf is selected, open the details \\
+    & dialog for the selected item. \\
+\emph{Ctrl-/}
+    & Open a dialog to choose the level of \\
+    & expansion for the tree. \\
+\end{tabular}
+\begin{tabular}{@{}ll@{}}
+\emph{LeftArrow}
+    & Hides the children of the current item \\
+    & by collapsing a branch. \\
+\emph{Minus}
+    & Same as LeftArrow. \\
+\emph{RightArrow}
+    & Reveals the children of the current item \\
+    & by expanding a branch. \\
+\emph{Plus}
+    & Same as RightArrow. \\
+\end{tabular}
+\begin{tabular}{@{}ll@{}}
+\emph{Asterisk}
+    & Expands all children of the current item. \\
+\emph{PageUp}
+    & Moves the cursor up one page. \\
+\emph{PageDown}
+    & Moves the cursor down one page. \\
+\emph{Home}
+    & Moves the cursor to an item in the same \\
+    & column of the first row of the first \\
+    & top-level item in the model. \\
+\emph{End}
+    & Moves the cursor to an item in the same \\
+    & column of the last row of the last top-level \\
+    & item in the model. \\
+\end{tabular}
+
+% Press \emph{alphabetic} and \emph{numeric} character(s) to jump to the next appearance of the character(s).
+
+\subsection{details view}
+
+\begin{tabular}{@{}ll@{}}
+\emph{Return} & Edit this item. \\
+\emph{Ctrl-C} & Edit a copy of this item. \\
+\emph{Ctrl-D} & Delete this item. \\
+\emph{Ctrl-E} & Edit the file containing this item. \\
+\emph{Ctrl-F} & If the selected item is a task, enter a finish date. \\
+\emph{Ctrl-G} & If the selected item has an \emph{@g} entry, open it \\
+                 & using the system default application. \\
+\emph{Ctrl-H} & Show the history of changes to this item's file. \\
+\emph{Ctrl-M} & Move this item to a different file. \\
+\emph{Ctrl-R} & If this is a repeating item, show its repetitions. \\
+\emph{Shift Ctrl-S} & Enter a new date and time for this item. \\
+\emph{Ctrl-T} & Start the timer for a new action based on the \\
+              & selected item. \\
+\emph{Space} & In the ``edit which instance'' dialog, move the \\
+              & selection to the next alernative. \\
+
+\end{tabular}
+
+
+\subsection{reports dialog}
+
+% \vskip3pt
+\begin{tabular}{@{}ll@{}}
+\emph{Escape} &   If the list of report specifications is open, close it. \\
+\emph{Return} &   In the report specification field, add the current \\
+              & specification to the list if it is not already included.\\
+              & Use Ctrl-S to save such changes to the list. \\
+\emph{Ctrl-D} &   Remove the current report specification from the list \\
+                 & if it is included.  Use Ctrl-S to save such changes to\\
+                 & the list. \\
+\emph{Ctrl-E} & Export the current report. \\
+\emph{Ctrl-L} & Open the list of report specifications. \\
+\emph{Ctrl-P} & Print the current report. \\
+\emph{Ctrl-R} & Refresh the report using the selected report options \\
+                 & setting. \\
+\emph{Ctrl-S} & Save changes to the list of report options settings. \\
+\end{tabular}
+
+\subsection{editor}
+
+% \vskip3pt
+\begin{tabular}{@{}ll@{}}
+\emph{Ctrl-Return} &  Save changes if modified and close the editor. \\
+\emph{Ctrl-I} &  Insert the contents of the \emph{etm} scratch pad at \\
+                 & the cursor position. \\
+\emph{Ctrl-S} &  Save changes. \\
+\emph{Ctrl-W} &  Close the editor, prompting to save changes if \\
+                 & modified. \\
+\end{tabular}
+
+\section{Preferences}
+
+Action template expansions for use in \verb!action_template! below:
+
+\begin{tabular}{@{}ll@{}}
+\verb'!label!' & the item or group label. \\
+\verb'!minutes!' &  the total time in minutes respecting \verb!action_minutes!. \\
+\verb'!hours!' & If \verb!action_minutes = 1! the total time in hours \\
+               & and minutes and, otherwise the total time in \\
+               & floating point hours. \\
+\verb'!value!' & the billing value of the total time. Requires action \\
+               & entries such as \verb!@v br1! and settings  for  \\
+               & \verb!action_minutes! and \verb!action_rates!. \\
+\verb'!count!' & the number of children represented in the time and \\
+               & value totals. \\
+\verb'!expense!' & the value of the \verb!@x! field. \\
+\verb'!charge!' & the value of expense marked up using the value of the\\
+& \verb!@w! field. \\
+\verb'!total!' & the sum \verb!value + charge!. \\
+
+\end{tabular}
+
+
+Alert template expansions for use in \verb!alert_displaycmd!, \verb'alert_template', \verb!alert_voicecmd!, \verb!email_template!, \verb'sms:subject' and \verb'sms:message' below:
+
+\begin{tabular}{@{}ll@{}}
+\verb'!summary!'      & the item's summary. \\
+\verb'!start_date!'   & the starting date of the event. \\
+\verb'!start_time!'   & the starting time of the event. \\
+\verb'!time_span!'    & the time span of the event (see below). \\
+\verb'!alert_time!'   & the time the alert is triggered. \\
+\verb'!time_left!'    & the time remaining until the event starts. \\
+\verb'!when!'         & the time remaining until the event starts as \\
+                        & a sentence (see below). \\
+\verb'!d!'            & the item's \verb!@d! (description). \\
+\verb'!l!'            & the item's \verb!@l! (location). \\
+\end{tabular}
+
+\vskip3pt
+The value of \verb'!time_span!' depends on the starting and ending datetimes:
+\begin{compactitem}
+\item if the start and end \emph{datetimes} are the same: ``10am Wed, Aug 4''
+\item if the times are different but the \emph{dates} are the same: ``10am - 2pm Wed, Aug 4''
+\item if the \emph{dates} are different: ``10am Wed, Aug 4 - 9am Thu, Aug 5''
+\item if a date falls outside the current year: ``10am - 2pm Thu, Jan 3 2013''
+\end{compactitem}
+
+Examples of \verb'!time_left!' and \verb'!when!' :
+\begin{compactitem}
+\item \verb!@e 2d3h15m!
+    \begin{compactitem}
+        \item[$\circ$] \verb'!time_left!': ``2 days 3 hours 15 minutes''
+        \item[$\circ$] \verb'!when!': ``begins 2 days 3 hours 15 minutes from now''
+    \end{compactitem}
+\item \verb!@e 20m!
+    \begin{compactitem}
+        \item[$\circ$] \verb'!time_left!': ``20 minutes''
+        \item[$\circ$] \verb'!when!': ``begins 20 minutes from now''
+    \end{compactitem}
+\item \verb!@e 0m!
+    \begin{compactitem}
+        \item[$\circ$] \verb'!time_left!': ``''
+        \item[$\circ$] \verb'!when!': ``begins now''
+    \end{compactitem}
+\end{compactitem}
+
+\subsection{\texttt{etm.cfg} settings}
+
+\begin{compactdesc}
+\item[action\_interval] Execute the appropriate command from \verb'action_timer' every \verb'action_interval' minutes when a timer is either running or paused. Choose zero to disable executing these commands.
+\begin{verbatim}
+  action_interval: 1
+\end{verbatim}
+
+\item[action\_minutes] Round individual action times up to the nearest \verb!action_minutes! in reports. Possible choices are 1, 6, 12, 15, 30 and 60. With 1, no rounding is done. Otherwise, the prescribed rounding is done at the item level and these integer minutes are then added to get the various totals.
+\begin{verbatim}
+  action_minutes: 6
+\end{verbatim}
+
+\item[action\_rates] Possible billing rates to use for times in actions. An arbitrary number of rates can be entered using whatever labels you like.
+
+\item[action\_template] Sets the format for action reports.
+\begin{verbatim}
+action_template: "!hours!h) !label! (!count!)"
+\end{verbatim}
+E.g., with the above settings:
+\begin{verbatim}
+    27.5h) Client 1 (3)
+        4.9h) Project A (1)
+        15h) Project B (1)
+        7.6h) Project C (1)
+\end{verbatim}
+
+\item[action\_status] The command to execute whenever the action timer status changes.
+\begin{verbatim}
+  paused:  'echo !summary! !time! paused > \
+    /home/dag/.etm/status.text'
+  running:  'echo !summary! !time! running > \
+    /home/dag/.etm/status.text'
+  stopped:  'echo > /home/dag/.etm/status.text'
+\end{verbatim}
+In these commands \verb'!summary!' expands to the action summary and \verb'!time!' to the current value of the timer in H:MM format.
+
+\item[action\_timer] The command `running` is executed every \verb'action_interval' minutes when the timer is running and the command `paused` is executed every minute when the timer is paused.
+\begin{verbatim}
+    paused:  '/usr/bin/play \
+     /home/dag/.etm/sounds/timer_paused.wav'
+    running: '/usr/bin/play \
+     /home/dag/.etm/sounds/timer_running.wav'
+\end{verbatim}
+
+\item[alert\_default] The alert or list of alerts to be used when an alert is specified for an item but the type is not given.
+\begin{verbatim}
+  alert_default: [m]
+\end{verbatim}
+Possible values for the list include:
+\begin{compactdesc}
+\item[d:] display (requires \verb!alert_displaycmd!)
+\item[m:] message (uses internal etm message box)
+\item[s:] sound (requires \verb!alert_soundcmd!)
+\item[v:] voice (requires \verb!alert_voicecmd!)
+\end{compactdesc}
+
+\item[agenda] The agenda setup.
+\begin{verbatim}
+    agenda_colors:  2
+    agenda_days:    4
+    agenda_indent:  2
+    agenda_width1: 24
+    agenda_width2:  8
+\end{verbatim}
+
+\item[alert\_displaycmd] The command to be executed when \verb'd' is included in an alert. Possible template expansions are discussed above.
+\begin{verbatim}
+  alert_displaycmd: growlnotify -t !summary! \
+    -m "!time_span!"
+\end{verbatim}
+
+\item[alert\_soundcmd] The command to be executed when \verb's' is included in an alert. Possible template expansions are discussed above.
+\begin{verbatim}
+  alert_soundcmd: '/usr/bin/play \
+     /home/dag/.etm/sounds/etm_alert.wav'
+\end{verbatim}
+
+\item[alert\_template] The template for the body of \verb'm' (message) alerts.
+\begin{verbatim}
+  alert_template: '!time_span!\n!l!\n\n!d!'
+\end{verbatim}
+
+\item[alert\_voicecmd] The command to be executed when \verb'v' is included in an alert.
+\begin{verbatim}
+  alert_voicecmd: say -v Alex '!summary! !when!.'
+\end{verbatim}
+
+\item[alert\_wakecmd] If given, this command will be issued to ``wake up the display'' before executing \verb'displaycmd'.
+\begin{verbatim}
+  alert_wakecmd: ~/bin/SleepDisplay -w
+\end{verbatim}
+
+\item[ampm] Use ampm times if true and twenty-four hour times if false. E.g., 2:30pm (true) or 14:30 (false).
+\begin{verbatim}
+  ampm: true
+\end{verbatim}
+
+\item[auto\_completions] The absolute path to the file to be used for autocompletions in the editor.
+\begin{verbatim}
+  auto_completions: ~/.etm/completions.cfg
+\end{verbatim}
+Each line in the file provides a possible completion. E.g.
+\begin{verbatim}
+  @c computer
+  @c errands
+  @c phone
+  @z US/Eastern
+  @z US/Central
+  dnlgrhm@gmail.com
+\end{verbatim}
+
+\item[calendars] A list of (label, default, path relative to \verb!datadir!) tuples to be interpreted as separate calendars. Those for which default is \verb!true! will be displayed as default calendars. The calendars icon in the main window of the gui only appears if calendars is set.
+\begin{verbatim}
+  calendars:
+  - [dag, true, personal]
+  - [erp, false, personal]
+  - [shared, true, shared]
+\end{verbatim}
+
+\item[current files] Enter absolute file paths for htmlfile and/or textfile to have these files created and automatically updated by etm.
+\begin{verbatim}
+    current_htmlfile:   ''
+    current_textfile:   ''
+    current_indent:     d
+    current_opts:       ''
+    current_width1:     40
+    current_width2:     17
+\end{verbatim}
+
+\item[datadir] Absolute path to the etm data files root directory.
+\begin{verbatim}
+  datadir: ~/.etm/data
+\end{verbatim}
+
+\item[dayfirst] If dayfirst is False, the MM-DD-YYYY format will have precedence over DD-MM-YYYY in an ambiguous date. See also \verb!yearfirst!.
+\begin{verbatim}
+  dayfirst: false
+\end{verbatim}
+
+\item[email\_template] The format for the message body for email alerts.
+\begin{verbatim}
+  email_template: "!time_span!!l!
+
+    !d!"
+\end{verbatim}
+With the above setting for \verb'alert_labels', this template might expand as follows:
+\begin{verbatim}
+  Time: 1pm - 2:30pm Wed, Aug 4
+  Location: Conference Room
+
+  <contents of the item's description>
+\end{verbatim}
+
+\item[etmdir] Absolute path to the directory for etm.cfg and other etm configuration files.
+\begin{verbatim}
+  etmdir: ~/.etm
+\end{verbatim}
+
+\item[filechange\_alert] The command to be executed when etm detects an external change in any of its data files. Leave this command empty to disable the notification.
+\begin{verbatim}
+  filechange_alert: '/usr/bin/play \
+     /home/dag/.etm/sounds/etm_alert.wav'
+\end{verbatim}
+
+\item[fontsize] The font size to use in the GUI tree views.
+\begin{verbatim}
+  fontsize: 13
+\end{verbatim}
+
+\item[hg\_commit] The command to commit changes to the repository.
+\begin{verbatim}
+  hg_commit: /usr/local/bin/hg commit -A \
+    -R {repo} -m "{mesg}"
+\end{verbatim}
+
+\item[hg\_history] The command to show the history of changes for a particular data file.
+\begin{verbatim}
+  hg_history: "/usr/local/bin/hg log \
+    --style compact \
+    --template '{rev}: {desc}\n' \
+    -R {repo} -p -r 'tip':0 {file}"
+\end{verbatim}
+
+\item[hg\_init] The command to initialize or create a repository.
+\begin{verbatim}
+  hg_init: /usr/local/bin/hg init "{0}"
+\end{verbatim}
+
+\item[icscal\_file] The file to store iCalendar exports of active calendars.
+\begin{verbatim}
+  icscal_file: /home/dag/.etm/etmcal.ics
+\end{verbatim}
+
+\item[icsitem\_file] The file to store iCalendar exports of the selected item in the details view.
+\begin{verbatim}
+  icsitem_file: /home/dag/.etm/etmitem.ics
+\end{verbatim}
+
+\end{compactdesc}
+
+If \emph{Mercurial} is installed on your system, then the default versions of the \verb'hg' commands given above should work without modification. If you want to use another version control system, then enter the commands for your version control system.
+
+\begin{compactdesc}
+\vskip3pt
+
+\item[local\_timezone] This timezone will be used as the default value for \verb'@z'.
+\begin{verbatim}
+  local_timezone: US/Eastern
+\end{verbatim}
+
+\item[monthly] A relative path from \verb'datadir' to be used for \emph{monthly} files.
+\begin{verbatim}
+  monthly: personal/dag/monthly
+\end{verbatim}
+If \verb'monthly' is not given, the the suggested location for saving new items would be the in the directory specified in \verb'datadir'.
+
+\item[report] The setup for reports.
+\begin{verbatim}
+  report_begin:           '1'
+  report_end:             '+1/1'
+  report_colors:          2
+  report_specifications:  ~/.etm/reports.cfg
+  report_width:           54
+\end{verbatim}
+
+\item[rowsize] If positive, use this vertical height in the GUI tree views.
+\begin{verbatim}
+  rowsize: 0
+\end{verbatim}
+
+\item[show\_finished] Show this many of the most recent completions for repeating tasks or, if 0, show all completions.
+\begin{verbatim}
+  show_finished: 1
+\end{verbatim}
+
+\item[smtp] Settings for the server to be used for email alerts.
+\begin{verbatim}
+  smtp_from: dnlgrhm@gmail.com
+  smtp_id: dnlgrhm
+  smtp_pw: **********
+  smtp_server: smtp.gmail.com
+  smtp_to: daniel.graham@duke.edu
+\end{verbatim}
+
+\item[sms] Settings for the server to be used for text alerts.
+\begin{verbatim}
+  sms_message: '!summary!'
+  sms_subject: '!time_span!'
+  sms_from: dnlgrhm@gmail.com
+  sms_pw:  **********
+  sms_phone: 0123456789@vtext.com
+  sms_server: smtp.gmail.com:587
+\end{verbatim}
+
+\item[sundayfirst] The setting affects only the twelve month calendar display.
+\begin{verbatim}
+  sundayfirst: false
+\end{verbatim}
+
+\item[sunmoon\_location] The USNO location for sun/moon data. Either a US city, state tuple or a placename, longitude, latitude 7-tuple such as \verb![Home, W, 79, 0, N, 35, 54]!.
+\begin{verbatim}
+  sunmoon_location: [Chapel Hill, NC]
+\end{verbatim}
+
+\item[weather\_location] The US zip code (p=) or yahoo WOEID (w=) for your location. Either of the following would work for Chapel Hill, NC:
+\begin{verbatim}
+  weather_location: p=27517
+  weather_location: w=23424584
+\end{verbatim}
+
+\item[weeks\_after] For repeating items with an infinite number of repetitions, only those that occur within the first \verb'weeks_after' weeks after the current week are displayed along with the first repetition after this interval.
+\begin{verbatim}
+  weeks_after: 52
+\end{verbatim}
+
+\item[window height and width] Sizes for the GUI main window.
+\begin{verbatim}
+  window_height: 428
+  window_width: 464
+\end{verbatim}
+
+\item[yearfirst] If yearfirst is true, the YY-MM-DD format will have precedence over MM-DD-YY in an ambiguous date. See also \verb!dayfirst!.
+\begin{verbatim}
+  yearfirst: true
+\end{verbatim}
+
+\end{compactdesc}
+
+\end{multicols}
+\end{document}

@@ -54,6 +54,7 @@ else
         cp -p WhatsNew.html ~/.TEMP
         # careful that the following doesn't overwrite modified files
         cp -p HEADER.html README.html ~/.TEMP
+        cp -p cheatsheet.pdf ~/.TEMP
         copy=1
         ;;
 #        e)
