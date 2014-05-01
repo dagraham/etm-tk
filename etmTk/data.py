@@ -6241,7 +6241,8 @@ Show items grouped and sorted by tag, optionally limited to those containing a c
             'platform': platform.system(),
             'python': platform.python_version(),
             'dateutil': dateutil_version,
-            'tkversion': self.tkversion
+            'tkversion': self.tkversion,
+            'github': 'https://github.com/dagraham/etm-tk',
         }
         if not d['tkversion']: # command line
             d['tkversion'] = 'NA'
@@ -6260,12 +6261,14 @@ System Information:
 ETM Information:
   Homepage:
     {0[home]}
+  Discussion:
+    {0[group]}
+  GitHub:
+    {0[github]}
   Developer:
     {0[dev]}
   GPL License:
     {0[gpl]}
-  Discussion:
-    {0[group]}
 
 Copyright {0[copyright]} {0[dev]}. All rights reserved. This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.\
 """.format(d))
