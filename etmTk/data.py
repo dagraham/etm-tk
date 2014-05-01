@@ -1824,6 +1824,7 @@ amp_keys = {
         u'e',   # e extent
         u'f',   # j finish
         u'p',   # j priority
+        u'u',   # user
         u'q'],  # j queue position
 }
 
@@ -2497,8 +2498,6 @@ For editing one or more, but not all, instances of an item. Needed:
                                     pairs.append(";".join([
                                         x.strftime(zfmt) for x in pair if x]))
                                 v = (', '.join(pairs))
-                            elif amp_key == 'u':
-                                v = h[amp_key].strftime(zfmt)
                             elif amp_key == 'e':
                                 try:
                                     v = fmt_period(h['e'])
@@ -3770,13 +3769,6 @@ def str2hsh(s, uid=None, options=None):
                     amp_val = amp_part[1:].strip()
                     if amp_key == 'q':
                         part_hsh[amp_key] = int(amp_val)
-                    elif amp_key == 'u':
-                        try:
-                            part_hsh[amp_key] = parse(
-                                parse_datetime(amp_val)).replace(tzinfo=None)
-                        except:
-                            msg.append(_("could not parse: {0}").format(amp_val))
-
                     elif amp_key == 'e':
                         part_hsh['e'] = parse_period(amp_val)
                     else:

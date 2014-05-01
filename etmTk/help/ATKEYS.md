@@ -127,6 +127,7 @@ Many key-value pairs can be given either in the group task using `@` or in the c
     @f or &f    done[; due] (datetimes)
     @k or &k    keyword
     @l or &l    location
+    @u or &u    user
 
 The key-value pair `&q` (queue position) can *only* be given in component jobs where it is required.  Key-values other than `&q` and those listed above, can *only* be given in the initial group task entry and their values are inherited by the component jobs.
 
