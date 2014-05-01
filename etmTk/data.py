@@ -5768,6 +5768,8 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
             Try writing the s to tmpfile and then, if it succeeds,
             copy tmpfile to file.
         """
+        if not mode:
+            mode = "Edited file"
         logger.debug('starting safe_save: {0}, {1}, cli: {2}'.format(file, mode, cli))
         try:
             fo = codecs.open(self.tmpfile, 'w', file_encoding)
@@ -5788,7 +5790,6 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
             rp = relpath(fp, self.options['datadir'])
             # this will update self.uuid2hash, ...
             self.updateDataFromFile(fp, rp)
-        logger.debug('ended safe_save')
         return self.commit(file, mode)
 
 
