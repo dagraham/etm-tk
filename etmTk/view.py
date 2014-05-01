@@ -2930,7 +2930,7 @@ or 0 to expand all branches completely.""")
             else:
                 # this is a leaf
                 if len(text[1]) == 4:
-                    uuid, item_type, col1, col2 = text[1]
+                    uuid, item_type, col1, col3 = text[1]
                     dt = ''
                 else:  # len 5 day view with datetime appended
                     uuid, item_type, col1, col3, dt = text[1]

@@ -23,6 +23,7 @@
             Previous sibling                          Control-Up
             Set outline filter                          Ctrl-F
             Clear outline filter                        Escape
+            Toggle displaying labels column             Ctrl-L
             Set outline depth                           Ctrl-O
             ----
             Previous week                                Left
