@@ -134,7 +134,7 @@ class App(Tk):
     def __init__(self, path=None):
         Tk.__init__(self)
         # minsize: width, height
-        self.minsize(440, 460)
+        self.minsize(460, 460)
         self.uuidSelected = None
         self.timerItem = None
         self.actionTimer = Timer(self)
@@ -719,9 +719,10 @@ class App(Tk):
         panedwindow = PanedWindow(self, orient="vertical", sashwidth=6, sashrelief='flat')
         self.toppane = toppane = Frame(panedwindow, bd=0, highlightthickness=0, background=BGCOLOR)
         self.weekly = False
-        self.tree = ttk.Treeview(toppane, show='tree', columns=["#1"], selectmode='browse')
-        self.tree.column('#0', minwidth=200, width=260, stretch=1)
-        self.tree.column('#1', minwidth=80, width=140, stretch=0, anchor='center')
+        self.tree = ttk.Treeview(toppane, show='tree', columns=["#1", "#2"], selectmode='browse')
+        self.tree.column('#0', minwidth=140, width=260, stretch=1)
+        self.tree.column('#1', minwidth=20, width=50, stretch=0, anchor='center')
+        self.tree.column('#2', minwidth=80, width=140, stretch=0, anchor='center')
         self.tree.bind('<<TreeviewSelect>>', self.OnSelect)
         self.tree.bind('<Double-1>', self.OnActivate)
         self.tree.bind('<Return>', self.OnActivate)
@@ -2903,17 +2904,20 @@ or 0 to expand all branches completely.""")
                     uuid, item_type, col1, col2 = text[1]
                     dt = ''
                 else:  # len 5 day view with datetime appended
-                    uuid, item_type, col1, col2, dt = text[1]
+                    uuid, item_type, col1, col3, dt = text[1]
 
                 # This hack avoids encoding issues under python 2
                 col1 = "{0} {1}".format(id2Type[item_type], col1)
 
-                if type(col2) == int:
-                    col2 = '%s' % col2
-                else:
-                    col2 = s2or3(col2)
+                col2 = loop.uuid2labels[uuid]
 
-                oid = self.tree.insert(parent, 'end', iid=self.count, text=col1, open=(depth <= max_depth), value=[col2], tags=(item_type, 'treefont'))
+                if type(col3) == int:
+                    col3 = '%s' % col3
+                else:
+                    col3 = s2or3(col3)
+
+
+                oid = self.tree.insert(parent, 'end', iid=self.count, text=col1, open=(depth <= max_depth), values=[col2, col3], tags=(item_type, 'treefont'))
                 # oid = self.tree.insert(parent, 'end', text=col1, open=True, value=[col2])
                 self.count2id[oid] = "{0}::{1}".format(uuid, dt)
                 if dt:

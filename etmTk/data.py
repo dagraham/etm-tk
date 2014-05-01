@@ -1803,6 +1803,22 @@ item_keys = [
     'i',  # id',
 ]
 
+label_keys = [
+    '_a',  # alert
+    'b',  # begin
+    'l',  # location
+    'c',  # context
+    'k',  # keyword
+    't',  # tags
+    '_p',  # priority
+    'u',  # user
+    # 'f',  # finish date
+    'g',  # goto
+    'd',  #description
+    'm',  # memo
+    '_r',  # repetition rule
+]
+
 amp_keys = {
     'r': [
         u'f',   # r frequency
@@ -2192,7 +2208,7 @@ def group_sort(row_lst):
         yield k, g, s
 
 
-def dump_data(options, uuid2hashes, file2uuids, file2lastmodified,
+def dump_data(options, uuid2hashes, uuid2labels, file2uuids, file2lastmodified,
               bad_datafiles, messages):
     logger.info("dumping data to: {0}".format(options['datafile']))
     ouf = open(options['datafile'], "wb")
@@ -2225,7 +2241,7 @@ def load_data(options):
                 os.remove(options['datafile'])
                 last_version = version
             else:
-                return (uuid2hashes, file2uuids, file2lastmodified,
+                return (uuid2hashes, uuid2labels, file2uuids, file2lastmodified,
                         bad_datafiles, messages)
         except Exception:
             # bad pickle file? remove it
@@ -2543,9 +2559,11 @@ def process_data_file_list(filelist, options=None):
     bad_datafiles = {}
     file2uuids = {}
     uuid2hashes = {}
+    uuid2labels = {}
     for f, r in filelist:
         file2lastmodified[(f, r)] = os.path.getmtime(f)
-        msg, hashes = process_one_file(f, r, options)
+        msg, hashes, u2l = process_one_file(f, r, options)
+        uuid2labels.update(u2l)
         if msg:
             messages.append("errors loading %s:" % r)
             messages.extend(msg)
@@ -2561,7 +2579,7 @@ def process_data_file_list(filelist, options=None):
             msg = fio.getvalue()
             bad_datafiles[r] = msg
             logger.error('Error processing: {0}\n{1}'.format(r, msg))
-    return uuid2hashes, file2uuids, file2lastmodified, bad_datafiles, messages
+    return uuid2hashes, uuid2labels, file2uuids, file2lastmodified, bad_datafiles, messages
 
 
 def process_one_file(full_filename, rel_filename, options=None):
@@ -2695,6 +2713,7 @@ def items2Hashes(list_of_items, options=None):
     # list_of_hashes = []
     messages = []
     hashes = []
+    uuid2labels = {}
     defaults = {}
     # in_task_group = False
     for item, rel_name, linenums in list_of_items:
@@ -2864,7 +2883,22 @@ def items2Hashes(list_of_items, options=None):
                 raise ValueError("exception in fileinfo:",
                                  rel_name, linenums, "\n", hsh)
             hashes.append(hsh)
-    return messages, hashes
+        if itemtype not in ['=', '$', '#']:
+            tmp = []
+            for key in label_keys:
+                if key in hsh and hsh[key]:
+                    # dump the '_'
+                    key = key[-1]
+                    tmp.append(key)
+                # else:
+                #     tmp.append(' ')
+            uuid2labels[hsh['i']] = "".join(tmp)
+            if tmp:
+                if hsh["_summary"]:
+                    print("'%s'" % uuid2labels[hsh['i']], hsh['_summary'])
+                else:
+                    print("'%s'" % uuid2labels[hsh['i']], hsh)
+    return messages, hashes, uuid2labels
 
 
 def get_reps(bef, hsh):
@@ -4089,11 +4123,13 @@ def get_data(options=None, dirty=False, use_pickle=True):
     bad_datafiles = []
     logger.debug("initial value of dirty: {0}".format(dirty))
 
+
     if use_pickle and os.path.isfile(options['datafile']):
         objects = load_data(options)
+    # objects = uuid2hash uuid2labels file2lastmodified, bad_datafiles, messages
     if objects is None:
         logger.debug('no pickle; loading data using process_all_files')
-        (uuid2hash, file2uuids, file2lastmodified, bad_datafiles, messages) = process_all_datafiles(options)
+        (uuid2hash, uuid2labels, file2uuids, file2lastmodified, bad_datafiles, messages) = process_all_datafiles(options)
         dirty = True
     else:  # objects is not None
         if not dirty:
@@ -4101,7 +4137,7 @@ def get_data(options=None, dirty=False, use_pickle=True):
             dirty = new or modified or deleted
         if dirty:
             logger.debug('pickle but dirty; calling process_all_files')
-            (uuid2hash, file2uuids, file2lastmodified,
+            (uuid2hash, uuid2labels, file2uuids, file2lastmodified,
              bad_datafiles, messages) = process_all_datafiles(options)
         else:
             logger.debug('pickle ok; loading data from pickle file')
@@ -4111,9 +4147,9 @@ def get_data(options=None, dirty=False, use_pickle=True):
         logger.warn("bad data files: {0}".format(bad_datafiles))
     if dirty and not messages:
         logger.debug("writing pickle file")
-        dump_data(options, uuid2hash, file2uuids, file2lastmodified,
+        dump_data(options, uuid2hash, uuid2labels, file2uuids, file2lastmodified,
                   bad_datafiles, messages)
-    return uuid2hash, file2uuids, file2lastmodified, bad_datafiles, messages
+    return uuid2hash, uuid2labels, file2uuids, file2lastmodified, bad_datafiles, messages
 
 
 def expandPath(path):
@@ -5523,6 +5559,7 @@ class ETMCmd():
         self.loop = False
         self.number = True
         self.count2id = {}
+        self.uuid2labels = {}
         self.last_rep = ""
         self.item_hsh = {}
         self.output = 'text'
@@ -5633,7 +5670,7 @@ class ETMCmd():
         self.options['bef'] = bef
         self.file2data = {}
         logger.debug('calling get_data')
-        uuid2hash, file2uuids, self.file2lastmodified, bad_datafiles, messages = get_data(options=self.options)
+        uuid2hash, uuid2labels, file2uuids, self.file2lastmodified, bad_datafiles, messages = get_data(options=self.options)
         logger.debug('calling getViewData')
         self.file2data = getViewData(bef, file2uuids, uuid2hash, self.options)
         self.rows = tuple(itemsSL)
@@ -5650,6 +5687,7 @@ class ETMCmd():
             self.rows, file2uuids, uuid2hash, self.options)
         self.file2uuids = file2uuids
         self.uuid2hash = uuid2hash
+        self.uuid2labels = uuid2labels
         self.currfile = ensureMonthly(self.options, now)
         if self.last_rep:
             logger.debug('calling mk_rep with {0}'.format(self.last_rep))
@@ -5681,10 +5719,12 @@ class ETMCmd():
         logger.debug('removing the relevant entries in uuid2hash')
         for id in ids:
             del self.uuid2hash[id]
+            del self.uuid2labels[id]
         logger.debug('removing the relevant entry in file2uuids')
         self.file2uuids[rp] = []
-
-        loh = [x for x in process_one_file(fp, rp, self.options)[1] if x]
+        msg, hashes, u2l = process_one_file(fp, rp, self.options)
+        self.uuid2labels.update(u2l)
+        loh = [x for x in hashes if x]
         for hsh in loh:
             if hsh['itemtype'] == '=':
                 continue
@@ -5694,7 +5734,7 @@ class ETMCmd():
             self.file2uuids.setdefault(rp, []).append(id)
         mtime = os.path.getmtime(fp)
         self.file2lastmodified[(fp, rp)] = mtime
-        dump_data(self.options, self.uuid2hash, self.file2uuids, self.file2lastmodified, [], [])
+        dump_data(self.options, self.uuid2hash, self.uuid2labels, self.file2uuids, self.file2lastmodified, [], [])
 
         # self.rows = list(itemsSL)
         # self.alerts = list(alertsSL)
