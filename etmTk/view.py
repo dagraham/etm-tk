@@ -2851,7 +2851,7 @@ or 0 to expand all branches completely.""")
         self.clearTree()
         self.count = 0
         self.count2id = {}
-        self.addToTree(u'', tree[self.root], tree)
+        self.add2Tree(u'', tree[self.root], tree)
         loop.count2id = self.count2id
         self.tree.tag_configure('treefont', font=self.tktreefont)
         # self.l.configure(state="normal")
@@ -2881,7 +2881,7 @@ or 0 to expand all branches completely.""")
             self.tree.delete(child)
 
     # @profile
-    def addToTree(self, parent, elements, tree, depth=0):
+    def add2Tree(self, parent, elements, tree, depth=0):
         max_depth = 100
         for text in elements:
             self.count += 1
@@ -2896,7 +2896,7 @@ or 0 to expand all branches completely.""")
                 self.depth2id.setdefault(depth, set([])).add(oid)
                 # recurse to get children
                 self.count2id[oid] = None
-                self.addToTree(oid, children, tree, depth=depth + 1)
+                self.add2Tree(oid, children, tree, depth=depth + 1)
             else:
                 # this is a leaf
                 if len(text[1]) == 4:
