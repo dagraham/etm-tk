@@ -2241,18 +2241,20 @@ or 0 to display all changes.""").format(title)
         elif uuid is None: # tree view
             item = self.tree.selection()[0]
             self.rowSelected = int(item)
+            logger.debug('rowSelected: {0}'.format(self.rowSelected))
             # type_chr is the actual type, e.g., "-"
             # show_chr is what's displayed in the tree, e.g., "X"
             type_chr = show_chr = self.tree.item(item)['text'][0]
             uuid, dt, hsh = self.getInstance(item)
             logger.debug('tree rowSelected: {0}; {1}; {2}'.format(self.rowSelected, self.tree.item(item)['text'], dt))
             if self.view == DAY:
-                if dt is not None:
+                if dt is None:
+                    # we have the date selected
+                    self.active_date = self.id2date[self.rowSelected]
+                    logger.debug("active_date from id2date: {0}; {1}".format(self.active_date, self.tree.item(item)['text']))
+                else:
                     # we have an item
                     self.active_date = parse(dt).date()
-                else:
-                    # we have the date selected
-                   self.active_date = parse(self.tree.item(item)['text']).date()
                 logger.debug('active_date: {0}'.format(self.active_date))
             if hsh:
                 type_chr = hsh['itemtype']
@@ -2295,11 +2297,8 @@ or 0 to display all changes.""").format(title)
                 self.itemmenu.entryconfig(5, state='disabled')
             self.uuidSelected = uuid
             self.itemSelected = hsh
-            # self.dtSelected = dt.strftime(rfmt)
-            if type(dt) is not datetime:
-                dt = parse(dt)
-            self.dtSelected = fmt_datetime(dt, options=loop.options)
-            # logger.debug(('selected: {0}'.format(hsh)))
+            logger.debug('dt selected: {0}'.format(dt))
+            self.dtSelected = dt
         else:
             text = ""
             for i in range(7):
@@ -2312,7 +2311,7 @@ or 0 to display all changes.""").format(title)
             self.topSelected = int(r)
         else:
             self.topSelected = 1
-        logger.debug("top: {3}; row: '{0}'; uuid: '{1}'; instance: '{2}'".format(self.rowSelected, self.uuidSelected, self.dtSelected,  self.topSelected));
+        logger.debug("row: {0}; uuid: {1}; instance: {2}; top: {3}".format(self.rowSelected, self.uuidSelected, self.dtSelected,  self.topSelected));
         self.content.insert(INSERT, text)
         self.update_idletasks()
         logger.debug('ending OnSelect')
@@ -2848,6 +2847,7 @@ or 0 to expand all branches completely.""")
 
     def showTree(self, tree, event=None):
         self.date2id = {}
+        self.id2date = {}
         self.clearTree()
         self.count = 0
         self.count2id = {}
@@ -2927,7 +2927,11 @@ or 0 to expand all branches completely.""")
                             logger.exception('not a datetime: {0}; {1}'.format(dt, text))
                             d = None
                     if d and d not in self.date2id:
-                        self.date2id[d] = parent
+                        logger.debug('date2id[{0}] = {1}'.format(d, parent))
+                        self.date2id[d] = int(parent)
+                    if int(parent) not in self.id2date:
+                        logger.debug('id2date[{0}] = {1}'.format(int(parent), d))
+                        self.id2date[int(parent)] = d
 
 loop = None
 
