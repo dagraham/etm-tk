@@ -729,11 +729,16 @@ class App(Tk):
         self.toppane = toppane = Frame(panedwindow, bd=0, highlightthickness=0, background=BGCOLOR)
         self.weekly = False
         self.tree = ttk.Treeview(toppane, show='tree', columns=["#1", "#2"], selectmode='browse')
-        self.label_width = 50
+
+        self.col2_width = tktreefont.measure('abcdgklmprtuX')
+        self.col3_width = tktreefont.measure('10:30pm ~ 11:30pmX')
         self.text_width = 260
+        logger.info('column widths: {0}, {1}'.format(self.text_width, self.col2_width, self.col3_width))
         self.tree.column('#0', minwidth=140, width=self.text_width, stretch=1)
-        self.tree.column('#1', minwidth=0, width=self.label_width, stretch=0, anchor='center')
-        self.tree.column('#2', minwidth=80, width=140, stretch=0, anchor='center')
+        # self.tree.column('#1', minwidth=0, width=self.col2_width, stretch=0, anchor='center')
+        self.tree.column('#1', width=self.col2_width, stretch=0, anchor='center')
+        # self.tree.column('#2', minwidth=80, width=self.col3_width, stretch=0, anchor='center')
+        self.tree.column('#2', width=self.col3_width, stretch=0, anchor='center')
         self.tree.bind('<<TreeviewSelect>>', self.OnSelect)
         self.tree.bind('<Double-1>', self.OnActivate)
         self.tree.bind('<Return>', self.OnActivate)
@@ -841,13 +846,13 @@ class App(Tk):
             return
         if self.labels:
             width0 = self.tree.column('#0')['width']
-            self.tree.column('#0', width=width0+60)
+            self.tree.column('#0', width=width0+self.col2_width)
             self.tree.column('#1', width=0)
             self.labels = False
         else:
             width0 = self.tree.column('#0')['width']
-            self.tree.column('#0', width=width0-60)
-            self.tree.column('#1', width=60)
+            self.tree.column('#0', width=width0-self.col2_width)
+            self.tree.column('#1', width=self.col2_width)
             self.labels = True
 
 

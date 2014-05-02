@@ -1804,19 +1804,19 @@ item_keys = [
 ]
 
 label_keys = [
+    # 'f',  # finish date
     '_a',  # alert
     'b',  # begin
-    'l',  # location
     'c',  # context
-    'k',  # keyword
-    't',  # tags
-    '_p',  # priority
-    'u',  # user
-    # 'f',  # finish date
-    'g',  # goto
     'd',  #description
+    'g',  # goto
+    'k',  # keyword
+    'l',  # location
     'm',  # memo
+    'p',  # priority
     '_r',  # repetition rule
+    't',  # tags
+    'u',  # user
 ]
 
 amp_keys = {
