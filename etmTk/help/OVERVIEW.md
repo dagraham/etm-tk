@@ -213,6 +213,10 @@ If you scroll or jump to a date in either day view or week view and then open th
 
 In all views, pressing *Return* with an item selected or double clicking an item or a busy period in week view will open a context menu with options to copy, delete, edit and so forth.
 
+In all views other than week view, pressing *Ctrl-O* (O for outline) will open a dialog to choose the outline depth.
+
+In all views other than week view, pressing *Ctrl-L* (O for outline) toggle the display of a column displaying item *labels* where, for example, an item with @a, @d and @u fields would have the label "adu".
+
 ### Agenda View
 
 What you need to know now beginning with your schedule for the next few days and followed by items in these groups:
