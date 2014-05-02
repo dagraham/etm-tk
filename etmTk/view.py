@@ -2836,9 +2836,10 @@ or 0 to expand all branches completely.""")
         if depth is None:
             return ()
         maxdepth = max([k for k in self.depth2id])
-        logger.debug('expand2Depth: {0}/{1}'.format(depth, maxdepth))
+        logger.debug('expand2Depth {0}: {1}/{2}'.format(self.view, depth, maxdepth))
         if self.view in [KEYWORDS, NOTES, PATHS]:
             self.outline_depths[self.view] = depth
+            logger.debug('outline_depths: {0}'.format(self.outline_depths))
         if depth == 0:
             # expand all
             for k in self.depth2id:
@@ -2892,14 +2893,22 @@ or 0 to expand all branches completely.""")
                 self.scrollToDate(self.active_date)
             else:
                 if self.view in [KEYWORDS, NOTES, PATHS]:
-                    depth = self.outline_depths[self.view] - 1
-                    maxdepth = max([k for k in self.depth2id])
-                    for i in range(depth):
-                        for item in self.depth2id[i]:
-                            self.tree.item(item, open=True)
-                    for i in range(depth, maxdepth+1):
-                        for item in self.depth2id[i]:
-                            self.tree.item(item, open=False)
+                    depth = self.outline_depths[self.view]
+                    if depth == 0:
+                        # expand all
+                        for k in self.depth2id:
+                            for item in self.depth2id[k]:
+                                self.tree.item(item, open=True)
+                    else:
+                        maxdepth = max([k for k in self.depth2id])
+                        depth -= 1
+                        depth = max(depth, 0)
+                        for i in range(depth):
+                            for item in self.depth2id[i]:
+                                self.tree.item(item, open=True)
+                        for i in range(depth, maxdepth+1):
+                            for item in self.depth2id[i]:
+                                self.tree.item(item, open=False)
                 self.goHome()
 
     def clearTree(self):
