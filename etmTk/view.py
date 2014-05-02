@@ -134,7 +134,7 @@ class App(Tk):
     def __init__(self, path=None):
         Tk.__init__(self)
         # minsize: width, height
-        self.minsize(440, 460)
+        self.minsize(460, 460)
         self.uuidSelected = None
         self.timerItem = None
         self.actionTimer = Timer(self)
@@ -355,13 +355,22 @@ class App(Tk):
             viewmenu.entryconfig(6, accelerator=l)
         self.add2menu(path, (label, l))
 
+        # toggle showing labels
+        l, c = commandShortcut('l')
+        label=_("Toggle displaying labels column")
+        viewmenu.add_command( label=label, underline=1, command=self.toggleLabels)
+        self.bind(c, lambda event: self.after(AFTER, self.toggleLabels))
+        if not mac:
+            viewmenu.entryconfig(7, accelerator=l)
+        self.add2menu(path, (label, l))
+
         # expand to depth
         l, c = commandShortcut('o')
         label=_("Set outline depth")
         viewmenu.add_command( label=label, underline=1, command=self.expand2Depth)
         self.bind(c, lambda event: self.after(AFTER, self.expand2Depth))
         if not mac:
-            viewmenu.entryconfig(7, accelerator=l)
+            viewmenu.entryconfig(8, accelerator=l)
         self.add2menu(path, (label, l))
 
         viewmenu.add_separator()
@@ -371,35 +380,35 @@ class App(Tk):
         label=_("Previous week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.showWeek(event=e, week=-1))
         if not mac:
-            viewmenu.entryconfig(9, accelerator=l)
+            viewmenu.entryconfig(10, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Right"
         label=_("Next week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.showWeek(event=e, week=+1))
         if not mac:
-            viewmenu.entryconfig(10, accelerator=l)
+            viewmenu.entryconfig(11, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Up"
         label=_("Previous item in week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=-1))
         if not mac:
-            viewmenu.entryconfig(11, accelerator=l)
+            viewmenu.entryconfig(12, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Down"
         label=_("Next item in week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=1))
         if not mac:
-            viewmenu.entryconfig(12, accelerator=l)
+            viewmenu.entryconfig(13, accelerator=l)
         self.add2menu(path, (label, l))
 
         l, c = commandShortcut("b")
         label=_("List busy times in week")
         viewmenu.add_command(label=label, underline=5, command=self.showBusyPeriods)
         if not mac:
-            viewmenu.entryconfig(13, accelerator=l)
+            viewmenu.entryconfig(14, accelerator=l)
         self.bind(c, lambda event: self.after(AFTER, self.showBusyPeriods))
         self.add2menu(path, (label, l))
 
@@ -407,14 +416,14 @@ class App(Tk):
         label=_("List free times in week")
         viewmenu.add_command(label=label, underline=5, command=self.showFreePeriods)
         if not mac:
-            viewmenu.entryconfig(13, accelerator=l)
+            viewmenu.entryconfig(15, accelerator=l)
         # set binding in showWeekly
         self.add2menu(path, (label, l))
 
         # viewmenu.add_cascade(label=path, menu=viewmenu, underline=0)
 
         # self.viewmenu.entryconfig(0, state="normal")
-        for i in range(9, 15):
+        for i in range(10, 16):
             self.viewmenu.entryconfig(i, state="disabled")
 
 
@@ -719,9 +728,12 @@ class App(Tk):
         panedwindow = PanedWindow(self, orient="vertical", sashwidth=6, sashrelief='flat')
         self.toppane = toppane = Frame(panedwindow, bd=0, highlightthickness=0, background=BGCOLOR)
         self.weekly = False
-        self.tree = ttk.Treeview(toppane, show='tree', columns=["#1"], selectmode='browse')
-        self.tree.column('#0', minwidth=200, width=260, stretch=1)
-        self.tree.column('#1', minwidth=80, width=140, stretch=0, anchor='center')
+        self.tree = ttk.Treeview(toppane, show='tree', columns=["#1", "#2"], selectmode='browse')
+        self.label_width = 50
+        self.text_width = 260
+        self.tree.column('#0', minwidth=140, width=self.text_width, stretch=1)
+        self.tree.column('#1', minwidth=0, width=self.label_width, stretch=0, anchor='center')
+        self.tree.column('#2', minwidth=80, width=140, stretch=0, anchor='center')
         self.tree.bind('<<TreeviewSelect>>', self.OnSelect)
         self.tree.bind('<Double-1>', self.OnActivate)
         self.tree.bind('<Return>', self.OnActivate)
@@ -730,6 +742,9 @@ class App(Tk):
         # self.tree.bind('<Escape>', self.cleartext)
         # self.tree.bind('<j>', self.jumpToDate)
         self.tree.bind('<space>', self.goHome)
+        # don't show the labels column to start with
+        self.tree.column('#1', width=0)
+        self.labels = False
 
         for t in tstr2SCI:
             self.tree.tag_configure(t, foreground=tstr2SCI[t][1])
@@ -820,6 +835,21 @@ class App(Tk):
         self.updateAlerts()
         self.etmgeo = os.path.join(loop.options['etmdir'], ".etmgeo")
         self.restoreGeometry()
+
+    def toggleLabels(self):
+        if self.weekly:
+            return
+        if self.labels:
+            width0 = self.tree.column('#0')['width']
+            self.tree.column('#0', width=width0+60)
+            self.tree.column('#1', width=0)
+            self.labels = False
+        else:
+            width0 = self.tree.column('#0')['width']
+            self.tree.column('#0', width=width0-60)
+            self.tree.column('#1', width=60)
+            self.labels = True
+
 
     def saveGeometry(self):
         str = self.geometry()
@@ -1606,7 +1636,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
     def closeWeekly(self, event=None):
         self.today_col = None
-        for i in range(9, 15):
+        for i in range(10, 16):
             self.viewmenu.entryconfig(i, state="disabled")
         self.canvas.pack_forget()
         self.weekly = False
@@ -1620,7 +1650,7 @@ Enter the shortest time period you want displayed in minutes.""")
             self.viewmenu.entryconfig(5, state="normal")
             self.viewmenu.entryconfig(6, state="disabled")
 
-        for i in [3, 4, 5, 7]:
+        for i in [3, 4, 7, 8]:
             self.viewmenu.entryconfig(i, state="normal")
         self.bind("<Control-f>", self.setFilter)
 
@@ -1636,7 +1666,7 @@ Enter the shortest time period you want displayed in minutes.""")
         self.weekly = True
         self.tree.pack_forget()
         self.fltrbox.pack_forget()
-        for i in range(3, 8):
+        for i in range(3, 9):
             self.viewmenu.entryconfig(i, state="disabled")
 
         self.view = WEEK
@@ -1675,7 +1705,7 @@ Enter the shortest time period you want displayed in minutes.""")
             self.hours = ["{0}am".format(i) for i in range(7,12)] + ['12pm'] + ["{0}pm".format(i) for i in range(1,12)]
         else:
             self.hours = ["{0}:00".format(i) for i in range(7, 24)]
-        for i in range(9, 15):
+        for i in range(10, 16):
             self.viewmenu.entryconfig(i, state="normal")
         self.canvas.focus_set()
         self.showWeek()
@@ -2900,20 +2930,23 @@ or 0 to expand all branches completely.""")
             else:
                 # this is a leaf
                 if len(text[1]) == 4:
-                    uuid, item_type, col1, col2 = text[1]
+                    uuid, item_type, col1, col3 = text[1]
                     dt = ''
                 else:  # len 5 day view with datetime appended
-                    uuid, item_type, col1, col2, dt = text[1]
+                    uuid, item_type, col1, col3, dt = text[1]
 
                 # This hack avoids encoding issues under python 2
                 col1 = "{0} {1}".format(id2Type[item_type], col1)
 
-                if type(col2) == int:
-                    col2 = '%s' % col2
-                else:
-                    col2 = s2or3(col2)
+                col2 = loop.uuid2labels[uuid]
 
-                oid = self.tree.insert(parent, 'end', iid=self.count, text=col1, open=(depth <= max_depth), value=[col2], tags=(item_type, 'treefont'))
+                if type(col3) == int:
+                    col3 = '%s' % col3
+                else:
+                    col3 = s2or3(col3)
+
+
+                oid = self.tree.insert(parent, 'end', iid=self.count, text=col1, open=(depth <= max_depth), values=[col2, col3], tags=(item_type, 'treefont'))
                 # oid = self.tree.insert(parent, 'end', text=col1, open=True, value=[col2])
                 self.count2id[oid] = "{0}::{1}".format(uuid, dt)
                 if dt:
