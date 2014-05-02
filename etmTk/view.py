@@ -733,30 +733,23 @@ class App(Tk):
         self.col2_width = tktreefont.measure('abcdgklmprtuX')
         self.col3_width = tktreefont.measure('10:30pm ~ 11:30pmX')
         self.text_width = 260
-        logger.info('column widths: {0}, {1}'.format(self.text_width, self.col2_width, self.col3_width))
+        logger.info('column widths: {0}, {1}, {2}'.format(self.text_width, self.col2_width, self.col3_width))
         self.tree.column('#0', minwidth=140, width=self.text_width, stretch=1)
-        # self.tree.column('#1', minwidth=0, width=self.col2_width, stretch=0, anchor='center')
-        self.tree.column('#1', width=self.col2_width, stretch=0, anchor='center')
-        # self.tree.column('#2', minwidth=80, width=self.col3_width, stretch=0, anchor='center')
+        self.labels = False
+        # don't show the labels column to start with by setting width=0
+        self.tree.column('#1', minwidth=0, width=0, stretch=0, anchor='center')
         self.tree.column('#2', width=self.col3_width, stretch=0, anchor='center')
         self.tree.bind('<<TreeviewSelect>>', self.OnSelect)
         self.tree.bind('<Double-1>', self.OnActivate)
         self.tree.bind('<Return>', self.OnActivate)
         self.tree.bind('<Control-Down>', self.nextItem)
         self.tree.bind('<Control-Up>', self.prevItem)
-        # self.tree.bind('<Escape>', self.cleartext)
-        # self.tree.bind('<j>', self.jumpToDate)
         self.tree.bind('<space>', self.goHome)
-        # don't show the labels column to start with
-        self.tree.column('#1', width=0)
-        self.labels = False
 
         for t in tstr2SCI:
             self.tree.tag_configure(t, foreground=tstr2SCI[t][1])
 
         self.date2id = {}
-        # padx = 2
-
         self.root = ('', '_')
 
         self.tree.pack(fill="both", expand=1, padx=4, pady=0)

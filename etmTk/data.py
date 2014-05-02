@@ -2883,7 +2883,7 @@ def items2Hashes(list_of_items, options=None):
                                  rel_name, linenums, "\n", hsh)
             hashes.append(hsh)
         if itemtype not in ['=', '$', '#']:
-            tmp = []
+            tmp = [' ']
             for key in label_keys:
                 if key in hsh and hsh[key]:
                     # dump the '_'
