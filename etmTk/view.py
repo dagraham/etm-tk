@@ -2936,7 +2936,7 @@ or 0 to expand all branches completely.""")
                 # This hack avoids encoding issues under python 2
                 col1 = "{0} {1}".format(id2Type[item_type], col1)
 
-                col2 = loop.uuid2labels[uuid]
+                col2 = loop.uuid2labels[uuid.split(':')[0]]
 
                 if type(col3) == int:
                     col3 = '%s' % col3
