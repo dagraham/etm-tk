@@ -2846,6 +2846,7 @@ or 0 to expand all branches completely.""")
                     self.tree.item(item, open=True)
         else:
             depth -= 1
+            depth = max(depth, 0)
             for i in range(depth):
                 for item in self.depth2id[i]:
                     self.tree.item(item, open=True)

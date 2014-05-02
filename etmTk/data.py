@@ -2882,7 +2882,7 @@ def items2Hashes(list_of_items, options=None):
                 raise ValueError("exception in fileinfo:",
                                  rel_name, linenums, "\n", hsh)
             hashes.append(hsh)
-        if itemtype not in ['=', '$', '#']:
+        if itemtype not in ['=', '$']:
             tmp = [' ']
             for key in label_keys:
                 if key in hsh and hsh[key]:
