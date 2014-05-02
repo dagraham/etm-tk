@@ -2892,11 +2892,6 @@ def items2Hashes(list_of_items, options=None):
                 # else:
                 #     tmp.append(' ')
             uuid2labels[hsh['i']] = "".join(tmp)
-            if tmp:
-                if hsh["_summary"]:
-                    print("'%s'" % uuid2labels[hsh['i']], hsh['_summary'])
-                else:
-                    print("'%s'" % uuid2labels[hsh['i']], hsh)
     return messages, hashes, uuid2labels
 
 
