@@ -5706,10 +5706,13 @@ class ETMCmd():
         logger.debug('removing the relevant entries in uuid2hash')
         for id in ids:
             del self.uuid2hash[id]
-            del self.uuid2labels[id]
+            if id in self.uuid2labels:
+                logger.debug('removing uuid2label[{0}] = {1}'.format(id, self.uuid2labels[id]))
+                del self.uuid2labels[id]
         logger.debug('removing the relevant entry in file2uuids')
         self.file2uuids[rp] = []
         msg, hashes, u2l = process_one_file(fp, rp, self.options)
+        logger.debug('update labels: {0}'.format(u2l))
         self.uuid2labels.update(u2l)
         loh = [x for x in hashes if x]
         for hsh in loh:

@@ -355,8 +355,8 @@ class App(Tk):
 
         ## show alerts
         # l, c = commandShortcut("A")
-        l = "A"
-        c = "a"
+        l = "Shift-A"
+        c = "A"
         label = _("Show remaining alerts for today")
         viewmenu.add_command(label=label, underline=1, command=self.showAlerts)
         self.bindTop(c, self.showAlerts)
@@ -3009,7 +3009,8 @@ or 0 to expand all branches completely.""")
                     col2 = loop.uuid2labels[id]
                 else:
                     col2 = "***"
-                    logger.warn('Missing key {0} for {1} {2}'.format(id, col1, col3))
+                    if item_type not in ["=", "$"]:
+                        logger.warn('Missing key {0} for {1} {2}'.format(id, col1, col3))
 
                 oid = self.tree.insert(parent, 'end', iid=self.count, text=col1, open=(depth <= max_depth), values=[col2, col3], tags=(item_type, 'treefont'))
                 # oid = self.tree.insert(parent, 'end', text=col1, open=True, value=[col2])
