@@ -2946,13 +2946,18 @@ or 0 to expand all branches completely.""")
                 # This hack avoids encoding issues under python 2
                 col1 = "{0} {1}".format(id2Type[item_type], col1)
 
-                col2 = loop.uuid2labels[uuid.split(':')[0]]
-
                 if type(col3) == int:
                     col3 = '%s' % col3
                 else:
                     col3 = s2or3(col3)
 
+                # Drop the instance information from the id
+                id = uuid.split(':')[0]
+                if id in loop.uuid2labels:
+                    col2 = loop.uuid2labels[id]
+                else:
+                    col2 = "***"
+                    logger.warn('Missing key {0} for {1} {2}'.format(id, col1, col3))
 
                 oid = self.tree.insert(parent, 'end', iid=self.count, text=col1, open=(depth <= max_depth), values=[col2, col3], tags=(item_type, 'treefont'))
                 # oid = self.tree.insert(parent, 'end', text=col1, open=True, value=[col2])
