@@ -74,21 +74,24 @@ if asksure; then
 Edit etmTk/v.py to change the major and minor numbers."
 #    hg tag $tag -f
 #    git tag -a $tag -m "$versioninfo" HEAD
+    echo "version = \"$tag\"" > /Users/dag/etm-tk/etmTk/v.py
+    echo "version = \"$tag [$versioninfo]\"" > etmTk/version.py
+    echo "$tag [$versioninfo]" > version.txt
     echo "Updated to $tag [$versioninfo]" >> $logfile
+    git add etmTk/v.py etmTk/version.py
+    git commit -a -m "tagged version $tag"
+    git tag -a -f $tag -m "$versioninfo" HEAD
 else
     # drop the abbrev header and a trailing -0, if there is one
 #    tag=`git describe --tags --long | sed 's/-[^\-]*$//g' | sed 's/-0$//g'`  # something like 0.0.65-2
-    tag=$vinfo
+    tag=$otag
     change="retaining version $vinfo."
-    echo "Using $vinfo [$versioninfo]" >> $logfile
+    echo "version = \"$tag\"" > /Users/dag/etm-tk/etmTk/v.py
+    echo "version = \"$tag [$versioninfo]\"" > etmTk/version.py
+    echo "$tag [$versioninfo]" > version.txt
+    echo "Using $tag [$versioninfo]" >> $logfile
     # hg tag $tag -f
 fi
-echo "version = \"$tag\"" > /Users/dag/etm-tk/etmTk/v.py
-echo "version = \"$tag [$versioninfo]\"" > etmTk/version.py
-echo "$tag [$versioninfo]" > version.txt
-git add etmTk/v.py etmTk/version.py
-git commit -a -m "tagged version $tag"
-git tag -a -f $tag -m "$versioninfo" HEAD
 
 echo $tag > etmTk/v.txt
 

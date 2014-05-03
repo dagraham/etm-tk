@@ -68,7 +68,7 @@ For example, the report specification `c ddd, MMM dd yyyy` would group by year, 
 
 On the other hand, the report specificaton `a w; u; k[0]; k[1:]` would group by week number, user and keywords to give output such as
 
-    13.1) Week 14: Mar 31 - Apr 6, 2014
+    13.1) 2014 Week 14: Mar 31 - Apr 6
        6.3) agent 1
           1.3) client 1
              1.3) project 2

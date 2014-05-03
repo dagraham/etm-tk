@@ -221,7 +221,7 @@ class MenuTree:
     def showMenu(self, position, level=_ROOT):
         queue = self[position].fpointer
         if level == _ROOT:
-            self.lst = ["Note: Most dialogs can be closed by pressing Escape.", ""]
+            self.lst = []
         else:
             name, key = self[position].name.split("::")
             name = "{0}{1}".format("    "*(level-1), name.strip())
@@ -485,81 +485,81 @@ class Dialog(Toplevel):
     def messageWindow(self, title, prompt):
         MessageWindow(self.parent, title, prompt)
 
-class HelpWindow(Dialog):
-
-    def body(self, master):
-        PADY = 2
-
-        toolbar = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
-        # self.options = list of label, content pairs
-        self.vm_dict = OrderedDict(self.options['help_opts'])
-        vm_labels = [x[0] for x in self.options['help_opts']]
-        self.view = StringVar(self)
-
-        self.vm = vm = OptionMenu(toolbar, self.view, *vm_labels, command=self.showHelp)
-        vm.configure(width=10, height=1, highlightbackground=BGCOLOR, background=BGCOLOR, pady=PADY)
-        vm.pack(side="left", pady=0, padx=6)
-        self.view.set(vm_labels[0])
-
-        # find
-        Button(toolbar, text='x', command=self.clearFind, highlightbackground=BGCOLOR, pady=PADY).pack(side=LEFT, padx=0)
-        self.find_text = StringVar(toolbar)
-        self.e = Entry(toolbar, textvariable=self.find_text, width=16, highlightbackground=BGCOLOR)
-        self.e.pack(side=LEFT, padx=0)
-        self.e.bind("<Return>", self.onFind)
-        Button(toolbar, text='>', command=self.onFind, highlightbackground=BGCOLOR, pady=PADY).pack(side=LEFT, padx=0)
-
-        Button(toolbar, text=_("OK"), highlightbackground=BGCOLOR, pady=PADY, command=self.cancel).pack(side="right", padx=6)
-        # self.bind("<Escape>", self.quit)
-        self.bind("<Escape>", self.cancel)
-
-        toolbar.pack(side="top", padx=6, pady=0, expand="no", fill="x")
-
-        textwindow = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
-
-        text = ReadOnlyText(textwindow, bd=2, relief="sunken", padx=3, pady=2,
-                            # font=self.tkfixedfont,
-                            width=70)
-        text.configure(highlightthickness=0)
-        text.tag_configure(FOUND, background="lightskyblue")
-
-        text.pack(side="top", padx=4, pady=4,
-                  expand=1, fill="both"
-        )
-        self.text = text
-        textwindow.pack(side="top",
-                        expand=1, fill="both"
-        )
-        self.showHelp()
-        return self.vm
-
-    def showHelp(self, e=None):
-        label = self.view.get()
-        self.text.delete("1.0", END)
-        self.text.insert("1.0", self.vm_dict[label])
-        logger.debug("label: {0}".format(label))
-
-    def clearFind(self, *args):
-        self.text.tag_remove(FOUND, "0.0", END)
-        self.find_text.set("")
-
-    def onFind(self, *args):
-        target = self.find_text.get()
-        logger.debug('target {0}: {1}'.format(target, self.text))
-        if target:
-            where = self.text.search(target, INSERT, nocase=1)
-            if where:
-                pastit = where + ('+%dc' % len(target))
-                logger.debug('pastit: {0}'.format(pastit))
-                # self.text.tag_remove(SEL, '1.0', END)
-                self.text.tag_add(FOUND, where, pastit)
-                self.text.mark_set(INSERT, pastit)
-                self.text.see(INSERT)
-                self.text.focus()
-
-    def buttonbox(self):
-        box = Frame(self, background=BGCOLOR, highlightbackground=BGCOLOR)
-        box.pack(side='bottom', fill=X, expand=0)
+# class HelpWindow(Dialog):
+#
+#     def body(self, master):
+#         PADY = 2
+#
+#         toolbar = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
+#         # self.options = list of label, content pairs
+#         self.vm_dict = OrderedDict(self.options['help_opts'])
+#         vm_labels = [x[0] for x in self.options['help_opts']]
+#         self.view = StringVar(self)
+#
+#         self.vm = vm = OptionMenu(toolbar, self.view, *vm_labels, command=self.showHelp)
+#         vm.configure(width=10, height=1, highlightbackground=BGCOLOR, background=BGCOLOR, pady=PADY)
+#         vm.pack(side="left", pady=0, padx=6)
+#         self.view.set(vm_labels[0])
+#
+#         # find
+#         Button(toolbar, text='x', command=self.clearFind, highlightbackground=BGCOLOR, pady=PADY).pack(side=LEFT, padx=0)
+#         self.find_text = StringVar(toolbar)
+#         self.e = Entry(toolbar, textvariable=self.find_text, width=16, highlightbackground=BGCOLOR)
+#         self.e.pack(side=LEFT, padx=0)
+#         self.e.bind("<Return>", self.onFind)
+#         Button(toolbar, text='>', command=self.onFind, highlightbackground=BGCOLOR, pady=PADY).pack(side=LEFT, padx=0)
+#
+#         Button(toolbar, text=_("OK"), highlightbackground=BGCOLOR, pady=PADY, command=self.cancel).pack(side="right", padx=6)
+#         # self.bind("<Escape>", self.quit)
+#         self.bind("<Escape>", self.cancel)
+#
+#         toolbar.pack(side="top", padx=6, pady=0, expand="no", fill="x")
+#
+#         textwindow = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
+#
+#         text = ReadOnlyText(textwindow, bd=2, relief="sunken", padx=3, pady=2,
+#                             # font=self.tkfixedfont,
+#                             width=70)
+#         text.configure(highlightthickness=0)
+#         text.tag_configure(FOUND, background="lightskyblue")
+#
+#         text.pack(side="top", padx=4, pady=4,
+#                   expand=1, fill="both"
+#         )
+#         self.text = text
+#         textwindow.pack(side="top",
+#                         expand=1, fill="both"
+#         )
+#         self.showHelp()
+#         return self.vm
+#
+#     def showHelp(self, e=None):
+#         label = self.view.get()
+#         self.text.delete("1.0", END)
+#         self.text.insert("1.0", self.vm_dict[label])
+#         logger.debug("label: {0}".format(label))
+#
+#     def clearFind(self, *args):
+#         self.text.tag_remove(FOUND, "0.0", END)
+#         self.find_text.set("")
+#
+#     def onFind(self, *args):
+#         target = self.find_text.get()
+#         logger.debug('target {0}: {1}'.format(target, self.text))
+#         if target:
+#             where = self.text.search(target, INSERT, nocase=1)
+#             if where:
+#                 pastit = where + ('+%dc' % len(target))
+#                 logger.debug('pastit: {0}'.format(pastit))
+#                 # self.text.tag_remove(SEL, '1.0', END)
+#                 self.text.tag_add(FOUND, where, pastit)
+#                 self.text.mark_set(INSERT, pastit)
+#                 self.text.see(INSERT)
+#                 self.text.focus()
+#
+#     def buttonbox(self):
+#         box = Frame(self, background=BGCOLOR, highlightbackground=BGCOLOR)
+#         box.pack(side='bottom', fill=X, expand=0)
 
 class TextVariableWindow(Dialog):
     def body(self, master):

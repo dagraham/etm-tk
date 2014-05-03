@@ -31,7 +31,8 @@ cd etmTk/help
 echo Creating help.py
 quotes='"""'
 echo "" > ../help.py
-for file in OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS; do
+#for file in OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS; do
+for file in OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS; do
     pandoc  -s --toc --toc-depth=2 -o $file.text -t plain --no-wrap $file.md
     echo "$file = $quotes\\" >> ../help.py
     cat $file.text >> ../help.py
@@ -46,10 +47,10 @@ for file in OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS; do
     sed '1 s/%/##/' <$file.md >> UserManual.md
 done
 echo Creating UserManual.html
-pandoc -s --toc --toc-depth=2 -B ~/etm-tk/style-before -f markdown -t html -o UserManual.html  UserManual.md
+pandoc -s --toc --toc-depth=1 -B ~/etm-tk/style-before -f markdown -t html -o UserManual.html  UserManual.md
 
 echo Creating UserManual.tex
-pandoc -s --toc --toc-depth=2 -f markdown -t latex -o UserManual.tex UserManual.md
+pandoc -s --toc --toc-depth=1 -f markdown -t latex -o UserManual.tex UserManual.md
 
 echo Creating UserManual.pdf
 pdflatex UserManual.tex

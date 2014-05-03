@@ -14,11 +14,9 @@ body {
 }
 pre, tt{
     font-family: monospace;
-    background-color:#f8f8f8;
     padding: 2px 4px;
 }
 code{
-    background-color:#f8f8f8;
     white-space: pre-wrap;
     font-size: 110%;
     padding: 1px 1px;

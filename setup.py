@@ -59,7 +59,8 @@ setup(
     # install_requires=REQUIRES,
     # extras_require={"icalendar": EXTRAS},
     # package_data={'etmTk': ['etmlogo.*', 'CHANGES', 'etmtk.desktop', 'etmtk.1', 'etmtk.xpm']},
-    package_data={'etmTk': ['etmtk.desktop', 'etmtk.1', 'etmtk.xpm']},
+    package_data={'etmTk': ['etmtk.desktop', 'etmtk.1', 'etmtk.xpm'],
+                  'etmTk/help' : ['help/UserManual.html', 'help/UserManual.md']},
     # TODO: fix man, icon, desktop, docs
     data_files=[
         # ('share/doc/etmtk', ['CHANGES']),
@@ -67,7 +68,7 @@ setup(
         ('share/man/man1', ['etmTk/etmtk.1']),
         ('share/pixmaps', ['etmTk/etmtk.xpm']),
         ('share/applications', ['etmTk/etmtk.desktop']),
-        # ('share/doc/etmtk/help', glob.glob('etmTk/help/*.html')),
+        ('share/doc/etmtk/help', glob.glob('etmTk/help/*.html')),
         # ('share/doc/etmtk/help/images', glob.glob('etmTk/help/images/*.png')),
     ]
 )

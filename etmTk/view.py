@@ -56,7 +56,7 @@ from etmTk.data import (
 
 from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES, REPORTS)
 
-from etmTk.dialog import Node, MenuTree, Timer, ReadOnlyText, MessageWindow, HelpWindow, TextVariableWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, STOPPED, PAUSED, RUNNING,  BGCOLOR, ONEDAY, ONEMINUTE
+from etmTk.dialog import Node, MenuTree, Timer, ReadOnlyText, MessageWindow,TextVariableWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, STOPPED, PAUSED, RUNNING,  BGCOLOR, ONEDAY, ONEMINUTE
 
 from etmTk.edit import SimpleEditor, ReportWindow
 
@@ -128,6 +128,9 @@ LINECOLOR = "gray80"
 
 OCCASIONFILL = "gray96"
 # OCCASIONFILL = "gray98"
+
+this_dir, this_filename = os.path.split(__file__)
+USERMANUAL = os.path.join(this_dir, "help", "UserManual.html")
 
 
 class App(Tk):
@@ -209,43 +212,47 @@ class App(Tk):
         path = NEW
 
         label = _("Item")
-        l = c = "n"
+        l = "N"
+        c = "n"
         # logger.debug("{0}: {1}, {2}".format(label, l, c))
         newmenu.add_command(label=label, command=self.newItem)
         self.bindTop(c, self.newItem)
-        if not mac:
-            newmenu.entryconfig(0, accelerator=l)
+        # if not mac:
+        newmenu.entryconfig(0, accelerator=l)
         self.add2menu(path, (label, l))
 
         # l, c = commandShortcut('N')
-        l = c = "N"
+        l = "Shift-N"
+        c = "N"
         label = _("File")
         newmenu.add_command(label=label, command=self.newData)
         self.bindTop(c, self.newData)
-        if not mac:
-            newmenu.entryconfig(1, accelerator=l)
+        # if not mac:
+        newmenu.entryconfig(1, accelerator=l)
         self.add2menu(path, (label, l))
 
         label = _("Begin/Pause Action Timer")
-        l, c = commandShortcut(',')
-        l = c = 't'
+        # l, c = commandShortcut(',')
+        l = "T"
+        c = 't'
         # logger.debug("{0}: {1}, {2}".format(label, l, c))
         newmenu.add_command(label=label, command=self.startActionTimer)
         # self.bind("<Control-comma>", lambda e: self.after(AFTER, self.startActionTimer))
         self.bindTop(c, self.startActionTimer)
-        if not mac:
-            newmenu.entryconfig(2, accelerator=l)
+        # if not mac:
+        newmenu.entryconfig(2, accelerator=l)
         self.add2menu(path, (label, l))
 
         label = _("Finish Action Timer")
         # l, c = commandShortcut('.')
-        l = c = "T"
+        l = "Shift-T"
+        c = "T"
         # logger.debug("{0}: {1}, {2}".format(label, l, c))
         newmenu.add_command(label=label, command=self.startActionTimer)
         # self.bind("<Control-period>", lambda e: self.after(AFTER, self.finishActionTimer))
         self.bind(c, self.finishActionTimer)
-        if not mac:
-            newmenu.entryconfig(3, accelerator=l)
+        # if not mac:
+        newmenu.entryconfig(3, accelerator=l)
         self.add2menu(path, (label, l))
 
 
@@ -258,55 +265,60 @@ class App(Tk):
         self.add2menu(path, (OPEN, ))
         path = OPEN
         # l, c = commandShortcut('d')
-        l = c = "D"
+        l = "Shift-D"
+        c = "D"
         label = _("Data file ...")
         openmenu.add_command(label=label, command=self.editData)
         self.bind(c, lambda e: openmenu.invoke(0))
-        if not mac:
-            openmenu.entryconfig(0, accelerator=l)
+        # if not mac:
+        openmenu.entryconfig(0, accelerator=l)
         self.add2menu(path, (label, l))
 
         # l, c = commandShortcut('e')
-        l = c = "E"
+        l = "Shift-E"
+        c = "E"
         # logger.debug("config: {0}, {1}".format(l, c))
         file = loop.options['config']
         label = "etmtk.cfg"
         openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x, config=True))
         self.bind(c, lambda e: openmenu.invoke(1))
-        if not mac:
-            openmenu.entryconfig(1, accelerator=l)
+        # if not mac:
+        openmenu.entryconfig(1, accelerator=l)
         self.add2menu(path, (label, l))
 
         # l, c = commandShortcut('c')
-        l = c = "C"
+        l = "Shift-C"
+        c = "C"
         file = loop.options['auto_completions']
         label = relpath(file, loop.options['etmdir'])
         openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x))
         self.bind(c, lambda e: openmenu.invoke(2))
-        if not mac:
-            openmenu.entryconfig(2, accelerator=l)
+        # if not mac:
+        openmenu.entryconfig(2, accelerator=l)
         self.add2menu(path, (label, l))
 
         # l, c = commandShortcut('r')
-        l = c = "R"
+        l = "Shift-R"
+        c = "R"
         file = loop.options['report_specifications']
         label = relpath(file, loop.options['etmdir'])
         # logger.debug("{0}: {1}, {2}".format(label, l, c))
         openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x))
         self.bind(c, lambda e: openmenu.invoke(3))
-        if not mac:
-            openmenu.entryconfig(3, accelerator=l)
+        # if not mac:
+        openmenu.entryconfig(3, accelerator=l)
         self.add2menu(path, (label, l))
 
         # l, c = commandShortcut('s')
-        l = c = "S"
+        l = "Shift-S"
+        c = "S"
         file = loop.options['scratchpad']
         label = relpath(file, loop.options['etmdir'])
         # label = _("Scratchpad")
         openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x))
         self.bind(c, lambda e: openmenu.invoke(4))
-        if not mac:
-            openmenu.entryconfig(4, accelerator=l)
+        # if not mac:
+        openmenu.entryconfig(4, accelerator=l)
         self.add2menu(path, (label, l))
 
         filemenu.add_cascade(label=OPEN, menu=openmenu)
@@ -335,37 +347,53 @@ class App(Tk):
         l = "Space"
         label = _("Home")
         viewmenu.add_command(label=label, command=lambda: self.goHome())
-        if not mac:
-            viewmenu.entryconfig(0, accelerator=l)
+        # if not mac:
+        #     viewmenu.entryconfig(0, accelerator=l)
+        viewmenu.entryconfig(0, accelerator=l)
         self.add2menu(path, (label, l))
         self.bind('<space>', self.goHome)
 
+        ## show alerts
+        # l, c = commandShortcut("A")
+        l = "A"
+        c = "a"
+        label = _("Show remaining alerts for today")
+        viewmenu.add_command(label=label, underline=1, command=self.showAlerts)
+        self.bindTop(c, self.showAlerts)
+        # if not mac:
+        #     viewmenu.entryconfig(1, accelerator=l)
+        viewmenu.entryconfig(1, accelerator=l)
+        self.add2menu(path, (label, l))
 
         # go to date
         # l, c = commandShortcut('j')
-        l = c = "j"
+        l = "J"
+        c = "j"
         label=_("Jump to date")
         viewmenu.add_command(label=label, command=self.goToDate)
         self.bind(c, lambda event: self.after(AFTER, self.goToDate))
-        if not mac:
-            viewmenu.entryconfig(1, accelerator=l)
+        # if not mac:
+        #     viewmenu.entryconfig(2, accelerator=l)
+        viewmenu.entryconfig(2, accelerator=l)
         self.add2menu(path, (label, l))
 
-        viewmenu.add_separator()
+        viewmenu.add_separator() # 3
         self.add2menu(path, (SEP, ))
 
         l = "Control-Down"
         label = _("Next sibling")
         viewmenu.add_command( label=label, underline=1,  command=self.nextItem)
-        if not mac:
-            viewmenu.entryconfig(3, accelerator=l)
+        # if not mac:
+        #     viewmenu.entryconfig(4, accelerator=l)
+        viewmenu.entryconfig(4, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Control-Up"
         label = _("Previous sibling")
         viewmenu.add_command( label=label, underline=1,  command=self.prevItem)
-        if not mac:
-            viewmenu.entryconfig(4, accelerator=l)
+        # if not mac:
+        #     viewmenu.entryconfig(5, accelerator=l)
+        viewmenu.entryconfig(5, accelerator=l)
         self.add2menu(path, (label, l))
 
         # apply filter
@@ -373,90 +401,97 @@ class App(Tk):
         label=_("Set outline filter")
         viewmenu.add_command( label=label, underline=1,  command=self.setFilter)
         self.bind(c, self.setFilter)
-        if not mac:
-            viewmenu.entryconfig(5, accelerator=l)
+        # if not mac:
+        #     viewmenu.entryconfig(6, accelerator=l)
+        viewmenu.entryconfig(6, accelerator=l)
         self.add2menu(path, (label, l))
 
         # clear filter
         l = "Escape"
         label=_("Clear outline filter")
         viewmenu.add_command( label=label, underline=1, command=self.clearFilter)
-        if not mac:
-            viewmenu.entryconfig(6, accelerator=l)
+        # if not mac:
+        #     viewmenu.entryconfig(7, accelerator=l)
+        viewmenu.entryconfig(7, accelerator=l)
         self.add2menu(path, (label, l))
 
         # toggle showing labels
         # l, c = commandShortcut('l')
-        l = c = "l"
+        l = "L"
+        c = "l"
         label=_("Toggle displaying labels column")
         viewmenu.add_command( label=label, underline=1, command=self.toggleLabels)
         self.bind(c, lambda event: self.after(AFTER, self.toggleLabels))
-        if not mac:
-            viewmenu.entryconfig(7, accelerator=l)
+        # if not mac:
+        #     viewmenu.entryconfig(8, accelerator=l)
+        viewmenu.entryconfig(8, accelerator=l)
         self.add2menu(path, (label, l))
 
         # expand to depth
         # l, c = commandShortcut('o')
-        l = c = "o"
+        l = "O"
+        c = "o"
         label=_("Set outline depth")
         viewmenu.add_command( label=label, underline=1, command=self.expand2Depth)
         self.bind(c, lambda event: self.after(AFTER, self.expand2Depth))
-        if not mac:
-            viewmenu.entryconfig(8, accelerator=l)
+        # if not mac:
+        viewmenu.entryconfig(9, accelerator=l)
         self.add2menu(path, (label, l))
 
-        viewmenu.add_separator()
+        viewmenu.add_separator()  # 10
         self.add2menu(path, (SEP, ))
 
         l = "Left"
         label=_("Previous week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.showWeek(event=e, week=-1))
-        if not mac:
-            viewmenu.entryconfig(10, accelerator=l)
+        # if not mac:
+        viewmenu.entryconfig(11, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Right"
         label=_("Next week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.showWeek(event=e, week=+1))
-        if not mac:
-            viewmenu.entryconfig(11, accelerator=l)
+        # if not mac:
+        viewmenu.entryconfig(12, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Up"
         label=_("Previous item in week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=-1))
-        if not mac:
-            viewmenu.entryconfig(12, accelerator=l)
+        # if not mac:
+        viewmenu.entryconfig(13, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Down"
         label=_("Next item in week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=1))
-        if not mac:
-            viewmenu.entryconfig(13, accelerator=l)
+        # if not mac:
+        viewmenu.entryconfig(14, accelerator=l)
         self.add2menu(path, (label, l))
 
         # l, c = commandShortcut("b")
-        l = c = 'b'
+        l = "B"
+        c = 'b'
         label=_("List busy times in week")
         viewmenu.add_command(label=label, underline=5, command=self.showBusyPeriods)
-        if not mac:
-            viewmenu.entryconfig(14, accelerator=l)
+        # if not mac:
+        viewmenu.entryconfig(15, accelerator=l)
         self.add2menu(path, (label, l))
 
         # l, c = commandShortcut("f")
-        l = c = 'f'
+        l = "F"
+        c = 'f'
         label=_("List free times in week")
         viewmenu.add_command(label=label, underline=5, command=self.showFreePeriods)
-        if not mac:
-            viewmenu.entryconfig(15, accelerator=l)
+        # if not mac:
+        viewmenu.entryconfig(16, accelerator=l)
         # set binding in showWeekly
         self.add2menu(path, (label, l))
 
         # viewmenu.add_cascade(label=path, menu=viewmenu, underline=0)
 
         # self.viewmenu.entryconfig(0, state="normal")
-        for i in range(10, 16):
+        for i in range(11, 17):
             self.viewmenu.entryconfig(i, state="disabled")
 
 
@@ -475,7 +510,6 @@ class App(Tk):
             [_('Finish'), 'f'],
             [_('Reschedule'), 'r'],
             [_('Open link'), 'g'],
-            [_('Export to ical'), 'x'],
             ]
         self.edit2cmd = {
             'c': self.copyItem,
@@ -484,7 +518,6 @@ class App(Tk):
             'f': self.finishItem,
             'r': self.rescheduleItem,
             'g': self.openWithDefault,
-            'x': self.exportToIcal,
             }
         self.em_opts = [x[0] for x in self.em_options]
         # em_cmds = [x[1] for x in self.em_options]
@@ -496,15 +529,16 @@ class App(Tk):
                 l = "BackSpace"
                 c = "<BackSpace>"
             else:
-                l = c = k
+                l = k.upper()
+                c = k
             # logger.debug('binding {0} to {1}'.format(c, self.edit2cmd[k]))
             itemmenu.add_command(label=label, underline=0, command=self.edit2cmd[k])
             if k == 'f':
                 self.tree.bind(c, self.edit2cmd[k])
             else:
                 self.bindTop(c, self.edit2cmd[k])
-            if not mac:
-                itemmenu.entryconfig(i, accelerator=l)
+            # if not mac:
+            itemmenu.entryconfig(i, accelerator=l)
             self.add2menu(path, (label, l))
 
         menubar.add_cascade(label=path, underline=0, menu=itemmenu)
@@ -514,14 +548,15 @@ class App(Tk):
         self.add2menu(menu, (path, ))
         toolsmenu = Menu(menubar, tearoff=0)
 
+        # report
+        # l, c = commandShortcut('r')
         l = "F4"
         c = "<F4>"
-        # l, c = commandShortcut('y')
-        label=_("Display yearly calendar")
-        toolsmenu.add_command(label=label, underline=8, command=self.showCalendar)
-        self.bind(c, lambda event: self.after(AFTER, self.showCalendar))
-        if not mac:
-            toolsmenu.entryconfig(0, accelerator=l)
+        label=_("Create report")
+        toolsmenu.add_command(label=label, underline=5, command=self.makeReport)
+        self.bind(c, self.makeReport)
+        # if not mac:
+        toolsmenu.entryconfig(0, accelerator=l)
         self.add2menu(path, (label, l))
 
         # date calculator
@@ -531,17 +566,18 @@ class App(Tk):
         label=_("Open date calculator")
         toolsmenu.add_command(label=label, underline=12, command=self.dateCalculator)
         self.bind(c, lambda event: self.after(AFTER, self.dateCalculator))
-        if not mac:
-            toolsmenu.entryconfig(1, accelerator=l)
+        # if not mac:
+        toolsmenu.entryconfig(1, accelerator=l)
         self.add2menu(path, (label, l))
 
-        # report
-        l, c = commandShortcut('r')
-        label=_("Create report")
-        toolsmenu.add_command(label=label, underline=5, command=self.makeReport)
-        self.bind(c, self.makeReport)
-        if not mac:
-            toolsmenu.entryconfig(2, accelerator=l)
+        l = "Shift-Y"
+        c = "Y"
+        # l, c = commandShortcut('y')
+        label=_("Display yearly calendar")
+        toolsmenu.add_command(label=label, underline=8, command=self.showCalendar)
+        self.bind(c, lambda event: self.after(AFTER, self.showCalendar))
+        # if not mac:
+        toolsmenu.entryconfig(2, accelerator=l)
         self.add2menu(path, (label, l))
 
         # changes
@@ -555,31 +591,25 @@ class App(Tk):
             self.add2menu(path, (label, l))
 
         ## export
-        l = "Shift-F6"
-        c = "<Shift-F6>"
-        label = _("Export active calendars as iCal")
-        toolsmenu.add_command(label=label, underline=1, command=self.exportActiveToIcal)
-        self.bind(c, self.exportActiveToIcal)
-        if not mac:
-            toolsmenu.entryconfig(4, accelerator=l)
+        l = "Shift-X"
+        c = "X"
+        label = _("Export to iCal")
+        toolsmenu.add_command(label=label, underline=1, command=self.exportToIcal)
+        self.bind(c, self.exportToIcal)
+        # if not mac:
+        toolsmenu.entryconfig(4, accelerator=l)
         self.add2menu(path, (label, l))
 
-        ## show alerts
-        l, c = commandShortcut("A")
-        label = _("Show remaining alerts for today")
-        toolsmenu.add_command(label=label, underline=1, command=self.showAlerts)
-        self.bind(c, self.showAlerts)
-        if not mac:
-            toolsmenu.entryconfig(5, accelerator=l)
-        self.add2menu(path, (label, l))
 
         ## load data
-        l, c = commandShortcut("L")
+        # l, c = commandShortcut("L")
+        l = "Shift-L"
+        c = "L"
         label = _("Reload data from files")
         toolsmenu.add_command(label=label, underline=1, command=loop.loadData)
         self.bind(c, loop.loadData)
-        if not mac:
-            toolsmenu.entryconfig(6, accelerator=l)
+        # if not mac:
+        toolsmenu.entryconfig(5, accelerator=l)
         self.add2menu(path, (label, l))
 
         menubar.add_cascade(label=path, menu=toolsmenu, underline=0)
@@ -592,7 +622,12 @@ class App(Tk):
         # search is built in
         self.add2menu(path, (_("Search"), ))
 
-        label = _("Help")
+        label = _("Shortcuts")
+        helpmenu.add_command(label=label, underline=1, accelerator="?", command=self.showShortcuts)
+        self.add2menu(path, (label, "?"))
+        self.bindTop("?", self.showShortcuts)
+
+        label = _("User manual")
         helpmenu.add_command(label=label, underline=1, accelerator="F1", command=self.help)
         self.add2menu(path, (label, "F1"))
         self.bind("<F1>", lambda e: self.after(AFTER, self.help))
@@ -747,8 +782,8 @@ class App(Tk):
         self.fltrbtn = Button(fltrbox, text='x', command=self.clearFilter, highlightbackground=BGCOLOR, pady=2)
         self.fltrbtn.configure(state="disabled")
         self.filter_active = False
-        self.viewmenu.entryconfig(5, state="normal")
-        self.viewmenu.entryconfig(6, state="disabled")
+        self.viewmenu.entryconfig(6, state="normal")
+        self.viewmenu.entryconfig(7, state="disabled")
         self.fltrbtn.pack(side=LEFT, padx=0)
         self.fltrbox.pack(side=LEFT, padx=0, pady=0)
 
@@ -841,7 +876,7 @@ class App(Tk):
         self.add2menu(root, (EDIT, ))
         self.add2menu(EDIT, (_("Show possible completions"), "Ctrl-Space"))
         self.add2menu(EDIT, (_("Validate entry"), "Ctrl-?"))
-        self.add2menu(EDIT, (_("Cancel"), "Ctrl-Q"))
+        self.add2menu(EDIT, (_("Cancel"), "Escape"))
         self.add2menu(EDIT, (_("Save changes and close editor"), "Ctrl-W"))
 
         REPORT = _("Report")
@@ -851,7 +886,7 @@ class App(Tk):
         self.add2menu(REPORT, (_("Export report in csv format ..."), "Ctrl-X"))
         self.add2menu(REPORT, (_("Save changes to report specifications"), "Ctrl-W"))
         self.add2menu(REPORT, (_("Expand report list"), "Down"))
-        self.add2menu(REPORT, (_("Quit"), "Ctrl-Q"))
+        self.add2menu(REPORT, (_("Quit"), "Escape"))
 
         # start clock
         self.updateClock()
@@ -1008,15 +1043,13 @@ The local timezone is used when none is given."""
         prompt = "{0}:\n\n{1}".format(value, res)
         MessageWindow(self, title=_("result"), prompt=prompt)
 
-    def exportToIcal(self):
+    def exportToIcal(self, e=None):
         if self.itemSelected:
-            self.exportItemToIcal()
+            self._exportItemToIcal()
         else:
-            self.exportActiveToIcal()
+            self._exportActiveToIcal()
 
-    def exportItemToIcal(self):
-        if not self.itemSelected:
-            return
+    def _exportItemToIcal(self):
         if 'icsitem_file' in loop.options:
             res = export_ical_item(self.itemSelected, loop.options['icsitem_file'])
             if res:
@@ -1027,7 +1060,7 @@ The local timezone is used when none is given."""
             prompt = "icsitem_file is not set in etmtk.cfg"
         MessageWindow(self, 'Selected Item Export', prompt)
 
-    def exportActiveToIcal(self, event=None):
+    def _exportActiveToIcal(self, event=None):
         if 'icscal_file' in loop.options:
             res = export_ical(loop.uuid2hash, loop.options['icscal_file'], loop.calendars)
             if res:
@@ -1670,7 +1703,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
     def closeWeekly(self, event=None):
         self.today_col = None
-        for i in range(10, 16):
+        for i in range(11, 17):
             self.viewmenu.entryconfig(i, state="disabled")
         self.canvas.pack_forget()
         self.weekly = False
@@ -1678,13 +1711,13 @@ Enter the shortest time period you want displayed in minutes.""")
         self.tree.pack(fill="both", expand=1, padx=4, pady=0)
         self.update_idletasks()
         if self.filter_active:
-            self.viewmenu.entryconfig(5, state="disabled")
-            self.viewmenu.entryconfig(6, state="normal")
-        else:
-            self.viewmenu.entryconfig(5, state="normal")
             self.viewmenu.entryconfig(6, state="disabled")
+            self.viewmenu.entryconfig(7, state="normal")
+        else:
+            self.viewmenu.entryconfig(6, state="normal")
+            self.viewmenu.entryconfig(7, state="disabled")
 
-        for i in [3, 4, 7, 8]:
+        for i in [4, 5, 8, 9]:
             self.viewmenu.entryconfig(i, state="normal")
         self.bind("<Control-f>", self.setFilter)
 
@@ -1700,7 +1733,7 @@ Enter the shortest time period you want displayed in minutes.""")
         self.weekly = True
         self.tree.pack_forget()
         self.fltrbox.pack_forget()
-        for i in range(3, 9):
+        for i in range(4, 10):
             self.viewmenu.entryconfig(i, state="disabled")
 
         self.view = WEEK
@@ -1722,7 +1755,7 @@ Enter the shortest time period you want displayed in minutes.""")
             self.hours = ["{0}am".format(i) for i in range(7,12)] + ['12pm'] + ["{0}pm".format(i) for i in range(1,12)]
         else:
             self.hours = ["{0}:00".format(i) for i in range(7, 24)]
-        for i in range(10, 16):
+        for i in range(11, 17):
             self.viewmenu.entryconfig(i, state="normal")
         self.canvas.focus_set()
         self.showWeek()
@@ -2157,20 +2190,22 @@ Enter the shortest time period you want displayed in minutes.""")
         newcommand = self.newValue.get()
         self.newValue.set(self.newLabel)
 
-    def help(self, event=None):
+    def showShortcuts(self, e=None):
         res = self.menutree.showMenu("_")
-        opts = self.options
-        opts['help_opts'] = [
-            [_("Shortcuts"), res],
-            [_("Overview"), OVERVIEW],
-            [_("Types"), ITEMTYPES],
-            [_("@Keys"),ATKEYS],
-            [_("Dates"), DATES],
-            [_("Preferences"), PREFERENCES],
-            [_("Reports"), REPORTS],
-        ]
+        self.textWindow(parent=self, title='etm', opts=self.options, prompt=res, modal=False)
 
-        hw = HelpWindow(parent=self, opts=opts)
+    def help(self, event=None):
+        path = USERMANUAL
+        if windoz:
+            os.startfile(USERMANUAL)
+            return()
+        if mac:
+            cmd = 'open' + " {0}".format(path)
+        else:
+            cmd = 'xdg-open' + " {0}".format(path)
+        subprocess.call(cmd, shell=True)
+        return True
+
 
     def about(self, event=None):
         res = loop.do_v("")
