@@ -24,7 +24,8 @@ OPTIONS = {'build': {'build_exe': 'releases/etmtk-{0}'.format(version)},
 setup(
     name='etmtk',
     version=version,
-    # zip_safe=False,
+    include_package_data=True,
+    zip_safe=False,
     url='http://people.duke.edu/~dgraham/etmtk',
     description='event and task manager',
     long_description='manage events and tasks using simple text files',
@@ -68,7 +69,7 @@ setup(
         ('share/man/man1', ['etmTk/etmtk.1']),
         ('share/pixmaps', ['etmTk/etmtk.xpm']),
         ('share/applications', ['etmTk/etmtk.desktop']),
-        ('share/doc/etmtk/help', glob.glob('etmTk/help/*.html')),
+        ('etmtk',['etmTk/help/UserManual.html']),
         # ('share/doc/etmtk/help/images', glob.glob('etmTk/help/images/*.png')),
     ]
 )
