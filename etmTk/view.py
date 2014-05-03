@@ -176,6 +176,24 @@ class App(Tk):
             logger.debug('Setting depth for {0} to {1}'.format(view, loop.options['outline_depth']))
             self.outline_depths[view] = loop.options['outline_depth']
 
+        panedwindow = PanedWindow(self, orient="vertical", sashwidth=6, sashrelief='flat')
+        self.toppane = toppane = Frame(panedwindow, bd=0, highlightthickness=0, background=BGCOLOR)
+        self.tree = ttk.Treeview(toppane, show='tree', columns=["#1", "#2"], selectmode='browse')
+        self.canvas = canvas = Canvas(self.toppane, background="white", bd=2, relief="sunken")
+
+        self.canvas.bind("<Control-Button-1>", self.on_select_item)
+        self.canvas.bind("<Double-1>", self.on_select_item)
+        self.canvas.bind("<Configure>", self.showWeek)
+
+        self.canvas.bind("<Return>", lambda e: self.on_activate_item(event=e))
+        self.canvas.bind('<Left>', (lambda e: self.showWeek(event=e, week=-1)))
+        self.canvas.bind('<Right>', (lambda e: self.showWeek(event=e, week=1)))
+        self.canvas.bind('<Up>', (lambda e: self.selectId(event=e, d=-1)))
+        self.canvas.bind('<Down>', (lambda e: self.selectId(event=e, d=1)))
+
+        self.canvas.bind("b", lambda event: self.after(AFTER, self.showBusyPeriods))
+        self.canvas.bind("f", lambda event: self.after(AFTER, self.showFreePeriods))
+
         # main menu
         menubar = Menu(self)
         menu = _("Menubar")
@@ -191,49 +209,56 @@ class App(Tk):
         path = NEW
 
         label = _("Item")
-        l, c = commandShortcut('i')
+        l = c = "n"
         # logger.debug("{0}: {1}, {2}".format(label, l, c))
         newmenu.add_command(label=label, command=self.newItem)
-        self.bind(c, lambda e: self.after(AFTER, self.newItem))
+        self.bindTop(c, self.newItem)
         if not mac:
             newmenu.entryconfig(0, accelerator=l)
         self.add2menu(path, (label, l))
 
-        label = _("Begin/Pause Action Timer")
-        l, c = commandShortcut(',')
-        # logger.debug("{0}: {1}, {2}".format(label, l, c))
-        newmenu.add_command(label=label, command=self.startActionTimer)
-        self.bind("<Control-comma>", lambda e: self.after(AFTER, self.startActionTimer))
+        # l, c = commandShortcut('N')
+        l = c = "N"
+        label = _("File")
+        newmenu.add_command(label=label, command=self.newData)
+        self.bindTop(c, self.newData)
         if not mac:
             newmenu.entryconfig(1, accelerator=l)
         self.add2menu(path, (label, l))
 
-        label = _("Finish Action Timer")
-        l, c = commandShortcut('.')
+        label = _("Begin/Pause Action Timer")
+        l, c = commandShortcut(',')
+        l = c = 't'
         # logger.debug("{0}: {1}, {2}".format(label, l, c))
         newmenu.add_command(label=label, command=self.startActionTimer)
-        self.bind("<Control-period>", lambda e: self.after(AFTER, self.finishActionTimer))
+        # self.bind("<Control-comma>", lambda e: self.after(AFTER, self.startActionTimer))
+        self.bindTop(c, self.startActionTimer)
         if not mac:
             newmenu.entryconfig(2, accelerator=l)
         self.add2menu(path, (label, l))
 
-        l, c = commandShortcut('N')
-        label = _("File")
-        newmenu.add_command(label=label, command=self.newData)
-        self.bind(c, lambda e: newmenu.invoke(3))
+        label = _("Finish Action Timer")
+        # l, c = commandShortcut('.')
+        l = c = "T"
+        # logger.debug("{0}: {1}, {2}".format(label, l, c))
+        newmenu.add_command(label=label, command=self.startActionTimer)
+        # self.bind("<Control-period>", lambda e: self.after(AFTER, self.finishActionTimer))
+        self.bind(c, self.finishActionTimer)
         if not mac:
-            newmenu.entryconfig(0, accelerator=l)
+            newmenu.entryconfig(3, accelerator=l)
         self.add2menu(path, (label, l))
 
+
         filemenu.add_cascade(label=NEW, menu=newmenu)
-        newmenu.entryconfig(2, state="disabled")
+        newmenu.entryconfig(3, state="disabled")
 
         path = FILE
         # Open
         openmenu = Menu(filemenu, tearoff=0)
         self.add2menu(path, (OPEN, ))
         path = OPEN
-        l, c = commandShortcut('F')
+        # l, c = commandShortcut('d')
+        l = c = "D"
         label = _("Data file ...")
         openmenu.add_command(label=label, command=self.editData)
         self.bind(c, lambda e: openmenu.invoke(0))
@@ -241,7 +266,8 @@ class App(Tk):
             openmenu.entryconfig(0, accelerator=l)
         self.add2menu(path, (label, l))
 
-        l, c = commandShortcut('E')
+        # l, c = commandShortcut('e')
+        l = c = "E"
         # logger.debug("config: {0}, {1}".format(l, c))
         file = loop.options['config']
         label = "etmtk.cfg"
@@ -251,7 +277,8 @@ class App(Tk):
             openmenu.entryconfig(1, accelerator=l)
         self.add2menu(path, (label, l))
 
-        l, c = commandShortcut('C')
+        # l, c = commandShortcut('c')
+        l = c = "C"
         file = loop.options['auto_completions']
         label = relpath(file, loop.options['etmdir'])
         openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x))
@@ -260,7 +287,8 @@ class App(Tk):
             openmenu.entryconfig(2, accelerator=l)
         self.add2menu(path, (label, l))
 
-        l, c = commandShortcut('R')
+        # l, c = commandShortcut('r')
+        l = c = "R"
         file = loop.options['report_specifications']
         label = relpath(file, loop.options['etmdir'])
         # logger.debug("{0}: {1}, {2}".format(label, l, c))
@@ -270,7 +298,8 @@ class App(Tk):
             openmenu.entryconfig(3, accelerator=l)
         self.add2menu(path, (label, l))
 
-        l, c = commandShortcut('S')
+        # l, c = commandShortcut('s')
+        l = c = "S"
         file = loop.options['scratchpad']
         label = relpath(file, loop.options['etmdir'])
         # label = _("Scratchpad")
@@ -313,7 +342,8 @@ class App(Tk):
 
 
         # go to date
-        l, c = commandShortcut('j')
+        # l, c = commandShortcut('j')
+        l = c = "j"
         label=_("Jump to date")
         viewmenu.add_command(label=label, command=self.goToDate)
         self.bind(c, lambda event: self.after(AFTER, self.goToDate))
@@ -356,7 +386,8 @@ class App(Tk):
         self.add2menu(path, (label, l))
 
         # toggle showing labels
-        l, c = commandShortcut('l')
+        # l, c = commandShortcut('l')
+        l = c = "l"
         label=_("Toggle displaying labels column")
         viewmenu.add_command( label=label, underline=1, command=self.toggleLabels)
         self.bind(c, lambda event: self.after(AFTER, self.toggleLabels))
@@ -365,7 +396,8 @@ class App(Tk):
         self.add2menu(path, (label, l))
 
         # expand to depth
-        l, c = commandShortcut('o')
+        # l, c = commandShortcut('o')
+        l = c = "o"
         label=_("Set outline depth")
         viewmenu.add_command( label=label, underline=1, command=self.expand2Depth)
         self.bind(c, lambda event: self.after(AFTER, self.expand2Depth))
@@ -404,15 +436,16 @@ class App(Tk):
             viewmenu.entryconfig(13, accelerator=l)
         self.add2menu(path, (label, l))
 
-        l, c = commandShortcut("b")
+        # l, c = commandShortcut("b")
+        l = c = 'b'
         label=_("List busy times in week")
         viewmenu.add_command(label=label, underline=5, command=self.showBusyPeriods)
         if not mac:
             viewmenu.entryconfig(14, accelerator=l)
-        self.bind(c, lambda event: self.after(AFTER, self.showBusyPeriods))
         self.add2menu(path, (label, l))
 
-        l, c = commandShortcut("f")
+        # l, c = commandShortcut("f")
+        l = c = 'f'
         label=_("List free times in week")
         viewmenu.add_command(label=label, underline=5, command=self.showFreePeriods)
         if not mac:
@@ -437,21 +470,21 @@ class App(Tk):
         self.add2menu(menu, (path, ))
         self.em_options = [
             [_('Copy'), 'c'],
-            [_('Delete'), 'delete'],
+            [_('Delete'), 'd'],
             [_('Edit'), 'e'],
-            [_('Finish'), 'x'],
-            [_('Reschedule'), 's'],
+            [_('Finish'), 'f'],
+            [_('Reschedule'), 'r'],
             [_('Open link'), 'g'],
-            [_('Export item as ical'), 'f6'],
+            [_('Export to ical'), 'x'],
             ]
         self.edit2cmd = {
             'c': self.copyItem,
-            'delete': self.deleteItem,
+            'd': self.deleteItem,
             'e': self.editItem,
-            'x': self.finishItem,
-            's': self.rescheduleItem,
+            'f': self.finishItem,
+            'r': self.rescheduleItem,
             'g': self.openWithDefault,
-            'f6': self.exportItemToIcal,
+            'x': self.exportToIcal,
             }
         self.em_opts = [x[0] for x in self.em_options]
         # em_cmds = [x[1] for x in self.em_options]
@@ -459,21 +492,17 @@ class App(Tk):
         for i in range(len(self.em_options)):
             label = self.em_options[i][0]
             k = self.em_options[i][1]
-            if k == 'delete':
-                l = "Ctrl-BackSpace"
-                c = "<Control-BackSpace>"
-            elif k == "f6":
-                l = "F6"
-                c = "<F6>"
-            # elif k == "e":
-            #     l, c  = commandShortcut(k)
-            #     l = "{0}, Return".format(l)
+            if k == 'd':
+                l = "BackSpace"
+                c = "<BackSpace>"
             else:
-                l, c = commandShortcut(k)
+                l = c = k
             # logger.debug('binding {0} to {1}'.format(c, self.edit2cmd[k]))
             itemmenu.add_command(label=label, underline=0, command=self.edit2cmd[k])
-            # if k != "delete":
-            self.bind(c, lambda e, x=k: self.after(AFTER, self.edit2cmd[x]))
+            if k == 'f':
+                self.tree.bind(c, self.edit2cmd[k])
+            else:
+                self.bindTop(c, self.edit2cmd[k])
             if not mac:
                 itemmenu.entryconfig(i, accelerator=l)
             self.add2menu(path, (label, l))
@@ -725,10 +754,7 @@ class App(Tk):
 
         # topbar.pack(side="top", fill="both", expand=0, padx=0, pady=0)
 
-        panedwindow = PanedWindow(self, orient="vertical", sashwidth=6, sashrelief='flat')
-        self.toppane = toppane = Frame(panedwindow, bd=0, highlightthickness=0, background=BGCOLOR)
         self.weekly = False
-        self.tree = ttk.Treeview(toppane, show='tree', columns=["#1", "#2"], selectmode='browse')
 
         self.col2_width = tktreefont.measure('abcdgklmprtuX')
         self.col3_width = tktreefont.measure('10:30pm ~ 11:30pmX')
@@ -833,6 +859,10 @@ class App(Tk):
         self.updateAlerts()
         self.etmgeo = os.path.join(loop.options['etmdir'], ".etmgeo")
         self.restoreGeometry()
+
+    def bindTop(self, c, cmd):
+        self.tree.bind(c, lambda e: self.after(AFTER, cmd))
+        self.canvas.bind(c, lambda e: self.after(AFTER, cmd))
 
     def toggleLabels(self):
         if self.weekly:
@@ -977,6 +1007,12 @@ The local timezone is used when none is given."""
         res = date_calculator(value, self.options)
         prompt = "{0}:\n\n{1}".format(value, res)
         MessageWindow(self, title=_("result"), prompt=prompt)
+
+    def exportToIcal(self):
+        if self.itemSelected:
+            self.exportItemToIcal()
+        else:
+            self.exportActiveToIcal()
 
     def exportItemToIcal(self):
         if not self.itemSelected:
@@ -1678,26 +1714,9 @@ Enter the shortest time period you want displayed in minutes.""")
         else:
             self.chosen_day = get_current_time()
 
-        self.canvas = canvas = Canvas(self.toppane, background="white", bd=2, relief="sunken")
-        canvas.configure(highlightthickness=0)
-        canvas.pack(side="top", fill="both", expand=1, padx=4, pady=0)
+        self.canvas.configure(highlightthickness=0)
+        self.canvas.pack(side="top", fill="both", expand=1, padx=4, pady=0)
 
-        self.canvas.bind("<Control-Button-1>", self.on_select_item)
-        self.canvas.bind("<Double-1>", self.on_select_item)
-        self.canvas.bind("<Configure>", self.showWeek)
-
-        # canvas.bind('b', lambda e=event: self.after(AFTER, self.showBusyTimes))
-        # canvas.bind('j', lambda e=event: self.after(AFTER, self.gotoWeek(event=e)))
-        # disable ^J calling gotoDate
-        # canvas.bind('<Control-j>', self.gotoWeek)
-        canvas.bind("<Return>", lambda e: self.on_activate_item(event=e))
-        canvas.bind('<Left>', (lambda e: self.showWeek(event=e, week=-1)))
-        canvas.bind('<Right>', (lambda e: self.showWeek(event=e, week=1)))
-        # canvas.bind('<space>', (lambda e: self.showWeek(event=e, week=0)))
-        canvas.bind('<Up>', (lambda e: self.selectId(event=e, d=-1)))
-        canvas.bind('<Down>', (lambda e: self.selectId(event=e, d=1)))
-
-        self.bind("<Control-f>", lambda event: self.after(AFTER, self.showFreePeriods))
 
         if self.options['ampm']:
             self.hours = ["{0}am".format(i) for i in range(7,12)] + ['12pm'] + ["{0}pm".format(i) for i in range(1,12)]
@@ -2258,14 +2277,10 @@ or 0 to display all changes.""").format(title)
         logger.debug("starting OnSelect with uuid: {0}".format(uuid))
         self.content.delete("1.0", END)
         if self.weekly: # week view
-            if uuid is None:
-                # disable clear selection
-                self.viewmenu.entryconfig(13, state="disabled")
-            else:
+            if uuid:
                 # an item is selected, enable clear selection
                 hsh = loop.uuid2hash[uuid]
                 type_chr = hsh['itemtype']
-                self.viewmenu.entryconfig(13, state="normal")
         elif uuid is None: # tree view
             item = self.tree.selection()[0]
             self.rowSelected = int(item)
@@ -2649,8 +2664,10 @@ Relative dates and fuzzy parsing are supported.""")
         self.fltr.configure(bg=BGCOLOR)
         self.fltrbtn.configure(state="disabled")
         self.tree.focus_set()
-        self.tree.focus(self.rowSelected)
-        self.tree.selection_set(self.rowSelected)
+        if self.rowSelected:
+            self.tree.focus(self.rowSelected)
+            self.tree.selection_set(self.rowSelected)
+            self.tree.see(self.rowSelected)
 
 
     def startActionTimer(self, event=None):
@@ -2718,7 +2735,7 @@ Relative dates and fuzzy parsing are supported.""")
                 logger.debug('command: {0}'.format(tcmd))
                 subprocess.call(tcmd, shell=True)
         self.timerStatus.set(self.actionTimer.get_time())
-        self.newmenu.entryconfig(2, state="normal")
+        self.newmenu.entryconfig(3, state="normal")
         return "break"
 
     def finishActionTimer(self, event=None):
@@ -2735,7 +2752,7 @@ Relative dates and fuzzy parsing are supported.""")
             # clear status and reload
             self.actionTimer.timer_clear()
             self.timerStatus.set("")
-            self.newmenu.entryconfig(2, state="disabled")
+            self.newmenu.entryconfig(3, state="disabled")
             # loop.loadData()
             self.updateAlerts()
             if self.weekly:
@@ -2755,7 +2772,7 @@ Relative dates and fuzzy parsing are supported.""")
             else:
                 self.actionTimer.timer_clear()
                 self.timerStatus.set("")
-                self.newmenu.entryconfig(2, state="disabled")
+                self.newmenu.entryconfig(3, state="disabled")
         self.tree.focus_set()
 
 
