@@ -28,24 +28,22 @@ if platform.python_version() >= '3':
     from tkinter.messagebox import askokcancel
     from tkinter.filedialog import askopenfilename, asksaveasfilename, FileDialog
     utf8 = lambda x: x
-    # from tkinter import simpledialog as tkSimpleDialog
+
 else:
     import Tkinter as tkinter
     from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas, CURRENT
-    # PhotoImage
-    # import tkMessageBox
     import ttk
     import tkFont
     from tkMessageBox import askokcancel
     from tkFileDialog import askopenfilename, asksaveasfilename
-    # import tkSimpleDialog
+
     def utf8(s):
         return s
 
 tkversion = tkinter.Tcl().eval('info patchlevel')
 
 import etmTk.data as data
-# from data import init_localization
+
 
 from dateutil.parser import parse
 
@@ -102,18 +100,11 @@ CLOSE = _("Close")
 
 SEP = "----"
 
-# ACTIVEOUTLINE = "#7E96F7"
-# ACTIVEOUTLINE = CONFLICTFILL
-# BUSYOUTLINE = BUSYFILL
 ACTIVEFILL = "#FAFCAC"
 ACTIVEOUTLINE = "gray40"
 
 DEFAULTFILL = "#D4DCFC" # blue
 OTHERFILL = "#C7EDC8" # green
-# BUSYFILL = "#D4DCFC" # blue
-# BUSYFILL = "#CAECED" # cyan
-# BUSYFILL = "#F8D7FA" # magenta
-# BUSYFILL = "#C7EDC8" # green
 
 BUSYOUTLINE = ""
 
@@ -122,12 +113,8 @@ CURRENTFILL = "#FCF2F0"
 CURRENTLINE = "#E0535C"
 LASTLTR = re.compile(r'([a-z])$')
 LINECOLOR = "gray80"
-# CONFLICTFILL = "#716DF7"
-# CONFLICTFILL = "#9BAEFA"
-# CONFLICTFILL = "#FAC2B6"
 
 OCCASIONFILL = "gray96"
-# OCCASIONFILL = "gray98"
 
 this_dir, this_filename = os.path.split(__file__)
 USERMANUAL = os.path.join(this_dir, "help", "UserManual.html")
@@ -136,7 +123,7 @@ USERMANUAL = os.path.join(this_dir, "help", "UserManual.html")
 class App(Tk):
     def __init__(self, path=None):
         Tk.__init__(self)
-        # minsize: width, height
+
         self.minsize(460, 460)
         self.uuidSelected = None
         self.timerItem = None
@@ -157,21 +144,19 @@ class App(Tk):
         ef = "%a %b %d"
         if 'ampm' in loop.options and loop.options['ampm']:
             reprtimefmt = "%I:%M%p"
-            # self.rfmt = "{0} %I:%M%p".format(df)
+
             self.efmt = "%I:%M%p {0}".format(ef)
         else:
             reprtimefmt = "%H:%M"
-            # self.rfmt = "{0} %H:%M%z".format(df)
+
             self.efmt = "%H:%M {0}".format(ef)
 
-        # self.default_calendars = []
         self.default_calendars = deepcopy(loop.options['calendars'])
 
         # create the root node for the menu tree
         self.menutree.create_node(root, root)
-        # branch: (parent, child)
+
         # leaf: (parent, (option, [accelerator])
-        # menuwidth = 9
 
         self.outline_depths = {}
         for view in KEYWORDS, NOTES, PATHS:
@@ -214,44 +199,36 @@ class App(Tk):
         label = _("Item")
         l = "N"
         c = "n"
-        # logger.debug("{0}: {1}, {2}".format(label, l, c))
         newmenu.add_command(label=label, command=self.newItem)
         self.bindTop(c, self.newItem)
-        # if not mac:
+
         newmenu.entryconfig(0, accelerator=l)
         self.add2menu(path, (label, l))
 
-        # l, c = commandShortcut('N')
         l = "Shift-N"
         c = "N"
         label = _("File")
         newmenu.add_command(label=label, command=self.newData)
         self.bindTop(c, self.newData)
-        # if not mac:
+
         newmenu.entryconfig(1, accelerator=l)
         self.add2menu(path, (label, l))
 
         label = _("Begin/Pause Action Timer")
-        # l, c = commandShortcut(',')
         l = "T"
         c = 't'
-        # logger.debug("{0}: {1}, {2}".format(label, l, c))
         newmenu.add_command(label=label, command=self.startActionTimer)
-        # self.bind("<Control-comma>", lambda e: self.after(AFTER, self.startActionTimer))
         self.bindTop(c, self.startActionTimer)
-        # if not mac:
+
         newmenu.entryconfig(2, accelerator=l)
         self.add2menu(path, (label, l))
 
         label = _("Finish Action Timer")
-        # l, c = commandShortcut('.')
         l = "Shift-T"
         c = "T"
-        # logger.debug("{0}: {1}, {2}".format(label, l, c))
         newmenu.add_command(label=label, command=self.startActionTimer)
-        # self.bind("<Control-period>", lambda e: self.after(AFTER, self.finishActionTimer))
         self.bind(c, self.finishActionTimer)
-        # if not mac:
+
         newmenu.entryconfig(3, accelerator=l)
         self.add2menu(path, (label, l))
 
@@ -260,64 +237,57 @@ class App(Tk):
         newmenu.entryconfig(3, state="disabled")
 
         path = FILE
+
         # Open
         openmenu = Menu(filemenu, tearoff=0)
         self.add2menu(path, (OPEN, ))
         path = OPEN
-        # l, c = commandShortcut('d')
         l = "Shift-D"
         c = "D"
         label = _("Data file ...")
         openmenu.add_command(label=label, command=self.editData)
         self.bind(c, lambda e: openmenu.invoke(0))
-        # if not mac:
+
         openmenu.entryconfig(0, accelerator=l)
         self.add2menu(path, (label, l))
 
-        # l, c = commandShortcut('e')
         l = "Shift-E"
         c = "E"
-        # logger.debug("config: {0}, {1}".format(l, c))
         file = loop.options['config']
         label = "etmtk.cfg"
         openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x, config=True))
         self.bind(c, lambda e: openmenu.invoke(1))
-        # if not mac:
+
         openmenu.entryconfig(1, accelerator=l)
         self.add2menu(path, (label, l))
 
-        # l, c = commandShortcut('c')
         l = "Shift-C"
         c = "C"
         file = loop.options['auto_completions']
         label = relpath(file, loop.options['etmdir'])
         openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x))
         self.bind(c, lambda e: openmenu.invoke(2))
-        # if not mac:
+
         openmenu.entryconfig(2, accelerator=l)
         self.add2menu(path, (label, l))
 
-        # l, c = commandShortcut('r')
         l = "Shift-R"
         c = "R"
         file = loop.options['report_specifications']
         label = relpath(file, loop.options['etmdir'])
-        # logger.debug("{0}: {1}, {2}".format(label, l, c))
         openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x))
         self.bind(c, lambda e: openmenu.invoke(3))
-        # if not mac:
+
         openmenu.entryconfig(3, accelerator=l)
         self.add2menu(path, (label, l))
 
-        # l, c = commandShortcut('s')
         l = "Shift-S"
         c = "S"
         file = loop.options['scratchpad']
         label = relpath(file, loop.options['etmdir'])
-        # label = _("Scratchpad")
         openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x))
         self.bind(c, lambda e: openmenu.invoke(4))
-        # if not mac:
+
         openmenu.entryconfig(4, accelerator=l)
         self.add2menu(path, (label, l))
 
@@ -347,33 +317,28 @@ class App(Tk):
         l = "Space"
         label = _("Home")
         viewmenu.add_command(label=label, command=lambda: self.goHome())
-        # if not mac:
-        #     viewmenu.entryconfig(0, accelerator=l)
+
         viewmenu.entryconfig(0, accelerator=l)
         self.add2menu(path, (label, l))
         self.bind('<space>', self.goHome)
 
         ## show alerts
-        # l, c = commandShortcut("A")
         l = "Shift-A"
         c = "A"
         label = _("Show remaining alerts for today")
         viewmenu.add_command(label=label, underline=1, command=self.showAlerts)
         self.bindTop(c, self.showAlerts)
-        # if not mac:
-        #     viewmenu.entryconfig(1, accelerator=l)
+
         viewmenu.entryconfig(1, accelerator=l)
         self.add2menu(path, (label, l))
 
         # go to date
-        # l, c = commandShortcut('j')
         l = "J"
         c = "j"
         label=_("Jump to date")
         viewmenu.add_command(label=label, command=self.goToDate)
         self.bind(c, lambda event: self.after(AFTER, self.goToDate))
-        # if not mac:
-        #     viewmenu.entryconfig(2, accelerator=l)
+
         viewmenu.entryconfig(2, accelerator=l)
         self.add2menu(path, (label, l))
 
@@ -383,16 +348,14 @@ class App(Tk):
         l = "Control-Down"
         label = _("Next sibling")
         viewmenu.add_command( label=label, underline=1,  command=self.nextItem)
-        # if not mac:
-        #     viewmenu.entryconfig(4, accelerator=l)
+
         viewmenu.entryconfig(4, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Control-Up"
         label = _("Previous sibling")
         viewmenu.add_command( label=label, underline=1,  command=self.prevItem)
-        # if not mac:
-        #     viewmenu.entryconfig(5, accelerator=l)
+
         viewmenu.entryconfig(5, accelerator=l)
         self.add2menu(path, (label, l))
 
@@ -401,8 +364,7 @@ class App(Tk):
         label=_("Set outline filter")
         viewmenu.add_command( label=label, underline=1,  command=self.setFilter)
         self.bind(c, self.setFilter)
-        # if not mac:
-        #     viewmenu.entryconfig(6, accelerator=l)
+
         viewmenu.entryconfig(6, accelerator=l)
         self.add2menu(path, (label, l))
 
@@ -410,31 +372,27 @@ class App(Tk):
         l = "Escape"
         label=_("Clear outline filter")
         viewmenu.add_command( label=label, underline=1, command=self.clearFilter)
-        # if not mac:
-        #     viewmenu.entryconfig(7, accelerator=l)
+
         viewmenu.entryconfig(7, accelerator=l)
         self.add2menu(path, (label, l))
 
         # toggle showing labels
-        # l, c = commandShortcut('l')
         l = "L"
         c = "l"
         label=_("Toggle displaying labels column")
         viewmenu.add_command( label=label, underline=1, command=self.toggleLabels)
         self.bind(c, lambda event: self.after(AFTER, self.toggleLabels))
-        # if not mac:
-        #     viewmenu.entryconfig(8, accelerator=l)
+
         viewmenu.entryconfig(8, accelerator=l)
         self.add2menu(path, (label, l))
 
         # expand to depth
-        # l, c = commandShortcut('o')
         l = "O"
         c = "o"
         label=_("Set outline depth")
         viewmenu.add_command( label=label, underline=1, command=self.expand2Depth)
         self.bind(c, lambda event: self.after(AFTER, self.expand2Depth))
-        # if not mac:
+
         viewmenu.entryconfig(9, accelerator=l)
         self.add2menu(path, (label, l))
 
@@ -444,53 +402,48 @@ class App(Tk):
         l = "Left"
         label=_("Previous week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.showWeek(event=e, week=-1))
-        # if not mac:
+
         viewmenu.entryconfig(11, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Right"
         label=_("Next week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.showWeek(event=e, week=+1))
-        # if not mac:
+
         viewmenu.entryconfig(12, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Up"
         label=_("Previous item in week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=-1))
-        # if not mac:
+
         viewmenu.entryconfig(13, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Down"
         label=_("Next item in week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=1))
-        # if not mac:
+
         viewmenu.entryconfig(14, accelerator=l)
         self.add2menu(path, (label, l))
 
-        # l, c = commandShortcut("b")
         l = "B"
         c = 'b'
         label=_("List busy times in week")
         viewmenu.add_command(label=label, underline=5, command=self.showBusyPeriods)
-        # if not mac:
+
         viewmenu.entryconfig(15, accelerator=l)
         self.add2menu(path, (label, l))
 
-        # l, c = commandShortcut("f")
         l = "F"
         c = 'f'
         label=_("List free times in week")
         viewmenu.add_command(label=label, underline=5, command=self.showFreePeriods)
-        # if not mac:
+
         viewmenu.entryconfig(16, accelerator=l)
         # set binding in showWeekly
         self.add2menu(path, (label, l))
 
-        # viewmenu.add_cascade(label=path, menu=viewmenu, underline=0)
-
-        # self.viewmenu.entryconfig(0, state="normal")
         for i in range(11, 17):
             self.viewmenu.entryconfig(i, state="disabled")
 
@@ -520,7 +473,7 @@ class App(Tk):
             'g': self.openWithDefault,
             }
         self.em_opts = [x[0] for x in self.em_options]
-        # em_cmds = [x[1] for x in self.em_options]
+
 
         for i in range(len(self.em_options)):
             label = self.em_options[i][0]
@@ -531,13 +484,13 @@ class App(Tk):
             else:
                 l = k.upper()
                 c = k
-            # logger.debug('binding {0} to {1}'.format(c, self.edit2cmd[k]))
+
             itemmenu.add_command(label=label, underline=0, command=self.edit2cmd[k])
             if k == 'f':
                 self.tree.bind(c, self.edit2cmd[k])
             else:
                 self.bindTop(c, self.edit2cmd[k])
-            # if not mac:
+
             itemmenu.entryconfig(i, accelerator=l)
             self.add2menu(path, (label, l))
 
@@ -549,46 +502,46 @@ class App(Tk):
         toolsmenu = Menu(menubar, tearoff=0)
 
         # report
-        # l, c = commandShortcut('r')
+
         l = "F4"
         c = "<F4>"
         label=_("Create report")
         toolsmenu.add_command(label=label, underline=5, command=self.makeReport)
         self.bind(c, self.makeReport)
-        # if not mac:
+
         toolsmenu.entryconfig(0, accelerator=l)
         self.add2menu(path, (label, l))
 
         # date calculator
         l = "F5"
         c = "<F5>"
-        # l, c = commandShortcut('l')
+
         label=_("Open date calculator")
         toolsmenu.add_command(label=label, underline=12, command=self.dateCalculator)
         self.bind(c, lambda event: self.after(AFTER, self.dateCalculator))
-        # if not mac:
+
         toolsmenu.entryconfig(1, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Shift-Y"
         c = "Y"
-        # l, c = commandShortcut('y')
+
         label=_("Display yearly calendar")
         toolsmenu.add_command(label=label, underline=8, command=self.showCalendar)
         self.bind(c, lambda event: self.after(AFTER, self.showCalendar))
-        # if not mac:
+
         toolsmenu.entryconfig(2, accelerator=l)
         self.add2menu(path, (label, l))
 
         # changes
         if loop.options['vcs_system']:
-            # l, c = commandShortcut('h')
+
             l = 'Shift-H'
             c = 'H'
             label = _("Show history of changes")
             toolsmenu.add_command(label=label, underline=1, command=self.showChanges)
             self.bind(c, lambda event: self.after(AFTER, self.showChanges))
-            # if not mac:
+
             toolsmenu.entryconfig(3, accelerator=l)
             self.add2menu(path, (label, l))
 
@@ -598,19 +551,19 @@ class App(Tk):
         label = _("Export to iCal")
         toolsmenu.add_command(label=label, underline=1, command=self.exportToIcal)
         self.bind(c, self.exportToIcal)
-        # if not mac:
+
         toolsmenu.entryconfig(4, accelerator=l)
         self.add2menu(path, (label, l))
 
 
         ## load data
-        # l, c = commandShortcut("L")
+
         l = "Shift-L"
         c = "L"
         label = _("Reload data from files")
         toolsmenu.add_command(label=label, underline=1, command=loop.loadData)
         self.bind(c, loop.loadData)
-        # if not mac:
+
         toolsmenu.entryconfig(5, accelerator=l)
         self.add2menu(path, (label, l))
 
@@ -642,7 +595,7 @@ class App(Tk):
         self.add2menu(path, (label, "F2"))
 
         # check for updates
-        # l, c = commandShortcut('u')
+
         label = _("Check for update")
         helpmenu.add_command(label=label, underline=1, accelerator="F3", command=self.checkForUpdate)
         self.add2menu(path, (label, "F3"))
@@ -753,7 +706,7 @@ class App(Tk):
             label = self.vm_options[i][0]
             k = self.vm_options[i][1]
             l, c = commandShortcut(k)
-            # logger.debug("k: {0}; l: {1}; c: {2}".format(k, l, c))
+
             self.bind(c, lambda e, x=k: self.after(AFTER, self.view2cmd[x]))
             self.vm["menu"].entryconfig(i, command=lambda x=k: self.after(AFTER, self.view2cmd[x]))
             self.add2menu(VIEWS, (self.vm_opts[i], l))
@@ -762,7 +715,6 @@ class App(Tk):
 
         # calendars
         self.calbutton = Button(topbar, text=CALENDARS, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, width=8, pady=2)
-        # self.calbutton.pack(side="right", padx=0)
         self.calbutton.pack(side="right", padx=6)
         if not self.default_calendars:
             self.calbutton.configure(state="disabled")
@@ -772,12 +724,8 @@ class App(Tk):
         self.filterValue = StringVar(self)
         self.filterValue.set('')
         self.filterValue.trace_variable("w", self.filterView)
-        # self.dummyValue = StringVar(self)
-        # self.dummyValue.set(FILTER)
-        # self.dummyValue.trace_variable("w", self.setFilter)
 
         self.fltr = Entry(fltrbox, textvariable=self.filterValue, width=14, highlightbackground=BGCOLOR, bg=BGCOLOR)
-        # self.fltr.configure(fg=FILTERCOLOR)
         self.fltr.pack(side="left", padx=0) #, expand=1, fill=X)
         self.bind("<Escape>", self.clearFilter)
         self.fltr.bind("<FocusIn>", self.setFilter)
@@ -788,8 +736,6 @@ class App(Tk):
         self.viewmenu.entryconfig(7, state="disabled")
         self.fltrbtn.pack(side=LEFT, padx=0)
         self.fltrbox.pack(side=LEFT, padx=0, pady=0)
-
-        # topbar.pack(side="top", fill="both", expand=0, padx=0, pady=0)
 
         self.weekly = False
 
@@ -820,7 +766,6 @@ class App(Tk):
 
         self.content = ReadOnlyText(panedwindow, wrap="word", padx=3, bd=2, relief="sunken", font=tkfixedfont, height=loop.options['details_rows'], width=46, takefocus=False)
         self.content.bind('<Escape>', self.cleartext)
-        # self.content.bind('<space>', self.goHome)
         self.content.bind('<Tab>', self.focus_next_window)
         self.content.bind("<FocusIn>", self.editItem)
 
@@ -837,7 +782,7 @@ class App(Tk):
         self.pendingAlerts = IntVar(self)
         self.pendingAlerts.set(0)
         self.pending = Button(self.statusbar, padx=8, pady=2,
-                              # relief="flat",
+
                               takefocus=False, textvariable=self.pendingAlerts, command=self.showAlerts, anchor="center")
         self.pending.pack(side="right", padx=0, pady=0)
         self.pending.configure(highlightbackground=BGCOLOR,
@@ -945,7 +890,7 @@ class App(Tk):
             id = uuid.uuid1()
             m = LASTLTR.search(child[1])
             if m:
-                # child = list(child)
+
                 child = tuple(child)
         else:
             id = child[0]
@@ -1123,9 +1068,6 @@ The local timezone is used when none is given."""
                 return
             self.itemSelected['_dt'] = parse(self.dtSelected)
         else:
-            # ans = DialogWindow(self, title=_('confirm'),
-            #                    prompt=_("Clone this item?"))
-            # ans = askokcancel('confirm', "Clone this item?", parent=self.tree, icon="question")
             ans = self.confirm(
                 parent=self.tree,
                 title=_('Confirm'),
@@ -1136,7 +1078,7 @@ The local timezone is used when none is given."""
             choice = 3
         hsh_cpy = deepcopy(self.itemSelected)
         hsh_cpy['fileinfo'] = None
-        # hsh_cpy['i'] = uniqueId()
+
         title = _("new item")
         self.mode = 'new'
         if choice in [1, 2]:
@@ -1151,7 +1093,6 @@ The local timezone is used when none is given."""
                     if k in hsh_cpy:
                         del hsh_cpy[k]
                 hsh_cpy['s'] = dtn
-                # edit_str = hsh2str(hsh_cpy, loop.options)
 
             elif choice == 2:
                 # this and all subsequent instances
@@ -1169,12 +1110,10 @@ The local timezone is used when none is given."""
                             tmp_cpy.append(d)
                     hsh_cpy['-'] = tmp_cpy
                 hsh_cpy['s'] = dtn
-                # edit_str = hsh2str(hsh_cpy, loop.options)
 
         changed = SimpleEditor(parent=self, newhsh=hsh_cpy, rephsh=None,
                          options=loop.options, title=title, modified=True).changed
         if changed:
-            # loop.loadData()
             self.updateAlerts()
             if self.weekly:
                 self.showWeek()
@@ -1200,7 +1139,6 @@ The local timezone is used when none is given."""
                 return
             self.itemSelected['_dt'] = parse(self.dtSelected)
         else:
-            # ans = askokcancel('Verify deletion', "Delete this item?", parent=self.tree)
             ans = self.confirm(
                 title=_('Confirm'),
                 prompt=_("Delete this item?"),
@@ -1210,7 +1148,7 @@ The local timezone is used when none is given."""
                 return
         loop.item_hsh = self.itemSelected
         loop.cmd_do_delete(indx)
-        # loop.loadData()
+
         self.updateAlerts()
         if self.weekly:
             self.canvas.focus_set()
@@ -1304,7 +1242,7 @@ The local timezone is used when none is given."""
                      options=loop.options, title=title).changed
 
         if changed:
-            # loop.loadData()
+
             logger.debug("starting if changed")
             self.updateAlerts()
             if self.weekly:
@@ -1328,7 +1266,6 @@ The local timezone is used when none is given."""
         if e is not None:
             logger.debug('event: {0}'.format(e))
             e = None
-        # titlefile = relpath(file, self.options['etmdir'])
         titlefile = os.path.abspath(file)
         logger.debug('file: {0}; config: {1}'.format(file, config))
         changed = SimpleEditor(parent=self, file=file, options=loop.options, title=titlefile).changed
@@ -1342,7 +1279,7 @@ The local timezone is used when none is given."""
                 if options['calendars'] != current_options['calendars']:
                     self.updateCalendars()
             logger.debug("changed - calling updateAlerts")
-            # loop.loadData()
+
             self.updateAlerts()
             if self.weekly:
                 self.canvas.focus_set()
@@ -1382,7 +1319,6 @@ The local timezone is used when none is given."""
         prompt = _('created: {0}').format(relname)
         MessageWindow(self, title=_("new file"), prompt=prompt)
 
-        # self.newFile(e, file=filename)
 
     def finishItem(self, e=None):
         if not (self.itemSelected and self.itemSelected['itemtype'] in ['-', '+', '%']):
@@ -1397,7 +1333,7 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
         logger.debug('completion date: {0}'.format(chosen_day))
         loop.item_hsh = self.itemSelected
         loop.cmd_do_finish(chosen_day)
-        # loop.loadData()
+
         self.updateAlerts()
         if self.weekly:
             self.canvas.focus_set()
@@ -1433,7 +1369,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         new_dtn = new_dt.astimezone(gettz(self.itemSelected['z'])).replace(tzinfo=None)
         logger.debug('rescheduled from {0} to {1}'.format(self.dtSelected, new_dtn))
         loop.cmd_do_reschedule(new_dtn)
-        # loop.loadData()
+
         self.updateAlerts()
         if self.weekly:
             self.canvas.focus_set()
@@ -1452,7 +1388,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             _('summary'))
         divider = '-' * 52
         if self.activeAlerts:
-            # for alert in loop.alerts:
+
             s = '%s\n%s\n%s' % (
                 header, divider, "\n".join(
                     ["{0:^7}\t{1:^7}\t{2:<8}{3:<26}".format(
@@ -1741,7 +1677,6 @@ Enter the shortest time period you want displayed in minutes.""")
         self.view = WEEK
         self.currentView.set(WEEK)
 
-        # self.current_day = get_current_time().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
         if chosen_day is not None:
             self.chosen_day = chosen_day
         elif self.active_date:
@@ -1786,7 +1721,7 @@ Enter the shortest time period you want displayed in minutes.""")
             day = self.chosen_day
         else:
             return "break"
-        # self.active_date = self.chosen_day.date()
+
         logger.debug('week active_date: {0}'.format(self.active_date))
 
         theweek, weekdays, busy_lst, occasion_lst = self.setWeek(day)
@@ -1847,7 +1782,7 @@ Enter the shortest time period you want displayed in minutes.""")
         self.timeline = None
         self.last_minutes = None
         for i in range(7):
-            # x = X
+
             day = (self.week_beg + i * ONEDAY).replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
             busy_times = busy_lst[i]
             start_x = l + i * x
@@ -1869,9 +1804,9 @@ Enter the shortest time period you want displayed in minutes.""")
                     ttag = 'other'
                 daytime = day + tup[0] * ONEMINUTE
                 t1 = t + (max(7 * 60, tup[0]) - 7 * 60 ) * y_per_minute
-                # t1 = t + tup[0] * y_per_minute
+
                 t2 = t + min(23 * 60, max(7 * 60, tup[1]) - 7 * 60) * y_per_minute
-                # t2 = t + tup[1] * y_per_minute
+
                 xy = int(start_x), int(max(t, t1)), int(end_x), int(min(t2, t+y*16))
                 conf = self.canvas.find_overlapping(*xy)
                 id = self.canvas.create_rectangle(xy, fill=busyColor, width=0, tag=ttag)
@@ -1881,7 +1816,7 @@ Enter the shortest time period you want displayed in minutes.""")
                 if conf:
                     bb1 = self.canvas.bbox(id)
                     bb2 = self.canvas.bbox(*conf)
-                    # bb1[0] = bb2[0], bb1[2] = bb2[2] - same day
+
                     # we want the max of bb1[1], bb2[1]
                     # and the min of bb1[4], bb2[4]
                     ol = bb1[0], max(bb1[1], bb2[1]), bb1[2], min(bb1[3], bb2[3])
@@ -1900,7 +1835,7 @@ Enter the shortest time period you want displayed in minutes.""")
         self.conf_ids = conf_ids
         for id in occasion_ids + busy_ids + conf_ids: #  + conf_ids:
             self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
-            # self.canvas.tag_bind(id, '<Any-Leave>', self.on_leave_item)
+
         self.canvas.bind('<Escape>', self.on_clear_item)
 
         self.canvas_ids = [z for z in self.busyHsh.keys()]
@@ -1912,7 +1847,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
         # verticals
         for i in range(1,7):
-            # x = X
+
             xy = int(l+x*i), int(t), int(l+x*i), int(t+y*16)
             self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
         # horizontals
@@ -1926,9 +1861,9 @@ Enter the shortest time period you want displayed in minutes.""")
                 self.canvas.create_text(p, text=self.hours[j], anchor="e")
         # days
         for i in range(7):
-            # x = X
+
             p = int(l + x/2 + x*i), int(t-13)
-            # logger.debug("x: {0}, i: {1}, p: {2}".format(x, i, p))
+
             if self.today_col and i == self.today_col:
                 self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=CURRENTLINE)
             else:
@@ -1947,7 +1882,7 @@ Enter the shortest time period you want displayed in minutes.""")
         (w, h, l, r, t, b) = self.margins
         start_x = l
         end_x = l + x * 7
-        # t1 = t + (max(7 * 60, current_minutes) - 7 * 60 ) * y_per_minute
+
         t1 = t + (current_minutes - 7 * 60 ) * self.y_per_minute
         xy = int(start_x), int(t1), int(end_x), int(t1)
         return xy
@@ -1982,7 +1917,7 @@ Enter the shortest time period you want displayed in minutes.""")
         self.canvas.tag_lower('current_day')
         self.canvas.tag_raise('current_time')
         if id in self.busyHsh:
-            # self.OnSelect(uuid=self.busyHsh[id][0], dt=self.busyHsh[id][-1])
+
             self.OnSelect(uuid=self.busyHsh[id][-4], dt=self.busyHsh[id][-1])
 
     def setFocus(self, e):
@@ -2014,8 +1949,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
         if id in self.busyHsh:
             self.canvas_idpos = self.canvas_ids.index(id)
-            # self.content.delete("1.0", END)
-            # self.OnSelect(uuid=self.busyHsh[id][0], dt=self.busyHsh[id][-1])
+
             self.OnSelect(uuid=self.busyHsh[id][-4], dt=self.busyHsh[id][-1])
 
     def on_leave_item(self, e):
@@ -2036,8 +1970,7 @@ Enter the shortest time period you want displayed in minutes.""")
         self.canvas.focus("")
 
     def on_clear_item(self, e=None):
-        # id = self.canvas.find_withtag(CURRENT)[0]
-        # self.content.delete("0.0", END)
+
 
         if self.selectedId:
             id = self.selectedId
@@ -2055,7 +1988,7 @@ Enter the shortest time period you want displayed in minutes.""")
         self.selectedId = None
         self.OnSelect()
         self.canvas.focus("")
-        # self.update_idletasks()
+
 
     def on_select_item(self, event):
         current = self.canvas.find_withtag(CURRENT)
@@ -2073,7 +2006,7 @@ Enter the shortest time period you want displayed in minutes.""")
         id = self.selectedId
         if not id:
             return
-        # x1, y1, x2, y2 = self.canvas.coords(id)
+
         logger.debug("id: {0}, coords: {1}, {2}\n    {3}".format(id, x, y, self.busyHsh[id]))
         self.uuidSelected = uuid = self.busyHsh[id][1]
         self.itemSelected = hsh = loop.uuid2hash[uuid]
@@ -2109,7 +2042,7 @@ Enter the shortest time period you want displayed in minutes.""")
         time = "{0}:{1:02d}".format(hours, minutes)
 
         dt = (self.week_beg + rx * ONEDAY).replace(hour=hours, minute=minutes, second=0, microsecond=0, tzinfo=None)
-        # dtfmt = dt.strftime(loop.options['efmt'])
+
         tfmt = fmt_time(dt, options=loop.options)
         dfmt = dt.strftime("%a %b %d")
         dtfmt = "{0} {1}".format(tfmt, dfmt)
@@ -2126,14 +2059,13 @@ Enter the shortest time period you want displayed in minutes.""")
 
             if changed:
                 logger.debug('changed, updating alerts, ...')
-                # loop.loadData()
+
                 self.updateAlerts()
                 if self.weekly:
                     self.showWeek()
                 else:
                     self.showView()
 
-    # noinspection PyShadowingNames
     def showCalendar(self, e=None):
         cal_year = 0
         opts = loop.options
@@ -2168,10 +2100,9 @@ Enter the shortest time period you want displayed in minutes.""")
         win.bind('<Escape>', (lambda e, b=b: b.invoke()))
 
         t = ReadOnlyText(f, wrap="word", padx=2, pady=2, bd=2, relief="sunken",
-                         # font=tkFont.Font(family="Lucida Sans Typewriter"),
+
                          font=self.tkfixedfont,
-                         # height=14,
-                         # width=52,
+
                          takefocus=False)
         win.bind('<Left>', (lambda e: showYear(-1)))
         win.bind('<Right>', (lambda e: showYear(1)))
@@ -2180,7 +2111,7 @@ Enter the shortest time period you want displayed in minutes.""")
         t.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0, pady=0)
         ysb = ttk.Scrollbar(f, orient='vertical', command=t.yview)
         ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
-        # t.configure(state="disabled", yscroll=ysb.set)
+
         t.configure(yscroll=ysb.set)
         f.pack(padx=2, pady=2, fill=tkinter.BOTH, expand=1)
         win.focus_set()
@@ -2290,7 +2221,7 @@ or 0 to display all changes.""").format(title)
         if item:
             next = self.tree.next(item)
             if next:
-                # self.tree.see(next)
+
                 next = int(next)
                 next -= 1
                 self.tree.focus(next)
@@ -2301,7 +2232,7 @@ or 0 to display all changes.""").format(title)
         if item:
             prev = self.tree.prev(item)
             if prev:
-                # self.tree.see(prev)
+
                 prev = int(prev)
                 prev += 1
                 self.tree.focus(prev)
@@ -2341,7 +2272,7 @@ or 0 to display all changes.""").format(title)
         self.update_idletasks()
 
         if uuid is not None:
-            # self.itemmenu.configure(state="normal")
+
             isRepeating = ('r' in hsh and dt)
             if isRepeating:
                 item = "{0} {1}".format(_('selected'), dt)
@@ -2446,7 +2377,7 @@ or 0 to display all changes.""").format(title)
         nowfmt = "{0} {1}".format(
             s2or3(self.now.strftime(loop.options['reprtimefmt']).lower()),
             s2or3(self.now.strftime("%a %b %d")))
-            # s2or3(self.now.strftime("%a %b %d %Z")))
+
         nowfmt = leadingzero.sub("", nowfmt)
         self.currentTime.set("{0}".format(nowfmt))
         today = self.now.date()
@@ -2491,14 +2422,14 @@ or 0 to display all changes.""").format(title)
                                 loop.options['action_timer']['running']):
                             tcmd = loop.options['action_timer']['running']
                             logger.debug('running: {0}'.format(tcmd))
-                            # process.startDetached(tcmd)
+
                             subprocess.call(tcmd, shell=True)
 
                     elif self.actionTimer.timer_status == 'paused':
                         if ('paused' in loop.options['action_timer'] and
                                 loop.options['action_timer']['paused']):
                             tcmd = loop.options['action_timer']['paused']
-                            # process.startDetached(tcmd)
+
                             logger.debug('paused: {0}'.format(tcmd))
                             subprocess.call(tcmd, shell=True)
         tt.stop()
@@ -2676,7 +2607,7 @@ Relative dates and fuzzy parsing are supported.""")
         logger.debug('day: {0}'.format(day))
         if day is not None:
             self.chosen_day = day
-            # self.active_date = day.date()
+
             if self.weekly:
                 self.showWeek(event=e, week=None)
             else:
@@ -2725,12 +2656,12 @@ Relative dates and fuzzy parsing are supported.""")
     to create a timer based on the selected item.""")
             else:
                 nullok = False
-                # options = {'nullok': False}
+
                 prompt = _("""\
     Enter a summary for the new action timer.""")
             options = {'nullok': nullok}
             value = GetString(parent=self, title=_('action timer'),  prompt=prompt, opts=options).value
-            # value = d.value
+
             self.tree.focus_set()
             logger.debug('value: {0}'.format(value))
             if value is None:
@@ -2738,9 +2669,8 @@ Relative dates and fuzzy parsing are supported.""")
             if value:
                 self.timerItem = None
                 hsh = str2hsh(value, options=loop.options)[0]
-                # hsh['_summary'] = tmp['_summary']}
-                # if 'e' in tmp:
-                #     hsh['e'] = tmp['e']
+
+
             elif nullok:
                 self.timerItem = self.uuidSelected
                 # Based on item, 'entry' will be in hsh
@@ -2790,7 +2720,7 @@ Relative dates and fuzzy parsing are supported.""")
             self.actionTimer.timer_clear()
             self.timerStatus.set("")
             self.newmenu.entryconfig(3, state="disabled")
-            # loop.loadData()
+
             self.updateAlerts()
             if self.weekly:
                 self.showWeek()
@@ -2827,7 +2757,7 @@ Relative dates and fuzzy parsing are supported.""")
     def process_input(self, event=None, cmd=None):
         """
         """
-        # logger.debug('process_input cmd: {0}, mode: "{1}"'.format(cmd, self.mode))
+
         if not cmd:
             return True
         if self.mode == 'command':
@@ -2869,7 +2799,7 @@ Relative dates and fuzzy parsing are supported.""")
             res = _('command "{0}" returned no output').format(cmd)
 
             logger.debug('no output')
-            # MessageWindow(self, 'info', res)
+
             self.clearTree()
             return ()
 
@@ -2908,7 +2838,7 @@ or 0 to expand all branches completely.""")
             for i in range(depth, maxdepth+1):
                 for item in self.depth2id[i]:
                     self.tree.item(item, open=False)
-                # return('break')
+
 
     def scrollToDate(self, date):
         # only makes sense for schedule
@@ -2938,11 +2868,11 @@ or 0 to expand all branches completely.""")
         self.add2Tree(u'', tree[self.root], tree)
         loop.count2id = self.count2id
         self.tree.tag_configure('treefont', font=self.tktreefont)
-        # self.l.configure(state="normal")
+
         self.content.delete("0.0", END)
-        # self.l.configure(state="disabled")
+
         if event is None:
-            # view selected from menu
+
             if self.view == DAY and self.active_date:
                 self.scrollToDate(self.active_date)
             else:
@@ -2972,7 +2902,6 @@ or 0 to expand all branches completely.""")
         for child in self.tree.get_children():
             self.tree.delete(child)
 
-    # @profile
     def add2Tree(self, parent, elements, tree, depth=0):
         max_depth = 100
         for text in elements:
@@ -3015,7 +2944,7 @@ or 0 to expand all branches completely.""")
                         logger.warn('Missing key {0} for {1} {2}'.format(id, col1, col3))
 
                 oid = self.tree.insert(parent, 'end', iid=self.count, text=col1, open=(depth <= max_depth), values=[col2, col3], tags=(item_type, 'treefont'))
-                # oid = self.tree.insert(parent, 'end', text=col1, open=True, value=[col2])
+
                 self.count2id[oid] = "{0}::{1}".format(uuid, dt)
                 if dt:
                     if item_type == 'by':
@@ -3056,11 +2985,6 @@ def main(dir=None):  # debug, info, warn, error, critical
     (user_options, options, use_locale) = data.get_options(etmdir)
     loop = data.ETMCmd(options=options)
     loop.tkversion = tkversion
-
-    # errors = os.path.join(options['etmdir'], '.stderr.log')
-    # outstr=codecs.open(errors, "w", 'utf-8')
-    # sys.stderr = outstr
-    # sys.stdout = outstr
 
     app = App()
     app.mainloop()
