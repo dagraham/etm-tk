@@ -18,7 +18,7 @@
         Quit                                        Ctrl-Q
     View
         Home                                         Space
-        Show remaining alerts for today                A
+        Show remaining alerts for today             Shift-A
         Jump to date                                   J
         ----
         Next sibling                              Control-Down
@@ -45,7 +45,7 @@
         Create report                                 F4
         Open date calculator                          F5
         Display yearly calendar                     Shift-Y
-        Show history of changes                     Ctrl-H
+        Show history of changes                     Shift-H
         Export to iCal                              Shift-X
         Reload data from files                      Shift-L
     Help
@@ -54,6 +54,7 @@
         User manual                                   F1
         About                                         F2
         Check for update                              F3
+
 ## Main
 
     Views
@@ -65,14 +66,12 @@
         Path                                        Ctrl-P
         Week                                        Ctrl-W
 
-
 ## Edit
 
     Show possible completions                     Ctrl-Space
     Validate entry                                  Ctrl-?
     Cancel                                          Escape
     Save changes and close editor                   Ctrl-W
-
 
 ## Report
 

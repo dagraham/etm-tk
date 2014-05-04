@@ -260,7 +260,7 @@ If you enter, for example, "@c" in the editor and press Ctrl-Space, a list of po
 
 Up and down arrow keys change the selection and either *Tab* or *Return* inserts the selection.
 
-To edit the auto_completions file, press *Shift-Control-C* in the main window or from the main menu under *File/Open*.
+To edit the auto_completions file, press *Shift-C* in the main window or from the main menu under *File/Open*.
 
 ### shared_completions
 

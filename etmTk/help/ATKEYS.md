@@ -108,12 +108,12 @@ The repetition that was due on 10/25 was completed on 10/24. The next repetition
 
 ## @g goto
 
-The path to a file or a URL to be opened using the system default application when the user presses *Control-G* in the GUI. E.g., here's a task to join the etm discussion group with the URL of the group as the link. In this case, pressing *Control-G* would open the URL in your default browser.
+The path to a file or a URL to be opened using the system default application when the user presses *G* in the GUI. E.g., here's a task to join the etm discussion group with the URL of the group as the link. In this case, pressing *G* would open the URL in your default browser.
 
     - join the etm discussion group @s +1/1
       @g http://groups.google.com/group/eventandtaskmanager/topics
 
-Tip. Have a pdf file with the agenda for a meeting? Stick an @g entry with the path to the file in the event you create for the meeting. Then whenever the meeting is selected, *Control-G* will bring up the agenda.
+Tip. Have a pdf file with the agenda for a meeting? Stick an @g entry with the path to the file in the event you create for the meeting. Then whenever the meeting is selected, *G* will bring up the agenda.
 
 ## @j job
 

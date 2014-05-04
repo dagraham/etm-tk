@@ -2587,22 +2587,6 @@ def process_one_file(full_filename, rel_filename, options=None):
     return items2Hashes(file_items, options)
 
 
-def process_lines(lines, options=None):
-    if not options: options = {}
-    items = lines2Items(lines)
-    new_lines = []
-    messages = []
-    for item in items:
-        hsh, msg = str2hsh(item, options=options)
-        if msg:
-            messages.append("error in item: %s" % item.strip())
-            messages.extend(msg)
-        else:
-            new_str = hsh2str(hsh, options=options)
-            new_lines.extend(new_str.split('\n'))
-    return messages
-
-
 def getFiles(root):
     """
     Return the common prefix and a list of full paths from root

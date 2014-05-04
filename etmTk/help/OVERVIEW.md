@@ -53,7 +53,7 @@ Dates in the examples below are entered using *fuzzy parsing* - e.g., `+7` for s
         ^ Presidential Election Day @s 2012-11-06
           @r y &i 4 &M 11 &m 2, 3, 4, 5, 6, 7, 8 &w TU
 
-* Join the etm discussion group (a task) [s]tarting 14 days from today. Because of the @g (goto) link, pressing Ctrl-G when this item is selected in the gui would open the link using the system default application which, in this case, would be your default browser:
+* Join the etm discussion group (a task) [s]tarting 14 days from today. Because of the @g (goto) link, pressing *G* when this item is selected in the gui would open the link using the system default application which, in this case, would be your default browser:
 
         - join the etm discussion group @s +14
           @g groups.google.com/group/eventandtaskmanager/topics
@@ -207,7 +207,7 @@ If a (case-insensitive) filter is entered then the display in all views other th
 
 In day and week views, pressing the space bar will move the display to the current date. In all other views, pressing the space bar will move the display to the first item in the outline.
 
-In day and week views, pressing *Ctrl-J* will first prompt for a fuzzy-parsed date and then "jump" to the specified date.
+In day and week views, pressing *J* will first prompt for a fuzzy-parsed date and then "jump" to the specified date.
 
 If you scroll or jump to a date in either day view or week view and then open the other view, the same day(s) will be displayed.
 
@@ -215,9 +215,23 @@ In all views, pressing *Return* with an item selected or double clicking an item
 
 In all views, clicking in the details panel with an item selected will open the item for editing if it is not repeating and otherwise prompt for the instance(s) to be changed.
 
-In all views other than week view, pressing *Ctrl-O* will open a dialog to choose the outline depth.
+In all views other than week view, pressing *O* will open a dialog to choose the outline depth.
 
-In all views other than week view, pressing *Ctrl-L* will toggle the display of a column displaying item *labels* where, for example, an item with @a, @d and @u fields would have the label "adu".
+In all views other than week view, pressing *L* will toggle the display of a column displaying item *labels* where, for example, an item with @a, @d and @u fields would have the label "adu".
+
+In all views other than week view
+
+- if an item is selected:
+
+    - pressing *Shift-H* will show a history of changes for the file containing the selected item, first prompting for the number of changes.
+
+    - pressing *Shift-X* will export the selected item in iCal format.
+
+- if an item is not selected:
+
+    - pressing *Shift-H* will show a history of changes for all files, first prompting for the number of changes.
+
+    - pressing *Shift-X* will export all items in active calendars in iCal format.
 
 ### Agenda View
 
@@ -229,7 +243,7 @@ What you need to know now beginning with your schedule for the next few days and
 
 - **Next**: All *unscheduled* (undated) tasks grouped by context (home, office, phone, computer, errands and so forth) and sorted by priority and extent. These tasks correspond to GTD's *next actions*. These are tasks which don't really have a deadline and can be completed whenever a convenient  opportunity arises.  Check this view, for example, before you leave to run errands for opportunities to clear other errands.
 
-- **Someday**: Someday (maybe) items. Review these periodically.
+- **Someday**: Someday (maybe) items for periodic review.
 
 Note: Finished tasks, actions and notes are not displayed in this view.
 
@@ -275,13 +289,13 @@ Tip. Press *Ctrl-B* to display a list of busy times for the selected week or *Ct
 
 ## Creating New Items
 
-Items of any type can be created by pressing *Ctrl-I* in the GUI and then providing the details for the item in the resulting dialog.
+Items of any type can be created by pressing *N* in the GUI and then providing the details for the item in the resulting dialog.
 
 An event can also be created by double-clicking in a free period in the Week View - the date and time corresponding to the mouse position will be entered as the starting datetime when the dialog opens.
 
-An action can also be created by pressing *Ctrl-Comma* to start a timer for the action. You will be prompted for a summary (title) and, optionally, an `@e` entry to specify a starting time for the timer. If an item is selected when you press *Ctrl-Comma* then you will have the additional option of creating the action as a copy of the selected item.
+An action can also be created by pressing *T* to start a timer for the action. You will be prompted for a summary (title) and, optionally, an `@e` entry to specify a starting time for the timer. If an item is selected when you press *T* then you will have the additional option of creating the action as a copy of the selected item.
 
-The timer starts automatically when you close the dialog. Once the timer is running, pressing *Ctrl-Comma* toggles the timer between running and paused. Pressing *Ctrl-Period* when a timer is active (either running or paused) stops the timer and begins a dialog to provide the details of the action - the elapsed time will already be entered.
+The timer starts automatically when you close the dialog. Once the timer is running, pressing *T* toggles the timer between running and paused. Pressing *Shift-T* when a timer is active (either running or paused) stops the timer and begins a dialog to provide the details of the action - the elapsed time will already be entered.
 
 While a timer is active, the title, elapsed time and status - running or paused - is displayed in the status bar.
 

@@ -582,12 +582,14 @@ class App(Tk):
 
         # changes
         if loop.options['vcs_system']:
-            l, c = commandShortcut('h')
+            # l, c = commandShortcut('h')
+            l = 'Shift-H'
+            c = 'H'
             label = _("Show history of changes")
             toolsmenu.add_command(label=label, underline=1, command=self.showChanges)
             self.bind(c, lambda event: self.after(AFTER, self.showChanges))
-            if not mac:
-                toolsmenu.entryconfig(3, accelerator=l)
+            # if not mac:
+            toolsmenu.entryconfig(3, accelerator=l)
             self.add2menu(path, (label, l))
 
         ## export
