@@ -4404,6 +4404,9 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
 
         if 't' not in hsh:
             hsh['t'] = ['~']
+
+        # if 'z' in hsh and 'local_timezone' in options and hsh['z'] == options['local_timezone']:
+        #     hsh['_z'] = "~"
             #--------- make entry for folder view ----------#
         if hsh['itemtype'] in [u'+', u'-', u'%']:
             done, due, following = getDoneAndTwo(hsh)

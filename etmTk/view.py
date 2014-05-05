@@ -1839,6 +1839,8 @@ Enter the shortest time period you want displayed in minutes.""")
             end_x = start_x + x
             if day == self.current_day:
                 self.today_col = i
+                today_start = int(start_x)
+                today_end = int(end_x)
                 xy = int(start_x), int(t), int(end_x), int(t+y*16)
                 self.canvas.create_rectangle(xy, fill=CURRENTFILL, outline="", width=0, tag='current_day')
             if not busy_times and self.today_col is None:
@@ -1879,7 +1881,7 @@ Enter the shortest time period you want displayed in minutes.""")
                 xy = self.get_timeline()
                 if xy:
                     self.canvas.delete('current_time')
-                    self.canvas.create_line(xy, width=1, fill=CURRENTLINE, tag='current_time')
+                    self.canvas.create_line(xy, width=2, fill=CURRENTLINE, tag='current_time')
 
         self.busy_ids = busy_ids
         self.conf_ids = conf_ids
@@ -1914,13 +1916,13 @@ Enter the shortest time period you want displayed in minutes.""")
 
             p = int(l + x/2 + x*i), int(t-13)
 
-            if self.today_col and i == self.today_col:
+            if self.today_col is not None and i == self.today_col:
                 self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=CURRENTLINE)
             else:
                 self.canvas.create_text(p, text="{0}".format(weekdays[i]))
 
     def get_timeline(self):
-        if not (self.weekly and self.today_col):
+        if not (self.weekly and self.today_col is not None):
             return
         x = self.week_x
         if self.current_minutes < 7 * 60:
@@ -1930,8 +1932,8 @@ Enter the shortest time period you want displayed in minutes.""")
         else:
             current_minutes = self.current_minutes
         (w, h, l, r, t, b) = self.margins
-        start_x = l
-        end_x = l + x * 7
+        start_x = l + self.today_col * x
+        end_x = start_x + x
 
         t1 = t + (current_minutes - 7 * 60 ) * self.y_per_minute
         xy = int(start_x), int(t1), int(end_x), int(t1)
@@ -2266,7 +2268,7 @@ or 0 to display all changes.""").format(title)
             self.tree.focus(1)
             self.tree.selection_set(1)
             self.tree.yview(0)
-        return 'break'
+        return
 
     def nextItem(self, e=None):
         item = self.tree.selection()[0]
@@ -2459,7 +2461,7 @@ or 0 to display all changes.""").format(title)
             xy = self.get_timeline()
             if xy:
                 self.canvas.delete('current_time')
-                self.canvas.create_line(xy, width=1, fill=CURRENTLINE, tag='current_time')
+                self.canvas.create_line(xy, width=2, fill=CURRENTLINE, tag='current_time')
                 self.update_idletasks()
 
         self.updateAlerts()
