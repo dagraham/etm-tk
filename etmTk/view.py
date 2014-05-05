@@ -200,7 +200,9 @@ class App(Tk):
         l = "N"
         c = "n"
         newmenu.add_command(label=label, command=self.newItem)
-        self.bindTop(c, self.newItem)
+        # self.bindTop("n", self.newItem)
+        self.tree.bind(c, lambda e: self.after(AFTER, self.newItem(e)))
+        self.canvas.bind(c, lambda e: self.after(AFTER, self.newItem(e)))
 
         newmenu.entryconfig(0, accelerator=l)
         self.add2menu(path, (label, l))
@@ -208,8 +210,8 @@ class App(Tk):
         l = "Shift-N"
         c = "N"
         label = _("File")
-        newmenu.add_command(label=label, command=self.newData)
-        self.bindTop(c, self.newData)
+        newmenu.add_command(label=label, command=self.newFile)
+        self.bindTop(c, self.newFile)
 
         newmenu.entryconfig(1, accelerator=l)
         self.add2menu(path, (label, l))
@@ -226,7 +228,7 @@ class App(Tk):
         label = _("Finish Action Timer")
         l = "Shift-T"
         c = "T"
-        newmenu.add_command(label=label, command=self.startActionTimer)
+        newmenu.add_command(label=label, command=self.finishActionTimer)
         self.bind(c, self.finishActionTimer)
 
         newmenu.entryconfig(3, accelerator=l)
@@ -242,21 +244,20 @@ class App(Tk):
         openmenu = Menu(filemenu, tearoff=0)
         self.add2menu(path, (OPEN, ))
         path = OPEN
-        l = "Shift-D"
-        c = "D"
+        l = "Shift-F"
+        c = "F"
         label = _("Data file ...")
         openmenu.add_command(label=label, command=self.editData)
-        self.bind(c, lambda e: openmenu.invoke(0))
+        self.bindTop(c, self.editData)
 
         openmenu.entryconfig(0, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Shift-E"
         c = "E"
-        file = loop.options['config']
         label = "etmtk.cfg"
-        openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x, config=True))
-        self.bind(c, lambda e: openmenu.invoke(1))
+        openmenu.add_command(label=label, command=self.editConfig)
+        self.bindTop(c, self.editConfig)
 
         openmenu.entryconfig(1, accelerator=l)
         self.add2menu(path, (label, l))
@@ -265,8 +266,8 @@ class App(Tk):
         c = "C"
         file = loop.options['auto_completions']
         label = relpath(file, loop.options['etmdir'])
-        openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x))
-        self.bind(c, lambda e: openmenu.invoke(2))
+        openmenu.add_command(label=label, command=self.editCompletions)
+        self.bindTop(c, self.editCompletions)
 
         openmenu.entryconfig(2, accelerator=l)
         self.add2menu(path, (label, l))
@@ -275,8 +276,8 @@ class App(Tk):
         c = "R"
         file = loop.options['report_specifications']
         label = relpath(file, loop.options['etmdir'])
-        openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x))
-        self.bind(c, lambda e: openmenu.invoke(3))
+        openmenu.add_command(label=label, command=self.editReports)
+        self.bindTop(c, self.editReports)
 
         openmenu.entryconfig(3, accelerator=l)
         self.add2menu(path, (label, l))
@@ -285,8 +286,8 @@ class App(Tk):
         c = "S"
         file = loop.options['scratchpad']
         label = relpath(file, loop.options['etmdir'])
-        openmenu.add_command(label=label, command=lambda x=file: self.editFile(file=x))
-        self.bind(c, lambda e: openmenu.invoke(4))
+        openmenu.add_command(label=label, command=self.editScratch)
+        self.bindTop(c, self.editScratch)
 
         openmenu.entryconfig(4, accelerator=l)
         self.add2menu(path, (label, l))
@@ -320,11 +321,11 @@ class App(Tk):
 
         viewmenu.entryconfig(0, accelerator=l)
         self.add2menu(path, (label, l))
-        self.bind('<space>', self.goHome)
+        self.bindTop('<space>', self.goHome)
 
         ## show alerts
-        l = "Shift-A"
-        c = "A"
+        l = "A"
+        c = "a"
         label = _("Show remaining alerts for today")
         viewmenu.add_command(label=label, underline=1, command=self.showAlerts)
         self.bindTop(c, self.showAlerts)
@@ -337,7 +338,7 @@ class App(Tk):
         c = "j"
         label=_("Jump to date")
         viewmenu.add_command(label=label, command=self.goToDate)
-        self.bind(c, lambda event: self.after(AFTER, self.goToDate))
+        self.bindTop(c, self.goToDate)
 
         viewmenu.entryconfig(2, accelerator=l)
         self.add2menu(path, (label, l))
@@ -381,7 +382,7 @@ class App(Tk):
         c = "l"
         label=_("Toggle displaying labels column")
         viewmenu.add_command( label=label, underline=1, command=self.toggleLabels)
-        self.bind(c, lambda event: self.after(AFTER, self.toggleLabels))
+        self.bindTop(c, self.toggleLabels)
 
         viewmenu.entryconfig(8, accelerator=l)
         self.add2menu(path, (label, l))
@@ -391,7 +392,7 @@ class App(Tk):
         c = "o"
         label=_("Set outline depth")
         viewmenu.add_command( label=label, underline=1, command=self.expand2Depth)
-        self.bind(c, lambda event: self.after(AFTER, self.expand2Depth))
+        self.bindTop(c, self.expand2Depth)
 
         viewmenu.entryconfig(9, accelerator=l)
         self.add2menu(path, (label, l))
@@ -842,11 +843,16 @@ class App(Tk):
         self.etmgeo = os.path.join(loop.options['etmdir'], ".etmgeo")
         self.restoreGeometry()
 
-    def bindTop(self, c, cmd):
-        self.tree.bind(c, lambda e: self.after(AFTER, cmd))
-        self.canvas.bind(c, lambda e: self.after(AFTER, cmd))
+    def bindTop(self, c, cmd, e=None):
+        if e and e.char != c:
+            # ignore Control-c
+            return
+        self.tree.bind(c, lambda e: self.after(AFTER, cmd(e)))
+        self.canvas.bind(c, lambda e: self.after(AFTER, cmd(e)))
 
-    def toggleLabels(self):
+    def toggleLabels(self, e=None):
+        if e and e.char != "l":
+            return
         if self.weekly:
             return
         if self.labels:
@@ -957,8 +963,8 @@ class App(Tk):
         ReportWindow(parent=self, options=self.options, title=_("report"))
 
 
-    def openWithDefault(self):
-        if 'g' not in self.itemSelected:
+    def openWithDefault(self, e=None):
+        if not self.itemSelected or 'g' not in self.itemSelected:
             return(False)
         path = self.itemSelected['g']
 
@@ -1019,7 +1025,9 @@ The local timezone is used when none is given."""
         MessageWindow(self, 'Active Calendar Export', prompt)
 
     def newItem(self, e=None):
-        logger.debug('newItem')
+        # hack to avoid Ctrl-n activation
+        if e and e.char != "n":
+            return
         if self.weekly:
             master = self.canvas
         else:
@@ -1060,6 +1068,10 @@ The local timezone is used when none is given."""
         """
         newhsh = selected, rephsh = None
         """
+        if not self.itemSelected:
+            return
+        if e and e.char != 'c':
+            return
         if 'r' in self.itemSelected:
             choice, value = self.which(COPY, self.dtSelected)
             logger.debug("{0}: {1}".format(choice, value))
@@ -1126,6 +1138,8 @@ The local timezone is used when none is given."""
                 self.tree.focus_set()
 
     def deleteItem(self, e=None):
+        if not self.itemSelected:
+            return
         logger.debug('{0}: {1}'.format(self.itemSelected['_summary'], self.dtSelected))
         indx = 3
         if 'r' in self.itemSelected:
@@ -1263,12 +1277,16 @@ The local timezone is used when none is given."""
         return "break"
 
     def editFile(self, e=None, file=None, config=False):
-        if e is not None:
-            logger.debug('event: {0}'.format(e))
-            e = None
+        if e and e.char not in ["F", "E", "C", "R", "S"]:
+            return
         titlefile = os.path.abspath(file)
         logger.debug('file: {0}; config: {1}'.format(file, config))
-        changed = SimpleEditor(parent=self, file=file, options=loop.options, title=titlefile).changed
+        if self.weekly:
+            master = self.canvas
+        else:
+            master = self.tree
+        changed = SimpleEditor(parent=self, master=master, file=file, options=loop.options, title=titlefile).changed
+        logger.debug('changed: {0}'.format(changed))
         if changed:
             logger.debug("config: {0}".format(config))
             if config:
@@ -1287,8 +1305,27 @@ The local timezone is used when none is given."""
             else:
                 self.tree.focus_set()
                 self.showView()
+        return
+
+    def editConfig(self, e=None, config=True):
+        file = loop.options['config']
+        self.editFile(e, file=file)
+
+    def editCompletions(self, e=None, config=True):
+        file = loop.options['auto_completions']
+        self.editFile(e, file=file)
+
+    def editReports(self, e=None, config=True):
+        file = loop.options['report_specifications']
+        self.editFile(e, file=file)
+
+    def editScratch(self, e=None, config=True):
+        file = loop.options['scratchpad']
+        self.editFile(e, file=file)
 
     def editData(self, e=None):
+        if e and e.char != "F":
+            return
         initdir = self.options['datadir']
         fileops = {'defaultextension': '.txt',
                    'filetypes': [('text files', '.txt')],
@@ -1301,7 +1338,9 @@ The local timezone is used when none is given."""
             return False
         self.editFile(e, file=filename)
 
-    def newData(self, e=None):
+    def newFile(self, e=None):
+        if e and e.char != "N":
+            return
         initdir = self.options['datadir']
         fileops = {'defaultextension': '.txt',
                    'filetypes': [('text files', '.txt')],
@@ -1321,6 +1360,8 @@ The local timezone is used when none is given."""
 
 
     def finishItem(self, e=None):
+        if e and e.char != "f":
+            return
         if not (self.itemSelected and self.itemSelected['itemtype'] in ['-', '+', '%']):
             return
         prompt = _("""\
@@ -1343,6 +1384,8 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
             self.showView(row=self.topSelected)
 
     def rescheduleItem(self, e=None):
+        if e and e.char != 'r':
+            return
         if not self.itemSelected:
             return
         loop.item_hsh = item_hsh = self.itemSelected
@@ -1380,6 +1423,9 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
 
     def showAlerts(self, e=None):
+        # hack to avoid activating with Ctrl-a
+        if e and e.char != "a":
+            return
         t = _('remaining alerts for today')
         header = "{0:^7}\t{1:^7}\t{2:<8}{3:<26}".format(
             _('alert'),
@@ -1451,7 +1497,9 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             self.tree.yview(row)
         tt.stop()
 
-    def showBusyPeriods(self, event=None):
+    def showBusyPeriods(self, e=None):
+        if e and e.char != "b":
+            return
         if self.busy_info is None:
             return()
         theweek, weekdays, busy_lst, occasion_lst = self.busy_info
@@ -1493,7 +1541,9 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         s = "\n".join(lines)
         self.textWindow(parent=self, title=_('busy times'), prompt=s, opts=self.options)
 
-    def showFreePeriods(self, event=None):
+    def showFreePeriods(self, e=None):
+        if e and e.char != 'f':
+            return
         if self.busy_info is None or 'freetimes' not in loop.options:
             return()
         ampm = loop.options['ampm']
@@ -2124,6 +2174,8 @@ Enter the shortest time period you want displayed in minutes.""")
         self.newValue.set(self.newLabel)
 
     def showShortcuts(self, e=None):
+        if e and e.char != "?":
+            return
         res = self.menutree.showMenu("_")
         self.textWindow(parent=self, title='etm', opts=self.options, prompt=res, modal=False)
 
@@ -2596,6 +2648,8 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
         :param e:
         :return:
         """
+        if e and e.char != "j":
+            return
         prompt = _("""\
 Return an empty string for the current date or a date to be parsed.
 Relative dates and fuzzy parsing are supported.""")
@@ -2638,7 +2692,7 @@ Relative dates and fuzzy parsing are supported.""")
             self.tree.see(self.rowSelected)
 
 
-    def startActionTimer(self, event=None):
+    def startActionTimer(self, e=None):
         """
         Prompt for a summary and start action timer.
         if uuid:
@@ -2647,6 +2701,9 @@ Relative dates and fuzzy parsing are supported.""")
             else:
                 enter summary or empty
         """
+        # hack to avoid activating with Ctrl-t
+        if e and e.char != "t":
+            return
         if self.actionTimer.timer_status == STOPPED:
             if self.uuidSelected:
                 nullok = True
@@ -2665,7 +2722,9 @@ Relative dates and fuzzy parsing are supported.""")
             self.tree.focus_set()
             logger.debug('value: {0}'.format(value))
             if value is None:
-                return "break"
+                # return "break"
+                return
+
             if value:
                 self.timerItem = None
                 hsh = str2hsh(value, options=loop.options)[0]
@@ -2705,7 +2764,9 @@ Relative dates and fuzzy parsing are supported.""")
         self.newmenu.entryconfig(3, state="normal")
         return "break"
 
-    def finishActionTimer(self, event=None):
+    def finishActionTimer(self, e=None):
+        if e and e.char != "T":
+            return
         if self.actionTimer.timer_status not in [RUNNING, PAUSED]:
             logger.info('stopping already stopped timer')
             return "break"
@@ -2810,7 +2871,9 @@ Relative dates and fuzzy parsing are supported.""")
             self.textWindow(self, title='etm', prompt=res, opts=self.options)
             return 0
 
-    def expand2Depth(self, event=None):
+    def expand2Depth(self, e=None):
+        if e and e.char != "o":
+            return
         prompt = _("""\
 Enter an integer depth to expand branches
 or 0 to expand all branches completely.""")

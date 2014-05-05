@@ -827,12 +827,13 @@ class SimpleEditor(Toplevel):
         else:
             ans = True
         if ans:
-            if self.parent:
-                logger.debug('focus set')
+            if self.master:
+                logger.debug('setting focus')
                 self.master.focus()
                 self.master.focus_set()
+                logger.debug('focus set')
             self.destroy()
-        return "break"
+            logger.debug('done')
 
     def messageWindow(self, title, prompt, opts=None, height=14, width=52):
         win = Toplevel(self)
