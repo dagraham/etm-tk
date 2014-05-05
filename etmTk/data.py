@@ -4395,12 +4395,15 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
         hsh['summary'] = hsh['_summary']
         typ = type2Str[hsh['itemtype']]
         # we need a context for due view and a keyword for keyword view
-        for k in ['c', 'k']:
-            if k not in hsh:
-                # hsh[k] = "%s" % _('none')
-                hsh[k] = 'none'
+
+        if 'c' not in hsh:
+            hsh['c'] = ''
+
+        if 'k' not in hsh:
+            hsh['k'] = '~'
+
         if 't' not in hsh:
-            hsh['t'] = []
+            hsh['t'] = ['~']
             #--------- make entry for folder view ----------#
         if hsh['itemtype'] in [u'+', u'-', u'%']:
             done, due, following = getDoneAndTwo(hsh)
