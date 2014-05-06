@@ -9,7 +9,7 @@
             Begin/Pause Action Timer                   T
             Finish Action Timer                     Shift-T
         Open
-            Data file ...                           Shift-D
+            Data file ...                           Shift-F
             etmtk.cfg                               Shift-E
             completions.cfg                         Shift-C
             reports.cfg                             Shift-R
@@ -18,7 +18,7 @@
         Quit                                        Ctrl-Q
     View
         Home                                         Space
-        Show remaining alerts for today             Shift-A
+        Show remaining alerts for today                A
         Jump to date                                   J
         ----
         Next sibling                              Control-Down
@@ -45,7 +45,6 @@
         Create report                                 F4
         Open date calculator                          F5
         Display yearly calendar                     Shift-Y
-        Show history of changes                     Shift-H
         Export to iCal                              Shift-X
         Reload data from files                      Shift-L
     Help
@@ -54,7 +53,6 @@
         User manual                                   F1
         About                                         F2
         Check for update                              F3
-
 ## Main
 
     Views
