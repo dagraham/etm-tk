@@ -1080,7 +1080,7 @@ The local timezone is used when none is given."""
             if not choice:
                 self.tree.focus_set()
                 return
-            self.itemSelected['_dt'] = parse(self.dtSelected)
+            self.itemSelected['_dt'] = self.dtSelected
         else:
             ans = self.confirm(
                 parent=self.tree,
@@ -1153,7 +1153,7 @@ The local timezone is used when none is given."""
                 else:
                     self.tree.focus_set()
                 return
-            self.itemSelected['_dt'] = parse(self.dtSelected)
+            self.itemSelected['_dt'] = self.dtSelected
         else:
             ans = self.confirm(
                 title=_('Confirm'),
@@ -1177,7 +1177,7 @@ The local timezone is used when none is given."""
     def editItem(self, e=None):
         if not self.itemSelected:
             return
-        logger.debug('starting editItem: {0}; {1}'.format(self.itemSelected['_summary'], self.dtSelected))
+        logger.debug('starting editItem: {0}; {1}, {2}'.format(self.itemSelected['_summary'], self.dtSelected, type(self.dtSelected)))
         choice = 3
         title = ETM
         if 'r' in self.itemSelected:
@@ -1189,7 +1189,7 @@ The local timezone is used when none is given."""
             else:
                 self.tree.focus_set()
             logger.debug(('dtSelected: {0}, {1}'.format(type(self.dtSelected), self.dtSelected)))
-            self.itemSelected['_dt'] = parse(self.dtSelected)
+            self.itemSelected['_dt'] = self.dtSelected
             if not choice:
                 self.tree.focus_set()
                 return
@@ -1392,7 +1392,7 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
             return
         loop.item_hsh = item_hsh = self.itemSelected
         if self.dtSelected:
-            loop.old_dt = old_dt = parse(self.dtSelected)
+            loop.old_dt = old_dt = self.dtSelected
             title = _('rescheduling {0}').format(old_dt.strftime(
                 rrulefmt))
         else:
@@ -2064,7 +2064,7 @@ Enter the shortest time period you want displayed in minutes.""")
         logger.debug("id: {0}, coords: {1}, {2}\n    {3}".format(id, x, y, self.busyHsh[id]))
         self.uuidSelected = uuid = self.busyHsh[id][1]
         self.itemSelected = hsh = loop.uuid2hash[uuid]
-        self.dtSelected = dt = fmt_datetime(self.busyHsh[id][-1], options=loop.options)
+        self.dtSelected = dt = self.busyHsh[id][-1]
         self.itemmenu.post(x, y)
         self.itemmenu.focus_set()
 
@@ -2331,6 +2331,7 @@ or 0 to display all changes.""").format(title)
 
             isRepeating = ('r' in hsh and dt)
             if isRepeating:
+                logger.debug('selected: {0}, {1}'.format(dt, type(dt)))
                 item = "{0} {1}".format(_('selected'), dt)
                 self.itemmenu.entryconfig(1, label="{0} ...".format(self.em_opts[1]))
                 self.itemmenu.entryconfig(2, label="{0} ...".format(self.em_opts[2]))
@@ -2364,7 +2365,7 @@ or 0 to display all changes.""").format(title)
                 self.itemmenu.entryconfig(5, state='disabled')
             self.uuidSelected = uuid
             self.itemSelected = hsh
-            logger.debug('dt selected: {0}'.format(dt))
+            logger.debug('dt selected: {0}, {1}'.format(dt, type(dt)))
             self.dtSelected = dt
         else:
             text = ""
@@ -2378,7 +2379,7 @@ or 0 to display all changes.""").format(title)
             self.topSelected = int(r)
         else:
             self.topSelected = 1
-        logger.debug("row: {0}; uuid: {1}; instance: {2}; top: {3}".format(self.rowSelected, self.uuidSelected, self.dtSelected,  self.topSelected));
+        logger.debug("row: {0}; uuid: {1}; instance: {2}, {3}; top: {4}".format(self.rowSelected, self.uuidSelected, self.dtSelected, type(self.dtSelected), self.topSelected));
         self.content.insert(INSERT, text)
         self.update_idletasks()
         logger.debug('ending OnSelect')
@@ -2417,6 +2418,7 @@ or 0 to display all changes.""").format(title)
         if instance is not None:
             uuid, dt = self.count2id[item].split("::")
             hsh = loop.uuid2hash[uuid]
+            dt = parse(dt)
             logger.debug('returning uuid: {0}, dt: {1}'.format(uuid, dt))
             return uuid, dt, hsh
         else:
