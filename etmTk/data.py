@@ -1848,6 +1848,9 @@ amp_keys = {
 def makeTree(tree_rows, view=None, calendars=None, sort=True, fltr=None):
     tree = {}
     lofl = []
+    print('tree_rows')
+    for row in tree_rows[:3]:
+        print(row)
     root = '_'
     empty = True
     cal_regex = None
@@ -2187,6 +2190,9 @@ Recursively process groups and accumulate the totals.
                 doLeaf(g[0], lvl)
 
     doGroups(list_of_tuples, level)
+    print(lst)
+    for l in lst:
+        print(l)
     if export:
         return rows
         # return list_of_tuples
@@ -3736,6 +3742,9 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
                     data.append(row)
             return data
         else:
+            print('items')
+            for item in items:
+                print(item)
             items = tallyByGroup(items, max_level=depth, options=options)
             return "\n".join([x.rstrip() for x in items if x.strip()])
 

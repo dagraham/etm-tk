@@ -50,7 +50,7 @@ from dateutil.parser import parse
 from decimal import Decimal
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, zfmt, rfmt, efmt, hsh2str, str2hsh, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, fmt_datetime, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator, AFTER, export_ical_item, export_ical, fmt_time, TimeIt)
+    init_localization, fmt_weekday, fmt_dt, zfmt, rfmt, efmt, hsh2str, str2hsh, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, fmt_datetime, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator, AFTER, export_ical_item, export_ical, fmt_time, TimeIt, getReportData)
 
 from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES, REPORTS)
 
@@ -98,6 +98,12 @@ VIEW = _("View")
 ITEM = _("Item")
 TOOLS = _("Tools")
 HELP = _("Help")
+
+MAKE = _("Make report")
+PRINT = _("Print")
+EXPORTTEXT = _("Export report in text format ...")
+EXPORTCSV = _("Export report in CSV format ...")
+SAVESPECS = _("Save changes to report specifications")
 
 CLOSE = _("Close")
 
@@ -167,7 +173,7 @@ class App(Tk):
             logger.debug('Setting depth for {0} to {1}'.format(view, loop.options['outline_depth']))
             self.outline_depths[view] = loop.options['outline_depth']
 
-        panedwindow = PanedWindow(self, orient="vertical", sashwidth=6, sashrelief='flat')
+        self.panedwindow = panedwindow = PanedWindow(self, orient="vertical", sashwidth=6, sashrelief='flat')
         self.toppane = toppane = Frame(panedwindow, bd=0, highlightthickness=0, background=BGCOLOR)
         self.tree = ttk.Treeview(toppane, show='tree', columns=["#1", "#2"], selectmode='browse')
         self.canvas = canvas = Canvas(self.toppane, background="white", bd=2, relief="sunken")
@@ -573,6 +579,34 @@ class App(Tk):
 
         menubar.add_cascade(label=path, menu=toolsmenu, underline=0)
 
+        # report
+        path = REPORT
+        self.add2menu(menu, (path, ))
+        reportmenu = Menu(menubar, tearoff=0)
+
+        self.rm_options = [[MAKE, 'm'],
+                           [EXPORTTEXT, 't'],
+                           [EXPORTCSV, 'x'],
+                           [SAVESPECS, 'w'],
+        ]
+
+        self.rm2cmd = {'m': self.makeReport,
+                         't': self.exportText,
+                         'x': self.exportCSV,
+                         'w': self.saveSpecs}
+
+        self.rm_opts = [x[0] for x in self.rm_options]
+
+        for i in range(len(self.rm_options)):
+            label = self.rm_options[i][0]
+            k = self.rm_options[i][1]
+            l = k.upper()
+            c = k
+
+            reportmenu.add_command(label=label, underline=0, command=self.rm2cmd[k])
+
+        menubar.add_cascade(label=path, menu=reportmenu, underline=0)
+
         # help
         helpmenu = Menu(menubar, tearoff=0)
         path = HELP
@@ -676,6 +710,29 @@ class App(Tk):
 
         topbar = Frame(self, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR)
         topbar.pack(side="top", fill="x", expand=0, padx=0, pady=0)
+
+        # report
+        # self.reportbar = reportbar = Frame(self, padx=4, bd=2, relief="sunken", highlightbackground=BGCOLOR, background=BGCOLOR)
+        self.box_value = StringVar()
+        self.report_box = ttk.Combobox(self, textvariable=self.box_value, font=self.tkfixedfont)
+        self.report_box.bind("<<ComboboxSelected>>", self.newselection)
+        self.bind("<Return>", self.makeReport)
+        self.bind("<Escape>", self.quit)
+        self.bind("<Control-q>", self.quit)
+        self.specs = ['']
+        if ('report_specifications' in self.options and os.path.isfile(self.options['report_specifications'])):
+            rf = self.options['report_specifications']
+            logger.info('Using report specifications file: {0}'.format(rf))
+
+            with open(rf) as fo:
+                tmp = fo.readlines()
+            self.specs = [str(x).rstrip() for x in tmp if x.strip() and x[0] != "#"]
+        logger.debug('specs: {0}'.format(self.specs))
+        self.value_of_combo = self.specs[0]
+        self.report_box['values'] = self.specs
+        self.report_box.current(0)
+        self.report_box.configure(width=30, background=BGCOLOR, takefocus=False)
+        # self.report_box.pack(side="left", padx=3, bd=2, relief="sunken", fill=X, expand=1)
 
         self.vm_options = [[AGENDA, 'a'],
                            [DAY, 'd'],
@@ -1473,6 +1530,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
     def reportView(self, e=None):
         # TODO: finish this
+        self.setView(REPORT)
         pass
 
     def noteView(self, e=None):
@@ -1480,6 +1538,14 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
     def setView(self, view, row=None):
         self.rowSelected = None
+        if view == REPORT:
+            # self.reportbar.pack(side="top")
+            logger.debug('showing reportbar')
+            self.report_box.pack(side="top", fill="x", padx=3)
+            self.report_box.focus_set()
+        else:
+            logger.debug('removing reportbar')
+            self.report_box.forget()
         if view != WEEK and self.weekly:
             self.closeWeekly()
         self.view = view
@@ -1728,6 +1794,7 @@ Enter the shortest time period you want displayed in minutes.""")
         """
         Open the canvas at the current week
         """
+        self.reportbar.forget()
         tt = TimeIt(loglevel=2, label="week view")
         logger.debug("chosen_day: {0}; active_date: {1}".format(chosen_day, self.active_date))
         if self.weekly:
@@ -2860,6 +2927,7 @@ Relative dates and fuzzy parsing are supported.""")
                         parts.append(str(i))
                         cmd = " ".join(parts)
             try:
+                print('command:', cmd)
                 res = loop.do_command(cmd)
             except:
                 return _('could not process command "{0}"').format(cmd)
@@ -2884,6 +2952,9 @@ Relative dates and fuzzy parsing are supported.""")
             return ()
 
         if type(res) == dict:
+            print('res')
+            for key in res:
+                print(key, ":", res[key])
             self.showTree(res, event=event)
         else:
             # not a hash => not a tree
@@ -3044,6 +3115,97 @@ or 0 to expand all branches completely.""")
                     if int(parent) not in self.id2date:
                         logger.debug('id2date[{0}] = {1}'.format(int(parent), d))
                         self.id2date[int(parent)] = d
+
+    def makeReport(self, event=None):
+        self.value_of_combo = self.report_box.get()
+        if not self.value_of_combo.strip():
+            return
+        try:
+            self.all_text = text = getReportData(
+                self.value_of_combo,
+                self.loop.file2uuids,
+                self.loop.uuid2hash,
+                self.loop.options)
+            if not self.all_text:
+                text = _("Report contains no output.")
+            if self.value_of_combo not in self.specs:
+                self.specs.append(self.value_of_combo)
+                self.specs.sort()
+                self.specs = [x for x in self.specs if x]
+                self.report_box["values"] = self.specs
+                self.modified = True
+            logger.debug("spec: {0}".format(self.value_of_combo))
+        except:
+            logger.exception("could not process: {0}".format(self.value_of_combo))
+            self.all_text = text = _("'{0}' could not be processed".format(self.value_of_combo))
+
+        print(text)
+        # self.text.delete('1.0', END)
+        # self.text.insert(INSERT, text)
+        # self.text.mark_set(INSERT, '1.0')
+
+    def newselection(self, event=None):
+        self.value_of_combo = self.report_box.get()
+
+    def exportText(self):
+        logger.debug("spec: {0}".format(self.value_of_combo))
+        fileops = {'defaultextension': '.text',
+                   'filetypes': [('text files', '.text')],
+                   'initialdir': self.options['etmdir'],
+                   'title': 'Text report files',
+                   'parent': self}
+        filename = asksaveasfilename(**fileops)
+        if not filename:
+            return False
+        self.text = text = getReportData(
+            self.value_of_combo,
+            self.loop.file2uuids,
+            self.loop.uuid2hash,
+            self.loop.options,
+            export=False)
+        fo = codecs.open(filename, 'w', self.options['encoding']['file'])
+        fo.write(self.text)
+        fo.close()
+
+    def exportCSV(self):
+        logger.debug("spec: {0}".format(self.value_of_combo))
+        data = getReportData(
+            self.value_of_combo,
+            self.loop.file2uuids,
+            self.loop.uuid2hash,
+            self.loop.options,
+            export=True)
+        fileops = {'defaultextension': '.csv',
+                   'filetypes': [('text files', '.csv')],
+                   'initialdir': self.options['etmdir'],
+                   'title': 'CSV data files',
+                   'parent': self}
+        filename = asksaveasfilename(**fileops)
+        if not filename:
+            return False
+        import csv as CSV
+        c = CSV.writer(open(filename, "w"), delimiter=",")
+        for line in data:
+            c.writerow(line)
+
+    def saveSpecs(self, e=None):
+        if not self.modified:
+            return
+        if not ('report_specifications' in self.options and os.path.isfile(self.options['report_specifications'])):
+            return
+        ans = self.confirm(parent=self,
+            prompt=_("Save the changes to your report specifications?"))
+        if ans:
+            self.specs.sort()
+            file = self.options['report_specifications']
+            with open(file, 'w') as fo:
+                tmp = fo.write("\n".join(self.specs))
+            self.modified = False
+            changed = SimpleEditor(parent=self, file=file, options=self.options, title='report_specifications').changed
+            if changed:
+                logger.debug("saved: {0}".format(file))
+            self.report_box['values'] = self.specs
+
 
 loop = None
 
