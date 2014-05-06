@@ -179,6 +179,10 @@ String. Show/hide a)ctions, d)elegated tasks, e)vents, g)roup tasks, n)otes, o)c
 
 Regular expression. Limit the display to items containing SUMMARY (ignoring case) in the item summary. Prepend an exclamation mark, i.e., use !SUMMARY rather than SUMMARY, to limit the display to items which do NOT contain SUMMARY in the summary.
 
+### -S SEARCH
+
+Regular expression. Limit the display to items containing SEARCH (ignoring case) anywhere in the item or its file path. Prepend an exclamation mark, i.e., use !SEARCH rather than SEARCH, to limit the display to items which do NOT contain SEARCH in the item or its file path.
+
 ### -t TAGS
 
 Comma separated list of case insensitive regular expressions. E.g., use
