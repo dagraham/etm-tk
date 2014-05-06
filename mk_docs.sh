@@ -3,10 +3,10 @@
 # Update the man file
 cd /Users/dag/etm-tk
 
-echo "Processing what's new"
-pandoc -s -B ~/etm-tk/style-before -f markdown -t html -o WhatsNew.html whatsnew.md
-
-pandoc -s -f markdown -t plain -o WhatsNew.txt whatsnew.md
+#echo "Processing what's new"
+#pandoc -s -B ~/etm-tk/style-before -f markdown -t html -o WhatsNew.html whatsnew.md
+#
+#pandoc -s -f markdown -t plain -o WhatsNew.txt whatsnew.md
 
 echo Making the man file
 vinfo=`cat etmTk/v.py | head -1 | sed 's/\"//g' | sed 's/^.*= *//g'`
