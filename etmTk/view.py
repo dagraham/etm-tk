@@ -162,7 +162,7 @@ class App(Tk):
         # leaf: (parent, (option, [accelerator])
 
         self.outline_depths = {}
-        for view in KEYWORD, NOTE, PATH:
+        for view in KEYWORD, NOTE, PATH, REPORT:
             # set all to the default
             logger.debug('Setting depth for {0} to {1}'.format(view, loop.options['outline_depth']))
             self.outline_depths[view] = loop.options['outline_depth']
@@ -679,11 +679,14 @@ class App(Tk):
 
         self.vm_options = [[AGENDA, 'a'],
                            [DAY, 'd'],
+                           [WEEK, 'w'],
+                           ['-',''],
                            [TAG, 't'],
                            [KEYWORD, 'k'],
-                           [NOTE, 'n'],
                            [PATH, 'p'],
-                           [WEEK, 'w'],
+                           ['-',''],
+                           [NOTE, 'n'],
+                           [REPORT, 'r'],
                            ]
 
         self.view2cmd = {'a': self.agendaView,
@@ -692,6 +695,7 @@ class App(Tk):
                          'k': self.keywordView,
                          'n': self.noteView,
                          't': self.tagView,
+                         'r': self.reportView,
                          'w': self.showWeekly}
 
         self.view = self.vm_options[0][0]
@@ -704,16 +708,21 @@ class App(Tk):
         self.add2menu(MAIN, (VIEWS, ))
 
         self.vm_opts = [x[0] for x in self.vm_options]
-        self.vm = OptionMenu(topbar, self.currentView, *self.vm_opts)
+        # self.vm = OptionMenu(topbar, self.currentView, *self.vm_opts)
+        self.vm = OptionMenu(topbar, self.currentView, [])
+        self.vm["menu"].delete(0, END)
         self.vm.configure(pady=2)
         for i in range(len(self.vm_options)):
             label = self.vm_options[i][0]
             k = self.vm_options[i][1]
-            l, c = commandShortcut(k)
-
-            self.bind(c, lambda e, x=k: self.after(AFTER, self.view2cmd[x]))
-            self.vm["menu"].entryconfig(i, command=lambda x=k: self.after(AFTER, self.view2cmd[x]))
-            self.add2menu(VIEWS, (self.vm_opts[i], l))
+            if label == "-":
+                self.vm["menu"].add_separator()
+                self.add2menu(VIEWS, (SEP, ))
+            else:
+                l, c = commandShortcut(k)
+                self.vm["menu"].add_command(label=label, command=self.view2cmd[k], accelerator=l)
+                self.bind(c, lambda e, x=k: self.after(AFTER, self.view2cmd[x]))
+                self.add2menu(VIEWS, (self.vm_opts[i], l))
         self.vm.pack(side="left", padx=2)
         self.vm.configure(background=BGCOLOR, takefocus=False)
 
@@ -1461,6 +1470,10 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
     def tagView(self, e=None):
         self.setView(TAG)
+
+    def reportView(self, e=None):
+        # TODO: finish this
+        pass
 
     def noteView(self, e=None):
         self.setView(NOTE)
