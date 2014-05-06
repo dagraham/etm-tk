@@ -3202,6 +3202,14 @@ def str2opts(s, options=None):
             else:
                 filters['search'] = (True, re.compile(r'%s' % value,
                                                       re.IGNORECASE))
+        elif key == 'S':
+            value = unicode(part[1:].strip())
+            if value[0] == '!':
+                filters['search-all'] = (False, re.compile(r'%s' % value[1:],
+                                                       re.IGNORECASE))
+            else:
+                filters['search-all'] = (True, re.compile(r'%s' % value,
+                                                      re.IGNORECASE))
         elif key == 'd':
             if grpby['report'] == 'a':
                 grpby['depth'] = int(part[1:])
@@ -3308,8 +3316,8 @@ def applyFilters(file2uuids, uuid2hash, filters):
             if 'search' in filters:
                 tf, rx = filters['search']
                 l = []
-                for g in filters['groupby']:
-                    # we're grouping by g
+                for g in filters['grpby']:
+                    # search over the leaf summary and the branch
                     for t in ['_summary', u'c', u'k', u'f', u'u']:
                         if not t in g:
                             continue
@@ -3322,7 +3330,16 @@ def applyFilters(file2uuids, uuid2hash, filters):
                             # add v to l
                         l.append(v)
                 s = ' '.join(l)
-                # search in s
+                res = rx.search(s)
+                if tf and not res:
+                    skip = True
+                if not tf and res:
+                    skip = True
+            if 'search-all' in filters:
+                tf, rx = filters['search-all']
+                # search over the entire entry and the file path
+                l = [hsh['entry'], hsh['fileinfo'][0]]
+                s = ' '.join(l)
                 res = rx.search(s)
                 if tf and not res:
                     skip = True
