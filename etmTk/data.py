@@ -19,9 +19,9 @@ def setup_logging(level, etmdir=None):
     logging.yaml with default_level.
     """
     if etmdir:
-        etmdir = os.path.abspath(etmdir)
+        etmdir = os.path.normpath(etmdir)
     else:
-        etmdir = os.path.join(os.path.expanduser("~/.etm"))
+        etmdir = os.path.normpath(os.path.join(os.path.expanduser("~/.etm")))
     log_levels = {
         '1': logging.DEBUG,
         '2': logging.INFO,
@@ -35,7 +35,7 @@ def setup_logging(level, etmdir=None):
     else:
         loglevel = log_levels['3']
 
-    logfile = os.path.normpath(os.path.join(etmdir, "etmtk_log.txt"))
+    logfile = os.path.normpath(os.path.abspath(os.path.join(etmdir, "etmtk_log.txt")))
 
     config = {'disable_existing_loggers': False,
               'formatters': {'simple': {
@@ -1125,14 +1125,14 @@ def get_options(d=''):
         etmdir = d
     else:
         homedir = os.path.expanduser("~")
-        etmdir = os.path.join(homedir, ".etm")
-    newconfig = os.path.join(etmdir, NEWCFG)
-    oldconfig = os.path.join(etmdir, OLDCFG)
+        etmdir = os.path.normpath(os.path.join(homedir, ".etm"))
+    newconfig = os.path.normpath(os.path.join(etmdir, NEWCFG))
+    oldconfig = os.path.normpath(os.path.join(etmdir, OLDCFG))
     datafile = os.path.join(etmdir, ".etmtkdata.pkl")
-    default_datadir = os.path.join(etmdir, 'data')
+    default_datadir = os.path.normpath(os.path.join(etmdir, 'data'))
     logger.debug('checking first for: {0}; then: {1}'.format(newconfig, oldconfig))
 
-    locale_cfg = os.path.join(etmdir, 'locale.cfg')
+    locale_cfg = os.path.normpath(os.path.join(etmdir, 'locale.cfg'))
     if os.path.isfile(locale_cfg):
         logger.info('using locale file: {0}'.format(locale_cfg))
         fo = codecs.open(locale_cfg, 'r', dfile_encoding)
@@ -1185,7 +1185,7 @@ def get_options(d=''):
         'alert_wakecmd': '',
 
         'ampm': True,
-        'auto_completions': os.path.join(etmdir, 'completions.cfg'),
+        'auto_completions': os.path.normpath(os.path.join(etmdir, 'completions.cfg')),
         'shared_completions' : '',
         'completions_width': 36,
 
@@ -1212,8 +1212,8 @@ def get_options(d=''):
         'fontsize_fixed': 0,
         'fontsize_tree': 0,
         'freetimes' : default_freetimes,
-        'icscal_file': os.path.join(etmdir, 'etmcal.ics'),
-        'icsitem_file': os.path.join(etmdir, 'etmitem.ics'),
+        'icscal_file': os.path.normpath(os.path.join(etmdir, 'etmcal.ics')),
+        'icsitem_file': os.path.normpath(os.path.join(etmdir, 'etmitem.ics')),
         'icsimport_dir': etmdir,
 
         'local_timezone': time_zone,
@@ -1225,7 +1225,7 @@ def get_options(d=''):
         'report_end': '+1/1',
         'report_colors': 2,
         'report_indent': 2,
-        'report_specifications': os.path.join(etmdir, 'reports.cfg'),
+        'report_specifications': os.path.normpath(os.path.join(etmdir, 'reports.cfg')),
         'report_width1': 43,
         'report_width2': 17,
 
@@ -1355,7 +1355,7 @@ def get_options(d=''):
     if options['vcs_system'] == 'git':
         if git_command:
             options['vcs'] = {'command': git_command, 'history': git_history, 'commit': git_commit, 'init': git_init, 'dir': '.git', 'limit': '-n', 'file': ""}
-            repo = os.path.join(options['datadir'], options['vcs']['dir'])
+            repo = os.path.normpath(os.path.join(options['datadir'], options['vcs']['dir']))
             work = options['datadir']
             logger.debug('{0} options: {1}'.format(options['vcs_system'], options['vcs']))
         else:
@@ -1364,7 +1364,7 @@ def get_options(d=''):
     elif options['vcs_system'] == 'mercurial':
         if hg_command:
             options['vcs'] = {'command': hg_command, 'history': hg_history, 'commit': hg_commit, 'init': hg_init, 'dir': '.hg', 'limit': '-l', 'file': ' -f '}
-            repo = os.path.join(options['datadir'], options['vcs']['dir'])
+            repo = os.path.normpath(os.path.join(options['datadir'], options['vcs']['dir']))
             work = options['datadir']
             logger.debug('{0} options: {1}'.format(options['vcs_system'], options['vcs']))
         else:
@@ -1391,7 +1391,7 @@ def get_options(d=''):
      options['rfmt'], options['efmt']) = get_fmts(options)
     options['config'] = newconfig
     options['datafile'] = datafile
-    options['scratchpad'] = os.path.join(options['etmdir'], _("scratchpad"))
+    options['scratchpad'] = os.path.normpath(os.path.join(options['etmdir'], _("scratchpad")))
 
     if options['action_minutes'] not in [1, 6, 12, 15, 30, 60]:
         term_print(
@@ -1414,7 +1414,7 @@ def get_options(d=''):
         currfile = ensureMonthly(options)
         with open(currfile, 'w') as fo:
             fo.write(JOIN)
-        sample = os.path.join(options['datadir'], 'sample.txt')
+        sample = os.path.normpath(os.path.join(options['datadir'], 'sample.txt'))
         with open(sample, 'w') as fo:
             fo.write(SAMPLE)
     logger.info('using datadir: {0}'.format(options['datadir']))
@@ -1433,9 +1433,9 @@ def get_options(d=''):
         logger.debug('vcs_system: {0}'.format(options['vcs_system']))
         f = ''
         if options['vcs_system'] == 'mercurial':
-            f = os.path.join(options['datadir'], '.hgignore')
+            f = os.path.normpath(os.path.join(options['datadir'], '.hgignore'))
         elif options['vcs_system'] == 'git':
-            f = os.path.join(options['datadir'], '.gitignore')
+            f = os.path.normpath(os.path.join(options['datadir'], '.gitignore'))
         if f and not os.path.isfile(f):
             fo = open(f, 'w')
             fo.write(IGNORE)
@@ -2606,7 +2606,7 @@ def getFiles(root):
         # exclude/include files
         files = [os.path.join(path, f) for f in files
                  if not fnmatch.fnmatch(f, excludes)]
-        files = [f for f in files if fnmatch.fnmatch(f, includes)]
+        files = [os.path.normpath(f) for f in files if fnmatch.fnmatch(f, includes)]
 
         for fname in files:
             rel_path = relpath(fname, common_prefix)
@@ -5482,9 +5482,9 @@ def ensureMonthly(options, date=None):
     retval = None
     if ('monthly' in options and
             options['monthly']):
-        monthly = os.path.join(
+        monthly = os.path.normpath(os.path.join(
             options['datadir'],
-            options['monthly'])
+            options['monthly']))
         if not os.path.isdir(monthly):
             os.makedirs(monthly)
             sleep(0.5)
@@ -5492,11 +5492,11 @@ def ensureMonthly(options, date=None):
             date = datetime.now().date()
         yr = date.year
         mn = date.month
-        curryear = os.path.join(monthly, "%s" % yr)
+        curryear = os.path.normpath(os.path.join(monthly, "%s" % yr))
         if not os.path.isdir(curryear):
             os.makedirs(curryear)
             sleep(0.5)
-        currfile = os.path.join(curryear, "%02d.txt" % mn)
+        currfile = os.path.normpath(os.path.join(curryear, "%02d.txt" % mn))
         if not os.path.isfile(currfile):
             fo = codecs.open(currfile, 'w', options['encoding']['file'])
             fo.write("")
@@ -5571,7 +5571,7 @@ class ETMCmd():
             self.editcmd = self.options['edit_cmd']
         else:
             self.editcmd = ''
-        self.tmpfile = os.path.join(self.options['etmdir'], '.temp.txt')
+        self.tmpfile = os.path.normpath(os.path.join(self.options['etmdir'], '.temp.txt'))
 
     def do_command(self, s):
         # logger.debug('processing command: {0}'.format(s))
@@ -5973,7 +5973,7 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
 
     def delete_item(self):
         f, begline, endline = self.item_hsh['fileinfo']
-        fp = os.path.join(self.options['datadir'], f)
+        fp = os.path.normpath(os.path.join(self.options['datadir'], f))
         fo = codecs.open(fp, 'r', file_encoding)
         lines = fo.readlines()
         fo.close()
@@ -5985,7 +5985,7 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
         logger.debug(new_item)
         newlines = new_item.split('\n')
         f, begline, endline = new_hsh['fileinfo']
-        fp = os.path.join(self.options['datadir'], f)
+        fp = os.path.normpath(os.path.join(self.options['datadir'], f))
         fo = codecs.open(fp, 'r', file_encoding)
         lines = fo.readlines()
         fo.close()

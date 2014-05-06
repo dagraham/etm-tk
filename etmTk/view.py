@@ -76,11 +76,14 @@ FILTERCOLOR = "gray"
 
 AGENDA = _('Agenda')
 DAY = _('Day')
-PATHS = _('Path')
-KEYWORDS = _('Keyword')
-TAGS = _('Tag')
-NOTES = _('Note')
 WEEK = _("Week")
+#----
+PATH = _('Path')
+KEYWORD = _('Keyword')
+TAG = _('Tag')
+#----
+NOTE = _('Note')
+REPORT = _("Report")
 
 CALENDARS = _("Calendars")
 
@@ -117,7 +120,7 @@ LINECOLOR = "gray80"
 OCCASIONFILL = "gray96"
 
 this_dir, this_filename = os.path.split(__file__)
-USERMANUAL = os.path.join(this_dir, "help", "UserManual.html")
+USERMANUAL = os.path.normpath(os.path.join(this_dir, "help", "UserManual.html"))
 
 
 class App(Tk):
@@ -159,7 +162,7 @@ class App(Tk):
         # leaf: (parent, (option, [accelerator])
 
         self.outline_depths = {}
-        for view in KEYWORDS, NOTES, PATHS:
+        for view in KEYWORD, NOTE, PATH:
             # set all to the default
             logger.debug('Setting depth for {0} to {1}'.format(view, loop.options['outline_depth']))
             self.outline_depths[view] = loop.options['outline_depth']
@@ -676,10 +679,10 @@ class App(Tk):
 
         self.vm_options = [[AGENDA, 'a'],
                            [DAY, 'd'],
-                           [TAGS, 't'],
-                           [KEYWORDS, 'k'],
-                           [NOTES, 'n'],
-                           [PATHS, 'p'],
+                           [TAG, 't'],
+                           [KEYWORD, 'k'],
+                           [NOTE, 'n'],
+                           [PATH, 'p'],
                            [WEEK, 'w'],
                            ]
 
@@ -827,7 +830,6 @@ class App(Tk):
         self.add2menu(EDIT, (_("Cancel"), "Escape"))
         self.add2menu(EDIT, (_("Save changes and close editor"), "Ctrl-W"))
 
-        REPORT = _("Report")
         self.add2menu(root, (REPORT, ))
         self.add2menu(REPORT, (_("Create and display selected report"), "Return"))
         self.add2menu(REPORT, (_("Export report in text format ..."), "Ctrl-T"))
@@ -840,7 +842,7 @@ class App(Tk):
         self.updateClock()
         # showView will be called from updateClock
         self.updateAlerts()
-        self.etmgeo = os.path.join(loop.options['etmdir'], ".etmgeo")
+        self.etmgeo = os.path.normpath(os.path.join(loop.options['etmdir'], ".etmgeo"))
         self.restoreGeometry()
 
     def bindTop(self, c, cmd, e=None):
@@ -1279,7 +1281,7 @@ The local timezone is used when none is given."""
     def editFile(self, e=None, file=None, config=False):
         if e and e.char not in ["F", "E", "C", "R", "S"]:
             return
-        titlefile = os.path.abspath(file)
+        titlefile = os.path.normpath(file)
         logger.debug('file: {0}; config: {1}'.format(file, config))
         if self.weekly:
             master = self.canvas
@@ -1452,16 +1454,16 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.setView(DAY)
 
     def pathView(self, e=None):
-        self.setView(PATHS)
+        self.setView(PATH)
 
     def keywordView(self, e=None):
-        self.setView(KEYWORDS)
+        self.setView(KEYWORD)
 
     def tagView(self, e=None):
-        self.setView(TAGS)
+        self.setView(TAG)
 
     def noteView(self, e=None):
-        self.setView(NOTES)
+        self.setView(NOTE)
 
     def setView(self, view, row=None):
         self.rowSelected = None
@@ -2210,7 +2212,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
         if self.itemSelected:
             f = self.itemSelected['fileinfo'][0]
-            fn = " {0}{1}".format(self.options['vcs']['file'], os.path.join(self.options['datadir'], f))
+            fn = " {0}{1}".format(self.options['vcs']['file'], os.path.normpath(os.path.join(self.options['datadir'], f)))
             title = _("Showing changes for {0}.").format(f)
 
         else:
@@ -2886,7 +2888,7 @@ or 0 to expand all branches completely.""")
             return ()
         maxdepth = max([k for k in self.depth2id])
         logger.debug('expand2Depth {0}: {1}/{2}'.format(self.view, depth, maxdepth))
-        if self.view in [KEYWORDS, NOTES, PATHS]:
+        if self.view in [KEYWORD, NOTE, PATH]:
             self.outline_depths[self.view] = depth
             logger.debug('outline_depths: {0}'.format(self.outline_depths))
         if depth == 0:
@@ -2941,7 +2943,7 @@ or 0 to expand all branches completely.""")
             if self.view == DAY and self.active_date:
                 self.scrollToDate(self.active_date)
             else:
-                if self.view in [KEYWORDS, NOTES, PATHS]:
+                if self.view in [KEYWORD, NOTE, PATH]:
                     depth = self.outline_depths[self.view]
                     if depth == 0:
                         # expand all
