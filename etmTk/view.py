@@ -56,7 +56,7 @@ from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES, REPORT
 
 from etmTk.dialog import Node, MenuTree, Timer, ReadOnlyText, MessageWindow,TextVariableWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, STOPPED, PAUSED, RUNNING,  BGCOLOR, ONEDAY, ONEMINUTE
 
-from etmTk.edit import SimpleEditor, ReportWindow
+from etmTk.edit import SimpleEditor
 
 import gettext
 
@@ -148,6 +148,8 @@ class App(Tk):
         self.busy_info = None
         self.weekly = False # showWeekly
         self.today_col = None
+        self.specsModified = False
+        self.active_tree = {}
         root = "_"
 
         ef = "%a %b %d"
@@ -406,35 +408,45 @@ class App(Tk):
         viewmenu.entryconfig(9, accelerator=l)
         self.add2menu(path, (label, l))
 
-        viewmenu.add_separator()  # 10
+        # popup active tre
+        l = "S"
+        c = "s"
+        label=_("Show outline as text")
+        viewmenu.add_command( label=label, underline=1, command=self.popupTree)
+        self.bindTop(c, self.popupTree)
+
+        viewmenu.entryconfig(10, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        viewmenu.add_separator()  # 11
         self.add2menu(path, (SEP, ))
 
         l = "Left"
         label=_("Previous week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.showWeek(event=e, week=-1))
 
-        viewmenu.entryconfig(11, accelerator=l)
+        viewmenu.entryconfig(12, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Right"
         label=_("Next week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.showWeek(event=e, week=+1))
 
-        viewmenu.entryconfig(12, accelerator=l)
+        viewmenu.entryconfig(13, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Up"
         label=_("Previous item in week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=-1))
 
-        viewmenu.entryconfig(13, accelerator=l)
+        viewmenu.entryconfig(14, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Down"
         label=_("Next item in week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=1))
 
-        viewmenu.entryconfig(14, accelerator=l)
+        viewmenu.entryconfig(15, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "B"
@@ -442,7 +454,7 @@ class App(Tk):
         label=_("List busy times in week")
         viewmenu.add_command(label=label, underline=5, command=self.showBusyPeriods)
 
-        viewmenu.entryconfig(15, accelerator=l)
+        viewmenu.entryconfig(16, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "F"
@@ -450,11 +462,11 @@ class App(Tk):
         label=_("List free times in week")
         viewmenu.add_command(label=label, underline=5, command=self.showFreePeriods)
 
-        viewmenu.entryconfig(16, accelerator=l)
+        viewmenu.entryconfig(17, accelerator=l)
         # set binding in showWeekly
         self.add2menu(path, (label, l))
 
-        for i in range(11, 17):
+        for i in range(12, 18):
             self.viewmenu.entryconfig(i, state="disabled")
 
 
@@ -513,22 +525,13 @@ class App(Tk):
 
         # report
 
-        l = "F4"
-        c = "<F4>"
-        label=_("Create report")
-        toolsmenu.add_command(label=label, underline=5, command=self.makeReport)
-        self.bind(c, self.makeReport)
-
-        toolsmenu.entryconfig(0, accelerator=l)
-        self.add2menu(path, (label, l))
-
         # date calculator
-        l = "F5"
-        c = "<F5>"
+        l = "Shift-D"
+        c = "D"
 
         label=_("Open date calculator")
         toolsmenu.add_command(label=label, underline=12, command=self.dateCalculator)
-        self.bind(c, lambda event: self.after(AFTER, self.dateCalculator))
+        self.bindTop(c, self.dateCalculator)
 
         toolsmenu.entryconfig(1, accelerator=l)
         self.add2menu(path, (label, l))
@@ -538,7 +541,7 @@ class App(Tk):
 
         label=_("Display yearly calendar")
         toolsmenu.add_command(label=label, underline=8, command=self.showCalendar)
-        self.bind(c, lambda event: self.after(AFTER, self.showCalendar))
+        self.bindTop(c, self.showCalendar)
 
         toolsmenu.entryconfig(2, accelerator=l)
         self.add2menu(path, (label, l))
@@ -720,7 +723,6 @@ class App(Tk):
         self.custom_box = ttk.Combobox(self, textvariable=self.box_value, font=self.tkfixedfont)
         self.custom_box.bind("<<ComboboxSelected>>", self.newselection)
         self.bind("<Return>", self.makeReport)
-        self.bind("<Escape>", self.quit)
         self.bind("<Control-q>", self.quit)
         self.specs = ['']
         if ('report_specifications' in self.options and os.path.isfile(self.options['report_specifications'])):
@@ -793,22 +795,17 @@ class App(Tk):
             self.calbutton.configure(state="disabled")
 
         # filter
-        self.fltrbox = fltrbox = Frame(topbar, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR)
         self.filterValue = StringVar(self)
         self.filterValue.set('')
         self.filterValue.trace_variable("w", self.filterView)
 
-        self.fltr = Entry(fltrbox, textvariable=self.filterValue, width=14, highlightbackground=BGCOLOR, bg=BGCOLOR)
-        self.fltr.pack(side="left", padx=0) #, expand=1, fill=X)
+        self.fltr = Entry(topbar, textvariable=self.filterValue, width=14, highlightbackground=BGCOLOR, bg=BGCOLOR)
+        self.fltr.pack(side="left", padx=0, expand=1, fill=X)
         self.bind("<Escape>", self.clearFilter)
         self.fltr.bind("<FocusIn>", self.setFilter)
-        self.fltrbtn = Button(fltrbox, text='x', command=self.clearFilter, highlightbackground=BGCOLOR, pady=2)
-        self.fltrbtn.configure(state="disabled")
         self.filter_active = False
         self.viewmenu.entryconfig(6, state="normal")
         self.viewmenu.entryconfig(7, state="disabled")
-        self.fltrbtn.pack(side=LEFT, padx=0)
-        self.fltrbox.pack(side=LEFT, padx=0, pady=0)
 
         self.weekly = False
 
@@ -905,7 +902,6 @@ class App(Tk):
         self.add2menu(CUSTOM, (_("Export report in csv format ..."), "Ctrl-X"))
         self.add2menu(CUSTOM, (_("Save changes to report specifications"), "Ctrl-W"))
         self.add2menu(CUSTOM, (_("Expand report list"), "Down"))
-        self.add2menu(CUSTOM, (_("Quit"), "Escape"))
 
         # start clock
         self.updateClock()
@@ -1028,11 +1024,6 @@ class App(Tk):
         """For testing"""
         logger.debug('donothing')
         return "break"
-
-    def makeReport(self, e=None):
-        logger.debug('makeReport')
-        ReportWindow(parent=self, options=self.options, title=_("report"))
-
 
     def openWithDefault(self, e=None):
         if not self.itemSelected or 'g' not in self.itemSelected:
@@ -1422,7 +1413,7 @@ The local timezone is used when none is given."""
         filename = asksaveasfilename(**fileops)
         if not filename:
             return
-        fo = codecs.open(filename, 'w', self.options['encoding']['file'])
+        fo = codecs.open(filename, 'w', loop.options['encoding']['file'])
         fo.write("")
         fo.close()
         relname = relpath(filename, self.options['datadir'])
@@ -1534,6 +1525,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
     def customView(self, e=None):
         # TODO: finish this
         self.content.delete("1.0", END)
+        self.fltr.forget()
+        self.clearTree()
         self.setView(CUSTOM)
         pass
 
@@ -1542,6 +1535,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
     def setView(self, view, row=None):
         self.rowSelected = None
+        if view != WEEK and self.weekly:
+            self.closeWeekly()
         if view == CUSTOM:
             # self.reportbar.pack(side="top")
             logger.debug('showing custom_box')
@@ -1550,12 +1545,13 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             for i in range(len(self.rm_options)):
                 self.custommenu.entryconfig(i, state="normal")
         else:
-            logger.debug('removing custom_box')
-            self.custom_box.forget()
-            for i in range(len(self.rm_options)):
-                self.custommenu.entryconfig(i, state="disabled")
-        if view != WEEK and self.weekly:
-            self.closeWeekly()
+            if self.view == CUSTOM:
+                logger.debug('removing custom_box')
+                self.custom_box.forget()
+                for i in range(len(self.rm_options)):
+                    self.custommenu.entryconfig(i, state="disabled")
+                self.saveSpecs()
+                self.fltr.pack(side="left", padx=0, expand=1, fill=X)
         self.view = view
         logger.debug("setView view: {0}. Calling showView.".format(view))
         self.showView(row=row)
@@ -1577,13 +1573,14 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.depth2id = {}
         self.currentView.set(self.view)
         fltr = self.filterValue.get()
-        cmd = "{0} {1}".format(
-            self.vm_options[self.vm_opts.index(self.view)][1], fltr)
-        self.mode = 'command'
-        self.process_input(event=e, cmd=cmd)
-        if row:
-            row = max(0, row-1)
-            self.tree.yview(row)
+        if self.view != CUSTOM:
+            cmd = "{0} {1}".format(
+                self.vm_options[self.vm_opts.index(self.view)][1], fltr)
+            self.mode = 'command'
+            self.process_input(event=e, cmd=cmd)
+            if row:
+                row = max(0, row-1)
+                self.tree.yview(row)
         tt.stop()
 
     def showBusyPeriods(self, e=None):
@@ -1780,11 +1777,11 @@ Enter the shortest time period you want displayed in minutes.""")
 
     def closeWeekly(self, event=None):
         self.today_col = None
-        for i in range(11, 17):
+        for i in range(12, 18):
             self.viewmenu.entryconfig(i, state="disabled")
         self.canvas.pack_forget()
         self.weekly = False
-        self.fltrbox.pack(side=LEFT, padx=0, pady=0)
+        self.fltr.pack(side=LEFT, padx=8, pady=0, fill="x", expand=1)
         self.tree.pack(fill="both", expand=1, padx=4, pady=0)
         self.update_idletasks()
         if self.filter_active:
@@ -1802,7 +1799,7 @@ Enter the shortest time period you want displayed in minutes.""")
         """
         Open the canvas at the current week
         """
-        self.reportbar.forget()
+        self.custom_box.forget()
         tt = TimeIt(loglevel=2, label="week view")
         logger.debug("chosen_day: {0}; active_date: {1}".format(chosen_day, self.active_date))
         if self.weekly:
@@ -1810,7 +1807,7 @@ Enter the shortest time period you want displayed in minutes.""")
             return
         self.weekly = True
         self.tree.pack_forget()
-        self.fltrbox.pack_forget()
+        self.fltr.pack_forget()
         for i in range(4, 10):
             self.viewmenu.entryconfig(i, state="disabled")
 
@@ -1832,7 +1829,7 @@ Enter the shortest time period you want displayed in minutes.""")
             self.hours = ["{0}am".format(i) for i in range(7,12)] + ['12pm'] + ["{0}pm".format(i) for i in range(1,12)]
         else:
             self.hours = ["{0}:00".format(i) for i in range(7, 24)]
-        for i in range(11, 17):
+        for i in range(12, 18):
             self.viewmenu.entryconfig(i, state="normal")
         self.canvas.focus_set()
         self.showWeek()
@@ -2769,7 +2766,6 @@ Relative dates and fuzzy parsing are supported.""")
         self.viewmenu.entryconfig(5, state="disabled")
         self.viewmenu.entryconfig(6, state="normal")
         self.fltr.configure(bg="white", state="normal")
-        self.fltrbtn.configure(state="normal")
         self.fltr.focus_set()
 
     def clearFilter(self, e=None):
@@ -2778,7 +2774,6 @@ Relative dates and fuzzy parsing are supported.""")
         self.viewmenu.entryconfig(6, state="disabled")
         self.filterValue.set('')
         self.fltr.configure(bg=BGCOLOR)
-        self.fltrbtn.configure(state="disabled")
         self.tree.focus_set()
         if self.rowSelected:
             self.tree.focus(self.rowSelected)
@@ -2936,7 +2931,6 @@ Relative dates and fuzzy parsing are supported.""")
                         parts.append(str(i))
                         cmd = " ".join(parts)
             try:
-                print('command:', cmd)
                 res = loop.do_command(cmd)
             except:
                 return _('could not process command "{0}"').format(cmd)
@@ -2961,9 +2955,6 @@ Relative dates and fuzzy parsing are supported.""")
             return ()
 
         if type(res) == dict:
-            print('res')
-            for key in res:
-                print(key, ":", res[key])
             self.showTree(res, event=event)
         else:
             # not a hash => not a tree
@@ -3027,6 +3018,7 @@ or 0 to expand all branches completely.""")
         self.clearTree()
         self.count = 0
         self.count2id = {}
+        self.active_tree = tree
         self.add2Tree(u'', tree[self.root], tree)
         loop.count2id = self.count2id
         self.tree.tag_configure('treefont', font=self.tktreefont)
@@ -3038,7 +3030,7 @@ or 0 to expand all branches completely.""")
             if self.view == DAY and self.active_date:
                 self.scrollToDate(self.active_date)
             else:
-                if self.view in [KEYWORD, NOTE, PATH]:
+                if self.view in [KEYWORD, NOTE, PATH, CUSTOM]:
                     depth = self.outline_depths[self.view]
                     if depth == 0:
                         # expand all
@@ -3057,10 +3049,19 @@ or 0 to expand all branches completely.""")
                                 self.tree.item(item, open=False)
                 self.goHome()
 
+    def popupTree(self, e=None):
+        if not self.active_tree:
+            return
+        res = tree2Text(self.active_tree)
+        if not res[0][0]: res[0].pop(0)
+        prompt = "\n".join(res[0])
+        self.textWindow(parent=self, title='etm', opts=self.options, prompt=prompt, modal=False)
+
     def clearTree(self):
         """
         Remove all items from the tree
         """
+        self.active_tree = {}
         for child in self.tree.get_children():
             self.tree.delete(child)
 
@@ -3085,11 +3086,21 @@ or 0 to expand all branches completely.""")
                 if len(text[1]) == 4:
                     uuid, item_type, col1, col3 = text[1]
                     dt = ''
-                else:  # len 5 day view with datetime appended
+                elif len(text[1]) == 5:  # len 5 day view with datetime appended
                     uuid, item_type, col1, col3, dt = text[1]
+                else:
+                    det = text[-1].split("!!")
+                    if len(det) == 2:
+                        col1, uuid = det
+                    else:
+                        col1 = det
+                        uuid = None
+                    col3 = dt = ''
+                    item_type = None
 
-                # This hack avoids encoding issues under python 2
-                col1 = "{0} {1}".format(id2Type[item_type], col1)
+                if item_type:
+                    # This hack avoids encoding issues under python 2
+                    col1 = "{0} {1}".format(id2Type[item_type], col1)
 
                 if type(col3) == int:
                     col3 = '%s' % col3
@@ -3113,11 +3124,10 @@ or 0 to expand all branches completely.""")
                         # we want today, not the starting date for this
                         d = get_current_time().date()
                     else:
-                        try:
+                        if type(dt) is datetime:
                             d = dt.date()
-                        except:
-                            logger.exception('not a datetime: {0}; {1}'.format(dt, text))
-                            d = None
+                        else:
+                            d = parse(dt).date()
                     if d and d not in self.date2id:
                         logger.debug('date2id[{0}] = {1}'.format(d, parent))
                         self.date2id[d] = int(parent)
@@ -3126,38 +3136,73 @@ or 0 to expand all branches completely.""")
                         self.id2date[int(parent)] = d
 
     def makeReport(self, event=None):
+        if self.view != CUSTOM: return
         self.value_of_combo = self.custom_box.get()
         if not self.value_of_combo.strip():
             return
         try:
-            self.all_text = text = getReportData(
+            res = getReportData(
                 self.value_of_combo,
                 self.loop.file2uuids,
                 self.loop.uuid2hash,
                 self.loop.options)
-            if not self.all_text:
-                text = _("Report contains no output.")
+            if not res:
+                res = _("Report contains no output.")
             if self.value_of_combo not in self.specs:
                 self.specs.append(self.value_of_combo)
                 self.specs.sort()
                 self.specs = [x for x in self.specs if x]
                 self.custom_box["values"] = self.specs
-                self.modified = True
+                self.specsModified = True
             logger.debug("spec: {0}".format(self.value_of_combo))
         except:
             logger.exception("could not process: {0}".format(self.value_of_combo))
-            self.all_text = text = _("'{0}' could not be processed".format(self.value_of_combo))
+            res = _("'{0}' could not be processed".format(self.value_of_combo))
 
-        print(text)
+        if type(res) == dict:
+            self.showTree(res, event=event)
+        else:
+            # not a hash => not a tree
+            self.textWindow(self, title='etm', prompt=res, opts=self.options)
+            self.custom_box.focus_set()
+            return 0
+
+    def saveSpecs(self, e=None):
+        if self.view != CUSTOM: return
+        if not self.specsModified:
+            return
+        if not ('report_specifications' in self.options and os.path.isfile(self.options['report_specifications'])):
+            return
+        ans = self.confirm(parent=self,
+            prompt=_("Save the changes to your report specifications?"))
+        if ans:
+            self.specs.sort()
+            file = self.options['report_specifications']
+            with codecs.open(file, 'w', loop.options['encoding']['file']) as fo:
+                tmp = fo.write("\n".join(self.specs))
+            changed = SimpleEditor(parent=self, file=file, options=self.options, title='report_specifications').changed
+            if changed:
+                logger.debug("saved: {0}".format(file))
+            self.box['values'] = self.specs
+        self.specsModified = False
+
         # self.text.delete('1.0', END)
         # self.text.insert(INSERT, text)
         # self.text.mark_set(INSERT, '1.0')
 
-    def newselection(self, event=None):
-        self.value_of_combo = self.custom_box.get()
-
     def exportText(self):
+        if self.view != CUSTOM: return
         logger.debug("spec: {0}".format(self.value_of_combo))
+        tree = getReportData(
+            self.value_of_combo,
+            self.loop.file2uuids,
+            self.loop.uuid2hash,
+            self.loop.options,
+            export=False)
+        res = tree2Text(tree)
+        print(res)
+        text = "\n".join([x for x in tree2Text(tree)[0]])
+        print(text)
         fileops = {'defaultextension': '.text',
                    'filetypes': [('text files', '.text')],
                    'initialdir': self.options['etmdir'],
@@ -3166,17 +3211,12 @@ or 0 to expand all branches completely.""")
         filename = asksaveasfilename(**fileops)
         if not filename:
             return False
-        self.text = text = getReportData(
-            self.value_of_combo,
-            self.loop.file2uuids,
-            self.loop.uuid2hash,
-            self.loop.options,
-            export=False)
         fo = codecs.open(filename, 'w', self.options['encoding']['file'])
-        fo.write(self.text)
+        fo.write(text)
         fo.close()
 
     def exportCSV(self):
+        if self.view != CUSTOM: return
         logger.debug("spec: {0}".format(self.value_of_combo))
         data = getReportData(
             self.value_of_combo,
@@ -3197,24 +3237,9 @@ or 0 to expand all branches completely.""")
         for line in data:
             c.writerow(line)
 
-    def saveSpecs(self, e=None):
-        if not self.modified:
-            return
-        if not ('report_specifications' in self.options and os.path.isfile(self.options['report_specifications'])):
-            return
-        ans = self.confirm(parent=self,
-            prompt=_("Save the changes to your report specifications?"))
-        if ans:
-            self.specs.sort()
-            file = self.options['report_specifications']
-            with open(file, 'w') as fo:
-                tmp = fo.write("\n".join(self.specs))
-            self.modified = False
-            changed = SimpleEditor(parent=self, file=file, options=self.options, title='report_specifications').changed
-            if changed:
-                logger.debug("saved: {0}".format(file))
-            self.custom_box['values'] = self.specs
 
+    def newselection(self, event=None):
+        self.value_of_combo = self.custom_box.get()
 
 loop = None
 

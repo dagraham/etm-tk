@@ -382,15 +382,15 @@ execute the remaining arguments without opening the GUI.
             specification. (Enclose ARGS in single quotes to prevent shell
             expansion.)
     d ARG   display the day view using ARG, if given, as a filter.
-    i ARGS  Create a new item using the remaining arguments as the item
-            specification. (Enclose ARGS in single quotes to prevent shell
-            expansion.)
     k ARG   display the keywords view using ARG, if given, as a filter.
     m INT   display a report using the remaining argument, which must be a
             positive integer, to display a report using the corresponding
             entry from the file given by report_specifications in etmtk.cfg.
             Use ? m to display the numbered list of entries from this file.
-    n ARG   display the notes view using ARG, if given, as a filter.
+    n ARGS  Create a new item using the remaining arguments as the item
+            specification. (Enclose ARGS in single quotes to prevent shell
+            expansion.)
+    N ARG   display the notes view using ARG, if given, as a filter.
     p ARG   display the path view using ARG, if given, as a filter.
     t ARG   display the tags view using ARG, if given, as a filter.
     v       display information about etm and the operating system.
@@ -1173,7 +1173,7 @@ def get_options(d=''):
 
         'agenda_colors': 2,
         'agenda_days': 4,
-        'agenda_indent': 2,
+        'agenda_indent': 3,
         'agenda_width1': 32,
         'agenda_width2': 18,
 
@@ -1224,7 +1224,7 @@ def get_options(d=''):
         'report_begin': '1',
         'report_end': '+1/1',
         'report_colors': 2,
-        'report_indent': 2,
+        'report_indent': 3,
         'report_specifications': os.path.normpath(os.path.join(etmdir, 'reports.cfg')),
         'report_width1': 43,
         'report_width2': 17,
@@ -1848,9 +1848,6 @@ amp_keys = {
 def makeTree(tree_rows, view=None, calendars=None, sort=True, fltr=None):
     tree = {}
     lofl = []
-    print('tree_rows')
-    for row in tree_rows[:3]:
-        print(row)
     root = '_'
     empty = True
     cal_regex = None
@@ -2015,7 +2012,7 @@ def tree2Rst(tree, indent=2, width1=54, width2=14, colors=0,
     return [x for x in text_lst], args[0], args[1]
 
 
-def tree2Text(tree, indent=2, width1=43, width2=20, colors=0,
+def tree2Text(tree, indent=4, width1=43, width2=20, colors=0,
               number=False, count=0, count2id=None):
     global text_lst
     args = [count, count2id]
@@ -2059,15 +2056,10 @@ def tree2Text(tree, indent=2, width1=43, width2=20, colors=0,
                     s = "%s%s%s %-*s %s%s" % (tab * level, s_c, unicode(t),
                         rmlft, unicode(truncate(node[1][2], rmlft)),
                         col2, e_c)
-                    # s = u"{0:s}{1:s}{2:s} {3:<*s} {4:s}{5:s}".format(
-                    #     tab * level, s_c,
-                    #     unicode(t),
-                    #     rmlft,
-                    #     unicode(truncate(node[1][2], rmlft)),
-                    #     col2, e_c)
                 text_lst.append(s)
             else:
-                text_lst.append("%s%s" % (tab * level, node[1]))
+                aug = "%s%s" % (tab * level, node[1])
+                text_lst.append(aug.split('!!')[0])
         else:
             text_lst.append("%s%s" % (tab * level, node))
         if node not in tree_hsh:
@@ -2108,7 +2100,10 @@ Recursively process groups and accumulate the totals.
         max_level = len(list_of_tuples[0]) - 1
     level = -1
     global lst
-    global tree_hsh
+    global head
+    global auglst
+    head = []
+    auglst = []
     root = "-"
     lst = []
     if 'action_template' in options:
@@ -2129,7 +2124,7 @@ Recursively process groups and accumulate the totals.
     row = ['' for i in range(max_level + 1)]
 
     def doLeaf(tup, lvl):
-        global row, rows
+        global row, rows, head, auglst
         if len(tup) < 2:
             rows.append(deepcopy(row))
             return ()
@@ -2162,13 +2157,14 @@ Recursively process groups and accumulate the totals.
             hsh['hours'] = "%d:%02d" % (t[0] // 60, t[0] % 60)
         hsh['label'] = k
         lst.append(expand_template(action_template, hsh, complain=True))
-        print('leaf added', lst[-1], 'to', t)
+        head.append(lst[-1].lstrip())
+        auglst.append(head)
 
         if len(g) >= 1:
             doLeaf(g, lvl)
 
     def doGroups(tuple_list, lvl):
-        global row, rows
+        global row, rows, head, auglst
         hsh = {}
         lvl += 1
         if max_level and lvl > max_level - 1:
@@ -2176,8 +2172,8 @@ Recursively process groups and accumulate the totals.
             return
         hsh['indent'] = tab * lvl
         for k, g, t in group_sort(tuple_list):
+            head = head[:lvl]
             row[lvl] = k[-1]
-            # print("groups row", lvl, row[lvl])
             row[-1] = t
             hsh['count'] = len(g)
             hsh['minutes'] = t[0]  # only 2 digits after the decimal point
@@ -2195,27 +2191,24 @@ Recursively process groups and accumulate the totals.
 
             hsh['label'] = k[-1]
             lst.append(expand_template(action_template, hsh, complain=True))
-            print('group added', lst[-1], 'to', [x[0] for x in g])
+            head.append(lst[-1].lstrip())
+            if len(head) == max_level:
+                auglst.append(head)
             if len(g) > 1:
+                # print('calling doGroups', lvl)
                 doGroups(g, lvl)
             else:
+                # print('calling doLeaf', lvl)
                 doLeaf(g[0], lvl)
 
     doGroups(list_of_tuples, level)
-    print('lst')
-    for l in lst:
-        print(l)
-    res = makeTree(list_of_tuples)
-    from pprint import pprint
-    print('res')
-
-    pprint(res)
+    res = makeTree(auglst)
 
     if export:
         return rows
         # return list_of_tuples
     else:
-        return lst
+        return res
 
 
 def group_sort(row_lst):
@@ -3236,7 +3229,10 @@ def str2opts(s, options=None):
                                                       re.IGNORECASE))
         elif key == 'd':
             if grpby['report'] == 'a':
-                grpby['depth'] = int(part[1:])
+                d = int(part[1:])
+                if d:
+                    d += 1
+                grpby['depth'] = d
         elif key == 't':
             value = [x.strip() for x in part[1:].split(',')]
             for t in value:
@@ -3658,6 +3654,7 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
     cols = grpby['cols']
     fmts = grpby['fmts']
     for tup in tups:
+        uuid = tup[-1]
         hsh = uuid2hash[tup[-1]]
 
         # for eval we need to be sure that t is in hsh
@@ -3713,7 +3710,7 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
                 item.append((tup[-1], tup[-4], setSummary(hsh, parse(dtl)), dt, etmdt))
                 items.append(item)
         else:  # action report
-            item.append(setSummary(hsh, parse(dt)))
+            item.append("{0}!!{1}".format(setSummary(hsh, parse(dt)), uuid))
             temp = []
             temp.extend(timeValue(hsh, options))
             temp.extend(expenseCharge(hsh, options))
@@ -3727,8 +3724,7 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
         else:
             clrs = grpby['colors']
         tree = makeTree(items, sort=False)
-        txt, args0, args1 = tree2Text(tree, width1=width1, width2=width2)
-        return "\n".join([x.rstrip() for x in txt if x.strip()])
+        return tree
     else:
         if grpby['report'] == 'a' and 'depth' in grpby and grpby['depth']:
             depth = min(grpby['depth'], len(grpby['lst']))
@@ -3737,8 +3733,6 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
         logger.debug('using depth: {0}'.format(depth))
         if export:
             data = []
-            # head = map(str, grpby['lst'][:depth])
-            # head = ["{0}".format(x) for x in grpby['lst'][:depth]]
             head = [x for x in grpby['lst'][:depth]]
             logger.debug('head: {0}\nlst: {1}\ndepth: {2}'.format(head, grpby['lst'], depth))
             csv = [head]
@@ -3760,11 +3754,8 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
                     data.append(row)
             return data
         else:
-            print('items')
-            for item in items:
-                print(item)
-            items = tallyByGroup(items, max_level=depth, options=options)
-            return "\n".join([x.rstrip() for x in items if x.strip()])
+            res = tallyByGroup(items, max_level=depth, options=options)
+            return res
 
 
 def str2hsh(s, uid=None, options=None):
@@ -5549,10 +5540,10 @@ class ETMCmd():
             '?': self.do_help,
             'a': self.do_a,
             'd': self.do_d,
-            'i': self.do_i,
+            'n': self.do_n,
             'k': self.do_k,
             'm': self.do_m,
-            'n': self.do_n,
+            'N': self.do_N,
             'p': self.do_p,
             'c': self.do_c,
             't': self.do_t,
@@ -5563,10 +5554,10 @@ class ETMCmd():
             'help': self.help_help,
             'a': self.help_a,
             'd': self.help_d,
-            'i': self.help_i,
+            'n': self.help_n,
             'k': self.help_k,
             'm': self.help_m,
-            'n': self.help_n,
+            'N': self.help_N,
             'p': self.help_p,
             'c': self.help_c,
             't': self.help_t,
@@ -5601,7 +5592,7 @@ class ETMCmd():
         self.tmpfile = os.path.normpath(os.path.join(self.options['etmdir'], '.temp.txt'))
 
     def do_command(self, s):
-        # logger.debug('processing command: {0}'.format(s))
+        logger.debug('processing command: {0}'.format(s))
         args = s.split(' ')
         cmd = args.pop(0)
         if args:
@@ -5610,7 +5601,9 @@ class ETMCmd():
             arg_str = ''
         if cmd not in self.cmdDict:
             return _('"{0}" is an unrecognized command.').format(cmd)
-        return self.cmdDict[cmd](arg_str)
+        logger.debug('do_command: {0}, {1}'.format(cmd, arg_str))
+        res = self.cmdDict[cmd](arg_str)
+        return res
 
     def do_help(self, cmd):
         if cmd:
@@ -5664,11 +5657,12 @@ class ETMCmd():
                     calendars=self.calendars,
                     fltr=f))
             else:
-                return (getReportData(
+                res = getReportData(
                     arg_str,
                     self.file2uuids,
                     self.uuid2hash,
-                    self.options))
+                    self.options)
+                return res
 
         except:
             logger.exception("could not process '{0}'".format(arg_str))
@@ -5882,13 +5876,6 @@ Usage:
 
 Generate an agenda including dated items for the next {0} days (agenda_days from etmtk.cfg) together with any now and next items.\
 """.format(self.options['agenda_days']))
-
-    def do_c(self, arg_str):
-        hsh = self.get_itemhash(arg_str)
-        if not hsh:
-            return ()
-        self.do_n('', hsh['entry'])
-
 
     def cmd_do_delete(self, choice):
         if not choice:
@@ -6135,22 +6122,21 @@ where N is the number of a report specification from the file {0}:\n """.format(
         return "\n".join(res)
         # return(res)
 
-    def do_n(self, arg_str):
-        # self.prevnext = getPrevNext(self.dates)
+    def do_N(self, arg_str):
         return self.mk_rep('n {0}'.format(arg_str))
 
     @staticmethod
-    def help_n():
+    def help_N():
         return ("""\
 Usage:
 
-    etm n [FILTER]
+    etm N [FILTER]
 
 Show notes grouped and sorted by keyword optionally limited to those containing a case insenstive match for the regex FILTER.\
 """)
 
 
-    def do_i(self, arg_str='', itemstr=""):
+    def do_n(self, arg_str='', itemstr=""):
         logger.debug('arg_str: {0}'.format(arg_str))
         if arg_str:
             new_item = s2or3(arg_str)
@@ -6165,15 +6151,15 @@ Show notes grouped and sorted by keyword optionally limited to those containing 
                 return _("item saved")
 
     @staticmethod
-    def help_i():
+    def help_n():
         return _("""\
 Usage:
 
-    etm i ITEM
+    etm n ITEM
 
 Create a new item from ITEM. E.g.,
 
-    etm i '* meeting @s +0 4p @e 1h30m'
+    etm n '* meeting @s +0 4p @e 1h30m'
 
 The item will be appended to the monthly file for the current month.\
 """)
@@ -6190,16 +6176,13 @@ The item will be appended to the monthly file for the current month.\
         logger.debug('custom spec: {0}, {1}'.format(arg, type(arg)))
         """report (non actions) specification"""
         if not arg:
-            self.help_c()
-            return ()
-        text = getReportData(
+            return self.help_c()
+        res = getReportData(
             arg,
             self.file2uuids,
             self.uuid2hash,
             self.options)
-        header = "{0}: {1}".format(_("report"), arg)
-        return "{0}\n{1}\n{2}".format(header, "-"*len(header), text)
-        return text
+        return res
 
     @staticmethod
     def help_c():
@@ -6232,13 +6215,14 @@ or a combination of one or more of the following:
 Options include:
     -b begin date
     -c context regex
-    -d depth (a reports only)
+    -d depth (CLI a reports only)
     -e end date
     -f file regex
     -k keyword regex
     -l location regex
-    -o omit
+    -o omit (r reports only)
     -s summary regex
+    -S search regex
     -t tags regex
     -u user regex
     -w column 1 width
@@ -6366,7 +6350,7 @@ def main(etmdir='', argv=[]):
     logger.debug("data.main etmdir: {0}, argv: {1}".format(etmdir, argv))
     use_locale = ()
     (user_options, options, use_locale) = get_options(etmdir)
-    ARGS = ['a', 'k', 'm', 'n', 'i', 'p', 'r', 'd', 't', 'v']
+    ARGS = ['a', 'k', 'm', 'n', 'N', 'p', 'c', 'd', 't', 'v']
     if len(argv) > 1:
         c = ETMCmd(options)
         c.loop = False

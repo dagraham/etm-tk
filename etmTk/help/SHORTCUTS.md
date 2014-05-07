@@ -27,6 +27,7 @@
         Clear outline filter                        Escape
         Toggle displaying labels column                L
         Set outline depth                              O
+        Show outline as text                           S
         ----
         Previous week                                Left
         Next week                                    Right
@@ -42,40 +43,48 @@
         Reschedule                                     R
         Open link                                      G
     Tools
-        Create report                                 F4
-        Open date calculator                          F5
+        Open date calculator                        Shift-D
         Display yearly calendar                     Shift-Y
         Export to iCal                              Shift-X
         Reload data from files                      Shift-L
+    Custom
+        Create and display selected report          Return
+        Export report in text format ...            Ctrl-T
+        Export report in csv format ...             Ctrl-X
+        Save changes to report specifications       Ctrl-W
+        Expand report list                           Down
     Help
         Search
         Shortcuts                                      ?
         User manual                                   F1
         About                                         F2
         Check for update                              F3
-## Main
+
+## Main window
 
     Views
         Agenda                                      Ctrl-A
         Day                                         Ctrl-D
+        Week                                        Ctrl-W
+        ----
         Tag                                         Ctrl-T
         Keyword                                     Ctrl-K
-        Note                                        Ctrl-N
         Path                                        Ctrl-P
-        Week                                        Ctrl-W
+        ----
+        Note                                        Ctrl-N
+        Custom                                      Ctrl-C
 
-## Edit
+## Edit window
 
     Show possible completions                     Ctrl-Space
     Validate entry                                  Ctrl-?
     Cancel                                          Escape
     Save changes and close editor                   Ctrl-W
 
-## Report
+## Custom view
 
     Create and display selected report              Return
     Export report in text format ...                Ctrl-T
     Export report in csv format ...                 Ctrl-X
     Save changes to report specifications           Ctrl-W
     Expand report list                               Down
-    Quit                                            Escape

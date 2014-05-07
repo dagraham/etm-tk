@@ -88,15 +88,15 @@ You can add a command to use the CLI instead of the GUI. For example, to get the
 
         a ARG   display the agenda view using ARG, if given, as a filter.
         d ARG   display the day view using ARG, if given, as a filter.
-        i ARGS  Create a new item using the remaining arguments as the item
-                specification. (Enclose ARGS in single quotes to prevent shell
-                expansion.)
         k ARG   display the keywords view using ARG, if given, as a filter.
         m INT   display a report using the remaining argument, which must be a
                 positive integer, to display a report using the corresponding
                 entry from the file given by report_specifications in etmtk.cfg.
                 Use ? m to display the numbered list of entries from this file.
-        n ARG   display the notes view using ARG, if given, as a filter.
+        n ARGS  Create a new item using the remaining arguments as the item
+                specification. (Enclose ARGS in single quotes to prevent shell
+                expansion.)
+        N ARG   display the notes view using ARG, if given, as a filter.
         p ARG   display the path view using ARG, if given, as a filter.
         r ARGS  display a report using the remaining arguments as the report
                 specification. (Enclose ARGS in single quotes to prevent shell
@@ -142,14 +142,15 @@ You can filter the output by adding a (case-insensitive) argument:
     Thu Apr 10, 2014
       - set up luncheon meeting with Joe Smith          15m
 
-Or you can add a question mark to a command to get details about the commmand, e.g.:
+or `etm d mar .*2014` to show your items for March, 2014.
 
-    $ etm r ?
+You can add a question mark to a command to get details about the commmand, e.g.:
+
     Usage:
 
-        etm r <type> <groupby> [options]
+        etm c <type> <groupby> [options]
 
-    Generate a report where type is either 'a' (action) or 'c' (composite).
+    Generate a custom view where type is either 'a' (action) or 'c' (composite).
     Groupby can include *semicolon* separated date specifications and
     elements from:
         c context
@@ -163,11 +164,9 @@ Or you can add a question mark to a command to get details about the commmand, e
     or a combination of one or more of the following:
         yy:   2-digit year
         yyyy:   4-digit year
-        M:   month: 1 - 12
         MM:   month: 01 - 12
         MMM:   locale specific abbreviated month name: Jan - Dec
         MMMM:   locale specific month name: January - December
-        d:   month day: 1 - 31
         dd:   month day: 01 - 31
         ddd:   locale specific abbreviated week day: Mon - Sun
         dddd:   locale specific week day: Monday - Sunday
@@ -175,13 +174,14 @@ Or you can add a question mark to a command to get details about the commmand, e
     Options include:
         -b begin date
         -c context regex
-        -d depth (a reports only)
+        -d depth (CLI a reports only)
         -e end date
         -f file regex
         -k keyword regex
         -l location regex
-        -o omit
+        -o omit (r reports only)
         -s summary regex
+        -S search regex
         -t tags regex
         -u user regex
         -w column 1 width
@@ -189,7 +189,7 @@ Or you can add a question mark to a command to get details about the commmand, e
 
     Example:
 
-        etm r 'c ddd, MMM d yyyy -b 1 -e +1/1'
+        etm c 'c ddd, MMM dd yyyy -b 1 -e +1/1'
 
 Note: The CLI offers the same views and reporting, with the exception of week view, as the GUI. It is also possible to create new items in the CLI with the `n` command. Other modifications such as copying, deleting, finishing and so forth, can only be done in the GUI or, perhaps, in your favorite text editor. An advantage to using the GUI is that it provides validation.
 
@@ -203,7 +203,7 @@ would create an entry in your inbox with this phone number. (With no type charac
 
 All views, including week view, display only items consistent with the current choices of active calendars.
 
-If a (case-insensitive) filter is entered then the display in all views other than week view will be limited to items that match somewhere in either the branch or the leaf.  Relevant branches will automatically be expanded to show matches.
+If a (case-insensitive) filter is entered then the display in all views other than week view and custom view will be limited to items that match somewhere in either the branch or the leaf.  Relevant branches will automatically be expanded to show matches.
 
 In day and week views, pressing the space bar will move the display to the current date. In all other views, pressing the space bar will move the display to the first item in the outline.
 
@@ -219,7 +219,9 @@ In all views other than week view, pressing *O* will open a dialog to choose the
 
 In all views other than week view, pressing *L* will toggle the display of a column displaying item *labels* where, for example, an item with @a, @d and @u fields would have the label "adu".
 
-In all views other than week view
+In all views other than week view, pressing *S* will show a text verion of the current display suitable for copy and paste.
+
+In all views other than custom view and week view:
 
 - if an item is selected:
 
@@ -286,6 +288,10 @@ Note: Items that you have "commented out" by beginning the item with a `#` will 
 Events and occasions displayed graphically by week. Left and right cursor keys change, respectively, to the previous and next week. Up and down cursor keys select, respectively, the previous and next items within the given week. Items can also be selected by moving the mouse over the item. The summary and time period for the selected item is displayed at the bottom of the screen. Pressing return with an item selected or double-clicking an item opens a context menu. Control-clicking an unscheduled time opens a dialog to create an event for that date and time.
 
 Tip. Press *Ctrl-B* to display a list of busy times for the selected week or *Ctrl-F* and provide the needed period in minutes to display a list of free times that would accomodate the requirement.
+
+### Custom View
+
+Design your own view. See [Reports](#reports) for details.
 
 ## Creating New Items
 

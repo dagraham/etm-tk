@@ -1,8 +1,8 @@
 # Reports
 
-To create a report press *Ctrl-R* in the GUI. If you have entries in your report specifications file, `~./etm/reports.cfg` by default, you can choose one of them in the selection box at the bottom of the report window.
+To create a report open the custom view in the GUI. If you have entries in your report specifications file, `~./etm/reports.cfg` by default, you can choose one of them in the selection box at the bottom of the window.
 
-You can also add report specifications to the list by selecting any item from the list and then replacing the content with anything you like. Press *Return* to *add* your specification temporarily to the list. *Note that the original entry will not be affected.*  When you close the report window you will have an opportunity to save the additions you have made. If you choose "Yes", your additions will be inserted into the list and it will be opened for editing. You can also edit this file by pressing *Shift Ctrl-R* when the report window is closed.
+You can also add report specifications to the list by selecting any item from the list and then replacing the content with anything you like. Press *Return* to *add* your specification temporarily to the list. *Note that the original entry will not be affected.*  When you leave the custom view you will have an opportunity to save the additions you have made. If you choose "Yes", your additions will be inserted into the list and it will be opened for editing. You can also edit this file by pressing *Shift Ctrl-R* when the report window is closed.
 
 When you have selected a report specification, press *Return* to generate the report and display it.
 
@@ -139,7 +139,7 @@ Regular expression. Limit the display to items with contexts matching CONTEXT (i
 
 ### -d DEPTH
 
-The default, `-d 0`, includes all outline levels. Use `-d 1` to include only level 1, `-d 2` to include levels 1 and 2 and so forth.
+CLI only. The default, `-d 0`, includes all outline levels. Use `-d 1` to include only level 1, `-d 2` to include levels 1 and 2 and so forth.
 
 For example, modifying the report above by adding `-d 3` would give the
 following:
@@ -173,7 +173,7 @@ Regular expression. Limit the display to items with location matching LOCATION (
 
 ### -o OMIT
 
-String. Show/hide a)ctions, d)elegated tasks, e)vents, g)roup tasks, n)otes, o)ccasions and/or other t)asks. For example, `-o on` would show everything except occasions and notes and `-o !on` would show only occasions and notes.
+String. Composite reports only. Show/hide a)ctions, d)elegated tasks, e)vents, g)roup tasks, n)otes, o)ccasions and/or other t)asks. For example, `-o on` would show everything except occasions and notes and `-o !on` would show only occasions and notes.
 
 ### -s SUMMARY
 
@@ -181,7 +181,7 @@ Regular expression. Limit the display to items containing SUMMARY (ignoring case
 
 ### -S SEARCH
 
-Regular expression. Limit the display to items containing SEARCH (ignoring case) anywhere in the item or its file path. Prepend an exclamation mark, i.e., use !SEARCH rather than SEARCH, to limit the display to items which do NOT contain SEARCH in the item or its file path.
+Regular expression. Composite reports only. Limit the display to items containing SEARCH (ignoring case) anywhere in the item or its file path. Prepend an exclamation mark, i.e., use !SEARCH rather than SEARCH, to limit the display to items which do NOT contain SEARCH in the item or its file path.
 
 ### -t TAGS
 
