@@ -83,7 +83,7 @@ KEYWORD = _('Keyword')
 TAG = _('Tag')
 #----
 NOTE = _('Note')
-REPORT = _("Report")
+CUSTOM = _("Custom")
 
 CALENDARS = _("Calendars")
 
@@ -168,7 +168,7 @@ class App(Tk):
         # leaf: (parent, (option, [accelerator])
 
         self.outline_depths = {}
-        for view in KEYWORD, NOTE, PATH, REPORT:
+        for view in KEYWORD, NOTE, PATH, CUSTOM:
             # set all to the default
             logger.debug('Setting depth for {0} to {1}'.format(view, loop.options['outline_depth']))
             self.outline_depths[view] = loop.options['outline_depth']
@@ -580,9 +580,9 @@ class App(Tk):
         menubar.add_cascade(label=path, menu=toolsmenu, underline=0)
 
         # report
-        path = REPORT
+        path = CUSTOM
         self.add2menu(menu, (path, ))
-        reportmenu = Menu(menubar, tearoff=0)
+        self.custommenu = reportmenu = Menu(menubar, tearoff=0)
 
         self.rm_options = [[MAKE, 'm'],
                            [EXPORTTEXT, 't'],
@@ -603,7 +603,10 @@ class App(Tk):
             l = k.upper()
             c = k
 
-            reportmenu.add_command(label=label, underline=0, command=self.rm2cmd[k])
+            reportmenu.add_command(label=label, # accelerator=l,
+                                   underline=0, command=self.rm2cmd[k])
+            reportmenu.entryconfig(i, state="disabled")
+
 
         menubar.add_cascade(label=path, menu=reportmenu, underline=0)
 
@@ -714,8 +717,8 @@ class App(Tk):
         # report
         # self.reportbar = reportbar = Frame(self, padx=4, bd=2, relief="sunken", highlightbackground=BGCOLOR, background=BGCOLOR)
         self.box_value = StringVar()
-        self.report_box = ttk.Combobox(self, textvariable=self.box_value, font=self.tkfixedfont)
-        self.report_box.bind("<<ComboboxSelected>>", self.newselection)
+        self.custom_box = ttk.Combobox(self, textvariable=self.box_value, font=self.tkfixedfont)
+        self.custom_box.bind("<<ComboboxSelected>>", self.newselection)
         self.bind("<Return>", self.makeReport)
         self.bind("<Escape>", self.quit)
         self.bind("<Control-q>", self.quit)
@@ -729,9 +732,9 @@ class App(Tk):
             self.specs = [str(x).rstrip() for x in tmp if x.strip() and x[0] != "#"]
         logger.debug('specs: {0}'.format(self.specs))
         self.value_of_combo = self.specs[0]
-        self.report_box['values'] = self.specs
-        self.report_box.current(0)
-        self.report_box.configure(width=30, background=BGCOLOR, takefocus=False)
+        self.custom_box['values'] = self.specs
+        self.custom_box.current(0)
+        self.custom_box.configure(width=30, background=BGCOLOR, takefocus=False)
         # self.report_box.pack(side="left", padx=3, bd=2, relief="sunken", fill=X, expand=1)
 
         self.vm_options = [[AGENDA, 'a'],
@@ -743,7 +746,7 @@ class App(Tk):
                            [PATH, 'p'],
                            ['-',''],
                            [NOTE, 'n'],
-                           [REPORT, 'r'],
+                           [CUSTOM, 'c'],
                            ]
 
         self.view2cmd = {'a': self.agendaView,
@@ -752,7 +755,7 @@ class App(Tk):
                          'k': self.keywordView,
                          'n': self.noteView,
                          't': self.tagView,
-                         'r': self.reportView,
+                         'c': self.customView,
                          'w': self.showWeekly}
 
         self.view = self.vm_options[0][0]
@@ -896,13 +899,13 @@ class App(Tk):
         self.add2menu(EDIT, (_("Cancel"), "Escape"))
         self.add2menu(EDIT, (_("Save changes and close editor"), "Ctrl-W"))
 
-        self.add2menu(root, (REPORT, ))
-        self.add2menu(REPORT, (_("Create and display selected report"), "Return"))
-        self.add2menu(REPORT, (_("Export report in text format ..."), "Ctrl-T"))
-        self.add2menu(REPORT, (_("Export report in csv format ..."), "Ctrl-X"))
-        self.add2menu(REPORT, (_("Save changes to report specifications"), "Ctrl-W"))
-        self.add2menu(REPORT, (_("Expand report list"), "Down"))
-        self.add2menu(REPORT, (_("Quit"), "Escape"))
+        self.add2menu(root, (CUSTOM, ))
+        self.add2menu(CUSTOM, (_("Create and display selected report"), "Return"))
+        self.add2menu(CUSTOM, (_("Export report in text format ..."), "Ctrl-T"))
+        self.add2menu(CUSTOM, (_("Export report in csv format ..."), "Ctrl-X"))
+        self.add2menu(CUSTOM, (_("Save changes to report specifications"), "Ctrl-W"))
+        self.add2menu(CUSTOM, (_("Expand report list"), "Down"))
+        self.add2menu(CUSTOM, (_("Quit"), "Escape"))
 
         # start clock
         self.updateClock()
@@ -1528,9 +1531,10 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
     def tagView(self, e=None):
         self.setView(TAG)
 
-    def reportView(self, e=None):
+    def customView(self, e=None):
         # TODO: finish this
-        self.setView(REPORT)
+        self.content.delete("1.0", END)
+        self.setView(CUSTOM)
         pass
 
     def noteView(self, e=None):
@@ -1538,14 +1542,18 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
     def setView(self, view, row=None):
         self.rowSelected = None
-        if view == REPORT:
+        if view == CUSTOM:
             # self.reportbar.pack(side="top")
-            logger.debug('showing reportbar')
-            self.report_box.pack(side="top", fill="x", padx=3)
-            self.report_box.focus_set()
+            logger.debug('showing custom_box')
+            self.custom_box.pack(side="top", fill="x", padx=3)
+            self.custom_box.focus_set()
+            for i in range(len(self.rm_options)):
+                self.custommenu.entryconfig(i, state="normal")
         else:
-            logger.debug('removing reportbar')
-            self.report_box.forget()
+            logger.debug('removing custom_box')
+            self.custom_box.forget()
+            for i in range(len(self.rm_options)):
+                self.custommenu.entryconfig(i, state="disabled")
         if view != WEEK and self.weekly:
             self.closeWeekly()
         self.view = view
@@ -2909,7 +2917,8 @@ Relative dates and fuzzy parsing are supported.""")
             return True
         if self.mode == 'command':
             cmd = cmd.strip()
-            if cmd[0] in ['a', 'c']:
+            # if cmd[0] in ['a', 'c']:
+            if cmd[0] in ['a']:
                 # simple command history for report commands
                 if cmd in self.history:
                     self.history.remove(cmd)
@@ -3117,7 +3126,7 @@ or 0 to expand all branches completely.""")
                         self.id2date[int(parent)] = d
 
     def makeReport(self, event=None):
-        self.value_of_combo = self.report_box.get()
+        self.value_of_combo = self.custom_box.get()
         if not self.value_of_combo.strip():
             return
         try:
@@ -3132,7 +3141,7 @@ or 0 to expand all branches completely.""")
                 self.specs.append(self.value_of_combo)
                 self.specs.sort()
                 self.specs = [x for x in self.specs if x]
-                self.report_box["values"] = self.specs
+                self.custom_box["values"] = self.specs
                 self.modified = True
             logger.debug("spec: {0}".format(self.value_of_combo))
         except:
@@ -3145,7 +3154,7 @@ or 0 to expand all branches completely.""")
         # self.text.mark_set(INSERT, '1.0')
 
     def newselection(self, event=None):
-        self.value_of_combo = self.report_box.get()
+        self.value_of_combo = self.custom_box.get()
 
     def exportText(self):
         logger.debug("spec: {0}".format(self.value_of_combo))
@@ -3204,7 +3213,7 @@ or 0 to expand all branches completely.""")
             changed = SimpleEditor(parent=self, file=file, options=self.options, title='report_specifications').changed
             if changed:
                 logger.debug("saved: {0}".format(file))
-            self.report_box['values'] = self.specs
+            self.custom_box['values'] = self.specs
 
 
 loop = None

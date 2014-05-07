@@ -378,6 +378,9 @@ If the first (remaining) argument is one of the commands listed below, then
 execute the remaining arguments without opening the GUI.
 
     a ARG   display the agenda view using ARG, if given, as a filter.
+    c ARGS  display a custom view using the remaining arguments as the
+            specification. (Enclose ARGS in single quotes to prevent shell
+            expansion.)
     d ARG   display the day view using ARG, if given, as a filter.
     i ARGS  Create a new item using the remaining arguments as the item
             specification. (Enclose ARGS in single quotes to prevent shell
@@ -389,9 +392,6 @@ execute the remaining arguments without opening the GUI.
             Use ? m to display the numbered list of entries from this file.
     n ARG   display the notes view using ARG, if given, as a filter.
     p ARG   display the path view using ARG, if given, as a filter.
-    r ARGS  display a report using the remaining arguments as the report
-            specification. (Enclose ARGS in single quotes to prevent shell
-            expansion.)
     t ARG   display the tags view using ARG, if given, as a filter.
     v       display information about etm and the operating system.
     ? ARG   display (this) command line help information if ARGS = '' or,
@@ -2099,11 +2099,17 @@ to be tallied.
 
 Recursively process groups and accumulate the totals.
     """
+    # res = makeTree(list_of_tuples)
+    # print('res')
+    # for key in res:
+    #     print(key, res[key])
     if not options: options = {}
     if not max_level:
         max_level = len(list_of_tuples[0]) - 1
     level = -1
     global lst
+    global tree_hsh
+    root = "-"
     lst = []
     if 'action_template' in options:
         action_template = options['action_template']
@@ -2131,6 +2137,8 @@ Recursively process groups and accumulate the totals.
         g = tup[1:]
         t = tup[-1]
         lvl += 1
+        # print("leaf tup", lvl, tup)
+        # print('leaf row', row)
         row[lvl] = k
         row[-1] = t
         hsh = {}
@@ -2154,6 +2162,8 @@ Recursively process groups and accumulate the totals.
             hsh['hours'] = "%d:%02d" % (t[0] // 60, t[0] % 60)
         hsh['label'] = k
         lst.append(expand_template(action_template, hsh, complain=True))
+        print('leaf added', lst[-1], 'to', t)
+
         if len(g) >= 1:
             doLeaf(g, lvl)
 
@@ -2167,6 +2177,7 @@ Recursively process groups and accumulate the totals.
         hsh['indent'] = tab * lvl
         for k, g, t in group_sort(tuple_list):
             row[lvl] = k[-1]
+            # print("groups row", lvl, row[lvl])
             row[-1] = t
             hsh['count'] = len(g)
             hsh['minutes'] = t[0]  # only 2 digits after the decimal point
@@ -2184,15 +2195,22 @@ Recursively process groups and accumulate the totals.
 
             hsh['label'] = k[-1]
             lst.append(expand_template(action_template, hsh, complain=True))
+            print('group added', lst[-1], 'to', [x[0] for x in g])
             if len(g) > 1:
                 doGroups(g, lvl)
             else:
                 doLeaf(g[0], lvl)
 
     doGroups(list_of_tuples, level)
-    print(lst)
+    print('lst')
     for l in lst:
         print(l)
+    res = makeTree(list_of_tuples)
+    from pprint import pprint
+    print('res')
+
+    pprint(res)
+
     if export:
         return rows
         # return list_of_tuples
@@ -5536,7 +5554,7 @@ class ETMCmd():
             'm': self.do_m,
             'n': self.do_n,
             'p': self.do_p,
-            'r': self.do_r,
+            'c': self.do_c,
             't': self.do_t,
             'v': self.do_v,
         }
@@ -5550,7 +5568,7 @@ class ETMCmd():
             'm': self.help_m,
             'n': self.help_n,
             'p': self.help_p,
-            'r': self.help_r,
+            'c': self.help_c,
             't': self.help_t,
             'v': self.help_v,
         }
@@ -6168,11 +6186,11 @@ The item will be appended to the monthly file for the current month.\
     def help_q():
         return _('quit\n')
 
-    def do_r(self, arg):
-        logger.debug('report spec: {0}, {1}'.format(arg, type(arg)))
+    def do_c(self, arg):
+        logger.debug('custom spec: {0}, {1}'.format(arg, type(arg)))
         """report (non actions) specification"""
         if not arg:
-            self.help_r()
+            self.help_c()
             return ()
         text = getReportData(
             arg,
@@ -6184,13 +6202,13 @@ The item will be appended to the monthly file for the current month.\
         return text
 
     @staticmethod
-    def help_r():
+    def help_c():
         return _("""\
 Usage:
 
-    etm r <type> <groupby> [options]
+    etm c <type> <groupby> [options]
 
-Generate a report where type is either 'a' (action) or 'c' (composite).
+Generate a custom view where type is either 'a' (action) or 'c' (composite).
 Groupby can include *semicolon* separated date specifications and
 elements from:
     c context
@@ -6228,7 +6246,7 @@ Options include:
 
 Example:
 
-    etm r 'c ddd, MMM dd yyyy -b 1 -e +1/1'
+    etm c 'c ddd, MMM dd yyyy -b 1 -e +1/1'
 """)
 
     def do_d(self, arg_str):
