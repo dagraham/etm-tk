@@ -2409,7 +2409,7 @@ or 0 to display all changes.""").format(title)
                     logger.debug("active_date from id2date: {0}; {1}".format(self.active_date, self.tree.item(item)['text']))
                 else:
                     # we have an item
-                    self.active_date = parse(dt).date()
+                    self.active_date = dt.date()
                 logger.debug('active_date: {0}'.format(self.active_date))
             if hsh:
                 type_chr = hsh['itemtype']

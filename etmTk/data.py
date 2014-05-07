@@ -898,8 +898,8 @@ def calyear(advance=0, options=None):
                     cal[r + i].append('')
         for j in range(l):
             if python_version2:
-                ret.append((u'  %-20s    %-20s    %-20s' %
-                            (cal[r][j], cal[r + 1][j], cal[r + 2][j])).encode())
+                ret.append(s2or3(u'  %-20s    %-20s    %-20s' %
+                            (cal[r][j], cal[r + 1][j], cal[r + 2][j])))
             else:
                 ret.append((u'  %-20s    %-20s    %-20s' %
                             (cal[r][j], cal[r + 1][j], cal[r + 2][j])))
