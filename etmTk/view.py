@@ -170,10 +170,12 @@ class App(Tk):
         # leaf: (parent, (option, [accelerator])
 
         self.outline_depths = {}
-        for view in KEYWORD, NOTE, PATH, CUSTOM:
+        for view in KEYWORD, NOTE, PATH:
             # set all to the default
             logger.debug('Setting depth for {0} to {1}'.format(view, loop.options['outline_depth']))
             self.outline_depths[view] = loop.options['outline_depth']
+        # set CUSTOM to 0
+        self.outline_depths[CUSTOM] = 0
 
         self.panedwindow = panedwindow = PanedWindow(self, orient="vertical", sashwidth=6, sashrelief='flat')
         self.toppane = toppane = Frame(panedwindow, bd=0, highlightthickness=0, background=BGCOLOR)
@@ -3054,7 +3056,18 @@ or 0 to expand all branches completely.""")
         if not self.active_tree:
             return
         depth = self.outline_depths[self.view]
-        res = tree2Text(self.active_tree, depth=depth)
+        if loop.options:
+            if 'report_indent' in loop.options:
+                indent = loop.options['report_indent']
+            if 'report_width1' in loop.options:
+                width1 = loop.options['report_width1']
+            if 'report_width2' in loop.options:
+                width2 = loop.options['report_width2']
+        else:
+            indent = 4
+            width1 = 43
+            width2 = 20
+        res = tree2Text(self.active_tree, indent=indent, width1=width1, width2=width2, depth=depth)
         if not res[0][0]: res[0].pop(0)
         prompt = "\n".join(res[0])
         self.textWindow(parent=self, title='etm', opts=self.options, prompt=prompt, modal=False)
@@ -3130,6 +3143,7 @@ or 0 to expand all branches completely.""")
 
     def makeReport(self, event=None):
         if self.view != CUSTOM: return
+        self.outline_depths[CUSTOM] = 0
         self.value_of_combo = self.custom_box.get()
         if not self.value_of_combo.strip():
             return

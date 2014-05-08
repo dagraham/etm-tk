@@ -1960,7 +1960,6 @@ def tree2Html(tree, indent=2, width1=54, width2=20, colors=2):
     t2H(tree)
     return [x[indent:] for x in html_lst]
 
-
 def tree2Rst(tree, indent=2, width1=54, width2=14, colors=0,
              number=False, count=0, count2id=None):
     global text_lst
@@ -6387,8 +6386,20 @@ def main(etmdir='', argv=[]):
             tt = TimeIt(loglevel=2, label="cmd '{0}'".format(argstr))
             c.loadData()
             res = c.do_command(argstr)
+            if options:
+                if 'report_indent' in options:
+                    indent = options['report_indent']
+                if 'report_width1' in options:
+                    width1 = options['report_width1']
+                if 'report_width2' in options:
+                    width2 = options['report_width2']
+            else:
+                indent = 4
+                width1 = 43
+                width2 = 20
+
             if type(res) is dict:
-                res = "\n".join(tree2Text(res)[0])
+                res = "\n".join(tree2Text(res, indent=indent, width1=width1, width2=width2)[0])
             tt.stop()
 
             term_print(res)
