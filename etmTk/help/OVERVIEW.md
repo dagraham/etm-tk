@@ -223,6 +223,8 @@ In all views other than week view, pressing *S* will show a text verion of the c
 
 In custom view it is possible to export the current report in either text or CSV (comma separated values) format to a file of your choosing.
 
+Note. In custom view you need to remove the focus from the report specification entry field in order for the shortcuts *O*, *L* and *S* to work.
+
 In all views other than custom view and week view:
 
 - if an item is selected:

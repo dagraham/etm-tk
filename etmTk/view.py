@@ -170,7 +170,7 @@ class App(Tk):
         # leaf: (parent, (option, [accelerator])
 
         self.outline_depths = {}
-        for view in KEYWORD, NOTE, PATH:
+        for view in AGENDA, DAY, TAG, KEYWORD, NOTE, PATH:
             # set all to the default
             logger.debug('Setting depth for {0} to {1}'.format(view, loop.options['outline_depth']))
             self.outline_depths[view] = loop.options['outline_depth']
@@ -3033,7 +3033,7 @@ or 0 to expand all branches completely.""")
             if self.view == DAY and self.active_date:
                 self.scrollToDate(self.active_date)
             else:
-                if self.view in [KEYWORD, NOTE, PATH, CUSTOM]:
+                if self.view in [AGENDA, DAY, TAG, KEYWORD, NOTE, PATH]:
                     depth = self.outline_depths[self.view]
                     if depth == 0:
                         # expand all
