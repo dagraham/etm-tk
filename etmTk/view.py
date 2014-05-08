@@ -803,7 +803,7 @@ class App(Tk):
 
         self.fltr = Entry(topbar, textvariable=self.filterValue, width=14, highlightbackground=BGCOLOR, bg=BGCOLOR)
         self.fltr.pack(side="left", padx=0, expand=1, fill=X)
-        self.bindTop("<Escape>", self.clearFilter)
+        self.fltr.bind("<Escape>", self.clearFilter)
         self.fltr.bind("<FocusIn>", self.setFilter)
         self.filter_active = False
         self.viewmenu.entryconfig(6, state="normal")
