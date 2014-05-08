@@ -2974,7 +2974,7 @@ or 0 to expand all branches completely.""")
             return ()
         maxdepth = max([k for k in self.depth2id])
         logger.debug('expand2Depth {0}: {1}/{2}'.format(self.view, depth, maxdepth))
-        if self.view in [KEYWORD, NOTE, PATH]:
+        if self.view in [AGENDA, DAY, KEYWORD, NOTE, TAG, PATH, CUSTOM]:
             self.outline_depths[self.view] = depth
             logger.debug('outline_depths: {0}'.format(self.outline_depths))
         if depth == 0:
@@ -3019,6 +3019,7 @@ or 0 to expand all branches completely.""")
         self.count = 0
         self.count2id = {}
         self.active_tree = tree
+        self.depth2id = {}
         self.add2Tree(u'', tree[self.root], tree)
         loop.count2id = self.count2id
         self.tree.tag_configure('treefont', font=self.tktreefont)
@@ -3052,7 +3053,8 @@ or 0 to expand all branches completely.""")
     def popupTree(self, e=None):
         if not self.active_tree:
             return
-        res = tree2Text(self.active_tree)
+        depth = self.outline_depths[self.view]
+        res = tree2Text(self.active_tree, depth=depth)
         if not res[0][0]: res[0].pop(0)
         prompt = "\n".join(res[0])
         self.textWindow(parent=self, title='etm', opts=self.options, prompt=prompt, modal=False)
@@ -3086,17 +3088,8 @@ or 0 to expand all branches completely.""")
                 if len(text[1]) == 4:
                     uuid, item_type, col1, col3 = text[1]
                     dt = ''
-                elif len(text[1]) == 5:  # len 5 day view with datetime appended
+                else:  # len 5 day view with datetime appended
                     uuid, item_type, col1, col3, dt = text[1]
-                else:
-                    det = text[-1].split("!!")
-                    if len(det) == 2:
-                        col1, uuid = det
-                    else:
-                        col1 = det
-                        uuid = None
-                    col3 = dt = ''
-                    item_type = None
 
                 if item_type:
                     # This hack avoids encoding issues under python 2
@@ -3200,9 +3193,7 @@ or 0 to expand all branches completely.""")
             self.loop.options,
             export=False)
         res = tree2Text(tree)
-        print(res)
         text = "\n".join([x for x in tree2Text(tree)[0]])
-        print(text)
         fileops = {'defaultextension': '.text',
                    'filetypes': [('text files', '.text')],
                    'initialdir': self.options['etmdir'],

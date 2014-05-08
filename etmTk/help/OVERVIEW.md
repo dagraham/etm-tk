@@ -219,7 +219,9 @@ In all views other than week view, pressing *O* will open a dialog to choose the
 
 In all views other than week view, pressing *L* will toggle the display of a column displaying item *labels* where, for example, an item with @a, @d and @u fields would have the label "adu".
 
-In all views other than week view, pressing *S* will show a text verion of the current display suitable for copy and paste.
+In all views other than week view, pressing *S* will show a text verion of the current display suitable for copy and paste. The text version will respect the current outline depth in the view.
+
+In custom view it is possible to export the current report in either text or CSV (comma separated values) format to a file of your choosing.
 
 In all views other than custom view and week view:
 

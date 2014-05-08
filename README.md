@@ -28,10 +28,10 @@
 </tr>
 <tr>
     <td>
-    <center><img src="images/report-a.gif"/></a></center>
+    <center><img src="images/custom0.gif"/></a></center>
     </td>
     <td>
-    <center><img src="images/report-d3.gif"/></a></center
+    <center><img src="images/custom3.gif"/></a></center
     </td>
 </tr>
 <tr>

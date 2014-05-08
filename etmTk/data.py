@@ -1361,6 +1361,7 @@ def get_options(d=''):
         else:
             logger.warn('could not setup "git" vcs')
             options['vcs'] = {}
+            options['vcs_system'] = ''
     elif options['vcs_system'] == 'mercurial':
         if hg_command:
             options['vcs'] = {'command': hg_command, 'history': hg_history, 'commit': hg_commit, 'init': hg_init, 'dir': '.hg', 'limit': '-l', 'file': ' -f '}
@@ -1370,6 +1371,7 @@ def get_options(d=''):
         else:
             logger.warn('could not setup "mercurial" vcs')
             options['vcs'] = {}
+            options['vcs_system'] = ''
     else:
         options['vcs_system'] = ''
         options['vcs'] = {}
@@ -2013,7 +2015,7 @@ def tree2Rst(tree, indent=2, width1=54, width2=14, colors=0,
 
 
 def tree2Text(tree, indent=4, width1=43, width2=20, colors=0,
-              number=False, count=0, count2id=None):
+              number=False, count=0, count2id=None, depth=0):
     global text_lst
     args = [count, count2id]
     text_lst = []
@@ -2024,6 +2026,7 @@ def tree2Text(tree, indent=4, width1=43, width2=20, colors=0,
     tab = " " * indent
 
     def t2H(tree_hsh, node=('', '_'), level=0):
+        if depth and level > depth: return
         # logger.debug("node: {0}".format(node))
         if args[1] is None:
             args[1] = {}
@@ -2195,18 +2198,24 @@ Recursively process groups and accumulate the totals.
             if len(head) == max_level:
                 auglst.append(head)
             if len(g) > 1:
-                # print('calling doGroups', lvl)
                 doGroups(g, lvl)
             else:
-                # print('calling doLeaf', lvl)
                 doLeaf(g[0], lvl)
 
     doGroups(list_of_tuples, level)
-    res = makeTree(auglst)
+
+    for i in range(len(auglst)):
+        if type(auglst[i][-1]) is str:
+            summary, uuid = auglst[i][-1].split('!!')
+            auglst[i][-1] = tuple((uuid, 'ac', summary, ''))
+    res = makeTree(auglst, sort=False)
 
     if export:
+        for i in range(len(rows)):
+            # remove the uuid from the summary
+            summary = rows[i][-2].split('!!')[0]
+            rows[i][-2] = summary
         return rows
-        # return list_of_tuples
     else:
         return res
 
@@ -3710,7 +3719,8 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
                 item.append((tup[-1], tup[-4], setSummary(hsh, parse(dtl)), dt, etmdt))
                 items.append(item)
         else:  # action report
-            item.append("{0}!!{1}".format(setSummary(hsh, parse(dt)), uuid))
+            summary = format(setSummary(hsh, parse(dt)))
+            item.append("{0}!!{1}".format(summary, uuid))
             temp = []
             temp.extend(timeValue(hsh, options))
             temp.extend(expenseCharge(hsh, options))
@@ -3747,8 +3757,6 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
                 lst = tallyByGroup(
                     items, max_level=depth, options=options, export=True)
                 for row in lst:
-                    # if not row:
-                    #     continue
                     tup = [x for x in list(row.pop(-1))]
                     row.extend(tup)
                     data.append(row)
