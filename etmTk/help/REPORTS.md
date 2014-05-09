@@ -139,7 +139,7 @@ Regular expression. Limit the display to items with contexts matching CONTEXT (i
 
 ### -d DEPTH
 
-CLI only. The default, `-d 0`, includes all outline levels. Use `-d 1` to include only level 1, `-d 2` to include levels 1 and 2 and so forth.
+The default, `-d 0`, includes all outline levels. Use `-d 1` to include only level 1, `-d 2` to include levels 1 and 2 and so forth. This setting applies to the CLI only. In the GUI use the command *set outline depth*.
 
 For example, modifying the report above by adding `-d 3` would give the
 following:

@@ -453,7 +453,7 @@ The directories `monthly` and `2012` and the file `10.txt` would, if necessary, 
 
     outline_depth: 2
 
-The default outline depth to use when opening keyword, note or path view. Once a view is opened, use Ctrl-O to change the depth for that view.
+The default outline depth to use when opening keyword, note, path or tag view. Once any view is opened, use Ctrl-O to change the depth for that view.
 
 ### report
 
@@ -470,7 +470,7 @@ Report begin and end are fuzzy parsed dates specifying the default period for re
     c ddd MMM d yyyy
     c f
 
-In the reports dialog these appear in the report specifications pop-up list. A specification from the list can be selected and, perhaps, modified or an entirely new specification can be entered. See the *Reports* tab for details. See also the *agenda* settings above.
+In custom view these appear in the report specifications pop-up list. A specification from the list can be selected and, perhaps, modified or an entirely new specification can be entered. See [Reports](#reports) for details. See also the [agenda](#agenda) settings above.
 
 ### show_finished
 

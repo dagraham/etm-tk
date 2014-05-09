@@ -474,11 +474,6 @@ def init_localization():
     trans = gettext.NullTranslations()
     trans.install()
 
-
-def run_cmd(cmd):
-    os.system(cmd)
-
-
 def d_to_str(d, s):
     for key, val in qt2dt:
         s = s.replace(key, val)
@@ -710,21 +705,25 @@ cwd = os.getcwd()
 def pathSearch(filename):
     search_path = os.getenv('PATH').split(os.pathsep)
     for path in search_path:
-        candidate = os.path.join(path, filename)
-        if os.path.os.path.isfile(candidate):
-            return os.path.abspath(candidate)
+        candidate = os.path.normpath(os.path.join(path, filename))
+        logger.debug('checking for: {0}'.format(candidate))
+        if os.path.isfile(candidate):
+            # return os.path.abspath(candidate)
+            return candidate
     return ''
 
 
 def getMercurial():
-    hg = pathSearch('hg')
+    if windoz:
+        hg = pathSearch('hg.exe')
+    else:
+        hg = pathSearch('hg')
     if hg:
         logger.debug('found hg: {0}'.format(hg))
-        base_command = """%s -R {work}""" % hg
-        history_command = """\
-%s log --style compact --template "{desc}\\n" -R {work} -p {numchanges} {file}""" % hg
-        commit_command = '%s commit -q -A -R {work} -m "{mesg}"' % hg
-        init = '%s init {work}' % hg
+        base_command = "hg -R {work}"
+        history_command = 'hg log --style compact --template "{desc}\\n" -R {work} -p {numchanges} {file}'
+        commit_command = 'hg commit -q -A -R {work} -m "{mesg}"'
+        init = 'hg init {work}'
         init_command = "%s; %s" % (init, commit_command)
         logger.debug('hg base_command: {0}; history_command: {1}; commit_command: {2}; init_command: {3}'.format(base_command, history_command, commit_command, init_command))
     else:
@@ -733,16 +732,17 @@ def getMercurial():
     return base_command, history_command, commit_command, init_command
 
 def getGit():
-    git = pathSearch('git')
+    if windoz:
+        git = pathSearch('git.exe')
+    else:
+        git = pathSearch('git')
     if git:
         logger.debug('found git: {0}'.format(git))
-        base_command = """%s --git-dir {repo} --work-tree {work}""" % git
-        history_command = """\
-%s --git-dir {repo} --work-tree {work} log --pretty=format:'- %%ai %%an: %%s' -U0 {numchanges} {file}\
-        """ % git
-        init = '%s init {work}' % git
-        add = '%s --git-dir {repo} --work-tree {work} add */\*.txt > /dev/null'  % git
-        commit = '%s --git-dir {repo} --work-tree {work} commit -a -m "{mesg}" > /dev/null' % git
+        base_command = "git --git-dir {repo} --work-tree {work}"
+        history_command = "git --git-dir {repo} --work-tree {work} log --pretty=format:'- %%ai %%an: %%s' -U0 {numchanges} {file}"
+        init = 'git init {work}'
+        add = 'git --git-dir {repo} --work-tree {work} add */\*.txt > /dev/null'
+        commit = 'git --git-dir {repo} --work-tree {work} commit -a -m "{mesg}" > /dev/null'
         commit_command = '%s && %s' % (add, commit)
         init_command = '%s; %s; %s' % (init, add, commit)
         logger.debug('git base_command: {0}; history_command: {1}; commit_command: {2}; init_command: {3}'.format(base_command, history_command, commit_command, init_command))
@@ -1370,7 +1370,7 @@ def get_options(d=''):
             options['vcs_system'] = ''
     elif options['vcs_system'] == 'mercurial':
         if hg_command:
-            options['vcs'] = {'command': hg_command, 'history': hg_history, 'commit': hg_commit, 'init': hg_init, 'dir': '.hg', 'limit': '-l', 'file': ' -f '}
+            options['vcs'] = {'command': hg_command, 'history': hg_history, 'commit': hg_commit, 'init': hg_init, 'dir': '.hg', 'limit': '-l', 'file': ''}
             repo = os.path.normpath(os.path.join(options['datadir'], options['vcs']['dir']))
             work = options['datadir']
             # logger.debug('{0} options: {1}'.format(options['vcs_system'], options['vcs']))
@@ -1465,7 +1465,8 @@ def get_options(d=''):
             # work = (options['vcs']['work'])
             command = init.format(work=options['vcs']['work'], repo=options['vcs']['repo'], mesg="initial commit")
             logger.debug('initializing vcs: {0}'.format(command))
-            run_cmd(command)
+            # run_cmd(command)
+            subprocess.call(command, shell=True)
 
     if use_locale:
         locale.setlocale(locale.LC_ALL, map(str, use_locale[0]))
@@ -3247,10 +3248,10 @@ def str2opts(s, options=None):
             value = unicode(part[1:].strip())
             if value[0] == '!':
                 filters['search-all'] = (False, re.compile(r'%s' % value[1:],
-                                                       re.IGNORECASE))
+                                                       re.IGNORECASE|re.DOTALL))
             else:
                 filters['search-all'] = (True, re.compile(r'%s' % value,
-                                                      re.IGNORECASE))
+                                                      re.IGNORECASE|re.DOTALL))
         elif key == 'd':
             if grpby['report'] == 'a':
                 d = int(part[1:])
@@ -4455,7 +4456,11 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
         # we need a context for due view and a keyword for keyword view
 
         if 'c' not in hsh:
-            hsh['c'] = ''
+            if 's' not in hsh and hsh['itemtype'] in [u'+', u'-', u'%']:
+                # undated task
+                hsh['c'] = '~'
+            else:
+                hsh['c'] = ''
 
         if 'k' not in hsh:
             hsh['k'] = '~'
@@ -5800,7 +5805,7 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
         cmd = expand_template(self.editcmd, hsh)
         msg = True
         while msg:
-            os.system(cmd)
+            subprocess.call(cmd, shell=True)
             # check the item
             fo = codecs.open(self.tmpfile, 'r', file_encoding)
             lines = [unicode(u'%s') % x.rstrip() for x in fo.readlines()]
@@ -5839,7 +5844,7 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
                     repo=self.options['vcs']['repo'],
                     work=self.options['vcs']['work'],
                     mesg=mesg)
-            os.system(cmd)
+            subprocess.call(cmd, shell=True)
             logger.debug("executed vcs commit command:\n    {0}".format(cmd))
         return True
 

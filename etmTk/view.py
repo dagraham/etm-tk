@@ -170,11 +170,12 @@ class App(Tk):
         # leaf: (parent, (option, [accelerator])
 
         self.outline_depths = {}
-        for view in AGENDA, DAY, TAG, KEYWORD, NOTE, PATH:
+        for view in DAY, TAG, KEYWORD, NOTE, PATH:
             # set all to the default
             logger.debug('Setting depth for {0} to {1}'.format(view, loop.options['outline_depth']))
             self.outline_depths[view] = loop.options['outline_depth']
         # set CUSTOM to 0
+        self.outline_depths[AGENDA] = 0
         self.outline_depths[CUSTOM] = 0
 
         self.panedwindow = panedwindow = PanedWindow(self, orient="vertical", sashwidth=6, sashrelief='flat')
@@ -1337,7 +1338,7 @@ The local timezone is used when none is given."""
             else:
                 self.tree.focus_set()
         logger.debug('ending editItem')
-        return "break"
+        return
 
     def editFile(self, e=None, file=None, config=False):
         if e and e.char not in ["F", "E", "C", "R", "S"]:
@@ -2057,7 +2058,6 @@ Enter the shortest time period you want displayed in minutes.""")
         self.canvas.tag_lower('current_day')
         self.canvas.tag_raise('current_time')
         if id in self.busyHsh:
-
             self.OnSelect(uuid=self.busyHsh[id][-4], dt=self.busyHsh[id][-1])
 
     def setFocus(self, e):
@@ -2298,7 +2298,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
         if self.itemSelected:
             f = self.itemSelected['fileinfo'][0]
-            fn = " {0}{1}".format(self.options['vcs']['file'], os.path.normpath(os.path.join(self.options['datadir'], f)))
+            fn = ' {0}{1}'.format(self.options['vcs']['file'], os.path.normpath(os.path.join(self.options['datadir'], f)))
             title = _("Showing changes for {0}.").format(f)
 
         else:
@@ -2330,13 +2330,13 @@ or 0 to display all changes.""").format(title)
             numchanges=numstr, rev="{rev}", desc="{desc}", file=fn)
         logger.debug('vcs history command: {0}'.format(command))
         tt = TimeIt(loglevel=2, label="showChanges")
-        p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True,
-                             universal_newlines=True).stdout.read()
+        s = subprocess.check_output(command, shell=True, universal_newlines=True)
         tt.stop()
+        p = s2or3(s)
         if not p:
             p = 'no output from command:\n    {0}'.format(command)
 
-        p = "\n".join(x for x in p.split('\n') if not (x.startswith('index') or x.startswith('diff') or x.startswith('\ No newline')))
+        p = "\n".join([x for x in p.split('\n') if not (x.startswith('index') or x.startswith('diff') or x.startswith('\ No newline'))])
 
         self.textWindow(parent=self, title=title, prompt=str(p), opts=self.options)
 
@@ -2469,7 +2469,7 @@ or 0 to display all changes.""").format(title)
         self.content.insert(INSERT, text)
         self.update_idletasks()
         logger.debug('ending OnSelect')
-        return "break"
+        return
 
     def OnActivate(self, event):
         """
