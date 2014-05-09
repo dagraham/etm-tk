@@ -734,7 +734,6 @@ class App(Tk):
             with open(rf) as fo:
                 tmp = fo.readlines()
             self.specs = [str(x).rstrip() for x in tmp if x.strip() and x[0] != "#"]
-        logger.debug('specs: {0}'.format(self.specs))
         self.value_of_combo = self.specs[0]
         self.custom_box['values'] = self.specs
         self.custom_box.current(0)

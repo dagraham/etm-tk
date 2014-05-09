@@ -35,11 +35,8 @@
     </td>
 </tr>
 <tr>
-    <td>
-    <center><img src="images/report-text.gif"/></a></center>
-    </td>
-    <td>
-    <center><img src="images/report-csv.gif"/></a></center>
+    <td colspan=2>
+    <center><img src="images/customCSV.gif"/></a></center>
     </td>
 </tr>
 </table>

@@ -719,19 +719,23 @@ def pathSearch(filename):
 def getMercurial():
     hg = pathSearch('hg')
     if hg:
+        logger.debug('found hg: {0}'.format(hg))
         base_command = """%s -R {work}""" % hg
         history_command = """\
 %s log --style compact --template "{desc}\\n" -R {work} -p {numchanges} {file}""" % hg
         commit_command = '%s commit -q -A -R {work} -m "{mesg}"' % hg
         init = '%s init {work}' % hg
         init_command = "%s; %s" % (init, commit_command)
+        logger.debug('hg base_command: {0}; history_command: {1}; commit_command: {2}; init_command: {3}'.format(base_command, history_command, commit_command, init_command))
     else:
+        logger.debug('could not find hg in path')
         base_command = history_command = commit_command = init_command = ''
     return base_command, history_command, commit_command, init_command
 
 def getGit():
     git = pathSearch('git')
     if git:
+        logger.debug('found git: {0}'.format(git))
         base_command = """%s --git-dir {repo} --work-tree {work}""" % git
         history_command = """\
 %s --git-dir {repo} --work-tree {work} log --pretty=format:'- %%ai %%an: %%s' -U0 {numchanges} {file}\
@@ -741,7 +745,9 @@ def getGit():
         commit = '%s --git-dir {repo} --work-tree {work} commit -a -m "{mesg}" > /dev/null' % git
         commit_command = '%s && %s' % (add, commit)
         init_command = '%s; %s; %s' % (init, add, commit)
+        logger.debug('git base_command: {0}; history_command: {1}; commit_command: {2}; init_command: {3}'.format(base_command, history_command, commit_command, init_command))
     else:
+        logger.debug('could not find git in path')
         base_command = history_command = commit_command = init_command = ''
     return base_command, history_command, commit_command, init_command
 
@@ -1357,7 +1363,7 @@ def get_options(d=''):
             options['vcs'] = {'command': git_command, 'history': git_history, 'commit': git_commit, 'init': git_init, 'dir': '.git', 'limit': '-n', 'file': ""}
             repo = os.path.normpath(os.path.join(options['datadir'], options['vcs']['dir']))
             work = options['datadir']
-            logger.debug('{0} options: {1}'.format(options['vcs_system'], options['vcs']))
+            # logger.debug('{0} options: {1}'.format(options['vcs_system'], options['vcs']))
         else:
             logger.warn('could not setup "git" vcs')
             options['vcs'] = {}
@@ -1367,7 +1373,7 @@ def get_options(d=''):
             options['vcs'] = {'command': hg_command, 'history': hg_history, 'commit': hg_commit, 'init': hg_init, 'dir': '.hg', 'limit': '-l', 'file': ' -f '}
             repo = os.path.normpath(os.path.join(options['datadir'], options['vcs']['dir']))
             work = options['datadir']
-            logger.debug('{0} options: {1}'.format(options['vcs_system'], options['vcs']))
+            # logger.debug('{0} options: {1}'.format(options['vcs_system'], options['vcs']))
         else:
             logger.warn('could not setup "mercurial" vcs')
             options['vcs'] = {}
@@ -1387,6 +1393,7 @@ def get_options(d=''):
         options['vcs']['repo'] = repo
         options['vcs']['work'] = work
 
+    logger.info('using vcs {0}; options: {1};'.format(options['vcs_system'], options['vcs']))
 
     (options['daybegin_fmt'], options['dayend_fmt'], options['reprtimefmt'],
      options['reprdatetimefmt'], options['etmdatetimefmt'],
