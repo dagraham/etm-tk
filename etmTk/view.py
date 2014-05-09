@@ -3189,12 +3189,9 @@ or 0 to expand all branches completely.""")
             changed = SimpleEditor(parent=self, file=file, options=self.options, title='report_specifications').changed
             if changed:
                 logger.debug("saved: {0}".format(file))
-            self.box['values'] = self.specs
-        self.specsModified = False
+                self.specsModified = False
+                self.custom_box['values'] = self.specs
 
-        # self.text.delete('1.0', END)
-        # self.text.insert(INSERT, text)
-        # self.text.mark_set(INSERT, '1.0')
 
     def exportText(self):
         if self.view != CUSTOM: return
