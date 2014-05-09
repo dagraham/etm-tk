@@ -1393,7 +1393,16 @@ def get_options(d=''):
         options['vcs']['repo'] = repo
         options['vcs']['work'] = work
 
-    logger.info('using vcs {0}; options: {1};'.format(options['vcs_system'], options['vcs']))
+    if options['vcs']:
+        vcs_lst = []
+        keys = [x for x in options['vcs'].keys()]
+        keys.sort()
+        for key in keys:
+            vcs_lst.append("{0}: {1}".format(key, options['vcs'][key]))
+        vcs_str = "\n      ".join(vcs_lst)
+    else:
+        vcs_str = ""
+    logger.info('using vcs {0}; options:\n      {1}'.format(options['vcs_system'], vcs_str))
 
     (options['daybegin_fmt'], options['dayend_fmt'], options['reprtimefmt'],
      options['reprdatetimefmt'], options['etmdatetimefmt'],
@@ -5817,10 +5826,9 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
 
     def commit(self, file, mode=""):
         if self.options['vcs_system']:
-            # hack to avoid unicode in .format() for python 2
-            # rf = relpath(file, self.options['datadir'])
             mesg = u"{0}".format(mode)
             if python_version == 2 and type(mesg) == unicode:
+                # hack to avoid unicode in .format() for python 2
                 cmd = self.options['vcs']['commit'].format(
                     repo=self.options['vcs']['repo'],
                     work=self.options['vcs']['work'],
@@ -5831,8 +5839,8 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
                     repo=self.options['vcs']['repo'],
                     work=self.options['vcs']['work'],
                     mesg=mesg)
-            logger.debug("vcs commit command: {0}".format(cmd))
             os.system(cmd)
+            logger.debug("executed vcs commit command:\n    {0}".format(cmd))
         return True
 
     def safe_save(self, file, s, mode="", cli=False):
