@@ -739,7 +739,7 @@ def getGit():
     if git:
         logger.debug('found git: {0}'.format(git))
         base_command = "git --git-dir {repo} --work-tree {work}"
-        history_command = "git --git-dir {repo} --work-tree {work} log --pretty=format:'- %%ai %%an: %%s' -U0 {numchanges} {file}"
+        history_command = "git --git-dir {repo} --work-tree {work} log --pretty=format:'- %ai %an: %s' -U0 {numchanges} {file}"
         init = 'git init {work}'
         add = 'git --git-dir {repo} --work-tree {work} add */\*.txt > /dev/null'
         commit = 'git --git-dir {repo} --work-tree {work} commit -a -m "{mesg}" > /dev/null'
