@@ -2507,6 +2507,7 @@ For editing one or more, but not all, instances of an item. Needed:
 3. Add &f datetime to selected job.
     """
     if not options: options = {}
+    msg = []
     if '_summary' not in hsh:
         hsh['_summary'] = ''
     if '_group_summary' in hsh:
@@ -2516,6 +2517,12 @@ For editing one or more, but not all, instances of an item. Needed:
             hsh['i'] = hsh['i'].split(':')[0]
     else:
         sl = ["%s %s" % (hsh['itemtype'], hsh['_summary'])]
+    bad_keys = [x for x in hsh.keys() if x[0] != '_' and x not in item_keys + ['entry', 'fileinfo', 'itemtype']]
+    if bad_keys:
+        omitted = []
+        for key in bad_keys:
+            omitted.append('@{0} {1}'.format(key, hsh[key]))
+        msg.append("unknown keys: {0}".format(", ".join(omitted)))
     for key in item_keys:
         amp_key = None
         if key == 'a' and '_a' in hsh:
@@ -2596,7 +2603,7 @@ For editing one or more, but not all, instances of an item. Needed:
                 sl.append("\n  @f %s" % (',\n       '.join(tmp)))
             else:
                 sl.append("%s@%s %s" % (prefix, key, lst2str(value)))
-    return " ".join(sl)
+    return " ".join(sl), msg
 
 
 def process_all_datafiles(options):
@@ -3801,6 +3808,7 @@ def str2hsh(s, uid=None, options=None):
         hsh = {}
         alerts = []
         at_parts = at_regex.split(s)
+        logger.debug('at_parts: {0}'.format(at_parts))
         head = at_parts.pop(0).strip()
         if head and head[0] in type_keys:
             itemtype = unicode(head[0])
@@ -3971,7 +3979,6 @@ def str2hsh(s, uid=None, options=None):
 
                     job['f'] = [(done, due)]
                     hsh['j'][i] = job
-
         for k, v in hsh.items():
             if type(v) in [datetime, timedelta]:
                 pass
@@ -3987,6 +3994,7 @@ def str2hsh(s, uid=None, options=None):
                 hsh['r'] = {'f': 'l'}
                 # skip one time and handle with finished, begin and pastdue
         msg.extend(checkhsh(hsh))
+        logger.debug('checked hsh: {0}'.format(hsh))
         if msg:
             return hsh, msg
         if 'p' in hsh:
@@ -4017,6 +4025,7 @@ def str2hsh(s, uid=None, options=None):
         fio = StringIO()
         logger.exception('exception procsessing "{0}"'.format(s))
         msg.append(fio.getvalue())
+    logger.debug('returning hsh: {0}; msg: {1}'.format(hsh, msg))
     return hsh, msg
 
 
@@ -5838,7 +5847,7 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
                 if rep.lower() == 'n':
                     term_print(_('canceled'))
                     return [], {}
-        item = unicode(u"{0}".format(hsh2str(new_hsh, self.options)))
+        item = unicode(u"{0}".format(hsh2str(new_hsh, self.options)[0]))
         lines = item.split('\n')
         return lines, new_hsh
 
@@ -6035,7 +6044,7 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
         # self.loadData()
 
     def replace_item(self, new_hsh):
-        new_item = hsh2str(new_hsh, self.options)
+        new_item, msg = hsh2str(new_hsh, self.options)
         logger.debug(new_item)
         newlines = new_item.split('\n')
         f, begline, endline = new_hsh['fileinfo']
@@ -6050,7 +6059,7 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
     def append_item(self, new_hsh, file, cli=False):
         """
         """
-        new_item = hsh2str(new_hsh, self.options)
+        new_item, msg = hsh2str(new_hsh, self.options)
         old_items = getFileItems(file, self.options['datadir'], False)
         items = [u'%s' % x[0].rstrip() for x in old_items if x[0].strip()]
         items.append(new_item)

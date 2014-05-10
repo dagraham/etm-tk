@@ -232,13 +232,13 @@ class SimpleEditor(Toplevel):
                 self.edithsh = self.newhsh
                 if ('fileinfo' in newhsh and newhsh['fileinfo']):
                     initfile = newhsh['fileinfo'][0]
-                text = hsh2str(self.edithsh, self.options)
+                text, msg = hsh2str(self.edithsh, self.options)
             elif newhsh is None: # rephsh
                 # we are editing and replacing rephsh - no file prompt
                 self.mode = 2
                 # self.repinfo = rephsh['fileinfo']
                 self.edithsh = self.rephsh
-                text = hsh2str(self.edithsh, self.options)
+                text, msg = hsh2str(self.edithsh, self.options)
             else:  # neither is None
                 # we are changing some instances of a repeating item
                 # we will be writing but not editing rephsh using its fileinfo
@@ -248,7 +248,7 @@ class SimpleEditor(Toplevel):
                 # self.repinfo = rephsh['fileinfo']
                 if 'fileinfo' in newhsh and newhsh['fileinfo'][0]:
                     initfile = self.newhsh['fileinfo'][0]
-                text = hsh2str(self.edithsh, self.options)
+                text, msg = hsh2str(self.edithsh, self.options)
 
             logger.debug('mode: {0}; initfile: {1}; edit: {2}'.format(self.mode,  self.initfile,  self.edithsh))
         # logger.debug("setting text {0}:\n{1}".format(type(text), text))
@@ -479,6 +479,21 @@ class SimpleEditor(Toplevel):
         reps = []
         error = False
         hsh, msg = str2hsh(text, options=self.options)
+
+        if not msg:
+            # we have a good hsh
+
+            if self.edithsh and 'fileinfo' in self.edithsh:
+                fileinfo = self.edithsh['fileinfo']
+                self.edithsh = hsh
+                self.edithsh['fileinfo'] = fileinfo
+            else:
+                # we have a new item without fileinfo
+                self.edithsh = hsh
+            # update missing fields
+            logger.debug('calling hsh2str with {0}'.format(hsh))
+            str, msg = hsh2str(hsh, options=self.options)
+
         self.loop.messages.extend(msg)
         if self.loop.messages:
             messages = "{0}".format("\n".join(self.loop.messages))
@@ -486,17 +501,7 @@ class SimpleEditor(Toplevel):
             self.messageWindow(MESSAGES, messages, opts=self.options)
             return False
 
-        # we have a good hsh
-        if self.edithsh and 'fileinfo' in self.edithsh:
-            fileinfo = self.edithsh['fileinfo']
-            self.edithsh = hsh
-            self.edithsh['fileinfo'] = fileinfo
-        else:
-            # we have a new item without fileinfo
-            self.edithsh = hsh
-        # update missing fields
-        str = hsh2str(hsh, options=self.options)
-        logger.debug("str: {0}".format(str))
+        logger.debug("back from hsh2str with: {0}".format(str))
         if str != text:
             self.settext(str)
         if 'r' in hsh and showreps:
