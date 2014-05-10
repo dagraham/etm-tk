@@ -121,6 +121,10 @@ class End(object):
 # Singleton terminator node
 NIL = Node(End(), [], [])
 
+# default for items without a tag or keyword entry
+NONE = '~~~'
+
+
 class IndexableSkiplist:
     """Sorted collection supporting O(lg n) insertion, removal, and lookup by rank."""
 
@@ -387,10 +391,10 @@ execute the remaining arguments without opening the GUI.
             positive integer, to display a report using the corresponding
             entry from the file given by report_specifications in etmtk.cfg.
             Use ? m to display the numbered list of entries from this file.
-    n ARGS  Create a new item using the remaining arguments as the item
+    n ARG   display the notes view using ARG, if given, as a filter.
+    N ARGS  Create a new item using the remaining arguments as the item
             specification. (Enclose ARGS in single quotes to prevent shell
             expansion.)
-    N ARG   display the notes view using ARG, if given, as a filter.
     p ARG   display the path view using ARG, if given, as a filter.
     t ARG   display the tags view using ARG, if given, as a filter.
     v       display information about etm and the operating system.
@@ -1226,7 +1230,7 @@ def get_options(d=''):
 
         # 'monthly': os.path.join('personal', 'monthly'),
         'monthly': 'monthly',
-        'outline_depth': 2,
+        'outline_depth': 0,
         'report_begin': '1',
         'report_end': '+1/1',
         'report_colors': 2,
@@ -1304,7 +1308,7 @@ def get_options(d=''):
     # logger.debug("user_options: {0}".format(user_options))
 
     for key in default_options:
-        if key in ['show_finished', 'fontsize_fixed', 'fontsize_tree']:
+        if key in ['show_finished', 'fontsize_fixed', 'fontsize_tree', 'outline_depth']:
             if key not in user_options:
                 # we want to allow 0 as an entry
                 options[key] = default_options[key]
@@ -2110,10 +2114,6 @@ to be tallied.
 
 Recursively process groups and accumulate the totals.
     """
-    # res = makeTree(list_of_tuples)
-    # print('res')
-    # for key in res:
-    #     print(key, res[key])
     if not options: options = {}
     if not max_level:
         max_level = len(list_of_tuples[0]) - 1
@@ -2151,8 +2151,6 @@ Recursively process groups and accumulate the totals.
         g = tup[1:]
         t = tup[-1]
         lvl += 1
-        # print("leaf tup", lvl, tup)
-        # print('leaf row', row)
         row[lvl] = k
         row[-1] = t
         hsh = {}
@@ -4455,18 +4453,19 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
         typ = type2Str[hsh['itemtype']]
         # we need a context for due view and a keyword for keyword view
 
-        if 'c' not in hsh:
-            if 's' not in hsh and hsh['itemtype'] in [u'+', u'-', u'%']:
-                # undated task
-                hsh['c'] = '~'
-            else:
-                hsh['c'] = ''
+        if hsh['itemtype'] != '#':
+            if 'c' not in hsh:
+                if 's' not in hsh and hsh['itemtype'] in [u'+', u'-', u'%']:
+                    # undated task
+                    hsh['c'] = NONE
+                else:
+                    hsh['c'] = NONE
 
-        if 'k' not in hsh:
-            hsh['k'] = '~'
+            if 'k' not in hsh:
+                hsh['k'] = NONE
 
-        if 't' not in hsh:
-            hsh['t'] = ['~']
+            if 't' not in hsh:
+                hsh['t'] = [NONE]
 
         # if 'z' in hsh and 'local_timezone' in options and hsh['z'] == options['local_timezone']:
         #     hsh['_z'] = "~"
@@ -4546,7 +4545,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                      hsh['_summary'], f), tuple(folders),
                     (uid, typ, setSummary(hsh, due), time_str, dtl)]
                 items.append(item)
-                if 'k' in hsh and hsh['k'] != 'none':
+                if 'k' in hsh and hsh['itemtype'] != '#':
                     keywords = [x.strip() for x in hsh['k'].split(':')]
                     item = [
                         ('keyword', (hsh['k'], tstr2SCI[typ][0]),
@@ -4554,7 +4553,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         (uid, typ,
                          setSummary(hsh, due), time_str, dtl)]
                     items.append(item)
-                if 't' in hsh:
+                if 't' in hsh and hsh['itemtype'] != "#":
                     for tag in hsh['t']:
                         item = [
                             ('tag', (tag, tstr2SCI[typ][0]), due,
@@ -4576,14 +4575,14 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 items.append(item)
 
 
-                if 'k' in hsh and hsh['k'] != 'none':
+                if 'k' in hsh and hsh['itemtype'] != "#":
                     keywords = [x.strip() for x in hsh['k'].split(':')]
                     item = [
                         ('keyword', (hsh['k'], tstr2SCI[typ][0]), '',
                          hsh['_summary'], f), tuple(keywords),
                         (uid, typ, setSummary(hsh, ''), '', dtl)]
                     items.append(item)
-                if 't' in hsh:
+                if 't' in hsh and hsh['itemtype'] != "#":
                     for tag in hsh['t']:
                         item = [
                             ('tag', (tag, tstr2SCI[typ][0]), due,
@@ -4653,14 +4652,14 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                  hsh['_summary'], f), tuple(folders),
                 (uid, typ, setSummary(hsh, dt), sdt, dt)]
             items.append(item)
-            if 'k' in hsh and hsh['k'] != 'none':
+            if 'k' in hsh and hsh['itemtype'] != "#":
                 keywords = [x.strip() for x in hsh['k'].split(':')]
                 item = [
                     ('keyword', (hsh['k'], tstr2SCI[typ][0]), dt,
                      hsh['_summary'], f), tuple(keywords),
                     (uid, typ, setSummary(hsh, dt), sdt, dt)]
                 items.append(item)
-            if 't' in hsh and hsh['t'] != 'none':
+            if 't' in hsh and hsh['itemtype'] != "#":
                 for tag in hsh['t']:
                     item = [
                         ('tag', (tag, tstr2SCI[typ][0]), dt,
@@ -4668,7 +4667,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         (uid, typ, setSummary(hsh, dt), sdt, dt)]
                     items.append(item)
             if hsh['itemtype'] == '#':
-                # don't include deleted items in any other views
+                # don't include hidden items in any other views
                 continue
                 # make in basket and someday entries #
                 # sort numbers for now view --- we'll add the typ num to
@@ -6149,11 +6148,11 @@ where N is the number of a report specification from the file {0}:\n """.format(
         return "\n".join(res)
         # return(res)
 
-    def do_N(self, arg_str):
+    def do_n(self, arg_str):
         return self.mk_rep('n {0}'.format(arg_str))
 
     @staticmethod
-    def help_N():
+    def help_n():
         return ("""\
 Usage:
 
@@ -6163,7 +6162,7 @@ Show notes grouped and sorted by keyword optionally limited to those containing 
 """)
 
 
-    def do_n(self, arg_str='', itemstr=""):
+    def do_N(self, arg_str='', itemstr=""):
         logger.debug('arg_str: {0}'.format(arg_str))
         if arg_str:
             new_item = s2or3(arg_str)
@@ -6178,7 +6177,7 @@ Show notes grouped and sorted by keyword optionally limited to those containing 
                 return _("item saved")
 
     @staticmethod
-    def help_n():
+    def help_N():
         return _("""\
 Usage:
 

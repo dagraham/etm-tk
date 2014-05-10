@@ -93,10 +93,10 @@ You can add a command to use the CLI instead of the GUI. For example, to get the
                 positive integer, to display a report using the corresponding
                 entry from the file given by report_specifications in etmtk.cfg.
                 Use ? m to display the numbered list of entries from this file.
-        n ARGS  Create a new item using the remaining arguments as the item
+        n ARG   display the notes view using ARG, if given, as a filter.
+        N ARGS  Create a new item using the remaining arguments as the item
                 specification. (Enclose ARGS in single quotes to prevent shell
                 expansion.)
-        N ARG   display the notes view using ARG, if given, as a filter.
         p ARG   display the path view using ARG, if given, as a filter.
         r ARGS  display a report using the remaining arguments as the report
                 specification. (Enclose ARGS in single quotes to prevent shell

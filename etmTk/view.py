@@ -1538,6 +1538,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
                 self.custommenu.entryconfig(i, state="normal")
         else:
             if self.view == CUSTOM:
+                # we're leaving custom view
                 logger.debug('removing custom_box')
                 self.custom_box.forget()
                 for i in range(len(self.rm_options)):
