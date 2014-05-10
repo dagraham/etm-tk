@@ -2196,11 +2196,11 @@ Enter the shortest time period you want displayed in minutes.""")
 
         rx = round(Decimal(px - l)/x - Decimal(0.5))  # number of days
         ry = 7 * 60 + round(Decimal(py - t)/y)  # number of minutes
-        ryr = round(ry/Decimal(min_round)) * min_round
+        ryr = round(Decimal(ry)/min_round) * min_round
 
         hours = ryr//60
         minutes = ryr % 60
-        time = "{0}:{1:02d}".format(hours, minutes)
+        time = "{0}:{1:02d}".format(hours, float(minutes))
 
         dt = (self.week_beg + rx * ONEDAY).replace(hour=hours, minute=minutes, second=0, microsecond=0, tzinfo=None)
 
