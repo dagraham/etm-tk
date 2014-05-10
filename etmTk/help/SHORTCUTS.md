@@ -1,5 +1,6 @@
 # Command Shortcuts
 
+
 ## Menubar
 
     File
@@ -13,6 +14,7 @@
             etmtk.cfg                               Shift-E
             completions.cfg                         Shift-C
             reports.cfg                             Shift-R
+            users.cfg                               Shift-U
             scratchpad                              Shift-S
         ----
         Quit                                        Ctrl-Q
@@ -42,9 +44,11 @@
         Finish                                         F
         Reschedule                                     R
         Open link                                      G
+        Show user details                              U
     Tools
         Open date calculator                        Shift-D
         Display yearly calendar                     Shift-Y
+        Show history of changes                     Shift-H
         Export to iCal                              Shift-X
         Reload data from files                      Shift-L
     Custom
@@ -60,7 +64,7 @@
         About                                         F2
         Check for update                              F3
 
-## Main window
+## Main
 
     Views
         Agenda                                      Ctrl-A
@@ -74,14 +78,14 @@
         Note                                        Ctrl-N
         Custom                                      Ctrl-C
 
-## Edit window
+## Edit
 
     Show possible completions                     Ctrl-Space
     Validate entry                                  Ctrl-?
     Cancel                                          Escape
     Save changes and close editor                   Ctrl-W
 
-## Custom view
+## Custom
 
     Create and display selected report              Return
     Export report in text format ...                Ctrl-T

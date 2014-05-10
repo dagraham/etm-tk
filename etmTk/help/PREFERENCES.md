@@ -513,6 +513,35 @@ Required settings for text messaging in alerts. Enter the 10-digit area code and
 
 The setting affects only the twelve month calendar display.
 
+### users
+
+    users: ~/.etm/users.cfg
+
+User information in a free form, text database. Each entry begins with a unique key for the person and is followed by detail lines each of which begins with a minus sign and contains some detail about the person that you want to record. Any detail line containing a colon should be quoted, e.g.,
+
+    jbrown:
+    - Brown, Joe
+    - jbr@whatever.com
+    - 'home: 123 456-7890'
+    - 'birthday: 1978-12-14'
+    dcharles:
+    - Charles, Debbie
+    - dch@sometime.com
+    - 'cell: 456 789-0123'
+    - 'spouse: Rebecca'
+
+Keys from this file are added to auto-completions so that if you type, say, `@u jb` and press *Ctrl-Space*, then `@u jbrown` would be offered for completion.
+
+If an item with the entry `@u jbrown` is selected in the GUI, you can press "u" to see a popup with the details:
+
+    Brown, Joe
+    jbr@whatever.com
+    home: 123 456-7890
+    birthday: 1978-12-14
+
+You can press "U" in the GUI to open `users` for editing.
+
+
 ### vcs_settings
 
     vcs_settings:
