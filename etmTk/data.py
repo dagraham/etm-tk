@@ -1255,6 +1255,7 @@ def get_options(d=''):
         'sms_subject': '!time_span!',
 
         'sundayfirst': False,
+        'users': os.path.normpath(os.path.join(etmdir, 'users.cfg')),
         'vcs_system': default_vcs,
         'vcs_settings': {'command': '', 'commit': '', 'dir': '', 'file': '', 'history': '', 'init': '', 'limit': ''},
         'weeks_after': 52,
@@ -1420,6 +1421,19 @@ def get_options(d=''):
             "Invalid action_minutes setting: %s. Reset to 1." %
             options['action_minutes'])
         options['action_minutes'] = 1
+
+    if options['users']:
+        cf = os.path.normpath(options['users'])
+        if os.path.isfile(cf):
+            fo = codecs.open(cf, 'r', dfile_encoding)
+            options['user_data'] = yaml.load(fo)
+            fo.close()
+            logger.info('users: {0}'.format(cf))
+        else:
+            logger.warn("Could not find users file: {0}".format(cf))
+    else:
+        logger.info("users not specified in etmtk.cfg")
+
 
     z = gettz(options['local_timezone'])
     if z is None:

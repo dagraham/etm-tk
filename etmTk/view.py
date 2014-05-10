@@ -296,6 +296,16 @@ class App(Tk):
         openmenu.entryconfig(3, accelerator=l)
         self.add2menu(path, (label, l))
 
+        l = "Shift-U"
+        c = "U"
+        file = loop.options['users']
+        label = relpath(file, loop.options['etmdir'])
+        openmenu.add_command(label=label, command=self.editUsers)
+        self.bind(c, self.editUsers)
+
+        openmenu.entryconfig(4, accelerator=l)
+        self.add2menu(path, (label, l))
+
         l = "Shift-S"
         c = "S"
         file = loop.options['scratchpad']
@@ -303,7 +313,7 @@ class App(Tk):
         openmenu.add_command(label=label, command=self.editScratch)
         self.bindTop(c, self.editScratch)
 
-        openmenu.entryconfig(4, accelerator=l)
+        openmenu.entryconfig(5, accelerator=l)
         self.add2menu(path, (label, l))
 
         filemenu.add_cascade(label=OPEN, menu=openmenu)
@@ -488,6 +498,7 @@ class App(Tk):
             [_('Finish'), 'f'],
             [_('Reschedule'), 'r'],
             [_('Open link'), 'g'],
+            [_('Show user details'), 'u'],
             ]
         self.edit2cmd = {
             'c': self.copyItem,
@@ -496,6 +507,7 @@ class App(Tk):
             'f': self.finishItem,
             'r': self.rescheduleItem,
             'g': self.openWithDefault,
+            'u': self.showUserDetails,
             }
         self.em_opts = [x[0] for x in self.em_options]
 
@@ -1036,6 +1048,20 @@ class App(Tk):
         subprocess.call(cmd, shell=True)
         return True
 
+    def showUserDetails(self, e=None):
+        if not self.itemSelected or 'u' not in self.itemSelected:
+            return
+        if not self.options['user_data']:
+            return
+        user = self.itemSelected['u']
+        if user in self.options['user_data']:
+            detail = "\n".join(self.options['user_data'][user])
+        else:
+            detail = _("No record was found for {0}".format(user))
+        self.textWindow(self, user, detail, opts=self.options)
+
+
+        return
 
     def dateCalculator(self, event=None):
         prompt = """\
@@ -1335,7 +1361,7 @@ The local timezone is used when none is given."""
         return
 
     def editFile(self, e=None, file=None, config=False):
-        if e and e.char not in ["F", "E", "C", "R", "S"]:
+        if e and e.char not in ["F", "E", "C", "R", "S", "U"]:
             return
         titlefile = os.path.normpath(file)
         logger.debug('file: {0}; config: {1}'.format(file, config))
@@ -1371,6 +1397,10 @@ The local timezone is used when none is given."""
 
     def editCompletions(self, e=None, config=True):
         file = loop.options['auto_completions']
+        self.editFile(e, file=file)
+
+    def editUsers(self, e=None, config=True):
+        file = loop.options['users']
         self.editFile(e, file=file)
 
     def editScratch(self, e=None, config=True):
@@ -2418,6 +2448,8 @@ or 0 to display all changes.""").format(title)
                 item = _('selected')
             isUnfinished = (type_chr in ['-', '+', '%'] and show_chr != 'X')
             hasLink = ('g' in hsh and hsh['g'])
+            # hasUser = ('u' in hsh and hsh['u'] and hsh['u'] in loop.options['user_data'])
+            hasUser = ('u' in hsh and hsh['u'])
             l1 = hsh['fileinfo'][1]
             l2 = hsh['fileinfo'][2]
             if l1 == l2:
@@ -2440,6 +2472,10 @@ or 0 to display all changes.""").format(title)
                 self.itemmenu.entryconfig(5, state='normal')
             else:
                 self.itemmenu.entryconfig(5, state='disabled')
+            if hasUser:
+                self.itemmenu.entryconfig(6, state='normal')
+            else:
+                self.itemmenu.entryconfig(6, state='disabled')
             self.uuidSelected = uuid
             self.itemSelected = hsh
             logger.debug('dt selected: {0}, {1}'.format(dt, type(dt)))
