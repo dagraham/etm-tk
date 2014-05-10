@@ -727,14 +727,8 @@ class App(Tk):
         self.custom_box.bind("<<ComboboxSelected>>", self.newselection)
         self.bind("<Return>", self.makeReport)
         self.bind("<Control-q>", self.quit)
-        self.specs = ['']
-        if ('report_specifications' in self.options and os.path.isfile(self.options['report_specifications'])):
-            rf = self.options['report_specifications']
-            logger.info('Using report specifications file: {0}'.format(rf))
-
-            with open(rf) as fo:
-                tmp = fo.readlines()
-            self.specs = [str(x).rstrip() for x in tmp if x.strip() and x[0] != "#"]
+        self.saved_specs = ['']
+        self.getSpecs()
         self.value_of_combo = self.specs[0]
         self.custom_box['values'] = self.specs
         self.custom_box.current(0)
@@ -1377,10 +1371,6 @@ The local timezone is used when none is given."""
 
     def editCompletions(self, e=None, config=True):
         file = loop.options['auto_completions']
-        self.editFile(e, file=file)
-
-    def editReports(self, e=None, config=True):
-        file = loop.options['report_specifications']
         self.editFile(e, file=file)
 
     def editScratch(self, e=None, config=True):
@@ -3173,24 +3163,55 @@ or 0 to expand all branches completely.""")
             self.custom_box.focus_set()
             return 0
 
+    def getSpecs(self, e=None):
+        self.specs = ['']
+        if ('report_specifications' in self.options and os.path.isfile(self.options['report_specifications'])):
+            rf = self.options['report_specifications']
+            logger.info('Using report specifications file: {0}'.format(rf))
+            with open(rf) as fo:
+                tmp = fo.readlines()
+            self.specs = [str(x).rstrip() for x in tmp if x.strip() and x[0] != "#"]
+            self.specs = list(set(self.specs))
+            self.specs.sort()
+            self.saved_specs = deepcopy(self.specs)
+            self.specsModified = False
+
+    def editReports(self, e=None):
+        file = self.options['report_specifications']
+        changed = SimpleEditor(parent=self, file=file, options=self.options, title='report_specifications').changed
+        if changed:
+            logger.debug("saved: {0}".format(file))
+            self.getSpecs()
+            self.custom_box['values'] = self.specs
+            self.value_of_combo = self.specs[0]
+            self.saved_specs = deepcopy(self.specs)
+            self.specsModified = False
+
     def saveSpecs(self, e=None):
+        # called when changing from custom view or
+        # when calling save changes to specs
         if self.view != CUSTOM: return
         if not self.specsModified:
             return
         if not ('report_specifications' in self.options and os.path.isfile(self.options['report_specifications'])):
             return
+        file = self.options['report_specifications']
+        # remove duplicates
+        self.specs = list(set(self.specs))
+        self.specs.sort()
+        added = [x for x in self.specs if x not in self.saved_specs]
         ans = self.confirm(parent=self,
-            prompt=_("Save the changes to your report specifications?"))
+            prompt=_("""Save the additions to your report specifications?
+    {0}
+""".format("\n    ".join(added))))
         if ans:
-            self.specs.sort()
-            file = self.options['report_specifications']
             with codecs.open(file, 'w', loop.options['encoding']['file']) as fo:
                 tmp = fo.write("\n".join(self.specs))
-            changed = SimpleEditor(parent=self, file=file, options=self.options, title='report_specifications').changed
-            if changed:
-                logger.debug("saved: {0}".format(file))
-                self.specsModified = False
-                self.custom_box['values'] = self.specs
+            logger.debug("saved: {0}".format(file))
+            self.getSpecs()
+            self.custom_box['values'] = self.specs
+            self.value_of_combo = self.specs[0]
+            self.specsModified = False
 
 
     def exportText(self):
