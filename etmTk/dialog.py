@@ -720,9 +720,8 @@ class OptionsDialog():
         self.win.bind('<Return>', (lambda e, o=o: o.invoke()))
         self.win.bind('<Escape>', (lambda e, c=c: c.invoke()))
         # self.choice.focus_set()
+        logger.debug('parent: {0}'.format(parent))
         self.win.focus_set()
-        self.win.grab_set()
-        # self.choice.focus()
         self.win.transient(parent)
         self.win.wait_window(self.win)
 

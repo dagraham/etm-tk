@@ -2207,10 +2207,14 @@ Enter the shortest time period you want displayed in minutes.""")
         tfmt = fmt_time(dt, options=loop.options)
         dfmt = dt.strftime("%a %b %d")
         dtfmt = "{0} {1}".format(tfmt, dfmt)
+        if self.weekly:
+            p = self.canvas
+        else:
+            p = self.tree
         ans = self.confirm(
+            parent=p,
             title=_('New event'),
-            prompt=_("Create a new event for {0}?").format(dtfmt),
-            parent=self.canvas)
+            prompt=_("Create a new event for {0}?").format(dtfmt))
         if ans:
 
             s = "* ? @s {0} @e 1h".format(dtfmt)
