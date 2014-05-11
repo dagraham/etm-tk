@@ -1233,7 +1233,7 @@ def get_options(d=''):
         'monthly': 'monthly',
         'outline_depth': 0,
         'prefix': "\n  ",
-        'prefix_uses': 'rj+-tldm',
+        'prefix_uses': 'djlmrtz+-',
         'report_begin': '1',
         'report_end': '+1/1',
         'report_colors': 2,
@@ -1823,24 +1823,24 @@ item_keys = [
     's',  # start datetime
     'e',  # extent time spent
     'x',  # expense money spent
-    'z',  # time zone
     'a',  # alert
     'b',  # begin
     'c',  # context
+    'k',  # keyword
+    't',  # tags
+    'l',  # location
+    'u',  # user
     'f',  # finish date
     'g',  # goto
-    'k',  # keyword
-    'm',  # memo
-    'u',  # user
     'j',  # job
     'p',  # priority
     'r',  # repetition rule
     '+',  # include
     '-',  # exclude
     'o',  # overdue
-    't',  # tags
-    'l',  # location
     'd',  # description
+    'm',  # memo
+    'z',  # time zone
     'i',  # id',
 ]
 
