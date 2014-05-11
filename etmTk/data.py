@@ -1844,6 +1844,8 @@ item_keys = [
     'i',  # id',
 ]
 
+all_keys = item_keys + ['entry', 'fileinfo', 'itemtype', 'rrule', '_summary', '_group_summary', '_a', '_j', '_p', '_r' ]
+
 label_keys = [
     # 'f',  # finish date
     '_a',  # alert
@@ -2521,12 +2523,12 @@ For editing one or more, but not all, instances of an item. Needed:
             hsh['i'] = hsh['i'].split(':')[0]
     else:
         sl = ["%s %s" % (hsh['itemtype'], hsh['_summary'])]
-    bad_keys = [x for x in hsh.keys() if x[0] != '_' and x not in item_keys + ['entry', 'fileinfo', 'itemtype']]
+    bad_keys = [x for x in hsh.keys() if x not in all_keys]
     if bad_keys:
         omitted = []
         for key in bad_keys:
             omitted.append('@{0} {1}'.format(key, hsh[key]))
-        msg.append("unknown keys: {0}".format(", ".join(omitted)))
+        msg.append("unrecogized entries: {0}".format(", ".join(omitted)))
     for key in item_keys:
         amp_key = None
         if key in options['prefix_uses']:
@@ -2563,12 +2565,21 @@ For editing one or more, but not all, instances of an item. Needed:
             # prefix = ""
 
         if key in hsh and hsh[key]:
+            # since r and j can repeat, value will be a list
             value = hsh[key]
             if keys:
                 # @r or @j --- value will be a list of hashes or
                 # possibly, in the  case of @a, a list of lists. f
                 # will be the first key for @r and t will be the
                 # first for @a
+                omitted = []
+                for v in value:
+                    for k in v.keys():
+                        if k not in keys:
+                            omitted.append('&{0} {1}'.format(k, v[k]))
+                if omitted:
+                    msg.append("unrecogized entries: {0}".format(", ".join(omitted)))
+
                 tmp = []
                 for h in value:
                     if unicode(keys[0]) not in h:
