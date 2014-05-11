@@ -1221,6 +1221,7 @@ def get_options(d=''):
         'filechange_alert': '',
         'fontsize_fixed': 0,
         'fontsize_tree': 0,
+        # 'formats': {'r': "\n  ", 'j': "\n  ", "+": "\n  ", "-": "\n  ", "t": "\n  ", "l": "\n  ", "d": "\n  ", "m": "\n  "},
         'freetimes' : default_freetimes,
         'icscal_file': os.path.normpath(os.path.join(etmdir, 'etmcal.ics')),
         'icsitem_file': os.path.normpath(os.path.join(etmdir, 'etmitem.ics')),
@@ -1231,6 +1232,8 @@ def get_options(d=''):
         # 'monthly': os.path.join('personal', 'monthly'),
         'monthly': 'monthly',
         'outline_depth': 0,
+        'prefix': "\n  ",
+        'prefix_uses': 'rj+-tldm',
         'report_begin': '1',
         'report_end': '+1/1',
         'report_colors': 2,
@@ -2525,6 +2528,10 @@ For editing one or more, but not all, instances of an item. Needed:
         msg.append("unknown keys: {0}".format(", ".join(omitted)))
     for key in item_keys:
         amp_key = None
+        if key in options['prefix_uses']:
+            prefix = options['prefix']
+        else:
+            prefix = ""
         if key == 'a' and '_a' in hsh:
             alerts = []
             for alert in hsh["_a"]:
@@ -2543,16 +2550,17 @@ For editing one or more, but not all, instances of an item. Needed:
             at_key = key
             keys = amp_keys[key]
             key = "_%s" % key
-            prefix = "\n  "
+            # prefix = "\n  "
         elif key in ['+', '-']:
             keys = []
-            prefix = "\n  "
+            # prefix = "\n  "
         elif key in ['t', 'l', 'd']:
             keys = []
-            prefix = "\n"
+            # prefix = "\n"
         else:
             keys = []
-            prefix = ""
+            # prefix = ""
+
         if key in hsh and hsh[key]:
             value = hsh[key]
             if keys:

@@ -455,6 +455,20 @@ The directories `monthly` and `2012` and the file `10.txt` would, if necessary, 
 
 The default outline depth to use when opening keyword, note, path or tag view. Once any view is opened, use Ctrl-O to change the depth for that view.
 
+### prefix
+
+    prefix: "\n  "
+    prefix_uses: "rj+-tldm"
+
+Apply `prefix` (whitespace only) to the @keys in `prefix_uses` when displaying and saving items. The default would cause the selected elements to begin on a newline and indented by two spaces. E.g.,
+
+    + summary @s 2014-05-09 12am @z US/Eastern
+      @m memo
+      @j job 1 &f 20140510T1411;20140509T0000 &q 1
+      @j job 2 &f 20140510T1412;20140509T0000 &q 2
+      @j job 3 &q 3
+      @d description
+
 ### report
 
     report_begin:           '1'
