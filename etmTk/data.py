@@ -3906,14 +3906,14 @@ def str2hsh(s, uid=None, options=None):
                     hsh[at_key] = at_val
         if alerts:
             hsh['_a'] = alerts
-        if 'z' not in hsh:
-            hsh['z'] = options['local_timezone']
-        else:
-            z = gettz(hsh['z'])
-            if z is None:
-                msg.append("error: bad timezone: '%s'" % hsh['z'])
-                hsh['z'] = ''
         if 's' in hsh:
+            if 'z' not in hsh:
+                hsh['z'] = options['local_timezone']
+            else:
+                z = gettz(hsh['z'])
+                if z is None:
+                    msg.append("error: bad timezone: '%s'" % hsh['z'])
+                    hsh['z'] = ''
             try:
                 hsh['s'] = parse(
                     parse_datetime(
@@ -4225,10 +4225,14 @@ def getDoneAndTwo(hsh, keep=False):
     done = None
     nxt = None
     following = None
-    today_datetime = datetime.now(
-        gettz(
-            hsh['z'])).replace(hour=0, minute=0, second=0,
+    logger.debug('hsh: {0}'.format(hsh))
+    if 'z' in hsh:
+        today_datetime = datetime.now(
+            gettz(
+                hsh['z'])).replace(hour=0, minute=0, second=0,
                                microsecond=0, tzinfo=None)
+    else:
+        today_datetime = get_current_time()
     if 'f' in hsh and hsh['f']:
         if type(hsh['f']) in [str, unicode]:
             parts = str(hsh['f']).split(';')
