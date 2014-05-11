@@ -1425,6 +1425,7 @@ def get_options(d=''):
             options['action_minutes'])
         options['action_minutes'] = 1
 
+    options['user_data'] = {}
     if options['users']:
         cf = os.path.normpath(options['users'])
         if os.path.isfile(cf):
@@ -3816,7 +3817,7 @@ def str2hsh(s, uid=None, options=None):
         hsh = {}
         alerts = []
         at_parts = at_regex.split(s)
-        logger.debug('at_parts: {0}'.format(at_parts))
+        # logger.debug('at_parts: {0}'.format(at_parts))
         head = at_parts.pop(0).strip()
         if head and head[0] in type_keys:
             itemtype = unicode(head[0])
@@ -4002,7 +4003,6 @@ def str2hsh(s, uid=None, options=None):
                 hsh['r'] = {'f': 'l'}
                 # skip one time and handle with finished, begin and pastdue
         msg.extend(checkhsh(hsh))
-        logger.debug('checked hsh: {0}'.format(hsh))
         if msg:
             return hsh, msg
         if 'p' in hsh:
@@ -4033,7 +4033,7 @@ def str2hsh(s, uid=None, options=None):
         fio = StringIO()
         logger.exception('exception procsessing "{0}"'.format(s))
         msg.append(fio.getvalue())
-    logger.debug('returning hsh: {0}; msg: {1}'.format(hsh, msg))
+    # logger.debug('returning hsh: {0}; msg: {1}'.format(hsh, msg))
     return hsh, msg
 
 
@@ -4233,7 +4233,6 @@ def getDoneAndTwo(hsh, keep=False):
     done = None
     nxt = None
     following = None
-    logger.debug('hsh: {0}'.format(hsh))
     if 'z' in hsh:
         today_datetime = datetime.now(
             gettz(

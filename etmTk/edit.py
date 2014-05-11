@@ -173,7 +173,7 @@ class SimpleEditor(Toplevel):
         else:
             logger.info("auto_completions not specified in etmtk.cfg")
 
-        if self.options['user_data']:
+        if 'user_data' in self.options and self.options['user_data']:
             for x in self.options['user_data'].keys():
                 completions.add("@u {0}".format(x))
 
