@@ -2194,14 +2194,14 @@ Enter the shortest time period you want displayed in minutes.""")
         elif py > t + 16 * 60 * y:
             py = t + 16 * 60 * y
 
-        rx = round(Decimal(px - l)/x - Decimal(0.5))  # number of days
-        ry = 7 * 60 + round(Decimal(py - t)/y)  # number of minutes
+        rx = int(round(Decimal(px - l)/x - Decimal(0.5)))  # number of days
+        ry = int(7 * 60 + round(Decimal(py - t)/y))  # number of minutes
         ryr = round(Decimal(ry)/min_round) * min_round
+        # logger.debug('rx: {0}, {1}; ry: {2}, {3}'.format(rx, type(rx), ry, type(ry)))
 
-        hours = ryr//60
-        minutes = ryr % 60
-        time = "{0}:{1:02d}".format(hours, float(minutes))
-
+        hours = int(ryr//60)
+        minutes = int(ryr % 60)
+        time = "{0}:{1:02d}".format(hours, minutes)
         dt = (self.week_beg + rx * ONEDAY).replace(hour=hours, minute=minutes, second=0, microsecond=0, tzinfo=None)
 
         tfmt = fmt_time(dt, options=loop.options)
