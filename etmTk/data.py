@@ -728,7 +728,7 @@ def getMercurial():
         history_command = 'hg log --style compact --template "{desc}\\n" -R {work} -p {numchanges} {file}'
         commit_command = 'hg commit -q -A -R {work} -m "{mesg}"'
         init = 'hg init {work}'
-        init_command = "%s; %s" % (init, commit_command)
+        init_command = "%s && %s" % (init, commit_command)
         logger.debug('hg base_command: {0}; history_command: {1}; commit_command: {2}; init_command: {3}'.format(base_command, history_command, commit_command, init_command))
     else:
         logger.debug('could not find hg in path')
@@ -748,7 +748,7 @@ def getGit():
         add = 'git --git-dir {repo} --work-tree {work} add */\*.txt > /dev/null'
         commit = 'git --git-dir {repo} --work-tree {work} commit -a -m "{mesg}" > /dev/null'
         commit_command = '%s && %s' % (add, commit)
-        init_command = '%s; %s; %s' % (init, add, commit)
+        init_command = '%s && %s && %s' % (init, add, commit)
         logger.debug('git base_command: {0}; history_command: {1}; commit_command: {2}; init_command: {3}'.format(base_command, history_command, commit_command, init_command))
     else:
         logger.debug('could not find git in path')
