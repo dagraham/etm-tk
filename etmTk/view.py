@@ -1457,7 +1457,7 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
             return ()
         logger.debug('completion date: {0}'.format(chosen_day))
         loop.item_hsh = self.itemSelected
-        loop.cmd_do_finish(chosen_day)
+        loop.cmd_do_finish(chosen_day, options=loop.options)
 
         self.updateAlerts()
         if self.weekly:

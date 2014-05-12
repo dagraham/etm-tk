@@ -3926,19 +3926,19 @@ def str2hsh(s, uid=None, options=None):
                     hsh[at_key] = at_val
         if alerts:
             hsh['_a'] = alerts
-        if 's' in hsh:
-            if 'z' not in hsh:
+        if 'z' not in hsh:
+            if 's' in hsh or 'f' in hsh:
                 hsh['z'] = options['local_timezone']
-            else:
-                z = gettz(hsh['z'])
-                if z is None:
-                    msg.append("error: bad timezone: '%s'" % hsh['z'])
-                    hsh['z'] = ''
+        if 'z' in hsh:
+            z = gettz(hsh['z'])
+            if z is None:
+                msg.append("error: bad timezone: '%s'" % hsh['z'])
+                hsh['z'] = ''
+        if 's' in hsh:
             try:
                 hsh['s'] = parse(
                     parse_datetime(
                         hsh['s'], hsh['z'])).replace(tzinfo=None)
-
             except:
                 err = "error: could not parse '@s {0}'".format(hsh['s'])
                 msg.append(err)
@@ -3986,6 +3986,9 @@ def str2hsh(s, uid=None, options=None):
                     msg.append("@j: %s" % job['j'])
                     msg.append("an &q entry is required for jobs")
                 if 'f' in job:
+                    if 'z' not in hsh:
+                        hsh['z'] = options['local_timezone']
+
                     pair = job['f'].split(';')
                     done = parse(
                         parse_datetime(
@@ -6092,12 +6095,14 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
         # self.loadData()
         return "break"
 
-    def cmd_do_finish(self, dt):
+    def cmd_do_finish(self, dt, options={}):
         """
         Called by do_f to process the finish datetime and add it to the file.
         """
         hsh = self.item_hsh
         done, due, following = getDoneAndTwo(hsh)
+        if 'z' not in hsh:
+            hsh['z'] = options['local_timezone']
         if due:
             # undated tasks won't have a due date
             ddn = due.replace(
@@ -6125,8 +6130,8 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
                     hsh['f'] = [(dt.replace(tzinfo=None), ddn)]
         else:
             dtz = dt.replace(
-                tzinfo=tzlocal()).astimezone(
-                gettz(hsh['z'])).replace(tzinfo=None)
+                    tzinfo=tzlocal()).astimezone(
+                    gettz(hsh['z'])).replace(tzinfo=None)
             if not ddn:
                 ddn = dtz
             hsh.setdefault('f', []).append((dtz, ddn))
