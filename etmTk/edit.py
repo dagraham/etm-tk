@@ -506,14 +506,17 @@ class SimpleEditor(Toplevel):
             self.settext(str)
         if 'r' in hsh and showreps:
             showing_all, reps =  get_reps(self.options['bef'], hsh)
-            repsfmt = [x.strftime(rrulefmt) for x in reps]
-            logger.debug("{0}: {1}".format(showing_all, repsfmt))
-
-            repetitions = "{0}".format("\n".join(repsfmt))
+            if reps:
+                repsfmt = [x.strftime(rrulefmt) for x in reps]
+                logger.debug("{0}: {1}".format(showing_all, repsfmt))
+                repetitions = "{0}".format("\n".join(repsfmt))
+            else:
+                repetitions = "No repetitions were generated."
             if showing_all:
                 self.messageWindow(ALLREPS, repetitions, opts=self.options, width=24)
             else:
                 self.messageWindow(SOMEREPS, repetitions, opts=self.options, width=24)
+
         elif showres:
             self.messageWindow(MESSAGES, _("valid entry"), opts=self.options, height=1, width=14)
         logger.debug(('onCheck: Ok'))

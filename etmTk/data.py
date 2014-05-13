@@ -4493,6 +4493,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
         # this will give the items in file order!
         if uuid2hash[uid]['itemtype'] in ['=']:
             continue
+        sdt = ""
         hsh = {}
         for k, v in uuid2hash[uid].items():
             hsh[k] = v
