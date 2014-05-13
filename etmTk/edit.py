@@ -504,22 +504,30 @@ class SimpleEditor(Toplevel):
         logger.debug("back from hsh2str with: {0}".format(str))
         if str != text:
             self.settext(str)
-        if 'r' in hsh and showreps:
+        if 'r' in hsh:
             showing_all, reps =  get_reps(self.options['bef'], hsh)
             if reps:
-                repsfmt = [x.strftime(rrulefmt) for x in reps]
-                logger.debug("{0}: {1}".format(showing_all, repsfmt))
-                repetitions = "{0}".format("\n".join(repsfmt))
+                if showreps:
+                    repsfmt = [x.strftime(rrulefmt) for x in reps]
+                    logger.debug("{0}: {1}".format(showing_all, repsfmt))
+                    repetitions = "{0}".format("\n".join(repsfmt))
+                    if showing_all:
+                        self.messageWindow(ALLREPS, repetitions, opts=self.options, width=24)
+                    else:
+                        self.messageWindow(SOMEREPS, repetitions, opts=self.options, width=24)
             else:
                 repetitions = "No repetitions were generated."
-            if showing_all:
-                self.messageWindow(ALLREPS, repetitions, opts=self.options, width=24)
-            else:
-                self.messageWindow(SOMEREPS, repetitions, opts=self.options, width=24)
+                self.loop.messages.append(repetitions)
+            if self.loop.messages:
+                messages = "{0}".format("\n".join(self.loop.messages))
+                logger.debug("messages: {0}".format(messages))
+                self.messageWindow(MESSAGES, messages, opts=self.options)
+                return False
+
 
         elif showres:
             self.messageWindow(MESSAGES, _("valid entry"), opts=self.options, height=1, width=14)
-        logger.debug(('onCheck: Ok'))
+        logger.debug(('Ok: {0}'.format(True)))
         return True
 
     def clearFind(self, *args):
