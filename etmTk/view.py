@@ -341,7 +341,7 @@ class App(Tk):
         # go home
         l = "Space"
         label = _("Home")
-        viewmenu.add_command(label=label, command=lambda: self.goHome())
+        viewmenu.add_command(label=label, command=self.goHome)
 
         viewmenu.entryconfig(0, accelerator=l)
         self.add2menu(path, (label, l))
@@ -2381,7 +2381,7 @@ or 0 to display all changes.""").format(title)
             self.tree.focus(1)
             self.tree.selection_set(1)
             self.tree.yview(0)
-        return
+        return "break"
 
     def nextItem(self, e=None):
         item = self.tree.selection()[0]
