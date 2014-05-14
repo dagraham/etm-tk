@@ -1583,7 +1583,7 @@ type2Str = {
     '~': "ac",
     '!': "nu", # undated only appear in folders
     '-': "un", # for next view
-    '+': "un", # for next view
+    '+': "cs", # for next view
     '%': "du",
     '?': "so",
     '#': "dl"}
@@ -1604,7 +1604,7 @@ id2Type = {
     "ns": '!',
     "nu": '!',
     "oc": '^',
-    "pc": '+', # pastdue
+    "pc": '+', # pastdue job
     "pd": '%',
     "pt": '-',
     "rm": '*',
@@ -1643,7 +1643,7 @@ tstr2SCI = {
     "ac": [23, "darkorchid", "action", "day"],
     "av": [16, "slateblue2", "task", "day"],
     "by": [19, "gold3", "beginby", "now"],
-    "cs": [18, "gray65", "child", "day"],
+    "cs": [18, "slateblue2", "child", "day"],
     "cu": [22, "gray65", "child", "day"],
     "dl": [28, "gray70", "delete", "folder"],
     "ds": [17, "darkslategray", "delegated", "day"],
@@ -2880,7 +2880,9 @@ def items2Hashes(list_of_items, options=None):
             group_defaults = tmp_hsh
             group_task = deepcopy(group_defaults)
             done, due, following = getDoneAndTwo(group_task)
+            keep_f = None
             if 'f' in group_defaults and due:
+                keep_f = group_defaults['f']
                 del group_defaults['f']
                 group_defaults['s'] = due
             if 'rrule' in group_defaults:
@@ -2897,10 +2899,12 @@ def items2Hashes(list_of_items, options=None):
             num_jobs = len(jobs)
             del group_defaults['j']
             if following:
+                print('deleting group_task[j]', group_task['j'])
                 del group_task['j']
                 # group_task['s'] = following
                 group_task['_summary'] = "%s [%s jobs]" % (
                     summary, len(jobs))
+                print('group_task', group_task, 'keep_f', keep_f)
                 hashes.append(group_task)
             for job in jobs:
                 tmp_hsh = {}
@@ -3855,6 +3859,8 @@ def str2hsh(s, uid=None, options=None):
         for at_part in at_parts:
             at_key = unicode(at_part[0])
             at_val = at_part[1:].strip()
+            if at_key == 'f':
+                print('found f:', at_val)
             if at_key == 'a':
                 actns = options['alert_default']
                 arguments = []
@@ -3970,6 +3976,7 @@ def str2hsh(s, uid=None, options=None):
                     "the value of @b should be an integer: '@b {0}'".format(
                         hsh['b']))
         if 'f' in hsh:
+            print('starting f', hsh['f'])
             # this will be a list of done:due pairs
             # 20120201T1325;20120202T1400, ...
             # logger.debug('hsh["f"]: {0}'.format(hsh['f']))
@@ -3989,6 +3996,9 @@ def str2hsh(s, uid=None, options=None):
                     due = done
                     # logger.debug("appending {0} to {1}".format(done, hsh['entry']))
                 hsh['f'].append((done, due))
+            print('ending f', hsh['f'])
+        elif hsh['itemtype'] == '+':
+            print('f not in group hsh')
         if 'j' in hsh:
             for i in range(len(hsh['j'])):
                 job = hsh['j'][i]
@@ -4626,9 +4636,9 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                             typ = 'cs'
                     else:
                         if pastdue:
-                            typ = 'pt'
+                            typ = 'pc'
                         else:
-                            typ = 'av'
+                            typ = 'cs'
                 item = [
                     ('folder', (f, tstr2SCI[typ][0]), due,
                      hsh['_summary'], f), tuple(folders),
@@ -4798,7 +4808,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 if 'prereqs' in hsh and hsh['prereqs']:
                     typ = 'cu'
                 else:
-                    typ = 'un'
+                    typ = 'cs'
             elif hsh['itemtype'] == '%':
                 typ = 'du'
             else:
@@ -5081,9 +5091,9 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         typ = 'ds'
                     elif hsh['itemtype'] == '+':
                         if 'prereqs' in hsh and hsh['prereqs']:
-                            typ = 'cs'
+                            typ = 'cu'
                         else:
-                            typ = 'av'
+                            typ = 'cs'
                     else:
                         typ = 'av'
                 item = [
@@ -5107,12 +5117,12 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 continue
             if hsh['itemtype'] == '+':
                 if 'prereqs' in hsh and hsh['prereqs']:
-                    typ = 'cs'
+                    typ = 'cu'
                 else:
-                    if 'f' in hsh:
+                    if 'f' in hsh and hsh['f'][-1][1] == dtl:
                         typ = 'fn'
                     else:
-                        typ = 'av'
+                        typ = 'cs'
                 item = [
                     ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
                      hsh['_p'], '', f),
@@ -6110,6 +6120,8 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
         # self.loadData()
 
     def replace_item(self, new_hsh):
+        if 'f' not in new_hsh:
+            print('no f', new_hsh)
         new_item, msg = hsh2str(new_hsh, self.options)
         logger.debug(new_item)
         newlines = new_item.split('\n')
@@ -6141,6 +6153,7 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
         Called by do_f to process the finish datetime and add it to the file.
         """
         hsh = self.item_hsh
+        print('start f in hsh:', ('f' in hsh))
         done, due, following = getDoneAndTwo(hsh)
         if 'z' not in hsh:
             hsh['z'] = options['local_timezone']
@@ -6174,6 +6187,7 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
 
                     # and add the last finish date (this one) to the group
                     hsh.setdefault('f', []).append((dt.replace(tzinfo=None), ddn))
+                    print('finished appended f', hsh['f'])
         else:
             dtz = dt.replace(
                     tzinfo=tzlocal()).astimezone(
@@ -6182,6 +6196,7 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
                 ddn = dtz
             hsh.setdefault('f', []).append((dtz, ddn))
         # item = hsh2str(hsh, self.options)
+        print('end f in hsh:', ('f' in hsh))
         logger.debug('finish hsh: {0}'.format(hsh))
         self.replace_item(hsh)
 
