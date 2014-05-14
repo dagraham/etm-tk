@@ -1882,6 +1882,7 @@ amp_keys = {
         u'd',   # j description
         u'e',   # e extent
         u'f',   # j finish
+        u'h',   # h history of past completions
         u'p',   # j priority
         u'u',   # user
         u'q'],  # j queue position
@@ -1916,7 +1917,7 @@ def makeTree(tree_rows, view=None, calendars=None, sort=True, fltr=None):
             continue
         if filter_regex is not None:
             s = "{0} {1}".format(pc[-1][2], " ".join(pc[1:-1]))
-            logger.debug('looking in "{0}"'.format(s))
+            # logger.debug('looking in "{0}"'.format(s))
             m = filter_regex.search(s)
             # m = filter_regex.search(pc[-1][2])
             # ok if (mtch and m) or (not mtch and not m):
@@ -2595,6 +2596,14 @@ For editing one or more, but not all, instances of an item. Needed:
                                     pairs.append(";".join([
                                         x.strftime(zfmt) for x in pair if x]))
                                 v = (', '.join(pairs))
+                            elif at_key == 'j' and amp_key == 'h':
+                                pairs = []
+                                print('hsh[j][h]', h['h'])
+                                # h['h'] will be a list of tuples
+                                for pair in h['h']:
+                                    pairs.append(";".join([
+                                        x.strftime(zfmt) for x in pair if x]))
+                                v = (', '.join(pairs))
                             elif amp_key == 'e':
                                 try:
                                     v = fmt_period(h['e'])
@@ -2889,7 +2898,7 @@ def items2Hashes(list_of_items, options=None):
             del group_defaults['j']
             if following:
                 del group_task['j']
-                group_task['s'] = following
+                # group_task['s'] = following
                 group_task['_summary'] = "%s [%s jobs]" % (
                     summary, len(jobs))
                 hashes.append(group_task)
@@ -2904,7 +2913,7 @@ def items2Hashes(list_of_items, options=None):
                 if 'f' in job:
                     # this will be a done:due pair with the due
                     # of the current group task
-                    completed.append(current_id)
+                        completed.append(current_id)
                 job["_summary"] = "%s %d/%d: %s" % (
                     summary, job_num, num_jobs, job['j'])
                 del job['j']
@@ -2935,6 +2944,7 @@ def items2Hashes(list_of_items, options=None):
                     job['fileinfo'] = (rel_name, linenums[0], linenums[-1])
                 except:
                     logger.exception("fileinfo: {0}.{1}".format(rel_name, linenums))
+                logger.debug('appending job: {0}'.format(job))
                 hashes.append(job)
         else:
             tmp_hsh = {}
@@ -4001,6 +4011,36 @@ def str2hsh(s, uid=None, options=None):
                         due = ''
 
                     job['f'] = [(done, due)]
+
+                if 'h' in job:
+                    # this will be a list of done:due pairs
+                    # 20120201T1325;20120202T1400, ...
+                    logger.debug("job['h']: {0}, {1}".format(job['h'], type(job['h'])))
+                    if type(job['h']) is str:
+                        pairs = job['h'].split(',')
+                    else:
+                        pairs = job['h']
+                    logger.debug('pairs: {0}'.format(pairs))
+                    job['h'] = []
+                    logger.debug('pairs: {0}'.format(pairs))
+                    for pair in pairs:
+                        logger.debug('processing pair: {0}'.format(pair))
+                        pair = pair.split(';')
+                        logger.debug('parsing done: {0}, {1}'.format(pair[0], type(pair[0])))
+                        done = parse(
+                            parse_datetime(
+                                pair[0], hsh['z'])).replace(tzinfo=None)
+                        if len(pair) > 1:
+                            logger.debug('parsing due: {0}, {1}'.format(pair[1], type(pair[1])))
+                            due = parse(
+                                parse_datetime(
+                                    pair[1], hsh['z'])).replace(tzinfo=None)
+                        else:
+                            due = done
+                        logger.debug("appending ({0}, {1}) to {2} ".format(done, due, job['j']))
+                        job['h'].append((done, due))
+                        logger.debug("job['h']: {0}".format(job['h']))
+                # put the modified job back in the hash
                     hsh['j'][i] = job
         for k, v in hsh.items():
             if type(v) in [datetime, timedelta]:
@@ -5141,15 +5181,15 @@ def updateViewData(f, bef, file2uuids=None, uuid2hash=None, options=None, file2d
         _items, _alerts, _busytimes, _datetimes, _occasions = file2data[f]
         if _items:
             for item in _items:
-                logger.debug('removing item: {0}'.format(item))
+                # logger.debug('removing item: {0}'.format(item))
                 removeFromlist("items", item)
                 # itemsSL.remove(item)
             for alert in _alerts:
-                logger.debug('removing alert: {0}'.format(alert))
+                # logger.debug('removing alert: {0}'.format(alert))
                 removeFromlist("alerts", alert)
                 # alertsSL.remove(alert)
             for datetime in _datetimes:
-                logger.debug('removing datetime: {0}'.format(datetime))
+                # logger.debug('removing datetime: {0}'.format(datetime))
                 removeFromlist("datetimes", datetime)
                 # datetimesSL.remove(datetime)
             for bt in _busytimes:
@@ -5157,14 +5197,14 @@ def updateViewData(f, bef, file2uuids=None, uuid2hash=None, options=None, file2d
                 sd = bt.pop(0)
                 bt = tuple(bt)
                 key = sd.isocalendar()
-                logger.debug('removing busytime: {0}: {1}'.format(key, bt))
+                # logger.debug('removing busytime: {0}: {1}'.format(key, bt))
                 remove_busytime(key, bt)
             for oc in _occasions:
                 oc = list(oc)
                 sd = oc.pop(0)
                 oc = tuple(oc)
                 key = sd.isocalendar()
-                logger.debug('removing occasion: {0}: {1}'.format(key, oc))
+                # logger.debug('removing occasion: {0}: {1}'.format(key, oc))
                 remove_occasion(key, oc)
 
         # remove the old entry for f in file2data
@@ -6125,10 +6165,15 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
                         break
                 if finished:
                     # remove the finish dates from the jobs
-                    for job in hsh['_j']:
+                    for j in range(len(hsh['_j'])):
+                        job = hsh['_j'][j]
+                        print('job', job['f'], job['f'][0])
+                        job.setdefault('h', []).append(job['f'][0])
                         del job['f']
-                        # and add the last finish date (this one) to the group
-                    hsh['f'] = [(dt.replace(tzinfo=None), ddn)]
+                        hsh['_j'][j] = job
+
+                    # and add the last finish date (this one) to the group
+                    hsh.setdefault('f', []).append((dt.replace(tzinfo=None), ddn))
         else:
             dtz = dt.replace(
                     tzinfo=tzlocal()).astimezone(
@@ -6137,6 +6182,7 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
                 ddn = dtz
             hsh.setdefault('f', []).append((dtz, ddn))
         # item = hsh2str(hsh, self.options)
+        logger.debug('finish hsh: {0}'.format(hsh))
         self.replace_item(hsh)
 
     def do_k(self, arg_str):

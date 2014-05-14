@@ -3165,10 +3165,10 @@ or 0 to expand all branches completely.""")
                         else:
                             d = parse(dt).date()
                     if d and d not in self.date2id:
-                        logger.debug('date2id[{0}] = {1}'.format(d, parent))
+                        # logger.debug('date2id[{0}] = {1}'.format(d, parent))
                         self.date2id[d] = int(parent)
                     if int(parent) not in self.id2date:
-                        logger.debug('id2date[{0}] = {1}'.format(int(parent), d))
+                        # logger.debug('id2date[{0}] = {1}'.format(int(parent), d))
                         self.id2date[int(parent)] = d
 
     def makeReport(self, event=None):
