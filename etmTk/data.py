@@ -2628,12 +2628,12 @@ For editing one or more, but not all, instances of an item. Needed:
                 tmp = []
                 for pair in hsh['f']:
                     tmp.append(";".join([x.strftime(zfmt) for x in pair if x]))
-                sl.append("\n  @f %s" % (',\n    '.join(tmp)))
+                sl.append("\n  @f %s" % (',\n     '.join(tmp)))
             elif key == 'h':
                 tmp = []
                 for pair in hsh['h']:
                     tmp.append(";".join([x.strftime(zfmt) for x in pair if x]))
-                sl.append("\n  @h %s" % (',\n    '.join(tmp)))
+                sl.append("\n  @h %s" % (',\n     '.join(tmp)))
             else:
                 sl.append("%s@%s %s" % (prefix, key, lst2str(value)))
     return " ".join(sl), msg
