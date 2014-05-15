@@ -1604,7 +1604,7 @@ id2Type = {
     "ns": '!',
     "nu": '!',
     "oc": '^',
-    "pc": '+', # pastdue job
+    "pc": '+', # pastdue
     "pd": '%',
     "pt": '-',
     "rm": '*',
@@ -2880,9 +2880,7 @@ def items2Hashes(list_of_items, options=None):
             group_defaults = tmp_hsh
             group_task = deepcopy(group_defaults)
             done, due, following = getDoneAndTwo(group_task)
-            keep_f = None
             if 'f' in group_defaults and due:
-                keep_f = group_defaults['f']
                 del group_defaults['f']
                 group_defaults['s'] = due
             if 'rrule' in group_defaults:
@@ -2899,12 +2897,11 @@ def items2Hashes(list_of_items, options=None):
             num_jobs = len(jobs)
             del group_defaults['j']
             if following:
-                print('deleting group_task[j]', group_task['j'])
                 del group_task['j']
                 # group_task['s'] = following
+                group_task['s'] = following
                 group_task['_summary'] = "%s [%s jobs]" % (
                     summary, len(jobs))
-                print('group_task', group_task, 'keep_f', keep_f)
                 hashes.append(group_task)
             for job in jobs:
                 tmp_hsh = {}
@@ -3859,8 +3856,6 @@ def str2hsh(s, uid=None, options=None):
         for at_part in at_parts:
             at_key = unicode(at_part[0])
             at_val = at_part[1:].strip()
-            if at_key == 'f':
-                print('found f:', at_val)
             if at_key == 'a':
                 actns = options['alert_default']
                 arguments = []
@@ -3976,7 +3971,6 @@ def str2hsh(s, uid=None, options=None):
                     "the value of @b should be an integer: '@b {0}'".format(
                         hsh['b']))
         if 'f' in hsh:
-            print('starting f', hsh['f'])
             # this will be a list of done:due pairs
             # 20120201T1325;20120202T1400, ...
             # logger.debug('hsh["f"]: {0}'.format(hsh['f']))
@@ -3996,9 +3990,6 @@ def str2hsh(s, uid=None, options=None):
                     due = done
                     # logger.debug("appending {0} to {1}".format(done, hsh['entry']))
                 hsh['f'].append((done, due))
-            print('ending f', hsh['f'])
-        elif hsh['itemtype'] == '+':
-            print('f not in group hsh')
         if 'j' in hsh:
             for i in range(len(hsh['j'])):
                 job = hsh['j'][i]
@@ -4636,9 +4627,9 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                             typ = 'cs'
                     else:
                         if pastdue:
-                            typ = 'pc'
+                            typ = 'pt'
                         else:
-                            typ = 'cs'
+                            typ = 'av'
                 item = [
                     ('folder', (f, tstr2SCI[typ][0]), due,
                      hsh['_summary'], f), tuple(folders),
@@ -6120,8 +6111,6 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
         # self.loadData()
 
     def replace_item(self, new_hsh):
-        if 'f' not in new_hsh:
-            print('no f', new_hsh)
         new_item, msg = hsh2str(new_hsh, self.options)
         logger.debug(new_item)
         newlines = new_item.split('\n')
@@ -6153,7 +6142,6 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
         Called by do_f to process the finish datetime and add it to the file.
         """
         hsh = self.item_hsh
-        print('start f in hsh:', ('f' in hsh))
         done, due, following = getDoneAndTwo(hsh)
         if 'z' not in hsh:
             hsh['z'] = options['local_timezone']
@@ -6177,10 +6165,9 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
                         finished = False
                         break
                 if finished:
-                    # remove the finish dates from the jobs
+                    # move the finish dates from the jobs to the history
                     for j in range(len(hsh['_j'])):
                         job = hsh['_j'][j]
-                        print('job', job['f'], job['f'][0])
                         job.setdefault('h', []).append(job['f'][0])
                         del job['f']
                         hsh['_j'][j] = job
@@ -6195,8 +6182,6 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
             if not ddn:
                 ddn = dtz
             hsh.setdefault('f', []).append((dtz, ddn))
-        # item = hsh2str(hsh, self.options)
-        print('end f in hsh:', ('f' in hsh))
         logger.debug('finish hsh: {0}'.format(hsh))
         self.replace_item(hsh)
 
