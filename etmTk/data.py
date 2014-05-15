@@ -1583,7 +1583,7 @@ type2Str = {
     '~': "ac",
     '!': "nu", # undated only appear in folders
     '-': "un", # for next view
-    '+': "cs", # for next view
+    '+': "un", # for next view
     '%': "du",
     '?': "so",
     '#': "dl"}
@@ -1831,6 +1831,7 @@ item_keys = [
     'l',  # location
     'u',  # user
     'f',  # finish date
+    'h',  # history (task group)
     'g',  # goto
     'j',  # job
     'p',  # priority
@@ -1882,7 +1883,7 @@ amp_keys = {
         u'd',   # j description
         u'e',   # e extent
         u'f',   # j finish
-        u'h',   # h history of past completions
+        u'h',   # h history (task group jobs)
         u'p',   # j priority
         u'u',   # user
         u'q'],  # j queue position
@@ -2598,8 +2599,6 @@ For editing one or more, but not all, instances of an item. Needed:
                                 v = (', '.join(pairs))
                             elif at_key == 'j' and amp_key == 'h':
                                 pairs = []
-                                print('hsh[j][h]', h['h'])
-                                # h['h'] will be a list of tuples
                                 for pair in h['h']:
                                     pairs.append(";".join([
                                         x.strftime(zfmt) for x in pair if x]))
@@ -2629,7 +2628,12 @@ For editing one or more, but not all, instances of an item. Needed:
                 tmp = []
                 for pair in hsh['f']:
                     tmp.append(";".join([x.strftime(zfmt) for x in pair if x]))
-                sl.append("\n  @f %s" % (',\n       '.join(tmp)))
+                sl.append("\n  @f %s" % (',\n    '.join(tmp)))
+            elif key == 'h':
+                tmp = []
+                for pair in hsh['h']:
+                    tmp.append(";".join([x.strftime(zfmt) for x in pair if x]))
+                sl.append("\n  @h %s" % (',\n    '.join(tmp)))
             else:
                 sl.append("%s@%s %s" % (prefix, key, lst2str(value)))
     return " ".join(sl), msg
@@ -3990,6 +3994,26 @@ def str2hsh(s, uid=None, options=None):
                     due = done
                     # logger.debug("appending {0} to {1}".format(done, hsh['entry']))
                 hsh['f'].append((done, due))
+        if 'h' in hsh:
+            # this will be a list of done:due pairs
+            # 20120201T1325;20120202T1400, ...
+            # logger.debug('hsh["f"]: {0}'.format(hsh['f']))
+            pairs = [x.strip() for x in hsh['h'].split(',') if x.strip()]
+            # logger.debug('pairs: {0}'.format(pairs))
+            hsh['h'] = []
+            for pair in pairs:
+                pair = pair.split(';')
+                done = parse(
+                    parse_datetime(
+                        pair[0], hsh['z'])).replace(tzinfo=None)
+                if len(pair) > 1:
+                    due = parse(
+                        parse_datetime(
+                            pair[1], hsh['z'])).replace(tzinfo=None)
+                else:
+                    due = done
+                    # logger.debug("appending {0} to {1}".format(done, hsh['entry']))
+                hsh['h'].append((done, due))
         if 'j' in hsh:
             for i in range(len(hsh['j'])):
                 job = hsh['j'][i]
@@ -4562,6 +4586,9 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
             #--------- make entry for folder view ----------#
         if hsh['itemtype'] in [u'+', u'-', u'%']:
             done, due, following = getDoneAndTwo(hsh)
+            hist_key = 'f'
+            if hsh['itemtype'] == '+' and 'h' in hsh:
+                hist_key = 'h'
             if done:
                 dts = done.strftime(sortdatefmt)
                 # sdt = fmt_date(hsh['f'][-1][0], True)
@@ -4569,7 +4596,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 typ = 'fn'
                 # add a finished entry to day view
                 # only show the last 'show_finished' completions
-                for d0, d1 in hsh['f'][-options['show_finished']:]:
+                for d0, d1 in hsh[hist_key][-options['show_finished']:]:
                     item = [
                         ('day', d0.strftime(sortdatefmt),
                          tstr2SCI[typ][0], hsh['_p'], '', f),
@@ -6173,8 +6200,8 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
                         hsh['_j'][j] = job
 
                     # and add the last finish date (this one) to the group
-                    hsh.setdefault('f', []).append((dt.replace(tzinfo=None), ddn))
-                    print('finished appended f', hsh['f'])
+                    completion = (dt.replace(tzinfo=None), ddn)
+                    hsh['f'] = [completion]
         else:
             dtz = dt.replace(
                     tzinfo=tzlocal()).astimezone(
