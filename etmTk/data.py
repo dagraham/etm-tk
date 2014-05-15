@@ -1593,8 +1593,8 @@ id2Type = {
     "ac": '~',
     "av": '-',
     "by": '>',
-    "cs": '+',  # unifinished dated
-    "cu": '+',  # unfinished prereqs
+    "cs": '+',  # job
+    "cu": '+',  # job with unfinished prereqs
     "dl": '#',
     "ds": '%',
     "du": '%',
@@ -1604,7 +1604,8 @@ id2Type = {
     "ns": '!',
     "nu": '!',
     "oc": '^',
-    "pc": '+', # pastdue
+    "pc": '+', # job pastdue
+    "pu": '+', # job pastdue with unfinished prereqs
     "pd": '%',
     "pt": '-',
     "rm": '*',
@@ -1656,7 +1657,9 @@ tstr2SCI = {
     "ns": [24, "saddlebrown", "note", "day"],
     "nu": [25, "saddlebrown", "note", "day"],
     "oc": [11, "peachpuff4", "occasion", "day"],
-    "pc": [15, "firebrick3", "child", "now"],
+    "pc": [15, "orangered", "child", "now"],
+
+    "pu": [15, "firebrick3", "child", "now"],
 
     "pd": [14, "orangered", "delegated", "now"],
     "pt": [13, "orangered", "task", "now"],
@@ -4642,19 +4645,19 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         typ = 'ds'
                 elif hsh['itemtype'] == '-':
                     if pastdue:
-                        typ = 'pc'
+                        typ = 'pt'
                     else:
                         typ = 'av'
                 else:
                     # group
                     if 'prereqs' in hsh and hsh['prereqs']:
                         if pastdue:
-                            typ = 'cu'
+                            typ = 'pu'
                         else:
-                            typ = 'cs'
+                            typ = 'cu'
                     else:
                         if pastdue:
-                            typ = 'pt'
+                            typ = 'pc'
                         else:
                             typ = 'cs'
                 item = [
@@ -4786,8 +4789,8 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
             if hsh['itemtype'] == '#':
                 # don't include hidden items in any other views
                 continue
-                # make in basket and someday entries #
-                # sort numbers for now view --- we'll add the typ num to
+        # make in basket and someday entries #
+        # sort numbers for now view --- we'll add the typ num to
         if hsh['itemtype'] == '$':
             item = [
                 ('inbasket', (0, tstr2SCI['ib'][0]), dt,
@@ -4950,9 +4953,9 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     # group
                     if 'prereqs' in hsh and hsh['prereqs']:
                         if pastdue:
-                            typ = 'cu'
+                            typ = 'pu'
                         else:
-                            typ = 'cs'
+                            typ = 'cu'
                         cat = 'Waiting'
                         sn = (2, tstr2SCI[typ][0])
                     else:
@@ -4965,6 +4968,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 if 'f' in hsh and 'rrule' not in hsh:
                     continue
                 else:
+                    print(summary)
                     item = [
                         ('now', sn, dtl, hsh['_p'], summary, f), (cat,),
                         (uid, typ, summary, time_str, dtl)]
