@@ -1819,7 +1819,7 @@ amp_hsh = {
     'a': 't'     # the starting value for an @a enotry is *triggers*
 }
 
-item_keys = [
+at_keys = [
     's',  # start datetime
     'e',  # extent time spent
     'x',  # expense money spent
@@ -1845,7 +1845,7 @@ item_keys = [
     'i',  # id',
 ]
 
-all_keys = item_keys + ['entry', 'fileinfo', 'itemtype', 'rrule', '_summary', '_group_summary', '_a', '_j', '_p', '_r' ]
+all_keys = at_keys + ['entry', 'fileinfo', 'itemtype', 'rrule', '_summary', '_group_summary', '_a', '_j', '_p', '_r' ]
 
 label_keys = [
     # 'f',  # finish date
@@ -2531,7 +2531,7 @@ For editing one or more, but not all, instances of an item. Needed:
         for key in bad_keys:
             omitted.append('@{0} {1}'.format(key, hsh[key]))
         msg.append("unrecogized entries: {0}".format(", ".join(omitted)))
-    for key in item_keys:
+    for key in at_keys:
         amp_key = None
         if key in options['prefix_uses']:
             prefix = options['prefix']
@@ -4642,21 +4642,21 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         typ = 'ds'
                 elif hsh['itemtype'] == '-':
                     if pastdue:
-                        typ = 'pt'
+                        typ = 'pc'
                     else:
                         typ = 'av'
                 else:
                     # group
                     if 'prereqs' in hsh and hsh['prereqs']:
                         if pastdue:
-                            typ = 'pc'
+                            typ = 'cu'
                         else:
                             typ = 'cs'
                     else:
                         if pastdue:
                             typ = 'pt'
                         else:
-                            typ = 'av'
+                            typ = 'cs'
                 item = [
                     ('folder', (f, tstr2SCI[typ][0]), due,
                      hsh['_summary'], f), tuple(folders),
@@ -4950,16 +4950,16 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     # group
                     if 'prereqs' in hsh and hsh['prereqs']:
                         if pastdue:
-                            typ = 'pc'
+                            typ = 'cu'
                         else:
                             typ = 'cs'
                         cat = 'Waiting'
                         sn = (2, tstr2SCI[typ][0])
                     else:
                         if pastdue:
-                            typ = 'pt'
+                            typ = 'pc'
                         else:
-                            typ = 'av'
+                            typ = 'cs'
                         cat = 'Available'
                         sn = (1, tstr2SCI[typ][0])
                 if 'f' in hsh and 'rrule' not in hsh:
