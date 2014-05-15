@@ -2363,7 +2363,7 @@ or 0 to display all changes.""").format(title)
 
         p = "\n".join([x for x in p.split('\n') if not (x.startswith('index') or x.startswith('diff') or x.startswith('\ No newline'))])
 
-        self.textWindow(parent=self, title=title, prompt=str(p), opts=self.options)
+        self.textWindow(parent=self, title=title, prompt=s2or3(p), opts=self.options)
 
 
     def focus_next_window(self, event):
