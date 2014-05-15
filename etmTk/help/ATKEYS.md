@@ -115,6 +115,10 @@ The path to a file or a URL to be opened using the system default application wh
 
 Tip. Have a pdf file with the agenda for a meeting? Stick an @g entry with the path to the file in the event you create for the meeting. Then whenever the meeting is selected, *G* will bring up the agenda.
 
+## @h history
+
+Used internally with task groups to track completion done;due pairs.
+
 ## @j job
 
 Component tasks or jobs within a task group are given by `@j job` entries. `@key value` entries prior to the first `@j` become the defaults for the jobs that follow. `&key value` entries given in jobs use `&` rather than `@` and apply only to the specific job.
@@ -124,10 +128,12 @@ Many key-value pairs can be given either in the group task using `@` or in the c
     @c or &c    context
     @d or &d    description
     @e or &e    extent
-    @f or &f    done[; due] (datetimes)
+    @f or &f    done[; due] datetime
     @k or &k    keyword
     @l or &l    location
     @u or &u    user
+
+The key-value pair `&h` is used internally to track job done;due completions in task groups.
 
 The key-value pair `&q` (queue position) can *only* be given in component jobs where it is required.  Key-values other than `&q` and those listed above, can *only* be given in the initial group task entry and their values are inherited by the component jobs.
 
