@@ -4968,7 +4968,6 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 if 'f' in hsh and 'rrule' not in hsh:
                     continue
                 else:
-                    print(summary)
                     item = [
                         ('now', sn, dtl, hsh['_p'], summary, f), (cat,),
                         (uid, typ, summary, time_str, dtl)]

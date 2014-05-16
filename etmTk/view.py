@@ -421,7 +421,7 @@ class App(Tk):
         viewmenu.entryconfig(9, accelerator=l)
         self.add2menu(path, (label, l))
 
-        # popup active tre
+        # popup active tree
         l = "S"
         c = "s"
         label=_("Show outline as text")
@@ -431,35 +431,45 @@ class App(Tk):
         viewmenu.entryconfig(10, accelerator=l)
         self.add2menu(path, (label, l))
 
-        viewmenu.add_separator()  # 11
+        # print active tree
+        l = "P"
+        c = "p"
+        label=_("Print outline")
+        viewmenu.add_command( label=label, underline=1, command=self.printTree)
+        self.bindTop(c, self.printTree)
+
+        viewmenu.entryconfig(11, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        viewmenu.add_separator()  # 12
         self.add2menu(path, (SEP, ))
 
         l = "Left"
         label=_("Previous week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.showWeek(event=e, week=-1))
 
-        viewmenu.entryconfig(12, accelerator=l)
+        viewmenu.entryconfig(13, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Right"
         label=_("Next week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.showWeek(event=e, week=+1))
 
-        viewmenu.entryconfig(13, accelerator=l)
+        viewmenu.entryconfig(14, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Up"
         label=_("Previous item in week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=-1))
 
-        viewmenu.entryconfig(14, accelerator=l)
+        viewmenu.entryconfig(15, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Down"
         label=_("Next item in week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=1))
 
-        viewmenu.entryconfig(15, accelerator=l)
+        viewmenu.entryconfig(16, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "B"
@@ -467,7 +477,7 @@ class App(Tk):
         label=_("List busy times in week")
         viewmenu.add_command(label=label, underline=5, command=self.showBusyPeriods)
 
-        viewmenu.entryconfig(16, accelerator=l)
+        viewmenu.entryconfig(17, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "F"
@@ -475,11 +485,11 @@ class App(Tk):
         label=_("List free times in week")
         viewmenu.add_command(label=label, underline=5, command=self.showFreePeriods)
 
-        viewmenu.entryconfig(17, accelerator=l)
+        viewmenu.entryconfig(18, accelerator=l)
         # set binding in showWeekly
         self.add2menu(path, (label, l))
 
-        for i in range(12, 18):
+        for i in range(13, 19):
             self.viewmenu.entryconfig(i, state="disabled")
 
 
@@ -1047,6 +1057,19 @@ class App(Tk):
             cmd = 'xdg-open' + " {0}".format(path)
         subprocess.call(cmd, shell=True)
         return True
+
+    def printWithDefault(self, s, e=None):
+        fo = codecs.open(loop.tmpfile, 'w', loop.options['encoding']['file'])
+        # add a trailing formfeed
+        fo.write("{0}\n".format(s.rstrip()))
+        fo.close()
+        if windoz:
+            os.startfile(loop.tmpfile, "print")
+            return
+        else:
+            cmd = "lp -o cpi=12 -o lpi=6 -o page-left=48 -o page-right=48 -o page-top=48 -o page-bottom=48 {0}".format(loop.tmpfile)
+            subprocess.call(cmd, shell=True)
+            return
 
     def showUserDetails(self, e=None):
         if not self.itemSelected or 'u' not in self.itemSelected:
@@ -1800,7 +1823,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
     def closeWeekly(self, event=None):
         self.today_col = None
-        for i in range(12, 18):
+        for i in range(13, 19):
             self.viewmenu.entryconfig(i, state="disabled")
         self.canvas.pack_forget()
         self.weekly = False
@@ -1852,7 +1875,7 @@ Enter the shortest time period you want displayed in minutes.""")
             self.hours = ["{0}am".format(i) for i in range(7,12)] + ['12pm'] + ["{0}pm".format(i) for i in range(1,12)]
         else:
             self.hours = ["{0}:00".format(i) for i in range(7, 24)]
-        for i in range(12, 18):
+        for i in range(13, 19):
             self.viewmenu.entryconfig(i, state="normal")
         self.canvas.focus_set()
         self.showWeek()
@@ -3101,6 +3124,33 @@ or 0 to expand all branches completely.""")
         if not res[0][0]: res[0].pop(0)
         prompt = "\n".join(res[0])
         self.textWindow(parent=self, title='etm', opts=self.options, prompt=prompt, modal=False)
+
+    def printTree(self, e=None):
+        if not self.active_tree:
+            return
+        ans = self.confirm(parent=self,
+            prompt=_("""Print current outline?
+"""))
+        if not ans:
+            return()
+
+        depth = self.outline_depths[self.view]
+
+        if loop.options:
+            if 'report_indent' in loop.options:
+                indent = loop.options['report_indent']
+            if 'report_width1' in loop.options:
+                width1 = loop.options['report_width1']
+            if 'report_width2' in loop.options:
+                width2 = loop.options['report_width2']
+        else:
+            indent = 4
+            width1 = 43
+            width2 = 20
+        res = tree2Text(self.active_tree, indent=indent, width1=width1, width2=width2, depth=depth)
+        if not res[0][0]: res[0].pop(0)
+        s = "\n".join(res[0])
+        self.printWithDefault(s)
 
     def clearTree(self):
         """
