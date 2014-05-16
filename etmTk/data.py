@@ -1258,8 +1258,8 @@ def get_options(d=''):
         'sms_subject': '!time_span!',
 
         'sundayfirst': False,
-        # 'users': os.path.normpath(os.path.join(etmdir, 'users.cfg')),
-        'users': '',
+        'users': os.path.normpath(os.path.join(etmdir, 'users.cfg')),
+        # 'users': '',
         'vcs_system': default_vcs,
         'vcs_settings': {'command': '', 'commit': '', 'dir': '', 'file': '', 'history': '', 'init': '', 'limit': ''},
         'weeks_after': 52,
@@ -1435,7 +1435,7 @@ def get_options(d=''):
             fo.close()
             logger.info('users: {0}'.format(cf))
         else:
-            logger.warn("Could not find users file: {0}".format(cf))
+            logger.warn("Could not find users file: {0}\n    Create this file to enable users.".format(cf))
     else:
         logger.info("users not specified in etmtk.cfg")
 
