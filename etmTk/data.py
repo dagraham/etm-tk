@@ -1258,7 +1258,8 @@ def get_options(d=''):
         'sms_subject': '!time_span!',
 
         'sundayfirst': False,
-        'users': os.path.normpath(os.path.join(etmdir, 'users.cfg')),
+        # 'users': os.path.normpath(os.path.join(etmdir, 'users.cfg')),
+        'users': '',
         'vcs_system': default_vcs,
         'vcs_settings': {'command': '', 'commit': '', 'dir': '', 'file': '', 'history': '', 'init': '', 'limit': ''},
         'weeks_after': 52,

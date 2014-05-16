@@ -432,11 +432,12 @@ class App(Tk):
         self.add2menu(path, (label, l))
 
         # print active tree
-        l = "P"
-        c = "p"
+        l = "F4"
+        c = "<F4>"
         label=_("Print outline")
         viewmenu.add_command( label=label, underline=1, command=self.printTree)
-        self.bindTop(c, self.printTree)
+        # self.bindTop(c, self.printTree)
+        self.bind(c, lambda e: self.after(AFTER, self.printTree))
 
         viewmenu.entryconfig(11, accelerator=l)
         self.add2menu(path, (label, l))
@@ -1061,13 +1062,15 @@ class App(Tk):
     def printWithDefault(self, s, e=None):
         fo = codecs.open(loop.tmpfile, 'w', loop.options['encoding']['file'])
         # add a trailing formfeed
-        fo.write("{0}\n".format(s.rstrip()))
+        # fo.write("{0}".format(s))
+        fo.write(s)
         fo.close()
         if windoz:
             os.startfile(loop.tmpfile, "print")
             return
         else:
-            cmd = "lp -o cpi=12 -o lpi=6 -o page-left=48 -o page-right=48 -o page-top=48 -o page-bottom=48 {0}".format(loop.tmpfile)
+            cmd = "lp -s -o media='letter' -o cpi=12 -o lpi=8 -o page-left=48 -o page-right=48 -o page-top=48 -o page-bottom=48 {0}\n".format(loop.tmpfile)
+            # cmd = "lpr -l {0}".format(loop.tmpfile)
             subprocess.call(cmd, shell=True)
             return
 
@@ -1837,7 +1840,7 @@ Enter the shortest time period you want displayed in minutes.""")
             self.viewmenu.entryconfig(6, state="normal")
             self.viewmenu.entryconfig(7, state="disabled")
 
-        for i in [4, 5, 8, 9]:
+        for i in [4, 5, 8, 9, 10, 11]:
             self.viewmenu.entryconfig(i, state="normal")
         self.bind("<Control-f>", self.setFilter)
 
@@ -1854,7 +1857,7 @@ Enter the shortest time period you want displayed in minutes.""")
         self.weekly = True
         self.tree.pack_forget()
         self.fltr.pack_forget()
-        for i in range(4, 10):
+        for i in range(4, 12):
             self.viewmenu.entryconfig(i, state="disabled")
 
         self.view = WEEK
@@ -3126,9 +3129,11 @@ or 0 to expand all branches completely.""")
         self.textWindow(parent=self, title='etm', opts=self.options, prompt=prompt, modal=False)
 
     def printTree(self, e=None):
+        if self.weekly:
+            return
         if not self.active_tree:
             return
-        ans = self.confirm(parent=self,
+        ans = self.confirm(parent=self.tree,
             prompt=_("""Print current outline?
 """))
         if not ans:
@@ -3149,7 +3154,8 @@ or 0 to expand all branches completely.""")
             width2 = 20
         res = tree2Text(self.active_tree, indent=indent, width1=width1, width2=width2, depth=depth)
         if not res[0][0]: res[0].pop(0)
-        s = "\n".join(res[0])
+        res[0].append('')
+        s = "{0}".format("\n".join(res[0]))
         self.printWithDefault(s)
 
     def clearTree(self):
