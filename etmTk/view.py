@@ -2807,6 +2807,7 @@ Relative dates and fuzzy parsing are supported.""")
             self.showView()
         d = GetDateTime(parent=self, title=_('date'), prompt=prompt)
         day = d.value
+
         logger.debug('day: {0}'.format(day))
         if day is not None:
             self.chosen_day = day
@@ -2815,7 +2816,7 @@ Relative dates and fuzzy parsing are supported.""")
                 self.showWeek(event=e, week=None)
             else:
                 self.scrollToDate(day.date())
-        return "break"
+        return
 
     def setFilter(self, *args):
         if self.weekly:
