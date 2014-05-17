@@ -710,7 +710,7 @@ def pathSearch(filename):
     search_path = os.getenv('PATH').split(os.pathsep)
     for path in search_path:
         candidate = os.path.normpath(os.path.join(path, filename))
-        logger.debug('checking for: {0}'.format(candidate))
+        # logger.debug('checking for: {0}'.format(candidate))
         if os.path.isfile(candidate):
             # return os.path.abspath(candidate)
             return candidate
@@ -2953,7 +2953,7 @@ def items2Hashes(list_of_items, options=None):
                     job['fileinfo'] = (rel_name, linenums[0], linenums[-1])
                 except:
                     logger.exception("fileinfo: {0}.{1}".format(rel_name, linenums))
-                logger.debug('appending job: {0}'.format(job))
+                # logger.debug('appending job: {0}'.format(job))
                 hashes.append(job)
         else:
             tmp_hsh = {}
