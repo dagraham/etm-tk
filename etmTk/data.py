@@ -6180,6 +6180,35 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
         logger.debug(('replacement: {0}'.format(hsh_rev)))
         self.replace_item(hsh_rev)
 
+    def cmd_do_schedulenew(self, new_dtn):
+        # new_dtn = new_dt.astimezone(gettz(self.item_hsh['z'])).replace(tzinfo=None)
+        hsh_rev = deepcopy(self.item_hsh)
+        if self.old_dt:
+            # old_dtn = self.old_dt.astimezone(gettz(self.item_hsh['z'])).replace(tzinfo=None)
+            old_dtn = self.old_dt
+            if 'r' in hsh_rev:
+                mode = 'append'
+                if '+' in hsh_rev and new_dtn in hsh_rev['+']:
+                    return
+                if '-' in hsh_rev and new_dtn in hsh_rev['-']:
+                    hsh_rev['-'].remove(new_dtn)
+                else:
+                    hsh_rev.setdefault('+', []).append(new_dtn)
+                # check starting time
+                if new_dtn < hsh_rev['s']:
+                    olds = hsh_rev['s']
+                    d = (hsh_rev['s'] - new_dtn).days
+                    hsh_rev['s'] = hsh_rev['s'] - (d+1) * oneday
+            else: # dated but not repeating
+                if hsh_rev['s'] == new_dtn:
+                    return
+                hsh_rev['r'] = 'l'
+                hsh_rev.setdefault('+', []).append(new_dtn)
+        else: # either undated or not repeating
+            hsh_rev['s'] = new_dtn
+        logger.debug(('replacement: {0}'.format(hsh_rev)))
+        self.replace_item(hsh_rev)
+
     def delete_item(self):
         f, begline, endline = self.item_hsh['fileinfo']
         fp = os.path.normpath(os.path.join(self.options['datadir'], f))

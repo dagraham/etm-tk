@@ -432,12 +432,12 @@ class App(Tk):
         self.add2menu(path, (label, l))
 
         # print active tree
-        l = "F4"
-        c = "<F4>"
+        l = "P"
+        c = "p"
         label=_("Print outline")
         viewmenu.add_command( label=label, underline=1, command=self.printTree)
         # self.bindTop(c, self.printTree)
-        self.bind(c, lambda e: self.after(AFTER, self.printTree))
+        self.bind("p", lambda e: self.after(AFTER, self.printTree))
 
         viewmenu.entryconfig(11, accelerator=l)
         self.add2menu(path, (label, l))
@@ -508,6 +508,7 @@ class App(Tk):
             [_('Edit'), 'e'],
             [_('Finish'), 'f'],
             [_('Reschedule'), 'r'],
+            [_('Schedule new'), 'i'],
             [_('Open link'), 'g'],
             [_('Show user details'), 'u'],
             ]
@@ -517,6 +518,7 @@ class App(Tk):
             'e': self.editItem,
             'f': self.finishItem,
             'r': self.rescheduleItem,
+            'i': self.scheduleNewItem,
             'g': self.openWithDefault,
             'u': self.showUserDetails,
             }
@@ -529,6 +531,7 @@ class App(Tk):
             if k == 'd':
                 l = "BackSpace"
                 c = "<BackSpace>"
+
             else:
                 l = k.upper()
                 c = k
@@ -1531,6 +1534,43 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             self.tree.focus_set()
             self.showView(row=self.topSelected)
 
+    def scheduleNewItem(self, e=None):
+        if e and e.char != 'i':
+            return
+        if not self.itemSelected:
+            return
+        loop.item_hsh = item_hsh = self.itemSelected
+        if self.dtSelected:
+            loop.old_dt = old_dt = self.dtSelected
+            title = _('adding new instance')
+        else:
+            loop.old_dt = None
+            title = _('scheduling an undated item')
+        logger.debug('dtSelected: {0}'.format(self.dtSelected))
+        if self.weekly:
+            master = self.canvas
+        else:
+            master = self.tree
+        prompt = _("""\
+Enter the new date and time for the item or return an empty string to
+use the current time. Relative dates and fuzzy parsing are supported.""")
+        dt = GetDateTime(parent=self,  title=title,
+                         prompt=prompt)
+        new_dt = dt.value
+        if new_dt is None:
+            return
+        new_dtn = new_dt.astimezone(gettz(self.itemSelected['z'])).replace(tzinfo=None)
+        logger.debug('scheduled new instance: {0}'.format(new_dtn))
+        loop.cmd_do_schedulenew(new_dtn)
+
+        self.updateAlerts()
+        if self.weekly:
+            self.canvas.focus_set()
+            self.showWeek()
+        else:
+            self.tree.focus_set()
+            self.showView(row=self.topSelected)
+
 
     def showAlerts(self, e=None):
         # hack to avoid activating with Ctrl-a
@@ -2492,27 +2532,27 @@ or 0 to display all changes.""").format(title)
                 text = "{1}\n\n{2}: {3}\n\n{4}: {5}".format(item, hsh['entry'].lstrip(), _("Errors"), hsh['errors'],  _("file"), filetext)
             else:
                 text = "{1}\n\n{2}: {3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
-            for i in [0, 1, 2, 4, 6]: # everything except finish and open link
+            for i in [0, 1, 2, 4, 5, 7]: # everything except finish and open link
                 self.itemmenu.entryconfig(i, state='normal')
             if isUnfinished:
                 self.itemmenu.entryconfig(3, state='normal')
             else:
                 self.itemmenu.entryconfig(3, state='disabled')
             if hasLink:
-                self.itemmenu.entryconfig(5, state='normal')
-            else:
-                self.itemmenu.entryconfig(5, state='disabled')
-            if hasUser:
                 self.itemmenu.entryconfig(6, state='normal')
             else:
                 self.itemmenu.entryconfig(6, state='disabled')
+            if hasUser:
+                self.itemmenu.entryconfig(7, state='normal')
+            else:
+                self.itemmenu.entryconfig(7, state='disabled')
             self.uuidSelected = uuid
             self.itemSelected = hsh
             logger.debug('dt selected: {0}, {1}'.format(dt, type(dt)))
             self.dtSelected = dt
         else:
             text = ""
-            for i in range(7):
+            for i in range(8):
                 self.itemmenu.entryconfig(i, state='disabled')
             self.itemSelected = None
             self.uuidSelected = None
@@ -3135,8 +3175,7 @@ or 0 to expand all branches completely.""")
         if not self.active_tree:
             return
         ans = self.confirm(parent=self.tree,
-            prompt=_("""Print current outline?
-"""))
+            prompt=_("""Print current outline?"""))
         if not ans:
             return()
 
