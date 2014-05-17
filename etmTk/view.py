@@ -2862,15 +2862,15 @@ Relative dates and fuzzy parsing are supported.""")
         if self.weekly:
             return
         self.filter_active = True
-        self.viewmenu.entryconfig(5, state="disabled")
-        self.viewmenu.entryconfig(6, state="normal")
+        self.viewmenu.entryconfig(6, state="disabled")
+        self.viewmenu.entryconfig(7, state="normal")
         self.fltr.configure(bg="white", state="normal")
         self.fltr.focus_set()
 
     def clearFilter(self, e=None):
         self.filter_active = False
-        self.viewmenu.entryconfig(5, state="normal")
-        self.viewmenu.entryconfig(6, state="disabled")
+        self.viewmenu.entryconfig(6, state="normal")
+        self.viewmenu.entryconfig(7, state="disabled")
         self.filterValue.set('')
         self.fltr.configure(bg=BGCOLOR)
         self.tree.focus_set()
