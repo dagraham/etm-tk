@@ -84,13 +84,6 @@
         Note                                        Ctrl-N
         Custom                                      Ctrl-C
 
-## Edit
-
-    Show possible completions                     Ctrl-Space
-    Validate entry                                  Ctrl-?
-    Cancel                                          Escape
-    Save changes and close editor                   Ctrl-W
-
 ## Custom
 
     Create and display selected report              Return

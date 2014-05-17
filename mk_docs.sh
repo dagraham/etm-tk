@@ -42,7 +42,7 @@ done
 
 echo Creating UserManual.md
 echo "% ETM Users Manual" > UserManual.md
-for file in OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS; do
+for file in OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS KEYBINDINGS; do
     echo "" >> UserManual.md
     sed '1 s/%/##/' <$file.md >> UserManual.md
 done

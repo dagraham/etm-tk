@@ -1,4 +1,16 @@
-## Editor
+# Editor Shortcuts
+
+## etm
+
+- Ctrl-Space shows possible completions
+
+- Ctrl-? validates the current entry
+
+- Escape closes the editor, first prompting for confirmation if changes have been made.
+
+- Ctrl-w saves changes and closes the editor.
+
+## General
 
 - Clicking mouse button 1 positions the insertion cursor just before the character underneath the mouse cursor, sets the input focus to this widget, and clears any selection in the widget. Dragging with mouse button 1 strokes out a selection between the insertion cursor and the character under the mouse.
 

@@ -185,7 +185,7 @@ where `frequency` is one of the following characters:
 
     y       yearly
     m       monthly
-    m       weekly
+    w       weekly
     d       daily
     h       hourly
     n       minutely
