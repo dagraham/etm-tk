@@ -1062,7 +1062,7 @@ group_regex = re.compile(r'^\s*(.*)\s+(\d+)/(\d+):\s*(.*)')
 groupdate_regex = re.compile(r'\by{2}\b|\by{4}\b|\b[dM]{1,4}\b|\bw\b')
 options_regex = re.compile(r'^\s*(!?[fk](\[[:\d]+\])?)|(!?[clostu])\s*$')
 # completion_regex = re.compile(r'(?:^.*?)((?:\@[a-zA-Z] ?)?\b\S*)$')
-completion_regex = re.compile(r'((?:\@[a-zA-Z]? ?)?(?:\b[a-zA-Z0-9_/:]+)?)$')
+completion_regex = re.compile(r'((?:[\@\&][a-zA-Z]? ?)?(?:\b[a-zA-Z0-9_/:]+)?)$')
 
 # what about other languages?
 # lun mar mer jeu ven sam dim
@@ -1439,6 +1439,50 @@ def get_options(d=''):
     else:
         logger.info("users not specified in etmtk.cfg")
 
+
+    # completions = []
+    completions = set([])
+    if options['auto_completions']:
+        cf = options['auto_completions']
+        if os.path.isfile(cf):
+            logger.debug("auto_completions: {0}".format(cf))
+            fe = options['encoding']['file']
+            with codecs.open(cf, 'r', fe) as fo:
+                for x in fo.readlines():
+                    x = x.rstrip()
+                    if x and x[0] != "#":
+                        completions.add(x)
+            logger.info('Using completions file: {0}'.format(cf))
+        else:
+            logger.warn("Could not find completions file: {0}".format(cf))
+    else:
+        logger.info("auto_completions not specified in etmtk.cfg")
+
+    if 'user_data' in options and options['user_data']:
+        logger.debug('Adding keys from user_data to completions.')
+        for x in options['user_data'].keys():
+            completions.add("@u {0}".format(x))
+            completions.add("&u {0}".format(x))
+
+    if options['shared_completions']:
+        cf = options['shared_completions']
+        if os.path.isfile(cf):
+            logger.debug("shared_completions: {0}".format(cf))
+            fe = self.options['encoding']['file']
+            with codecs.open(cf, 'r', fe) as fo:
+                for x in fo.readlines():
+                    x = x.rstrip()
+                    if x and x[0] != "#":
+                        completions.add(x)
+            logger.info('Using shared completions file: {0}'.format(cf))
+        else:
+            logger.warn("Could not find shared completions file: {0}".format(cf))
+    else:
+        logger.info("optional shared_completions not specified in etmtk.cfg")
+
+    if completions:
+        options['completions'] = list(completions)
+        options['completions'].sort()
 
     z = gettz(options['local_timezone'])
     if z is None:

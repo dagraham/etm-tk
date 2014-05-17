@@ -1077,14 +1077,14 @@ class App(Tk):
     def showUserDetails(self, e=None):
         if not self.itemSelected or 'u' not in self.itemSelected:
             return
-        if not self.options['user_data']:
+        if not loop.options['user_data']:
             return
         user = self.itemSelected['u']
-        if user in self.options['user_data']:
-            detail = "\n".join(self.options['user_data'][user])
+        if user in loop.options['user_data']:
+            detail = "\n".join(loop.options['user_data'][user])
         else:
             detail = _("No record was found for {0}".format(user))
-        self.textWindow(self, user, detail, opts=self.options)
+        self.textWindow(self, user, detail, opts=loop.options)
 
 
         return
@@ -1417,19 +1417,19 @@ The local timezone is used when none is given."""
                 self.showView()
         return
 
-    def editConfig(self, e=None, config=True):
+    def editConfig(self, e=None):
         file = loop.options['config']
-        self.editFile(e, file=file)
+        self.editFile(e, file=file, config=True)
 
-    def editCompletions(self, e=None, config=True):
+    def editCompletions(self, e=None):
         file = loop.options['auto_completions']
-        self.editFile(e, file=file)
+        self.editFile(e, file=file, config=True)
 
-    def editUsers(self, e=None, config=True):
+    def editUsers(self, e=None):
         file = loop.options['users']
-        self.editFile(e, file=file)
+        self.editFile(e, file=file, config=True)
 
-    def editScratch(self, e=None, config=True):
+    def editScratch(self, e=None):
         file = loop.options['scratchpad']
         self.editFile(e, file=file)
 
