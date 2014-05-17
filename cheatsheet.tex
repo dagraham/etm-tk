@@ -269,6 +269,7 @@ A repeating \emph{task} may optionally also include an \verb!@o <k|s|r>! entry (
    \item[\texttt{@o s}] Skip overdue due dates and set the due date for the next repetition to the first due date from the recurrence rule on or after the current date.
 \end{compactdesc}
 
+\section{reports}
 
 A \emph{report specification} is created by entering a report type character followed by a groupby setting and, perhaps, by one or more report options. Together, the type character, groupby setting and options determine which items will appear in the report and how they will be organized and displayed.
 
@@ -341,9 +342,9 @@ Report options are listed below. Report type \textbf{c} supports all options exc
 \texttt{-b} & begin (datetime). Limit the display of dated items to \\
            & those with datestimes falling \emph{on or after} this datetime. \\
 \texttt{-c} & context (regular expression). \\
-\texttt{-d} & depth (integer). The default, \verb'-d 0', includes all outline \\
-            & levels. Use \verb'-d 1' to include only level 1, \verb'-d 2' to include \\
-            & levels 1 and 2 and so forth. \\
+\texttt{-d} & depth (integer). CLI only. The default, \verb'-d 0', includes all \\
+            & outline levels. Use \verb'-d 1' to include only level 1, \verb'-d 2' to \\
+            & include levels 1 and 2 and so forth. \\
 \texttt{-e} & end (datetime). Limit the display of dated items to those \\
           & with datetimes falling \emph{before} this datetime.\\
 \texttt{-f} & file (relative file path).\\

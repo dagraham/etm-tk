@@ -3199,7 +3199,7 @@ def checkhsh(hsh):
     return messages
 
 
-def str2opts(s, options=None):
+def str2opts(s, options=None, cli=True):
     if not options: options = {}
     filters = {}
     if 'calendars' in options:
@@ -3355,11 +3355,15 @@ def str2opts(s, options=None):
                 filters['search-all'] = (True, re.compile(r'%s' % value,
                                                       re.IGNORECASE|re.DOTALL))
         elif key == 'd':
-            if grpby['report'] == 'a':
-                d = int(part[1:])
-                if d:
-                    d += 1
-                grpby['depth'] = d
+            if cli:
+                if grpby['report'] == 'a':
+                    d = int(part[1:])
+                    if d:
+                        d += 1
+                    grpby['depth'] = d
+            else:
+                pass
+
         elif key == 't':
             value = [x.strip() for x in part[1:].split(',')]
             for t in value:
@@ -3749,7 +3753,7 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
 
 # @memoize
 def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
-                  colors=None):
+                  colors=None, cli=True):
     """
         getViewData returns items with the format:
             [(view, (sort)), node1, node2, ...,
@@ -3762,7 +3766,7 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
     """
     if not options: options = {}
 
-    grpby, dated, filters = str2opts(s, options)
+    grpby, dated, filters = str2opts(s, options, cli)
     if 'width1' in grpby:
         width1 = grpby['width1']
     else:

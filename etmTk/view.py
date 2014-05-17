@@ -3239,7 +3239,8 @@ or 0 to expand all branches completely.""")
                 self.value_of_combo,
                 self.loop.file2uuids,
                 self.loop.uuid2hash,
-                self.loop.options)
+                self.loop.options,
+                cli=False)
             if not res:
                 res = _("Report contains no output.")
             if self.value_of_combo not in self.specs:
