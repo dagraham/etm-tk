@@ -1009,8 +1009,11 @@ class App(Tk):
                 master = self.tree
 
             values = OptionsDialog(parent=self, master=master, title=title, prompt=prompt, opts=loop.calendars, radio=False, yesno=False).getValue()
+
             if values != loop.calendars:
                 loop.calendars = values
+                loop.options['calendars'] = values
+                data.setConfig(loop.options)
                 self.updateCalendars()
         else:
             prompt = _("No calendars have been specified in etmtk.cfg.")
@@ -3308,7 +3311,9 @@ or 0 to expand all branches completely.""")
             return 0
 
     def getSpecs(self, e=None):
-        self.specs = loop.options['reports']
+        self.specs = ['']
+        if 'reports' in loop.options:
+            self.specs = loop.options['reports']
 
     def editReports(self, e=None):
         if e and e.char != "R":

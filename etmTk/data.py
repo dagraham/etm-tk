@@ -1109,6 +1109,65 @@ day_end_minutes = 23 * 60 + 59
 
 actions = ["s", "d", "e", "p", "v"]
 
+def setConfig(options):
+    dfile_encoding = options['encoding']['file']
+    cal_regex = None
+    if 'calendars' in options:
+        cal_pattern = r'^%s' % '|'.join(
+            [x[2] for x in options['calendars'] if x[1]])
+        cal_regex = re.compile(cal_pattern)
+
+    options['user_data'] = {}
+    options['user_tuples'] = []
+    options['completions'] = []
+    options['completions_tuples'] = []
+    options['reports_tuples'] = []
+    completions = set([])
+    reports = set([])
+
+    prefix, filelist = getFiles(options['datadir'], include=r'*.cfg')
+    logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
+    for fp, rp in filelist:
+        if os.path.split(rp)[0] and cal_regex and not cal_regex.match(rp):
+            # print('no match', cal_pattern, rp)
+            continue
+        drive, parts = os_path_splitall(fp)
+        n, e  = os.path.splitext(parts[-1])
+        # skip etmtk and any other .cfg files other than the following
+        if n == "completions":
+            with codecs.open(fp, 'r', dfile_encoding) as fo:
+                for x in fo.readlines():
+                    x = x.rstrip()
+                    if x and x[0] != "#":
+                        completions.add(x)
+
+        elif n == "reports":
+            with codecs.open(fp, 'r', dfile_encoding) as fo:
+                for x in fo.readlines():
+                    x = x.rstrip()
+                    if x and x[0] != "#":
+                        reports.add(x)
+
+        elif n == "users":
+            fo = codecs.open(fp, 'r', dfile_encoding)
+            tmp = yaml.load(fo)
+            fo.close()
+            # if a key already exists, use this value
+            options['user_data'].update(tmp)
+            for x in tmp.keys():
+                completions.add("@u {0}".format(x))
+                completions.add("&u {0}".format(x))
+
+    if completions:
+        completions = list(completions)
+        completions.sort()
+        options['completions'] = completions
+    if reports:
+        reports = list(reports)
+        reports.sort()
+        options['reports'] = reports
+
+
 # noinspection PyGlobalUndefined
 def get_options(d=''):
     """
@@ -1422,61 +1481,63 @@ def get_options(d=''):
             options['action_minutes'])
         options['action_minutes'] = 1
 
-    cal_regex = None
-    if 'calendars' in options:
-        cal_pattern = r'^%s' % '|'.join(
-            [x[2] for x in options['calendars'] if x[1]])
-        cal_regex = re.compile(cal_pattern)
+    setConfig(options)
 
-    options['user_data'] = {}
-    options['user_tuples'] = []
-    options['completions'] = []
-    options['completions_tuples'] = []
-    options['reports_tuples'] = []
-    completions = set([])
-    reports = set([])
-
-    prefix, filelist = getFiles(options['datadir'], include=r'*.cfg')
-    logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
-    for fp, rp in filelist:
-        if os.path.split(rp)[0] and cal_regex and not cal_regex.match(rp):
-            # print('no match', cal_pattern, rp)
-            continue
-        drive, parts = os_path_splitall(fp)
-        n, e  = os.path.splitext(parts[-1])
-        # skip etmtk and any other .cfg files other than the following
-        if n == "completions":
-            with codecs.open(fp, 'r', dfile_encoding) as fo:
-                for x in fo.readlines():
-                    x = x.rstrip()
-                    if x and x[0] != "#":
-                        completions.add(x)
-
-        elif n == "reports":
-            with codecs.open(fp, 'r', dfile_encoding) as fo:
-                for x in fo.readlines():
-                    x = x.rstrip()
-                    if x and x[0] != "#":
-                        reports.add(x)
-
-        elif n == "users":
-            fo = codecs.open(fp, 'r', dfile_encoding)
-            tmp = yaml.load(fo)
-            fo.close()
-            # if a key already exists, use this value
-            options['user_data'].update(tmp)
-            for x in tmp.keys():
-                completions.add("@u {0}".format(x))
-                completions.add("&u {0}".format(x))
-
-
-    if completions:
-        options['completions'] = list(completions)
-        options['completions'].sort()
-    if reports:
-        reports = list(reports)
-        reports.sort()
-        options['reports'] = reports
+    # cal_regex = None
+    # if 'calendars' in options:
+    #     cal_pattern = r'^%s' % '|'.join(
+    #         [x[2] for x in options['calendars'] if x[1]])
+    #     cal_regex = re.compile(cal_pattern)
+    #
+    # options['user_data'] = {}
+    # options['user_tuples'] = []
+    # options['completions'] = []
+    # options['completions_tuples'] = []
+    # options['reports_tuples'] = []
+    # completions = set([])
+    # reports = set([])
+    #
+    # prefix, filelist = getFiles(options['datadir'], include=r'*.cfg')
+    # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
+    # for fp, rp in filelist:
+    #     if os.path.split(rp)[0] and cal_regex and not cal_regex.match(rp):
+    #         # print('no match', cal_pattern, rp)
+    #         continue
+    #     drive, parts = os_path_splitall(fp)
+    #     n, e  = os.path.splitext(parts[-1])
+    #     # skip etmtk and any other .cfg files other than the following
+    #     if n == "completions":
+    #         with codecs.open(fp, 'r', dfile_encoding) as fo:
+    #             for x in fo.readlines():
+    #                 x = x.rstrip()
+    #                 if x and x[0] != "#":
+    #                     completions.add(x)
+    #
+    #     elif n == "reports":
+    #         with codecs.open(fp, 'r', dfile_encoding) as fo:
+    #             for x in fo.readlines():
+    #                 x = x.rstrip()
+    #                 if x and x[0] != "#":
+    #                     reports.add(x)
+    #
+    #     elif n == "users":
+    #         fo = codecs.open(fp, 'r', dfile_encoding)
+    #         tmp = yaml.load(fo)
+    #         fo.close()
+    #         # if a key already exists, use this value
+    #         options['user_data'].update(tmp)
+    #         for x in tmp.keys():
+    #             completions.add("@u {0}".format(x))
+    #             completions.add("&u {0}".format(x))
+    #
+    #
+    # if completions:
+    #     options['completions'] = list(completions)
+    #     options['completions'].sort()
+    # if reports:
+    #     reports = list(reports)
+    #     reports.sort()
+    #     options['reports'] = reports
 
     z = gettz(options['local_timezone'])
     if z is None:
