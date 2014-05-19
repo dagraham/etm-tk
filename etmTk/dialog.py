@@ -13,21 +13,21 @@ import platform
 
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, Checkbutton, W, X, LabelFrame, Canvas, CURRENT, TclError
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, Checkbutton, W, X, LabelFrame, Canvas, CURRENT, TclError, Listbox, SINGLE, BROWSE
     from tkinter import ttk
     from tkinter import font as tkFont
     from tkinter.messagebox import askokcancel
-    from tkinter.filedialog import askopenfilename
+    # from tkinter.filedialog import askopenfilename
     utf8 = lambda x: x
     # from tkinter import simpledialog as tkSimpleDialog
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, Checkbutton, W, X, LabelFrame, Canvas, CURRENT, TclError
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, Checkbutton, W, X, LabelFrame, Canvas, CURRENT, TclError, Listbox, SINGLE, BROWSE
     # import tkMessageBox
     import ttk
     import tkFont
     from tkMessageBox import askokcancel
-    from tkFileDialog import askopenfilename
+    # from tkFileDialog import askopenfilename
     # import tkSimpleDialog
     def utf8(s):
         return s
@@ -38,7 +38,7 @@ from datetime import datetime, timedelta
 
 from collections import OrderedDict
 
-from etmTk.data import fmt_period, parse_dt, get_current_time
+from etmTk.data import fmt_period, parse_dt, get_current_time, getFiles, os_path_splitall
 
 import gettext
 
@@ -361,6 +361,109 @@ class MessageWindow():
         self.win.destroy()
 
 
+class ListBoxChoice(object):
+    def __init__(self, master=None, title=None, list=[], start=''):
+        self.master = master
+        self.value = None
+        self.list = list
+        self.start = start
+
+        self.modalPane = Toplevel(self.master)
+        if master:
+            self.modalPane.geometry("+%d+%d" % (master.winfo_rootx() + 50,
+                                  master.winfo_rooty() + 50))
+
+        self.modalPane.transient(self.master)
+        self.modalPane.grab_set()
+
+        self.modalPane.bind("<Return>", self._choose)
+        self.modalPane.bind("<Escape>", self._cancel)
+
+        if title:
+            self.modalPane.title(title)
+
+        listFrame = Frame(self.modalPane)
+        listFrame.pack(side="top", fill="both", expand=1, padx=5, pady=5)
+
+        # scrollBar = Scrollbar(listFrame)
+        # scrollBar.pack(side=RIGHT, fill=Y)
+        self.listBox = Listbox(listFrame, selectmode=BROWSE)
+        self.listBox.pack(side="left", fill="both", ipadx=5, ipady=2, expand=1, padx=0, pady=0)
+        self.listBox.bind("<Return>", self._choose)
+        self.listBox.bind("<Double-1>", self._choose)
+        self.listBox.bind("<Escape>", self._cancel)
+        self.listBox.bind("<Up>", self.cursorUp)
+        self.listBox.bind("<Down>", self.cursorDown)
+
+        # scrollBar.config(command=self.listBox.yview)
+        # self.listBox.config(yscrollcommand=scrollBar.set)
+        # self.list.sort()
+        index = 0
+        init_index = 0
+        for item in self.list:
+            if type(item) is tuple:
+                # only show the label
+                # (label, value, disabled)
+                self.listBox.insert(END, item[0])
+                if item[2]:
+                    # disable
+                    self.listBox.itemconfig(index, fg="gray60")
+                else:
+                    self.listBox.itemconfig(index, fg="blue")
+                    if self.start and item[1] == self.start:
+                        init_index = index
+            else:
+                self.listBox.insert(END, item)
+            index += 1
+
+        buttonFrame = Frame(self.modalPane)
+        buttonFrame.pack(side="bottom", fill="x", padx=10, pady=2)
+
+        chooseButton = Button(buttonFrame, text="Choose", command=self._choose)
+        chooseButton.pack(side="right")
+
+        cancelButton = Button(buttonFrame, text="Cancel", command=self._cancel)
+        cancelButton.pack(side="left")
+        self.listBox.select_set(init_index)
+        self.listBox.see(init_index)
+        self.listBox.focus_set()
+
+    def cursorUp(self, event=None):
+        cursel = int(self.listBox.curselection()[0])
+        # newsel = max(0, cursel=1)
+        newsel = max(0, cursel-1)
+        self.listBox.select_clear(cursel)
+        self.listBox.select_set(newsel)
+        self.listBox.see(newsel)
+        return "break"
+
+    def cursorDown(self, event=None):
+        cursel = int(self.listBox.curselection()[0])
+        newsel = min(len(self.list)-1, cursel+1)
+        self.listBox.select_clear(cursel)
+        self.listBox.select_set(newsel)
+        self.listBox.see(newsel)
+        return "break"
+
+    def _choose(self, event=None):
+        try:
+            firstIndex = self.listBox.curselection()[0]
+            self.value = self.list[int(firstIndex)]
+            if self.value[2]:
+                return
+        except IndexError:
+            self.value = None
+        self.modalPane.destroy()
+
+    def _cancel(self, event=None):
+        self.modalPane.destroy()
+
+    def returnValue(self):
+        self.master.wait_window(self.modalPane)
+        return self.value
+
+
+
 class Dialog(Toplevel):
 
     def __init__(self, parent, title=None, prompt=None, opts=None, default=None, modal=True, xoffset=50, yoffset=50, event=None):
@@ -485,82 +588,6 @@ class Dialog(Toplevel):
     def messageWindow(self, title, prompt):
         MessageWindow(self.parent, title, prompt)
 
-# class HelpWindow(Dialog):
-#
-#     def body(self, master):
-#         PADY = 2
-#
-#         toolbar = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
-#         # self.options = list of label, content pairs
-#         self.vm_dict = OrderedDict(self.options['help_opts'])
-#         vm_labels = [x[0] for x in self.options['help_opts']]
-#         self.view = StringVar(self)
-#
-#         self.vm = vm = OptionMenu(toolbar, self.view, *vm_labels, command=self.showHelp)
-#         vm.configure(width=10, height=1, highlightbackground=BGCOLOR, background=BGCOLOR, pady=PADY)
-#         vm.pack(side="left", pady=0, padx=6)
-#         self.view.set(vm_labels[0])
-#
-#         # find
-#         Button(toolbar, text='x', command=self.clearFind, highlightbackground=BGCOLOR, pady=PADY).pack(side=LEFT, padx=0)
-#         self.find_text = StringVar(toolbar)
-#         self.e = Entry(toolbar, textvariable=self.find_text, width=16, highlightbackground=BGCOLOR)
-#         self.e.pack(side=LEFT, padx=0)
-#         self.e.bind("<Return>", self.onFind)
-#         Button(toolbar, text='>', command=self.onFind, highlightbackground=BGCOLOR, pady=PADY).pack(side=LEFT, padx=0)
-#
-#         Button(toolbar, text=_("OK"), highlightbackground=BGCOLOR, pady=PADY, command=self.cancel).pack(side="right", padx=6)
-#         # self.bind("<Escape>", self.quit)
-#         self.bind("<Escape>", self.cancel)
-#
-#         toolbar.pack(side="top", padx=6, pady=0, expand="no", fill="x")
-#
-#         textwindow = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
-#
-#         text = ReadOnlyText(textwindow, bd=2, relief="sunken", padx=3, pady=2,
-#                             # font=self.tkfixedfont,
-#                             width=70)
-#         text.configure(highlightthickness=0)
-#         text.tag_configure(FOUND, background="lightskyblue")
-#
-#         text.pack(side="top", padx=4, pady=4,
-#                   expand=1, fill="both"
-#         )
-#         self.text = text
-#         textwindow.pack(side="top",
-#                         expand=1, fill="both"
-#         )
-#         self.showHelp()
-#         return self.vm
-#
-#     def showHelp(self, e=None):
-#         label = self.view.get()
-#         self.text.delete("1.0", END)
-#         self.text.insert("1.0", self.vm_dict[label])
-#         logger.debug("label: {0}".format(label))
-#
-#     def clearFind(self, *args):
-#         self.text.tag_remove(FOUND, "0.0", END)
-#         self.find_text.set("")
-#
-#     def onFind(self, *args):
-#         target = self.find_text.get()
-#         logger.debug('target {0}: {1}'.format(target, self.text))
-#         if target:
-#             where = self.text.search(target, INSERT, nocase=1)
-#             if where:
-#                 pastit = where + ('+%dc' % len(target))
-#                 logger.debug('pastit: {0}'.format(pastit))
-#                 # self.text.tag_remove(SEL, '1.0', END)
-#                 self.text.tag_add(FOUND, where, pastit)
-#                 self.text.mark_set(INSERT, pastit)
-#                 self.text.see(INSERT)
-#                 self.text.focus()
-#
-#     def buttonbox(self):
-#         box = Frame(self, background=BGCOLOR, highlightbackground=BGCOLOR)
-#         box.pack(side='bottom', fill=X, expand=0)
-
 class TextVariableWindow(Dialog):
     def body(self, master):
         if 'textvariable' not in self.options:
@@ -584,12 +611,6 @@ class TextVariableWindow(Dialog):
         self.bind("<Return>", self.ok)
         self.bind("<Escape>", self.ok)
         box.pack(side='bottom')
-
-    # def apply(self, e=None):
-    #     logger.debug("got here")
-    #     self.options['textvariable'].set("")
-    #     self.entry.delete(0, END)
-    #     self.parent.goHome()
 
     def quit(self, event=None):
         if self.parent:
@@ -659,7 +680,6 @@ class TextDialog(Dialog):
 
 
 class OptionsDialog():
-    # noinspection PyShadowingNames
     def __init__(self, parent, master=None, title="", prompt="", opts=None, radio=True, yesno=True):
         if not opts: opts = []
         self.win = Toplevel(parent)

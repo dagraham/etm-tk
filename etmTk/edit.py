@@ -20,8 +20,8 @@ if platform.python_version() >= '3':
     # from tkinter import simpledialog as tkSimpleDialog
     # from tkinter.simpledialog import askstring
     # from tkinter.messagebox import askokcancel
-    from tkinter.filedialog import asksaveasfilename
-    from tkinter.filedialog import askopenfilename
+    # from tkinter.filedialog import asksaveasfilename
+    # from tkinter.filedialog import askopenfilename
 else:
     import Tkinter as tkinter
     from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Frame, LEFT, RIGHT, Text, PanedWindow, OptionMenu, StringVar, Menu, BooleanVar, ACTIVE, X, RIDGE, BOTH, SEL, SEL_FIRST, SEL_LAST, Button, FLAT, Listbox
@@ -30,9 +30,9 @@ else:
     import tkFont
     # import tkSimpleDialog
     # from tkSimpleDialog import askstring
-    from tkFileDialog import asksaveasfilename
-    from tkFileDialog import askopenfilename
-    from tkMessageBox import askokcancel
+    # from tkFileDialog import asksaveasfilename
+    # from tkFileDialog import askopenfilename
+    # from tkMessageBox import askokcancel
 
 # Also from messagebox:
 # askquestion()
@@ -64,9 +64,9 @@ SAVESPECS = _("Save changes to report specifications")
 CLOSE = _("Close")
 
 
-from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, optionShortcut, CMD, relpath, completion_regex, getReportData, tree2Text, AFTER, get_current_time
+from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, optionShortcut, CMD, relpath, completion_regex, getReportData, tree2Text, AFTER, get_current_time, getFileTuples
 
-from etmTk.dialog import BGCOLOR, OptionsDialog, ReadOnlyText
+from etmTk.dialog import BGCOLOR, OptionsDialog, ReadOnlyText, ListBoxChoice
 
 
 class SimpleEditor(Toplevel):
@@ -387,18 +387,14 @@ class SimpleEditor(Toplevel):
                 dir, initfile = os.path.split(file)
                 # we need a filename for the new item
                 # make datadir the root
-                logger.debug('initial dir and file: "{0}"; "{1}"'.format(dir, initfile))
-                fileops = {'defaultextension': '.txt',
-                           'filetypes': [('text files', '.txt')],
-                           'initialdir': dir,
-                           'initialfile': initfile,
-                           'title': 'etmtk data files',
-                           'parent': self}
-                filename = askopenfilename(**fileops)
-                if not (filename and os.path.isfile(filename)):
+                tuples = getFileTuples(self.options['datadir'], include=r'*.txt')
+                # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
+                lst = []
+                ret = ListBoxChoice(self, "etm data files", tuples, file).returnValue()
+                if not (ret and ret[1] and os.path.isfile(ret[1])):
                     return False
                 else:
-                    filename = os.path.normpath(filename)
+                    filename = os.path.normpath(ret[1])
                     logger.debug('saving to: {0}'.format(filename))
                     self.text.focus_set()
             logger.debug('edithsh: {0}'.format(self.edithsh))
