@@ -1129,7 +1129,6 @@ def setConfig(options):
     logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
     for fp, rp in filelist:
         if os.path.split(rp)[0] and cal_regex and not cal_regex.match(rp):
-            # print('no match', cal_pattern, rp)
             continue
         drive, parts = os_path_splitall(fp)
         n, e  = os.path.splitext(parts[-1])
@@ -2757,8 +2756,6 @@ def getAllFiles(root, include=r'*', exclude=r'.*', other=[]):
     :param root: directory
     :return: common prefix of files and a list of full file paths
     """
-    # includes = r'*.txt'
-    # excludes = r'.*'
     paths = [root]
     for path in other:
         paths.append(path)
@@ -2768,13 +2765,10 @@ def getAllFiles(root, include=r'*', exclude=r'.*', other=[]):
         # exclude dirs
         dirs[:] = [os.path.join(path, d) for d in dirs
                    if not fnmatch.fnmatch(d, exclude)]
-
         # exclude/include files
         files = [os.path.join(path, f) for f in files
                  if not fnmatch.fnmatch(f, exclude)]
         files = [os.path.normpath(f) for f in files if fnmatch.fnmatch(f, include)]
-
-
         for fname in files:
             rel_path = relpath(fname, common_prefix)
             filelist.append((fname, rel_path))
@@ -2782,27 +2776,24 @@ def getAllFiles(root, include=r'*', exclude=r'.*', other=[]):
             # empty
             rel_path = relpath(path, common_prefix)
             filelist.append((path, rel_path))
-
     return common_prefix, filelist
 
 def getFileTuples(root, include=r'*.txt', exclude=r'.*', all=False, other=[]):
     if all:
-        common_prefix, filelist = getAllFiles(root, other=other)
+        common_prefix, filelist = getAllFiles(root, include, exclude, other=other)
     else:
         common_prefix, filelist = getFiles(root, include, exclude, other=other)
     lst = []
     prior = []
     for fp, rp in filelist:
-        print(fp, rp)
         drive, tup = os_path_splitall(rp)
         for i in range(0, len(tup)):
             if len(prior) > i and tup[i] == prior[i]:
                 continue
             prior = tup[:i]
             disable = (i < len(tup)-1) or os.path.isdir(fp)
-            # lst.append(("{0}{1}".format("\t"*i, tup[i]), fp, rp, (i < len(tup)-1)))
-            lst.append(("{0}{1}".format("\t"*i, tup[i]), fp, rp, disable ))
-    return lst
+            lst.append(("{0}{1}".format("\t"*i, tup[i]), rp, disable))
+    return common_prefix, lst
 
 
 def os_path_splitall(path, debug=False):

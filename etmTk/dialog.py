@@ -39,7 +39,7 @@ from datetime import datetime, timedelta
 
 from collections import OrderedDict
 
-from etmTk.data import fmt_period, parse_dt, get_current_time, getFiles, os_path_splitall
+from etmTk.data import fmt_period, parse_dt, get_current_time, getFiles, os_path_splitall, relpath
 
 import gettext
 
@@ -363,11 +363,15 @@ class MessageWindow():
 
 
 class FileChoice(object):
-    def __init__(self, master=None, title=None, list=[], start='', ext="txt", new=False):
+    def __init__(self, master=None, title=None, prefix=None, list=[], start='', ext="txt", new=False):
         self.master = master
         self.value = None
+        self.prefix = prefix
         self.list = list
-        self.start = start
+        if prefix and start:
+            self.start = relpath(start, prefix)
+        else:
+            self.start = start
         self.ext = ext
         self.new = new # choose a new or an exising file?
 
@@ -394,6 +398,7 @@ class FileChoice(object):
 
             self.fileName = StringVar(self.modalPane)
             self.fileName.set("untitled.{0}".format(ext))
+            self.fileName.trace_variable("w", self.onSelect)
             self.fname = fname = Entry(nameFrame, textvariable=self.fileName, bd=1, highlightbackground=BGCOLOR)
             self.fname.pack(side="left", fill="x", expand=1, padx=0, pady=0) #, expand=1, fill=X)
             self.fname.icursor(END)
@@ -413,6 +418,12 @@ class FileChoice(object):
         self.fltr = fltr = Entry(filterFrame, textvariable=self.filterValue, bd=1, highlightbackground=BGCOLOR)
         self.fltr.pack(side="left", fill="x", expand=1, padx=0, pady=0) #, expand=1, fill=X)
         self.fltr.icursor(END)
+
+        prefixFrame = Frame(self.modalPane, highlightbackground=BGCOLOR, background=BGCOLOR)
+        prefixFrame.pack(side="top", padx=8, pady=2, fill="x")
+
+        self.prefixLabel = Label(prefixFrame, text=_("{0}:").format(prefix), bd=1, highlightbackground=BGCOLOR, background=BGCOLOR)
+        self.prefixLabel.pack(side="left", expand=1,  padx=0, pady=0) #, expand=1, fill=X)
 
 
         buttonFrame = Frame(self.modalPane, highlightbackground=BGCOLOR, background=BGCOLOR)
@@ -437,7 +448,7 @@ class FileChoice(object):
 
         scrollBar = Scrollbar(listFrame, width=8)
         scrollBar.pack(side="right", fill="y")
-        self.listBox = Listbox(listFrame, selectmode=BROWSE, width=30)
+        self.listBox = Listbox(listFrame, selectmode=BROWSE, width=36)
         self.listBox.pack(side="left", fill="both", expand=1, ipadx=4, padx=2, pady=0)
         self.listBox.bind('<<ListboxSelect>>', self.onSelect)
         self.listBox.bind("<Double-1>", self._choose)
@@ -460,7 +471,7 @@ class FileChoice(object):
     def ignore(self, e=None):
         return "break"
 
-    def onSelect(self, evt=None):
+    def onSelect(self, *args):
         # Note here that Tkinter passes an event object to onselect()
         # w = evt.widget
         # index = int(w.curselection()[0])
@@ -470,19 +481,18 @@ class FileChoice(object):
         if self.listBox.curselection():
             firstIndex = self.listBox.curselection()[0]
             value = self.matches[int(firstIndex)]
-            p = value[1]
-            r = value[2]
+            r = value[1]
+            p = os.path.join(self.prefix, r)
             if self.new:
-                f = self.fileName.get()
                 if os.path.isfile(p):
                     p = os.path.split(p)[0]
                     r = os.path.split(r)[0]
-                p = os.path.join(r, f)
-            else:
-                p = r
+                f = self.fileName.get()
+                r = os.path.join(r, f)
+                p = os.path.join(p, f)
 
-            print('you selected', p)
-            self.selectionValue.set(p)
+            self.selectionValue.set(r)
+            self.value = p
         return "break"
 
 
@@ -508,8 +518,7 @@ class FileChoice(object):
     def setMatching(self, *args):
         match = self.filterValue.get()
         if match:
-            print('match', match, type(match))
-            self.matches = matches = [x for x in self.list if x and match.lower() in x[2].lower()]
+            self.matches = matches = [x for x in self.list if x and match.lower() in x[1].lower()]
         else:
             self.matches = matches = self.list
         self.listBox.delete(0, END)
@@ -549,10 +558,14 @@ class FileChoice(object):
         try:
             if self.listBox.curselection():
                 firstIndex = self.listBox.curselection()[0]
-                self.value = self.matches[int(firstIndex)]
-                print('value', self.value[2])
-                if (not self.new and self.value[-1]) or (self.new and not self.value[-1]):
-                    return
+                if self.new:
+                    if not self.value or os.path.isfile(self.value):
+                        return
+                else:
+                    tup = self.matches[int(firstIndex)]
+                    if tup[-1]:
+                        return
+                    self.value = os.path.join(self.prefix, tup[1])
             else:
                 return
         except IndexError:
@@ -566,7 +579,6 @@ class FileChoice(object):
     def returnValue(self):
         self.master.wait_window(self.modalPane)
         return self.value
-
 
 
 class Dialog(Toplevel):

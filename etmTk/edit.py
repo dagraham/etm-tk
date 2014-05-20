@@ -387,16 +387,16 @@ class SimpleEditor(Toplevel):
                 dir, initfile = os.path.split(file)
                 # we need a filename for the new item
                 # make datadir the root
-                tuples = getFileTuples(self.options['datadir'], include=r'*.txt')
+                prefix, tuples = getFileTuples(self.options['datadir'], include=r'*.txt')
                 # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
                 lst = []
-                ret = FileChoice(self, "etm data files", tuples, file).returnValue()
-                if not (ret and ret[1] and os.path.isfile(ret[1])):
-                    return False
-                else:
-                    filename = os.path.normpath(ret[1])
-                    logger.debug('saving to: {0}'.format(filename))
-                    self.text.focus_set()
+                ret = FileChoice(self, "etm data files", prefix=prefix, list=tuples, start=file).returnValue()
+                if not ret: return False
+                filename = os.path.join(prefix, ret)
+                if not os.path.isfile(filename): return False
+                filename = os.path.normpath(filename)
+                logger.debug('saving to: {0}'.format(filename))
+                self.text.focus_set()
             logger.debug('edithsh: {0}'.format(self.edithsh))
             ok = True
             if self.mode == 1:

@@ -1392,9 +1392,9 @@ The local timezone is used when none is given."""
         return
 
     def editFile(self, e=None, file=None, config=False):
-        if e and e.char not in ["F", "E", "C", "R", "S", "U"]:
+        if e and e.char not in ["F", "E", "C", "S"]:
             return
-        titlefile = os.path.normpath(file)
+        titlefile = os.path.normpath(relpath(file, loop.options['datadir']))
         logger.debug('file: {0}; config: {1}'.format(file, config))
         if self.weekly:
             master = self.canvas
@@ -1431,23 +1431,13 @@ The local timezone is used when none is given."""
         if 'cfg_files' in loop.options:
             for key in ['completions', 'reports', 'users']:
                 other.extend(loop.options['cfg_files'][key])
-        print('other', other)
-        tuples = getFileTuples(loop.options['datadir'], include=r'*.cfg', other=other)
+        prefix, tuples = getFileTuples(loop.options['datadir'], include=r'*.cfg', other=other)
         # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
         lst = []
-        ret = FileChoice(self, "etm completion files", tuples).returnValue()
-        if not (ret and ret[1] and os.path.isfile(ret[1])):
+        ret = FileChoice(self, "etm completion files", prefix=prefix, list=tuples).returnValue()
+        if not (ret and os.path.isfile(ret)):
             return False
-        self.editFile(e, file=ret[1], config=True)
-
-    # def editUsers(self, e=None):
-    #     tuples = getFileTuples(loop.options['datadir'], include=r'*{0}users.cfg'.format(os.sep))
-    #     # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
-    #     lst = []
-    #     ret = FileChoice(self, "etm user files", tuples).returnValue()
-    #     if not (ret and ret[1] and os.path.isfile(ret[1])):
-    #         return False
-    #     self.editFile(e, file=ret[1], config=True)
+        self.editFile(e, file=ret, config=True)
 
     def editScratch(self, e=None):
         file = loop.options['scratchpad']
@@ -1456,42 +1446,44 @@ The local timezone is used when none is given."""
     def editData(self, e=None):
         if e and e.char != "F":
             return
-        tuples = getFileTuples(loop.options['datadir'], include=r'*.txt', all=False)
+        prefix, tuples = getFileTuples(loop.options['datadir'], include=r'*.txt', all=False)
         # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
         lst = []
-        ret = FileChoice(self, "open data file", tuples).returnValue()
-        if not (ret and ret[1] and os.path.isfile(ret[1])):
+        ret = FileChoice(self, "open data file", prefix=prefix, list=tuples).returnValue()
+        if not (ret and os.path.isfile(ret)):
             return False
-        self.editFile(e, file=ret[1])
+        self.editFile(e, file=ret)
 
     def newFile(self, e=None):
         if e and e.char != "N":
             return
-        tuples = getFileTuples(loop.options['datadir'], include=r'*', all=True)
+        prefix, tuples = getFileTuples(loop.options['datadir'], include=r'*', all=True)
         # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
         lst = []
-        ret = FileChoice(self, "open new file", tuples, new=True).returnValue()
-        if not (ret and ret[1] and os.path.isfile(ret[1])):
-            return False
-        self.editFile(e, file=ret[1])
-
-        # initdir = self.options['datadir']
-        # fileops = {'defaultextension': '.txt',
-        #            'filetypes': [('text files', '.txt')],
-        #            'initialdir': initdir,
-        #            'initialfile': "",
-        #            'title': 'etmtk data files',
-        #            'parent': self}
-        # filename = asksaveasfilename(**fileops)
-        if not filename:
-            return
-        fo = codecs.open(filename, 'w', loop.options['encoding']['file'])
-        fo.write("")
-        fo.close()
-        relname = relpath(filename, self.options['datadir'])
-        prompt = _('created: {0}').format(relname)
-        MessageWindow(self, title=_("new file"), prompt=prompt)
-
+        tuples.insert(0, ("", "", False))
+        filename = FileChoice(self, "create new file", prefix=prefix, list=tuples, new=True).returnValue()
+        if not filename: return
+        if os.path.isfile(filename):
+            prompt = _("Aborting. File {0} already exists.").format(filename)
+            MessageWindow(self, title=_("new file"), prompt=prompt)
+        else:
+            pth = os.path.split(filename)[0]
+            if not os.path.isdir(pth):
+                os.makedirs(pth)
+            fo = codecs.open(filename, 'w', loop.options['encoding']['file'])
+            fo.write("")
+            fo.close()
+            prompt = _('created: {0}').format(filename)
+            if self.weekly:
+                p = self.canvas
+            else:
+                p = self.tree
+            ans = self.confirm(
+                parent=p,
+                title=_('etm'),
+                prompt=_("file: {0}\nhas been created.\nOpen it for editing?").format(filename))
+            if ans:
+                self.editFile(None, filename)
 
     def finishItem(self, e=None):
         if e and e.char != "f":
