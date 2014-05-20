@@ -66,7 +66,7 @@ CLOSE = _("Close")
 
 from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, optionShortcut, CMD, relpath, completion_regex, getReportData, tree2Text, AFTER, get_current_time, getFileTuples
 
-from etmTk.dialog import BGCOLOR, OptionsDialog, ReadOnlyText, ListBoxChoice
+from etmTk.dialog import BGCOLOR, OptionsDialog, ReadOnlyText, FileChoice
 
 
 class SimpleEditor(Toplevel):
@@ -390,7 +390,7 @@ class SimpleEditor(Toplevel):
                 tuples = getFileTuples(self.options['datadir'], include=r'*.txt')
                 # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
                 lst = []
-                ret = ListBoxChoice(self, "etm data files", tuples, file).returnValue()
+                ret = FileChoice(self, "etm data files", tuples, file).returnValue()
                 if not (ret and ret[1] and os.path.isfile(ret[1])):
                     return False
                 else:

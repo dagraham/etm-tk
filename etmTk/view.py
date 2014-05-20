@@ -56,7 +56,7 @@ from etmTk.data import (
 
 from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES, REPORTS)
 
-from etmTk.dialog import Node, MenuTree, Timer, ReadOnlyText, MessageWindow,TextVariableWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, ListBoxChoice, STOPPED, PAUSED, RUNNING,  BGCOLOR, ONEDAY, ONEMINUTE
+from etmTk.dialog import Node, MenuTree, Timer, ReadOnlyText, MessageWindow,TextVariableWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, FileChoice, STOPPED, PAUSED, RUNNING,  BGCOLOR, ONEDAY, ONEMINUTE
 
 from etmTk.edit import SimpleEditor
 
@@ -180,7 +180,7 @@ class App(Tk):
         self.outline_depths[AGENDA] = 0
         self.outline_depths[CUSTOM] = 0
 
-        self.panedwindow = panedwindow = PanedWindow(self, orient="vertical", sashwidth=6, sashrelief='flat')
+        self.panedwindow = panedwindow = PanedWindow(self, orient="vertical", sashwidth=8, sashrelief='flat')
         self.toppane = toppane = Frame(panedwindow, bd=0, highlightthickness=0, background=BGCOLOR)
         self.tree = ttk.Treeview(toppane, show='tree', columns=["#1", "#2"], selectmode='browse')
         self.canvas = canvas = Canvas(self.toppane, background="white", bd=2, relief="sunken")
@@ -260,41 +260,40 @@ class App(Tk):
         openmenu = Menu(filemenu, tearoff=0)
         self.add2menu(path, (OPEN, ))
         path = OPEN
+
         l = "Shift-F"
         c = "F"
         label = _("Data file ...")
         openmenu.add_command(label=label, command=self.editData)
         self.bindTop(c, self.editData)
+        openmenu.entryconfig(0, accelerator=l)
+        self.add2menu(path, (label, l))
 
         l = "Shift-C"
         c = "C"
-        label = _("Completion file ...")
-        openmenu.add_command(label=label, command=self.editCompletions)
-        self.bindTop(c, self.editCompletions)
-
+        label = _("Configuration file ...")
+        openmenu.add_command(label=label, command=self.editCfgFiles)
+        self.bindTop(c, self.editCfgFiles)
         openmenu.entryconfig(1, accelerator=l)
         self.add2menu(path, (label, l))
 
-        l = "Shift-R"
-        c = "R"
-        label = _("Report file ...")
-        openmenu.add_command(label=label, command=self.editReports)
-        self.bindTop(c, self.editReports)
-
-        openmenu.entryconfig(2, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        l = "Shift-U"
-        c = "U"
-        label = _("User file ...")
-        openmenu.add_command(label=label, command=self.editUsers)
-        self.bind(c, self.editUsers)
-
-        openmenu.entryconfig(3, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        openmenu.entryconfig(0, accelerator=l)
-        self.add2menu(path, (label, l))
+        # l = "Shift-R"
+        # c = "R"
+        # label = _("Report file ...")
+        # openmenu.add_command(label=label, command=self.editReports)
+        # self.bindTop(c, self.editReports)
+        #
+        # openmenu.entryconfig(2, accelerator=l)
+        # self.add2menu(path, (label, l))
+        #
+        # l = "Shift-U"
+        # c = "U"
+        # label = _("User file ...")
+        # openmenu.add_command(label=label, command=self.editUsers)
+        # self.bind(c, self.editUsers)
+        #
+        # openmenu.entryconfig(3, accelerator=l)
+        # self.add2menu(path, (label, l))
 
         l = "Shift-E"
         c = "E"
@@ -302,7 +301,7 @@ class App(Tk):
         openmenu.add_command(label=label, command=self.editConfig)
         self.bindTop(c, self.editConfig)
 
-        openmenu.entryconfig(4, accelerator=l)
+        openmenu.entryconfig(2, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Shift-S"
@@ -312,7 +311,7 @@ class App(Tk):
         openmenu.add_command(label=label, command=self.editScratch)
         self.bindTop(c, self.editScratch)
 
-        openmenu.entryconfig(5, accelerator=l)
+        openmenu.entryconfig(3, accelerator=l)
         self.add2menu(path, (label, l))
 
         filemenu.add_cascade(label=OPEN, menu=openmenu)
@@ -507,7 +506,7 @@ class App(Tk):
             [_('Edit'), 'e'],
             [_('Finish'), 'f'],
             [_('Reschedule'), 'r'],
-            [_('Schedule new'), 'i'],
+            [_('Schedule new'), 'R'],
             [_('Open link'), 'g'],
             [_('Show user details'), 'u'],
             ]
@@ -517,7 +516,7 @@ class App(Tk):
             'e': self.editItem,
             'f': self.finishItem,
             'r': self.rescheduleItem,
-            'i': self.scheduleNewItem,
+            'R': self.scheduleNewItem,
             'g': self.openWithDefault,
             'u': self.showUserDetails,
             }
@@ -530,7 +529,9 @@ class App(Tk):
             if k == 'd':
                 l = "BackSpace"
                 c = "<BackSpace>"
-
+            elif k == 'R':
+                l = "Shift-R"
+                c = "R"
             else:
                 l = k.upper()
                 c = k
@@ -884,8 +885,7 @@ class App(Tk):
         self.showPending = True
 
         self.currentTime = StringVar(self)
-        currenttime = Label(self.statusbar, textvariable=self.currentTime, bd=1, relief="flat",
-                            anchor="e", padx=4, pady=0)
+        currenttime = Label(self.statusbar, textvariable=self.currentTime, bd=1, relief="flat", anchor="e", padx=4, pady=0)
         currenttime.pack(side="right")
         currenttime.configure(background=BGCOLOR)
 
@@ -1420,30 +1420,34 @@ The local timezone is used when none is given."""
             else:
                 self.tree.focus_set()
                 self.showView()
-        return
+        return changed
 
     def editConfig(self, e=None):
         file = loop.options['config']
         self.editFile(e, file=file, config=True)
 
-    def editCompletions(self, e=None):
-        tuples = getFileTuples(loop.options['datadir'], include=r'*{0}completions.cfg'.format(os.sep))
+    def editCfgFiles(self, e=None):
+        other = []
+        if 'cfg_files' in loop.options:
+            for key in ['completions', 'reports', 'users']:
+                other.extend(loop.options['cfg_files'][key])
+        print('other', other)
+        tuples = getFileTuples(loop.options['datadir'], include=r'*.cfg', other=other)
         # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
         lst = []
-        ret = ListBoxChoice(self, "etm completion files", tuples).returnValue()
+        ret = FileChoice(self, "etm completion files", tuples).returnValue()
         if not (ret and ret[1] and os.path.isfile(ret[1])):
             return False
-        self.editFile(e, file=ret[1])
+        self.editFile(e, file=ret[1], config=True)
 
-
-    def editUsers(self, e=None):
-        tuples = getFileTuples(loop.options['datadir'], include=r'*{0}users.cfg'.format(os.sep))
-        # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
-        lst = []
-        ret = ListBoxChoice(self, "etm user files", tuples).returnValue()
-        if not (ret and ret[1] and os.path.isfile(ret[1])):
-            return False
-        self.editFile(e, file=ret[1])
+    # def editUsers(self, e=None):
+    #     tuples = getFileTuples(loop.options['datadir'], include=r'*{0}users.cfg'.format(os.sep))
+    #     # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
+    #     lst = []
+    #     ret = FileChoice(self, "etm user files", tuples).returnValue()
+    #     if not (ret and ret[1] and os.path.isfile(ret[1])):
+    #         return False
+    #     self.editFile(e, file=ret[1], config=True)
 
     def editScratch(self, e=None):
         file = loop.options['scratchpad']
@@ -1452,10 +1456,10 @@ The local timezone is used when none is given."""
     def editData(self, e=None):
         if e and e.char != "F":
             return
-        tuples = getFileTuples(loop.options['datadir'], include=r'*.txt')
+        tuples = getFileTuples(loop.options['datadir'], include=r'*.txt', all=False)
         # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
         lst = []
-        ret = ListBoxChoice(self, "etm data files", tuples).returnValue()
+        ret = FileChoice(self, "open data file", tuples).returnValue()
         if not (ret and ret[1] and os.path.isfile(ret[1])):
             return False
         self.editFile(e, file=ret[1])
@@ -1463,14 +1467,22 @@ The local timezone is used when none is given."""
     def newFile(self, e=None):
         if e and e.char != "N":
             return
-        initdir = self.options['datadir']
-        fileops = {'defaultextension': '.txt',
-                   'filetypes': [('text files', '.txt')],
-                   'initialdir': initdir,
-                   'initialfile': "",
-                   'title': 'etmtk data files',
-                   'parent': self}
-        filename = asksaveasfilename(**fileops)
+        tuples = getFileTuples(loop.options['datadir'], include=r'*', all=True)
+        # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
+        lst = []
+        ret = FileChoice(self, "open new file", tuples, new=True).returnValue()
+        if not (ret and ret[1] and os.path.isfile(ret[1])):
+            return False
+        self.editFile(e, file=ret[1])
+
+        # initdir = self.options['datadir']
+        # fileops = {'defaultextension': '.txt',
+        #            'filetypes': [('text files', '.txt')],
+        #            'initialdir': initdir,
+        #            'initialfile': "",
+        #            'title': 'etmtk data files',
+        #            'parent': self}
+        # filename = asksaveasfilename(**fileops)
         if not filename:
             return
         fo = codecs.open(filename, 'w', loop.options['encoding']['file'])
@@ -2349,7 +2361,7 @@ Enter the shortest time period you want displayed in minutes.""")
         win.bind('<space>', (lambda e: showYear()))
         showYear()
         t.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0, pady=0)
-        ysb = ttk.Scrollbar(f, orient='vertical', command=t.yview)
+        ysb = ttk.Scrollbar(f, orient='vertical', command=t.yview, width=8)
         ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
 
         t.configure(yscroll=ysb.set)
@@ -2919,7 +2931,6 @@ Relative dates and fuzzy parsing are supported.""")
             self.tree.focus_set()
             logger.debug('value: {0}'.format(value))
             if value is None:
-                # return "break"
                 return
 
             if value:
@@ -2959,7 +2970,7 @@ Relative dates and fuzzy parsing are supported.""")
                 subprocess.call(tcmd, shell=True)
         self.timerStatus.set(self.actionTimer.get_time())
         self.newmenu.entryconfig(3, state="normal")
-        return "break"
+        return
 
     def finishActionTimer(self, e=None):
         if e and e.char != "T":
@@ -3315,27 +3326,23 @@ or 0 to expand all branches completely.""")
         if 'reports' in loop.options:
             self.specs = loop.options['reports']
 
-    def editReports(self, e=None):
-        if e and e.char != "R":
-            return
-        tuples = getFileTuples(loop.options['datadir'], include=r'*{0}reports.cfg'.format(os.sep))
-        # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
-        lst = []
-        ret = ListBoxChoice(self, "etm report files", tuples).returnValue()
-        if not (ret and ret[1] and os.path.isfile(ret[1])):
-            return False
-        self.editFile(e, file=ret[1])
-
-
-        file = self.options['report_specifications']
-        changed = SimpleEditor(parent=self, file=file, options=self.options, title='report_specifications').changed
-        if changed:
-            logger.debug("saved: {0}".format(file))
-            self.getSpecs()
-            self.custom_box['values'] = self.specs
-            self.value_of_combo = self.specs[0]
-            self.saved_specs = deepcopy(self.specs)
-            self.specsModified = False
+    # def editReports(self, e=None):
+    #     if e and e.char != "R":
+    #         return
+    #     tuples = getFileTuples(loop.options['datadir'], include=r'*{0}reports.cfg'.format(os.sep))
+    #     # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
+    #     lst = []
+    #     ret = FileChoice(self, "etm report files", tuples).returnValue()
+    #     if not (ret and ret[1] and os.path.isfile(ret[1])):
+    #         return False
+    #     changed = self.editFile(e, file=ret[1], config=True)
+    #     if changed:
+    #         logger.debug("saved: {0}".format(file))
+    #         self.getSpecs()
+    #         self.custom_box['values'] = self.specs
+    #         self.value_of_combo = self.specs[0]
+    #         self.saved_specs = deepcopy(self.specs)
+    #         self.specsModified = False
 
     def saveSpecs(self, e=None):
         # called when changing from custom view or

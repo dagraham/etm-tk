@@ -6,6 +6,7 @@ from __future__ import (absolute_import, division, print_function,
 import logging
 import logging.config
 import uuid
+import os, os.path
 
 logger = logging.getLogger()
 
@@ -13,7 +14,7 @@ import platform
 
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, Checkbutton, W, X, LabelFrame, Canvas, CURRENT, TclError, Listbox, SINGLE, BROWSE
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, Checkbutton, W, X, LabelFrame, Canvas, CURRENT, TclError, Listbox, SINGLE, BROWSE, Scrollbar
     from tkinter import ttk
     from tkinter import font as tkFont
     from tkinter.messagebox import askokcancel
@@ -22,7 +23,7 @@ if platform.python_version() >= '3':
     # from tkinter import simpledialog as tkSimpleDialog
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, Checkbutton, W, X, LabelFrame, Canvas, CURRENT, TclError, Listbox, SINGLE, BROWSE
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, Checkbutton, W, X, LabelFrame, Canvas, CURRENT, TclError, Listbox, SINGLE, BROWSE, Scrollbar
     # import tkMessageBox
     import ttk
     import tkFont
@@ -361,14 +362,16 @@ class MessageWindow():
         self.win.destroy()
 
 
-class ListBoxChoice(object):
-    def __init__(self, master=None, title=None, list=[], start=''):
+class FileChoice(object):
+    def __init__(self, master=None, title=None, list=[], start='', ext="txt", new=False):
         self.master = master
         self.value = None
         self.list = list
         self.start = start
+        self.ext = ext
+        self.new = new # choose a new or an exising file?
 
-        self.modalPane = Toplevel(self.master)
+        self.modalPane = Toplevel(self.master, highlightbackground=BGCOLOR, background=BGCOLOR)
         if master:
             self.modalPane.geometry("+%d+%d" % (master.winfo_rootx() + 50,
                                   master.winfo_rooty() + 50))
@@ -382,51 +385,106 @@ class ListBoxChoice(object):
         if title:
             self.modalPane.title(title)
 
-        listFrame = Frame(self.modalPane)
-        listFrame.pack(side="top", fill="both", expand=1, padx=5, pady=5)
+        if new:
+            nameFrame = Frame(self.modalPane, highlightbackground=BGCOLOR, background=BGCOLOR)
+            nameFrame.pack(side="top", padx=14, pady=2, fill="x")
 
-        # scrollBar = Scrollbar(listFrame)
-        # scrollBar.pack(side=RIGHT, fill=Y)
-        self.listBox = Listbox(listFrame, selectmode=BROWSE)
-        self.listBox.pack(side="left", fill="both", ipadx=5, ipady=2, expand=1, padx=0, pady=0)
-        self.listBox.bind("<Return>", self._choose)
-        self.listBox.bind("<Double-1>", self._choose)
-        self.listBox.bind("<Escape>", self._cancel)
-        self.listBox.bind("<Up>", self.cursorUp)
-        self.listBox.bind("<Down>", self.cursorDown)
+            nameLabel = Label(nameFrame, text=_("file name:"), bd=1, relief="flat", anchor="w", padx=0, pady=0, highlightbackground=BGCOLOR, background=BGCOLOR, width=8)
+            nameLabel.pack(side="left")
 
-        # scrollBar.config(command=self.listBox.yview)
-        # self.listBox.config(yscrollcommand=scrollBar.set)
-        # self.list.sort()
-        index = 0
-        init_index = 0
-        for item in self.list:
-            if type(item) is tuple:
-                # only show the label
-                # (label, value, disabled)
-                self.listBox.insert(END, item[0])
-                if item[2]:
-                    # disable
-                    self.listBox.itemconfig(index, fg="gray60")
-                else:
-                    self.listBox.itemconfig(index, fg="blue")
-                    if self.start and item[1] == self.start:
-                        init_index = index
-            else:
-                self.listBox.insert(END, item)
-            index += 1
+            self.fileName = StringVar(self.modalPane)
+            self.fileName.set("untitled.{0}".format(ext))
+            self.fname = fname = Entry(nameFrame, textvariable=self.fileName, bd=1, highlightbackground=BGCOLOR)
+            self.fname.pack(side="left", fill="x", expand=1, padx=0, pady=0) #, expand=1, fill=X)
+            self.fname.icursor(END)
+            self.fname.bind("<Up>", self.cursorUp)
+            self.fname.bind("<Down>", self.cursorDown)
 
-        buttonFrame = Frame(self.modalPane)
-        buttonFrame.pack(side="bottom", fill="x", padx=10, pady=2)
 
-        chooseButton = Button(buttonFrame, text="Choose", command=self._choose)
-        chooseButton.pack(side="right")
+        filterFrame = Frame(self.modalPane, highlightbackground=BGCOLOR, background=BGCOLOR)
+        filterFrame.pack(side="top", padx=14, pady=2, fill="x")
 
-        cancelButton = Button(buttonFrame, text="Cancel", command=self._cancel)
+        filterLabel = Label(filterFrame, text=_("path filter:"), bd=1, relief="flat", anchor="w", padx=0, pady=0, highlightbackground=BGCOLOR, background=BGCOLOR, width=8)
+        filterLabel.pack(side="left")
+
+        self.filterValue = StringVar(self.modalPane)
+        self.filterValue.set("")
+        self.filterValue.trace_variable("w", self.setMatching)
+        self.fltr = fltr = Entry(filterFrame, textvariable=self.filterValue, bd=1, highlightbackground=BGCOLOR)
+        self.fltr.pack(side="left", fill="x", expand=1, padx=0, pady=0) #, expand=1, fill=X)
+        self.fltr.icursor(END)
+
+
+        buttonFrame = Frame(self.modalPane, highlightbackground=BGCOLOR, background=BGCOLOR)
+        buttonFrame.pack(side="bottom", padx=10, pady=2)
+
+        chooseButton = Button(buttonFrame, text="Choose", command=self._choose, highlightbackground=BGCOLOR, background=BGCOLOR)
+        chooseButton.pack(side="right", padx=10)
+
+        cancelButton = Button(buttonFrame, text="Cancel", command=self._cancel, highlightbackground=BGCOLOR, background=BGCOLOR)
         cancelButton.pack(side="left")
-        self.listBox.select_set(init_index)
-        self.listBox.see(init_index)
-        self.listBox.focus_set()
+
+        selectionFrame = Frame(self.modalPane, highlightbackground=BGCOLOR, background=BGCOLOR)
+        selectionFrame.pack(side="bottom", padx=8, pady=2, fill="x")
+
+        self.selectionValue = StringVar(self.modalPane)
+        self.selectionValue.set("")
+        self.selection = selection = Label(selectionFrame, textvariable=self.selectionValue, bd=1, highlightbackground=BGCOLOR, background=BGCOLOR)
+        self.selection.pack(side="left", fill="x", expand=1, padx=0, pady=0) #, expand=1, fill=X)
+
+        listFrame = Frame(self.modalPane, highlightbackground=BGCOLOR, background=BGCOLOR, width=40)
+        listFrame.pack(side="top", fill="both", expand=1, padx=5, pady=2)
+
+        scrollBar = Scrollbar(listFrame, width=8)
+        scrollBar.pack(side="right", fill="y")
+        self.listBox = Listbox(listFrame, selectmode=BROWSE, width=30)
+        self.listBox.pack(side="left", fill="both", expand=1, ipadx=4, padx=2, pady=0)
+        self.listBox.bind('<<ListboxSelect>>', self.onSelect)
+        self.listBox.bind("<Double-1>", self._choose)
+        self.modalPane.bind("<Return>", self._choose)
+        self.modalPane.bind("<Escape>", self._cancel)
+        # self.modalPane.bind("<Up>", self.cursorUp)
+        # self.modalPane.bind("<Down>", self.cursorDown)
+        self.fltr.bind("<Up>", self.cursorUp)
+        self.fltr.bind("<Down>", self.cursorDown)
+        # self.fltr.bind("<Down>", self.cursorDown)
+
+
+        scrollBar.config(command=self.listBox.yview)
+        self.listBox.config(yscrollcommand=scrollBar.set)
+
+        self.setMatching()
+
+        # self.fltr.focus_set()
+
+    def ignore(self, e=None):
+        return "break"
+
+    def onSelect(self, evt=None):
+        # Note here that Tkinter passes an event object to onselect()
+        # w = evt.widget
+        # index = int(w.curselection()[0])
+        # value = w.get(index)
+        # print('You selected item %d: "%s"' % (index, value))
+
+        if self.listBox.curselection():
+            firstIndex = self.listBox.curselection()[0]
+            value = self.matches[int(firstIndex)]
+            p = value[1]
+            r = value[2]
+            if self.new:
+                f = self.fileName.get()
+                if os.path.isfile(p):
+                    p = os.path.split(p)[0]
+                    r = os.path.split(r)[0]
+                p = os.path.join(r, f)
+            else:
+                p = r
+
+            print('you selected', p)
+            self.selectionValue.set(p)
+        return "break"
+
 
     def cursorUp(self, event=None):
         cursel = int(self.listBox.curselection()[0])
@@ -435,6 +493,7 @@ class ListBoxChoice(object):
         self.listBox.select_clear(cursel)
         self.listBox.select_set(newsel)
         self.listBox.see(newsel)
+        self.onSelect()
         return "break"
 
     def cursorDown(self, event=None):
@@ -443,19 +502,65 @@ class ListBoxChoice(object):
         self.listBox.select_clear(cursel)
         self.listBox.select_set(newsel)
         self.listBox.see(newsel)
+        self.onSelect()
         return "break"
+
+    def setMatching(self, *args):
+        match = self.filterValue.get()
+        if match:
+            print('match', match, type(match))
+            self.matches = matches = [x for x in self.list if x and match.lower() in x[2].lower()]
+        else:
+            self.matches = matches = self.list
+        self.listBox.delete(0, END)
+        index = 0
+        init_index = 0
+        for item in matches:
+            if type(item) is tuple:
+                # only show the label
+                # (label, value, disabled)FF
+                self.listBox.insert(END, item[0])
+                disabled = "#C1E6C9"
+                disabled = "#BADEC3"
+                if self.new:
+                    if not item[-1]:
+                        self.listBox.itemconfig(index, fg=disabled)
+                    else:
+                        self.listBox.itemconfig(index, fg="blue")
+                        if self.start and item[1] == self.start:
+                            init_index = index
+                else:
+                    if item[-1]:
+                        self.listBox.itemconfig(index, fg=disabled)
+                    else:
+                        self.listBox.itemconfig(index, fg="blue")
+                        if self.start and item[1] == self.start:
+                            init_index = index
+            # elif files:
+            else:
+                self.listBox.insert(END, item)
+            index += 1
+        self.listBox.select_set(init_index)
+        self.listBox.see(init_index)
+        self.fltr.focus_set()
+        self.onSelect()
 
     def _choose(self, event=None):
         try:
-            firstIndex = self.listBox.curselection()[0]
-            self.value = self.list[int(firstIndex)]
-            if self.value[2]:
+            if self.listBox.curselection():
+                firstIndex = self.listBox.curselection()[0]
+                self.value = self.matches[int(firstIndex)]
+                print('value', self.value[2])
+                if (not self.new and self.value[-1]) or (self.new and not self.value[-1]):
+                    return
+            else:
                 return
         except IndexError:
             self.value = None
         self.modalPane.destroy()
 
     def _cancel(self, event=None):
+        self.value = None
         self.modalPane.destroy()
 
     def returnValue(self):
@@ -657,7 +762,7 @@ class TextDialog(Dialog):
         self.text.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0,
                        pady=0)
         ysb = ttk.Scrollbar(master, orient='vertical', command=self.text
-                            .yview)
+                            .yview, width=8)
         ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
         # t.configure(state="disabled", yscroll=ysb.set)
         self.text.configure(yscroll=ysb.set)
