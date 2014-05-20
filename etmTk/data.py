@@ -3915,7 +3915,7 @@ def str2hsh(s, uid=None, options=None):
             if at_key == 'a':
                 actns = options['alert_default']
                 arguments = []
-                alert_parts = at_val.split(':')
+                alert_parts = at_val.split(':', maxsplit=1)
                 t_lst = alert_parts.pop(0).split(',')
                 periods = tuple([parse_period(x) for x in t_lst])
                 triggers = [x for x in periods]
