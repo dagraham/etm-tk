@@ -277,23 +277,13 @@ class App(Tk):
         openmenu.entryconfig(1, accelerator=l)
         self.add2menu(path, (label, l))
 
-        l = "Shift-E"
-        c = "E"
-        label = "etmtk.cfg"
-        openmenu.add_command(label=label, command=self.editConfig)
-        self.bindTop(c, self.editConfig)
-
-        openmenu.entryconfig(2, accelerator=l)
-        self.add2menu(path, (label, l))
-
         l = "Shift-S"
         c = "S"
         file = loop.options['scratchpad']
         label = relpath(file, loop.options['etmdir'])
         openmenu.add_command(label=label, command=self.editScratch)
         self.bindTop(c, self.editScratch)
-
-        openmenu.entryconfig(3, accelerator=l)
+        openmenu.entryconfig(2, accelerator=l)
         self.add2menu(path, (label, l))
 
         filemenu.add_cascade(label=OPEN, menu=openmenu)
@@ -1425,7 +1415,7 @@ The local timezone is used when none is given."""
         if 'cfg_files' in loop.options:
             for key in ['completions', 'reports', 'users']:
                 other.extend(loop.options['cfg_files'][key])
-        prefix, tuples = getFileTuples(loop.options['datadir'], include=r'*.cfg', other=other)
+        prefix, tuples = getFileTuples(loop.options['etmdir'], include=r'*.cfg', other=other)
         # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
         lst = []
         ret = FileChoice(self, "etm completion files", prefix=prefix, list=tuples).returnValue()
