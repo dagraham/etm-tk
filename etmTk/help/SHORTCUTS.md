@@ -11,10 +11,7 @@
             Finish Action Timer                     Shift-T
         Open
             Data file ...                           Shift-F
-            etmtk.cfg                               Shift-E
-            completions.cfg                         Shift-C
-            reports.cfg                             Shift-R
-            users.cfg                               Shift-U
+            Configuration file ...                  Shift-C
             scratchpad                              Shift-S
         ----
         Quit                                        Ctrl-Q
@@ -41,10 +38,11 @@
     Item
         Copy                                           C
         Delete                                     BackSpace
-        Edit                                           E
+        Edit item                                      E
+        Edit file                                   Shift-E
         Finish                                         F
         Reschedule                                     R
-        Schedule new                                   I
+        Schedule new                                Shift-R
         Open link                                      G
         Show user details                              U
     Tools
@@ -79,6 +77,13 @@
         ----
         Note                                        Ctrl-N
         Custom                                      Ctrl-C
+
+## Edit
+
+    Show possible completions                     Ctrl-Space
+    Validate entry                                  Ctrl-?
+    Cancel                                          Escape
+    Save changes and close editor                   Ctrl-W
 
 ## Custom
 
