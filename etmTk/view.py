@@ -277,24 +277,6 @@ class App(Tk):
         openmenu.entryconfig(1, accelerator=l)
         self.add2menu(path, (label, l))
 
-        # l = "Shift-R"
-        # c = "R"
-        # label = _("Report file ...")
-        # openmenu.add_command(label=label, command=self.editReports)
-        # self.bindTop(c, self.editReports)
-        #
-        # openmenu.entryconfig(2, accelerator=l)
-        # self.add2menu(path, (label, l))
-        #
-        # l = "Shift-U"
-        # c = "U"
-        # label = _("User file ...")
-        # openmenu.add_command(label=label, command=self.editUsers)
-        # self.bind(c, self.editUsers)
-        #
-        # openmenu.entryconfig(3, accelerator=l)
-        # self.add2menu(path, (label, l))
-
         l = "Shift-E"
         c = "E"
         label = "etmtk.cfg"
@@ -503,7 +485,8 @@ class App(Tk):
         self.em_options = [
             [_('Copy'), 'c'],
             [_('Delete'), 'd'],
-            [_('Edit'), 'e'],
+            [_('Edit item'), 'e'],
+            [_('Edit file'), 'E'],
             [_('Finish'), 'f'],
             [_('Reschedule'), 'r'],
             [_('Schedule new'), 'R'],
@@ -514,6 +497,7 @@ class App(Tk):
             'c': self.copyItem,
             'd': self.deleteItem,
             'e': self.editItem,
+            'E': self.editItemFile,
             'f': self.finishItem,
             'r': self.rescheduleItem,
             'R': self.scheduleNewItem,
@@ -529,6 +513,9 @@ class App(Tk):
             if k == 'd':
                 l = "BackSpace"
                 c = "<BackSpace>"
+            elif k == 'E':
+                l = "Shift-E"
+                c = "E"
             elif k == 'R':
                 l = "Shift-R"
                 c = "R"
@@ -1390,6 +1377,13 @@ The local timezone is used when none is given."""
                 self.tree.focus_set()
         logger.debug('ending editItem')
         return
+
+    def editItemFile(self, e=None):
+        if not self.itemSelected:
+            return
+        logger.debug('starting editItemFile: {0}; {1}, {2}'.format(self.itemSelected['_summary'], self.dtSelected, type(self.dtSelected)))
+        self.editFile(e, os.path.join(loop.options['datadir'], self.itemSelected['fileinfo'][0]))
+
 
     def editFile(self, e=None, file=None, config=False):
         if e and e.char not in ["F", "E", "C", "S"]:
@@ -2545,27 +2539,27 @@ or 0 to display all changes.""").format(title)
                 text = "{1}\n\n{2}: {3}\n\n{4}: {5}".format(item, hsh['entry'].lstrip(), _("Errors"), hsh['errors'],  _("file"), filetext)
             else:
                 text = "{1}\n\n{2}: {3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
-            for i in [0, 1, 2, 4, 5, 7]: # everything except finish and open link
+            for i in [0, 1, 2, 3, 5, 6, 8]: # everything except finish and open link
                 self.itemmenu.entryconfig(i, state='normal')
             if isUnfinished:
-                self.itemmenu.entryconfig(3, state='normal')
+                self.itemmenu.entryconfig(4, state='normal')
             else:
-                self.itemmenu.entryconfig(3, state='disabled')
+                self.itemmenu.entryconfig(4, state='disabled')
             if hasLink:
-                self.itemmenu.entryconfig(6, state='normal')
-            else:
-                self.itemmenu.entryconfig(6, state='disabled')
-            if hasUser:
                 self.itemmenu.entryconfig(7, state='normal')
             else:
                 self.itemmenu.entryconfig(7, state='disabled')
+            if hasUser:
+                self.itemmenu.entryconfig(8, state='normal')
+            else:
+                self.itemmenu.entryconfig(8, state='disabled')
             self.uuidSelected = uuid
             self.itemSelected = hsh
             logger.debug('dt selected: {0}, {1}'.format(dt, type(dt)))
             self.dtSelected = dt
         else:
             text = ""
-            for i in range(8):
+            for i in range(9):
                 self.itemmenu.entryconfig(i, state='disabled')
             self.itemSelected = None
             self.uuidSelected = None
