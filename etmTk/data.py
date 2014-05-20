@@ -1109,6 +1109,64 @@ day_end_minutes = 23 * 60 + 59
 
 actions = ["s", "d", "e", "p", "v"]
 
+def setConfig(options):
+    dfile_encoding = options['encoding']['file']
+    cal_regex = None
+    if 'calendars' in options:
+        cal_pattern = r'^%s' % '|'.join(
+            [x[2] for x in options['calendars'] if x[1]])
+        cal_regex = re.compile(cal_pattern)
+
+    options['user_data'] = {}
+    options['user_tuples'] = []
+    options['completions'] = []
+    options['completions_tuples'] = []
+    options['reports_tuples'] = []
+    completions = set([])
+    reports = set([])
+
+    prefix, filelist = getFiles(options['datadir'], include=r'*.cfg')
+    logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
+    for fp, rp in filelist:
+        if os.path.split(rp)[0] and cal_regex and not cal_regex.match(rp):
+            continue
+        drive, parts = os_path_splitall(fp)
+        n, e  = os.path.splitext(parts[-1])
+        # skip etmtk and any other .cfg files other than the following
+        if n == "completions":
+            with codecs.open(fp, 'r', dfile_encoding) as fo:
+                for x in fo.readlines():
+                    x = x.rstrip()
+                    if x and x[0] != "#":
+                        completions.add(x)
+
+        elif n == "reports":
+            with codecs.open(fp, 'r', dfile_encoding) as fo:
+                for x in fo.readlines():
+                    x = x.rstrip()
+                    if x and x[0] != "#":
+                        reports.add(x)
+
+        elif n == "users":
+            fo = codecs.open(fp, 'r', dfile_encoding)
+            tmp = yaml.load(fo)
+            fo.close()
+            # if a key already exists, use this value
+            options['user_data'].update(tmp)
+            for x in tmp.keys():
+                completions.add("@u {0}".format(x))
+                completions.add("&u {0}".format(x))
+
+    if completions:
+        completions = list(completions)
+        completions.sort()
+        options['completions'] = completions
+    if reports:
+        reports = list(reports)
+        reports.sort()
+        options['reports'] = reports
+
+
 # noinspection PyGlobalUndefined
 def get_options(d=''):
     """
@@ -1195,11 +1253,12 @@ def get_options(d=''):
         'alert_wakecmd': '',
 
         'ampm': True,
-        'auto_completions': os.path.normpath(os.path.join(etmdir, 'completions.cfg')),
         'shared_completions' : '',
         'completions_width': 36,
 
         'calendars': [],
+
+        'cfg_files': {'completions': [], 'reports': [], 'users': []},
 
         'current_textfile': '',
         'current_htmlfile': '',
@@ -1238,7 +1297,6 @@ def get_options(d=''):
         'report_end': '+1/1',
         'report_colors': 2,
         'report_indent': 3,
-        'report_specifications': os.path.normpath(os.path.join(etmdir, 'reports.cfg')),
         'report_width1': 43,
         'report_width2': 17,
 
@@ -1258,8 +1316,6 @@ def get_options(d=''):
         'sms_subject': '!time_span!',
 
         'sundayfirst': False,
-        'users': os.path.normpath(os.path.join(etmdir, 'users.cfg')),
-        # 'users': '',
         'vcs_system': default_vcs,
         'vcs_settings': {'command': '', 'commit': '', 'dir': '', 'file': '', 'history': '', 'init': '', 'limit': ''},
         'weeks_after': 52,
@@ -1426,63 +1482,7 @@ def get_options(d=''):
             options['action_minutes'])
         options['action_minutes'] = 1
 
-    options['user_data'] = {}
-    if options['users']:
-        cf = os.path.normpath(options['users'])
-        if os.path.isfile(cf):
-            fo = codecs.open(cf, 'r', dfile_encoding)
-            options['user_data'] = yaml.load(fo)
-            fo.close()
-            logger.info('users: {0}'.format(cf))
-        else:
-            logger.warn("Could not find users file: {0}\n    Create this file to enable users.".format(cf))
-    else:
-        logger.info("users not specified in etmtk.cfg")
-
-
-    # completions = []
-    completions = set([])
-    if options['auto_completions']:
-        cf = options['auto_completions']
-        if os.path.isfile(cf):
-            logger.debug("auto_completions: {0}".format(cf))
-            fe = options['encoding']['file']
-            with codecs.open(cf, 'r', fe) as fo:
-                for x in fo.readlines():
-                    x = x.rstrip()
-                    if x and x[0] != "#":
-                        completions.add(x)
-            logger.info('Using completions file: {0}'.format(cf))
-        else:
-            logger.warn("Could not find completions file: {0}".format(cf))
-    else:
-        logger.info("auto_completions not specified in etmtk.cfg")
-
-    if 'user_data' in options and options['user_data']:
-        logger.debug('Adding keys from user_data to completions.')
-        for x in options['user_data'].keys():
-            completions.add("@u {0}".format(x))
-            completions.add("&u {0}".format(x))
-
-    if options['shared_completions']:
-        cf = options['shared_completions']
-        if os.path.isfile(cf):
-            logger.debug("shared_completions: {0}".format(cf))
-            fe = self.options['encoding']['file']
-            with codecs.open(cf, 'r', fe) as fo:
-                for x in fo.readlines():
-                    x = x.rstrip()
-                    if x and x[0] != "#":
-                        completions.add(x)
-            logger.info('Using shared completions file: {0}'.format(cf))
-        else:
-            logger.warn("Could not find shared completions file: {0}".format(cf))
-    else:
-        logger.info("optional shared_completions not specified in etmtk.cfg")
-
-    if completions:
-        options['completions'] = list(completions)
-        options['completions'].sort()
+    setConfig(options)
 
     z = gettz(options['local_timezone'])
     if z is None:
@@ -1504,15 +1504,6 @@ def get_options(d=''):
             fo.write(SAMPLE)
     logger.info('using datadir: {0}'.format(options['datadir']))
 
-    if not os.path.isfile(options['auto_completions']):
-        fo = open(options['auto_completions'], 'w')
-        fo.write(COMPETIONS)
-        fo.close()
-
-    if not os.path.isfile(options['report_specifications']):
-        fo = open(options['report_specifications'], 'w')
-        fo.write(REPORTS)
-        fo.close()
 
     if 'vcs_system' in options and options['vcs_system']:
         logger.debug('vcs_system: {0}'.format(options['vcs_system']))
@@ -2202,7 +2193,7 @@ Recursively process groups and accumulate the totals.
 
     action_template = "!indent!%s" % action_template
 
-    if options['action_minutes'] in [6, 12, 15, 30, 60]:
+    if 'action_minutes' in options and options['action_minutes'] in [6, 12, 15, 30, 60]:
         # floating point hours
         m = options['action_minutes']
 
@@ -2729,31 +2720,96 @@ def process_one_file(full_filename, rel_filename, options=None):
     return items2Hashes(file_items, options)
 
 
-def getFiles(root):
+def getFiles(root, include=r'*.txt', exclude=r'.*', other=[]):
     """
     Return the common prefix and a list of full paths from root
     :param root: directory
     :return: common prefix of files and a list of full file paths
     """
-    includes = r'*.txt'
-    excludes = r'.*'
+    # includes = r'*.txt'
+    # excludes = r'.*'
     paths = [root]
+    for path in other:
+        paths.append(path)
     common_prefix = os.path.commonprefix(paths)
     filelist = []
     for path, dirs, files in os.walk(root):
         # exclude dirs
         dirs[:] = [os.path.join(path, d) for d in dirs
-                   if not fnmatch.fnmatch(d, excludes)]
+                   if not fnmatch.fnmatch(d, exclude)]
 
         # exclude/include files
         files = [os.path.join(path, f) for f in files
-                 if not fnmatch.fnmatch(f, excludes)]
-        files = [os.path.normpath(f) for f in files if fnmatch.fnmatch(f, includes)]
+                 if not fnmatch.fnmatch(f, exclude)]
+        files = [os.path.normpath(f) for f in files if fnmatch.fnmatch(f, include)]
 
         for fname in files:
             rel_path = relpath(fname, common_prefix)
             filelist.append((fname, rel_path))
+    for fname in other:
+        filelist.append((fname, relpath(fname, common_prefix)))
     return common_prefix, filelist
+
+def getAllFiles(root, include=r'*', exclude=r'.*', other=[]):
+    """
+    Return the common prefix and a list of full paths from root
+    :param root: directory
+    :return: common prefix of files and a list of full file paths
+    """
+    paths = [root]
+    for path in other:
+        paths.append(path)
+    common_prefix = os.path.commonprefix(paths)
+    filelist = []
+    for path, dirs, files in os.walk(root):
+        # exclude dirs
+        dirs[:] = [os.path.join(path, d) for d in dirs
+                   if not fnmatch.fnmatch(d, exclude)]
+        # exclude/include files
+        files = [os.path.join(path, f) for f in files
+                 if not fnmatch.fnmatch(f, exclude)]
+        files = [os.path.normpath(f) for f in files if fnmatch.fnmatch(f, include)]
+        for fname in files:
+            rel_path = relpath(fname, common_prefix)
+            filelist.append((fname, rel_path))
+        if not (dirs or files):
+            # empty
+            rel_path = relpath(path, common_prefix)
+            filelist.append((path, rel_path))
+    return common_prefix, filelist
+
+def getFileTuples(root, include=r'*.txt', exclude=r'.*', all=False, other=[]):
+    if all:
+        common_prefix, filelist = getAllFiles(root, include, exclude, other=other)
+    else:
+        common_prefix, filelist = getFiles(root, include, exclude, other=other)
+    lst = []
+    prior = []
+    for fp, rp in filelist:
+        drive, tup = os_path_splitall(rp)
+        for i in range(0, len(tup)):
+            if len(prior) > i and tup[i] == prior[i]:
+                continue
+            prior = tup[:i]
+            disable = (i < len(tup)-1) or os.path.isdir(fp)
+            lst.append(("{0}{1}".format("\t"*i, tup[i]), rp, disable))
+    return common_prefix, lst
+
+
+def os_path_splitall(path, debug=False):
+    parts = []
+    drive, path = os.path.splitdrive(path)
+    while True:
+        newpath, tail = os.path.split(path)
+        if newpath == path:
+            assert not tail
+            if path:
+                parts.append(path)
+            break
+        parts.append(tail)
+        path = newpath
+    parts.reverse()
+    return drive, parts
 
 
 def lines2Items(lines):
