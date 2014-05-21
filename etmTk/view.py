@@ -1427,7 +1427,7 @@ The local timezone is used when none is given."""
         prefix, tuples = getFileTuples(loop.options['datadir'], include=r'*.cfg', other=other)
         # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
         lst = []
-        ret = FileChoice(self, "etm configuration files", prefix=prefix, list=tuples).returnValue()
+        ret = FileChoice(self, "open configuration file", prefix=prefix, list=tuples).returnValue()
         if not (ret and os.path.isfile(ret)):
             return False
         self.editFile(e, file=ret, config=True)
@@ -1442,7 +1442,7 @@ The local timezone is used when none is given."""
         prefix, tuples = getFileTuples(loop.options['datadir'], include=r'*.txt', all=False)
         # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
         lst = []
-        ret = FileChoice(self, "etm data files", prefix=prefix, list=tuples).returnValue()
+        ret = FileChoice(self, "open data file", prefix=prefix, list=tuples).returnValue()
         if not (ret and os.path.isfile(ret)):
             return False
         self.editFile(e, file=ret)
@@ -1450,10 +1450,14 @@ The local timezone is used when none is given."""
     def newFile(self, e=None):
         if e and e.char != "N":
             return
-        prefix, tuples = getFileTuples(loop.options['datadir'], include=r'*', all=True)
+        other = [os.path.join(loop.options['etmdir'], 'etmtk.cfg')]
+        if 'cfg_files' in loop.options:
+            for key in ['completions', 'reports', 'users']:
+                other.extend(loop.options['cfg_files'][key])
+        prefix, tuples = getFileTuples(loop.options['datadir'], include=r'*', other=other, all=True)
         # logger.info('prefix: {0}; files: {1}'.format(prefix, tuples))
         lst = []
-        tuples.insert(0, ("", "", False))
+        # tuples.insert(0, ("", "", False))
         filename = FileChoice(self, "create new file", prefix=prefix, list=tuples, new=True).returnValue()
         if not filename: return
         if os.path.isfile(filename):

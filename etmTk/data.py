@@ -2729,10 +2729,14 @@ def getFiles(root, include=r'*.txt', exclude=r'.*', other=[]):
     # includes = r'*.txt'
     # excludes = r'.*'
     paths = [root]
+    filelist = []
+    other.sort()
     for path in other:
         paths.append(path)
     common_prefix = os.path.commonprefix(paths)
-    filelist = []
+    for path in other:
+        rel_path = relpath(path, common_prefix)
+        filelist.append((path, rel_path))
     for path, dirs, files in os.walk(root):
         # exclude dirs
         dirs[:] = [os.path.join(path, d) for d in dirs
@@ -2746,8 +2750,6 @@ def getFiles(root, include=r'*.txt', exclude=r'.*', other=[]):
         for fname in files:
             rel_path = relpath(fname, common_prefix)
             filelist.append((fname, rel_path))
-    for fname in other:
-        filelist.append((fname, relpath(fname, common_prefix)))
     return common_prefix, filelist
 
 def getAllFiles(root, include=r'*', exclude=r'.*', other=[]):
@@ -2757,10 +2759,14 @@ def getAllFiles(root, include=r'*', exclude=r'.*', other=[]):
     :return: common prefix of files and a list of full file paths
     """
     paths = [root]
+    filelist = []
     for path in other:
         paths.append(path)
+    other.sort()
     common_prefix = os.path.commonprefix(paths)
-    filelist = []
+    for path in other:
+        rel_path = relpath(path, common_prefix)
+        filelist.append((path, rel_path))
     for path, dirs, files in os.walk(root):
         # exclude dirs
         dirs[:] = [os.path.join(path, d) for d in dirs

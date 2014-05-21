@@ -12,6 +12,7 @@
         Open
             Data file ...                           Shift-F
             Configuration file ...                  Shift-C
+            preferences                             Shift-P
             scratchpad                              Shift-S
         ----
         Quit                                        Ctrl-Q

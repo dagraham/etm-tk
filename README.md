@@ -19,6 +19,14 @@
 </tr>
 <tr>
     <td>
+    <center><img src="images/openfile.gif"/></a></center>
+    </td>
+    <td>
+    <center><img src="images/newfile.gif"/></a></center>
+    </td>
+</tr>
+<tr>
+    <td>
     <center><img src="images/completion.gif"/></a></center>
     </td>
     <td>

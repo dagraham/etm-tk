@@ -391,9 +391,9 @@ class FileChoice(object):
 
         if new:
             nameFrame = Frame(self.modalPane, highlightbackground=BGCOLOR, background=BGCOLOR)
-            nameFrame.pack(side="top", padx=14, pady=2, fill="x")
+            nameFrame.pack(side="top", padx=18, pady=2, fill="x")
 
-            nameLabel = Label(nameFrame, text=_("file name:"), bd=1, relief="flat", anchor="w", padx=0, pady=0, highlightbackground=BGCOLOR, background=BGCOLOR, width=8)
+            nameLabel = Label(nameFrame, text=_("file:"), bd=1, relief="flat", anchor="w", padx=0, pady=0, highlightbackground=BGCOLOR, background=BGCOLOR)
             nameLabel.pack(side="left")
 
             self.fileName = StringVar(self.modalPane)
@@ -407,9 +407,9 @@ class FileChoice(object):
 
 
         filterFrame = Frame(self.modalPane, highlightbackground=BGCOLOR, background=BGCOLOR)
-        filterFrame.pack(side="top", padx=14, pady=2, fill="x")
+        filterFrame.pack(side="top", padx=18, pady=4, fill="x")
 
-        filterLabel = Label(filterFrame, text=_("path filter:"), bd=1, relief="flat", anchor="w", padx=0, pady=0, highlightbackground=BGCOLOR, background=BGCOLOR, width=8)
+        filterLabel = Label(filterFrame, text=_("filter:"), bd=1, relief="flat", anchor="w", padx=0, pady=0, highlightbackground=BGCOLOR, background=BGCOLOR)
         filterLabel.pack(side="left")
 
         self.filterValue = StringVar(self.modalPane)
@@ -423,7 +423,7 @@ class FileChoice(object):
         prefixFrame.pack(side="top", padx=8, pady=2, fill="x")
 
         self.prefixLabel = Label(prefixFrame, text=_("{0}:").format(prefix), bd=1, highlightbackground=BGCOLOR, background=BGCOLOR)
-        self.prefixLabel.pack(side="left", expand=1,  padx=0, pady=0) #, expand=1, fill=X)
+        self.prefixLabel.pack(side="left", expand=0,  padx=0, pady=0) #, expand=1, fill=X)
 
 
         buttonFrame = Frame(self.modalPane, highlightbackground=BGCOLOR, background=BGCOLOR)
