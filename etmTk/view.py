@@ -416,7 +416,7 @@ class App(Tk):
         label=_("Print outline")
         viewmenu.add_command( label=label, underline=1, command=self.printTree)
         # self.bindTop(c, self.printTree)
-        self.bind("p", lambda e: self.after(AFTER, self.printTree))
+        self.bindTop("p", lambda e: self.after(AFTER, self.printTree))
 
         viewmenu.entryconfig(11, accelerator=l)
         self.add2menu(path, (label, l))
