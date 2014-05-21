@@ -87,6 +87,9 @@ You can add a command to use the CLI instead of the GUI. For example, to get the
     execute the remaining arguments without opening the GUI.
 
         a ARG   display the agenda view using ARG, if given, as a filter.
+        c ARGS  display a custom view using the remaining arguments as the
+                specification. (Enclose ARGS in single quotes to prevent shell
+                expansion.)
         d ARG   display the day view using ARG, if given, as a filter.
         k ARG   display the keywords view using ARG, if given, as a filter.
         m INT   display a report using the remaining argument, which must be a
@@ -98,9 +101,6 @@ You can add a command to use the CLI instead of the GUI. For example, to get the
                 specification. (Enclose ARGS in single quotes to prevent shell
                 expansion.)
         p ARG   display the path view using ARG, if given, as a filter.
-        r ARGS  display a report using the remaining arguments as the report
-                specification. (Enclose ARGS in single quotes to prevent shell
-                expansion.)
         t ARG   display the tags view using ARG, if given, as a filter.
         v       display information about etm and the operating system.
         ? ARG   display (this) command line help information if ARGS = '' or,

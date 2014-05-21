@@ -516,6 +516,9 @@ class FileChoice(object):
         return "break"
 
     def setMatching(self, *args):
+        # disabled = "#BADEC3"
+        # disabled = "#91CC9E"
+        disabled = "#62B374"
         match = self.filterValue.get()
         if match:
             self.matches = matches = [x for x in self.list if x and match.lower() in x[1].lower()]
@@ -529,8 +532,6 @@ class FileChoice(object):
                 # only show the label
                 # (label, value, disabled)FF
                 self.listBox.insert(END, item[0])
-                disabled = "#C1E6C9"
-                disabled = "#BADEC3"
                 if self.new:
                     if not item[-1]:
                         self.listBox.itemconfig(index, fg=disabled)
