@@ -416,7 +416,8 @@ class App(Tk):
         label=_("Print outline")
         viewmenu.add_command( label=label, underline=1, command=self.printTree)
         # self.bindTop(c, self.printTree)
-        self.bindTop("p", lambda e: self.after(AFTER, self.printTree))
+        # self.bindTop("p", lambda e: self.after(AFTER, self.printTree))
+        self.bindTop("p", self.printTree)
 
         viewmenu.entryconfig(11, accelerator=l)
         self.add2menu(path, (label, l))
@@ -3179,6 +3180,8 @@ or 0 to expand all branches completely.""")
         self.textWindow(parent=self, title='etm', opts=self.options, prompt=prompt, modal=False)
 
     def printTree(self, e=None):
+        if e and e.char != "p":
+            return
         if self.weekly:
             return
         if not self.active_tree:
@@ -3186,7 +3189,7 @@ or 0 to expand all branches completely.""")
         ans = self.confirm(parent=self.tree,
             prompt=_("""Print current outline?"""))
         if not ans:
-            return()
+            return False
 
         depth = self.outline_depths[self.view]
 
