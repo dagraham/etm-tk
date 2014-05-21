@@ -15,7 +15,7 @@ import platform
 if platform.python_version() >= '3':
     import tkinter
     from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, Checkbutton, W, X, LabelFrame, Canvas, CURRENT, TclError, Listbox, SINGLE, BROWSE, Scrollbar
-    from tkinter import ttk
+    # from tkinter import ttk
     from tkinter import font as tkFont
     from tkinter.messagebox import askokcancel
     # from tkinter.filedialog import askopenfilename
@@ -25,7 +25,7 @@ else:
     import Tkinter as tkinter
     from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, Checkbutton, W, X, LabelFrame, Canvas, CURRENT, TclError, Listbox, SINGLE, BROWSE, Scrollbar
     # import tkMessageBox
-    import ttk
+    # import ttk
     import tkFont
     from tkMessageBox import askokcancel
     # from tkFileDialog import askopenfilename
@@ -346,7 +346,7 @@ class MessageWindow():
         self.win.title(title)
         Label(self.win, text=prompt).pack(fill=tkinter.BOTH, expand=1, padx=10, pady=10)
         b = Button(self.win, text=_('OK'), width=10, command=self.cancel,
-                   default='active')
+                   default='active', pady=2)
         b.pack()
         self.win.bind('<Return>', (lambda e, b=b: b.invoke()))
         self.win.bind('<Escape>', (lambda e, b=b: b.invoke()))
@@ -429,10 +429,10 @@ class FileChoice(object):
         buttonFrame = Frame(self.modalPane, highlightbackground=BGCOLOR, background=BGCOLOR)
         buttonFrame.pack(side="bottom", padx=10, pady=2)
 
-        chooseButton = Button(buttonFrame, text="Choose", command=self._choose, highlightbackground=BGCOLOR, background=BGCOLOR)
+        chooseButton = Button(buttonFrame, text="Choose", command=self._choose, highlightbackground=BGCOLOR, background=BGCOLOR, pady=2)
         chooseButton.pack(side="right", padx=10)
 
-        cancelButton = Button(buttonFrame, text="Cancel", command=self._cancel, highlightbackground=BGCOLOR, background=BGCOLOR)
+        cancelButton = Button(buttonFrame, text="Cancel", command=self._cancel, highlightbackground=BGCOLOR, background=BGCOLOR, pady=2)
         cancelButton.pack(side="left")
 
         selectionFrame = Frame(self.modalPane, highlightbackground=BGCOLOR, background=BGCOLOR)
@@ -645,9 +645,9 @@ class Dialog(Toplevel):
 
         box = Frame(self, background=BGCOLOR, highlightbackground=BGCOLOR)
 
-        w = Button(box, text="OK", width=10, command=self.ok, default=ACTIVE,  highlightbackground=BGCOLOR)
+        w = Button(box, text="OK", width=10, command=self.ok, default=ACTIVE,  highlightbackground=BGCOLOR, pady=2)
         w.pack(side="right", padx=5, pady=5)
-        w = Button(box, text="Cancel", width=10, command=self.cancel, highlightbackground=BGCOLOR)
+        w = Button(box, text="Cancel", width=10, command=self.cancel, highlightbackground=BGCOLOR, pady=2)
         w.pack(side="right", padx=5, pady=5)
 
         self.bind("<Return>", self.ok)
@@ -724,7 +724,7 @@ class TextVariableWindow(Dialog):
         box = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
 
         w = Button(box, text=CLOSE, width=10, command=self.ok,
-                   default=ACTIVE, highlightbackground=BGCOLOR)
+                   default=ACTIVE, highlightbackground=BGCOLOR, pady=2)
         w.pack(side=LEFT, padx=5, pady=5)
         self.bind("<Return>", self.ok)
         self.bind("<Escape>", self.ok)
@@ -774,7 +774,7 @@ class TextDialog(Dialog):
         self.text.insert("1.1", self.prompt)
         self.text.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0,
                        pady=0)
-        ysb = ttk.Scrollbar(master, orient='vertical', command=self.text
+        ysb = Scrollbar(master, orient='vertical', command=self.text
                             .yview, width=8)
         ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
         # t.configure(state="disabled", yscroll=ysb.set)
@@ -850,9 +850,9 @@ class OptionsDialog():
         else:
             YES = _("Ok")
             NO = _("Cancel")
-        c = Button(box, text=NO, width=10, command=self.cancel)
+        c = Button(box, text=NO, width=10, command=self.cancel, pady=2)
         c.pack(side=LEFT, padx=5, pady=5)
-        o = Button(box, text=YES, width=10, default='active', command=self.ok)
+        o = Button(box, text=YES, width=10, default='active', command=self.ok, pady=2)
         o.pack(side=LEFT, padx=5, pady=5)
         box.pack()
         self.win.bind('<Return>', (lambda e, o=o: o.invoke()))

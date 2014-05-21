@@ -21,23 +21,23 @@ import platform
 
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas, CURRENT
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas, CURRENT, Scrollbar
     #, PhotoImage
     from tkinter import ttk
     from tkinter import font as tkFont
     # from tkinter.messagebox import askokcancel
     # from tkinter.filedialog import askopenfilename, asksaveasfilename, FileDialog
-    from tkinter.filedialog import asksaveasfilename, FileDialog
+    # from tkinter.filedialog import asksaveasfilename, FileDialog
     utf8 = lambda x: x
 
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas, CURRENT
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas, CURRENT, Scrollbar
     import ttk
     import tkFont
     # from tkMessageBox import askokcancel
     # from tkFileDialog import askopenfilename, asksaveasfilename
-    from tkFileDialog import asksaveasfilename
+    # from tkFileDialog import asksaveasfilename
 
     def utf8(s):
         return s
@@ -2335,7 +2335,7 @@ Enter the shortest time period you want displayed in minutes.""")
         win.title(_("Calendar"))
         f = Frame(win)
         # pack the button first so that it doesn't disappear with resizing
-        b = Button(win, text=_('OK'), width=10, command=win.destroy, default='active')
+        b = Button(win, text=_('OK'), width=10, command=win.destroy, default='active', pady=2)
         b.pack(side='bottom', fill=tkinter.NONE, expand=0, pady=0)
         win.bind('<Return>', (lambda e, b=b: b.invoke()))
         win.bind('<Escape>', (lambda e, b=b: b.invoke()))
@@ -2350,7 +2350,7 @@ Enter the shortest time period you want displayed in minutes.""")
         win.bind('<space>', (lambda e: showYear()))
         showYear()
         t.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0, pady=0)
-        ysb = ttk.Scrollbar(f, orient='vertical', command=t.yview, width=8)
+        ysb = Scrollbar(f, orient='vertical', command=t.yview, width=8)
         ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
 
         t.configure(yscroll=ysb.set)

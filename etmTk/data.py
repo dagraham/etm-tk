@@ -2798,7 +2798,7 @@ def getFileTuples(root, include=r'*.txt', exclude=r'.*', all=False, other=[]):
                 continue
             prior = tup[:i]
             disable = (i < len(tup)-1) or os.path.isdir(fp)
-            lst.append(("{0}{1}".format("\t"*i, tup[i]), rp, disable))
+            lst.append(("{0}{1}".format(" "*6*i, tup[i]), rp, disable))
     return common_prefix, lst
 
 
@@ -3977,7 +3977,8 @@ def str2hsh(s, uid=None, options=None):
             if at_key == 'a':
                 actns = options['alert_default']
                 arguments = []
-                alert_parts = at_val.split(':', maxsplit=1)
+                # alert_parts = at_val.split(':', maxsplit=1)
+                alert_parts = re.split(':', at_val, maxsplit=1)
                 t_lst = alert_parts.pop(0).split(',')
                 periods = tuple([parse_period(x) for x in t_lst])
                 triggers = [x for x in periods]
