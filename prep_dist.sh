@@ -87,7 +87,11 @@ else
     tag=$otag
     change="retaining version $vinfo."
     echo "Using $tag [$versioninfo]" >> $logfile
-    # hg tag $tag -f
+    echo "version = \"$tag\"" > /Users/dag/etm-tk/etmTk/v.py
+    echo "version = \"$tag [$versioninfo]\"" > etmTk/version.py
+    echo "$tag [$versioninfo]" > version.txt
+    git add etmTk/v.py etmTk/version.py
+    git commit -a -m "tagged version $tag"
     git tag -f $tag HEAD
 fi
 
