@@ -2400,7 +2400,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
         if self.itemSelected:
             f = self.itemSelected['fileinfo'][0]
-            fn = ' {0}{1}'.format(self.options['vcs']['file'], os.path.normpath(os.path.join(self.options['datadir'], f)))
+            fn = ' {0}"{1}"'.format(self.options['vcs']['file'], os.path.normpath(os.path.join(self.options['datadir'], f)))
             title = _("Showing changes for {0}.").format(f)
 
         else:

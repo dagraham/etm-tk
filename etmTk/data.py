@@ -6670,20 +6670,27 @@ def main(etmdir='', argv=[]):
                 x = s2or3(x)
                 args.append(x)
             argstr = ' '.join(args)
+            opts = str2opts(" ".join(args[1:]), options)[0]
             tt = TimeIt(loglevel=2, label="cmd '{0}'".format(argstr))
             c.loadData()
             res = c.do_command(argstr)
-            if options:
-                if 'report_indent' in options:
+            if opts and 'width1' in opts:
+                width1 = opts['width1']
+            elif options and 'report_width1' in options:
+                width1 = options['report_width1']
+            else:
+                width1 = 43
+            if opts and 'width2' in opts:
+                width2 = opts['width2']
+            elif options and 'report_width2' in options:
+                width2 = options['report_width2']
+            else:
+                width2 = 20
+
+            if options and 'report_indent' in options:
                     indent = options['report_indent']
-                if 'report_width1' in options:
-                    width1 = options['report_width1']
-                if 'report_width2' in options:
-                    width2 = options['report_width2']
             else:
                 indent = 4
-                width1 = 43
-                width2 = 20
 
             if type(res) is dict:
                 res = "\n".join(tree2Text(res, indent=indent, width1=width1, width2=width2)[0])
