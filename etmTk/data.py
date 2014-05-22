@@ -3853,8 +3853,10 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
             (node1, node2, ... (minutes, value, expense, charge))
     """
     if not options: options = {}
-
-    grpby, dated, filters = str2opts(s, options, cli)
+    try:
+        grpby, dated, filters = str2opts(s, options, cli)
+    except:
+        return _("Could not process: {0}").format(s)
     if 'width1' in grpby:
         width1 = grpby['width1']
     else:
@@ -6684,7 +6686,11 @@ def main(etmdir='', argv=[]):
             argstr = ' '.join(args)
             opts = {}
             if len(args) > 1:
-                tmp = str2opts(" ".join(args[1:]), options)
+                try:
+                    tmp = str2opts(" ".join(args[1:]), options)
+                except:
+                    term_print('Could not process" {0}'.format(s))
+                    return
                 if len(tmp) == 3:
                     opts = str2opts(" ".join(args[1:]), options)[0]
             tt = TimeIt(loglevel=2, label="cmd '{0}'".format(argstr))
