@@ -1118,13 +1118,12 @@ def setConfig(options):
         cal_regex = re.compile(cal_pattern)
 
     options['user_data'] = {}
-    options['user_tuples'] = []
     options['completions'] = []
-    options['completions_tuples'] = []
-    options['reports_tuples'] = []
+    options['reports'] = []
     completions = set([])
     reports = set([])
 
+    # get info from files in datadir
     prefix, filelist = getFiles(options['datadir'], include=r'*.cfg')
     logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
     for fp, rp in filelist:
@@ -1156,6 +1155,33 @@ def setConfig(options):
             for x in tmp.keys():
                 completions.add("@u {0}".format(x))
                 completions.add("&u {0}".format(x))
+
+    # get info from cfg_files
+    if 'cfg_files' in options and options['cfg_files']:
+        if 'completions' in options['cfg_files'] and options['cfg_files']['completions']:
+            for fp in options['cfg_files']['completions']:
+                with codecs.open(fp, 'r', dfile_encoding) as fo:
+                    for x in fo.readlines():
+                        x = x.rstrip()
+                        if x and x[0] != "#":
+                            completions.add(x)
+        if 'reports' in options['cfg_files'] and options['cfg_files']['reports']:
+            for fp in options['cfg_files']['reports']:
+                with codecs.open(fp, 'r', dfile_encoding) as fo:
+                    for x in fo.readlines():
+                        x = x.rstrip()
+                        if x and x[0] != "#":
+                            reports.add(x)
+        if 'users' in options['cfg_files'] and options['cfg_files']['users']:
+            for fp in options['cfg_files']['users']:
+                fo = codecs.open(fp, 'r', dfile_encoding)
+                tmp = yaml.load(fo)
+                fo.close()
+                # if a key already exists, use this value
+                options['user_data'].update(tmp)
+                for x in tmp.keys():
+                    completions.add("@u {0}".format(x))
+                    completions.add("&u {0}".format(x))
 
     if completions:
         completions = list(completions)
@@ -6371,46 +6397,32 @@ Show items grouped and sorted by keyword optionally limited to those containing 
 """)
 
     def do_m(self, arg_str):
-        f = self.options['report_specifications']
-        if not arg_str.strip():
-            self.help_m()
-        if not f or not os.path.isfile(f):
-            return _("""
-This option requires a valid report_specifications setting in etmtk.cfg.""")
-        with open(f, 'r') as fo:
-            lines = [x for x in fo.readlines() if x.strip() and x[0] != "#"]
+        lines = self.options['reports']
         try:
             n = int(arg_str)
             if n < 1 or n > len(lines):
                 return _('report {0} does not exist'.format(n))
         except:
             return self.help_m()
-        rep_spec = lines[n - 1].strip().split('#')[0]
-        # return('\nreport: (#{0}) {1}'.format(n, rep_spec.strip()))
+        rep_spec = "{0}".format(lines[n - 1].strip().split('#')[0])
         logger.debug(('rep_spec: {0}'.format(rep_spec)))
-        text = getReportData(
+        tree = getReportData(
             rep_spec,
             self.file2uuids,
             self.uuid2hash,
             self.options)
-        header = "{0}: {1}".format(_("report"), rep_spec)
-        return "{0}\n{1}\n{2}".format(header, "-"*len(header), text)
+        return(tree)
 
     def help_m(self):
         res = []
-        f = self.options['report_specifications']
-        if not f or not os.path.isfile(f):
-            return _("""
-This option requires a valid report_specifications setting in etmtk.cfg.""")
-        with open(f, 'r') as fo:
-            lines = [x for x in fo.readlines() if x.strip() and x[0] != "#"]
+        lines = self.options['reports']
         if lines:
             res.append(_("""\
 Usage:
 
     etm m N
 
-where N is the number of a report specification from the file {0}:\n """.format(f)))
+where N is the number of a report specification:\n """))
             for i in range(len(lines)):
                 res.append("{0:>2}. {1}".format(i + 1, lines[i].strip()))
         return "\n".join(res)
@@ -6670,7 +6682,11 @@ def main(etmdir='', argv=[]):
                 x = s2or3(x)
                 args.append(x)
             argstr = ' '.join(args)
-            opts = str2opts(" ".join(args[1:]), options)[0]
+            opts = {}
+            if len(args) > 1:
+                tmp = str2opts(" ".join(args[1:]), options)
+                if len(tmp) == 3:
+                    opts = str2opts(" ".join(args[1:]), options)[0]
             tt = TimeIt(loglevel=2, label="cmd '{0}'".format(argstr))
             c.loadData()
             res = c.do_command(argstr)
@@ -6693,7 +6709,10 @@ def main(etmdir='', argv=[]):
                 indent = 4
 
             if type(res) is dict:
-                res = "\n".join(tree2Text(res, indent=indent, width1=width1, width2=width2)[0])
+                lines = tree2Text(res, indent=indent, width1=width1, width2=width2)[0]
+                if lines and not lines[0]:
+                    lines.pop(0)
+                res = "\n".join(lines)
             tt.stop()
 
             term_print(res)
