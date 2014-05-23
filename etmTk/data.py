@@ -6597,6 +6597,7 @@ Show items grouped and sorted by tag, optionally limited to those containing a c
             'platform': platform.system(),
             'python': platform.python_version(),
             'dateutil': dateutil_version,
+            'pyyaml': yaml.__version__,
             'tkversion': self.tkversion,
             'github': 'https://github.com/dagraham/etm-tk',
         }
@@ -6611,6 +6612,7 @@ This application provides a format for using plain text files to store events, t
 System Information:
   Python:    {0[python]}
   Dateutil:  {0[dateutil]}
+  PyYaml:    {0[pyyaml]}
   Tk/Tcl:    {0[tkversion]}
   Platform:  {0[platform]}
 
