@@ -742,9 +742,11 @@ class App(Tk):
         self.bind("<Control-q>", self.quit)
         self.saved_specs = ['']
         self.getSpecs()
-        self.value_of_combo = self.specs[0]
-        self.custom_box['values'] = self.specs
-        self.custom_box.current(0)
+        if self.specs:
+            self.value_of_combo = self.specs[0]
+            self.custom_box['values'] = self.specs
+            self.custom_box.current(0)
+            self.saved_specs = deepcopy(self.specs)
         self.custom_box.configure(width=30, background=BGCOLOR, takefocus=False)
         # self.report_box.pack(side="left", padx=3, bd=2, relief="sunken", fill=X, expand=1)
 
@@ -1432,6 +1434,20 @@ The local timezone is used when none is given."""
         if not (ret and os.path.isfile(ret)):
             return False
         self.editFile(e, file=ret, config=True)
+
+    def getReportsFile(self, e=None):
+        other = []
+        if 'cfg_files' in loop.options:
+            for key in ['reports']:
+                other.extend(loop.options['cfg_files'][key])
+        print('pat', r'*reports.cfg'.format(os.sep))
+        prefix, tuples = getFileTuples(loop.options['datadir'], include=r'*reports.cfg', other=other)
+        # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
+        lst = []
+        ret = FileChoice(self, "append to reports file", prefix=prefix, list=tuples).returnValue()
+        if not (ret and os.path.isfile(ret)):
+            return False
+        return ret
 
     def editScratch(self, e=None):
         file = loop.options['scratchpad']
@@ -3314,27 +3330,10 @@ or 0 to expand all branches completely.""")
             return 0
 
     def getSpecs(self, e=None):
-        self.specs = ['']
+        self.specs = []
         if 'reports' in loop.options:
             self.specs = loop.options['reports']
 
-    # def editReports(self, e=None):
-    #     if e and e.char != "R":
-    #         return
-    #     tuples = getFileTuples(loop.options['datadir'], include=r'*{0}reports.cfg'.format(os.sep))
-    #     # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
-    #     lst = []
-    #     ret = FileChoice(self, "etm report files", tuples).returnValue()
-    #     if not (ret and ret[1] and os.path.isfile(ret[1])):
-    #         return False
-    #     changed = self.editFile(e, file=ret[1], config=True)
-    #     if changed:
-    #         logger.debug("saved: {0}".format(file))
-    #         self.getSpecs()
-    #         self.custom_box['values'] = self.specs
-    #         self.value_of_combo = self.specs[0]
-    #         self.saved_specs = deepcopy(self.specs)
-    #         self.specsModified = False
 
     def saveSpecs(self, e=None):
         # called when changing from custom view or
@@ -3342,18 +3341,21 @@ or 0 to expand all branches completely.""")
         if self.view != CUSTOM: return
         if not self.specsModified:
             return
-        if not ('report_specifications' in self.options and os.path.isfile(self.options['report_specifications'])):
-            return
-        file = self.options['report_specifications']
         # remove duplicates
         self.specs = list(set(self.specs))
         self.specs.sort()
         added = [x for x in self.specs if x not in self.saved_specs]
+        if not added:
+            self.specsModified = False
+            return
         ans = self.confirm(parent=self,
             prompt=_("""Save the additions to your report specifications?
     {0}
 """.format("\n    ".join(added))))
         if ans:
+            file = self.getReportsFile()
+            if not (file and os.path.isfile(file)):
+                return
             with codecs.open(file, 'w', loop.options['encoding']['file']) as fo:
                 tmp = fo.write("\n".join(self.specs))
             logger.debug("saved: {0}".format(file))
