@@ -282,12 +282,13 @@ syntax: glob
 SAMPLE ="""\
 # Sample entries - this file can be edited or deleted at your pleasure
 
-* sales meeting @s +7 9a @e 1h @a 5 @a 2d: e; who@when.com, what@where.org
+* sales meeting @s +7 9a @e 1h @a 5 @a 2d: e; who@when.com, what@where.org @u jsmith
 - prepare report @s +7 @b 3
 - get haircut @s 24 @r d &i 14 @o r
 ^ payday @s 1/1 @r m &w MO, TU, WE, TH, FR &m -1, -2, -3 &s -1
-* take Rx @s +0 @r d &h 10, 22 &u +2 @a 0
-
+* take Rx @s +0 @r d &h 10, 22 &t 4 @a 0
+"""
+HOLIDAYS = """\
 ^ Martin Luther King Day @s 2010-01-18 @r y &w 3MO &M 1
 ^ Valentine's Day @s 2010-02-14 @r y &M 2 &m 14
 ^ President's Day @s 2010-02-15 @c holiday @r y &w 3MO &M 2
@@ -318,9 +319,15 @@ COMPETIONS = """\
 @c home
 @c office
 
-jsmith@whatever.com
-
 # empty lines and lines that begin with '#' are ignored.
+"""
+
+USERS = """\
+jsmith:
+    - Smith, John
+    - jsmth@whatever.com
+    - wife Rebecca
+    - children Tom, Dick and Harry
 """
 
 REPORTS = """\
@@ -1315,7 +1322,7 @@ def get_options(d=''):
         'local_timezone': time_zone,
 
         # 'monthly': os.path.join('personal', 'monthly'),
-        'monthly': 'monthly',
+        'monthly': os.path.join('personal', 'monthly'),
         'outline_depth': 0,
         'prefix': "\n  ",
         'prefix_uses': 'djlmrtz+-',
@@ -1440,6 +1447,60 @@ def get_options(d=''):
             logger.warn('A value was provided for freetimes[{0}], but this is an invalid option and has been deleted.'.format(key))
             changed = True
 
+    if not os.path.isdir(options['datadir']):
+        """
+        <datadir>
+            personal/
+                monthly/
+            sample/
+                completions.cfg
+                reports.cfg
+                sample.txt
+                users.cfg
+            shared/
+                holidays.txt
+
+        etmtk.cfg
+            calendars:
+            - - personal
+              - true
+              - personal
+            - - sample
+              - true
+              - sample
+            - - shared
+              - true
+              - shared
+        """
+        changed = True
+        term_print('creating datadir: {0}'.format(options['datadir']))
+        # first use of this datadir - first use of new etm?
+        os.makedirs(options['datadir'])
+        # create one task for new users to join the etm discussion group
+        currfile = ensureMonthly(options)
+        with open(currfile, 'w') as fo:
+            fo.write(JOIN)
+        sample = os.path.normpath(os.path.join(options['datadir'], 'sample'))
+        os.makedirs(sample)
+        with open(os.path.join(sample, 'sample.txt'), 'w') as fo:
+            fo.write(SAMPLE)
+        holidays = os.path.normpath(os.path.join(options['datadir'], 'shared'))
+        os.makedirs(holidays)
+        with open(os.path.join(holidays, 'holidays.txt'), 'w') as fo:
+            fo.write(HOLIDAYS)
+        with open(os.path.join(options['datadir'], 'sample', 'completions.cfg'), 'w') as fo:
+            fo.write(COMPETIONS)
+        with open(os.path.join(options['datadir'], 'sample', 'reports.cfg'), 'w') as fo:
+            fo.write(REPORTS)
+        with open(os.path.join(options['datadir'], 'sample', 'users.cfg'), 'w') as fo:
+            fo.write(USERS)
+        if not options['calendars']:
+            options['calendars'] = [['personal', True, 'personal'], ['sample', True, 'sample'], ['shared', True, 'shared']]
+
+    logger.info('using datadir: {0}'.format(options['datadir']))
+
+
+
     logger.debug('changed: {0}; user: {1}; options: {2}'.format(changed, (user_options != default_options), (options != default_options)))
     if changed or using_oldcfg:
         # save options to newconfig even if user options came from oldconfig
@@ -1516,20 +1577,6 @@ def get_options(d=''):
             "Error: bad entry for local_timezone in etmtk.cfg: '%s'" %
             options['local_timezone'])
         options['local_timezone'] = ''
-
-    if not os.path.isdir(options['datadir']):
-        term_print('creating datadir: {0}'.format(options['datadir']))
-        # first use of this datadir - first use of new etm?
-        os.makedirs(options['datadir'])
-        # create one task for new users to join the etm discussion group
-        currfile = ensureMonthly(options)
-        with open(currfile, 'w') as fo:
-            fo.write(JOIN)
-        sample = os.path.normpath(os.path.join(options['datadir'], 'sample.txt'))
-        with open(sample, 'w') as fo:
-            fo.write(SAMPLE)
-    logger.info('using datadir: {0}'.format(options['datadir']))
-
 
     if 'vcs_system' in options and options['vcs_system']:
         logger.debug('vcs_system: {0}'.format(options['vcs_system']))
