@@ -1286,7 +1286,6 @@ def get_options(d=''):
         'alert_wakecmd': '',
 
         'ampm': True,
-        'shared_completions' : '',
         'completions_width': 36,
 
         'calendars': [],

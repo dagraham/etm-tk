@@ -239,34 +239,6 @@ If given, this command will be issued to "wake up the display" before executing 
 
 Use ampm times if true and twenty-four hour times if false. E.g., 2:30pm (true) or 14:30 (false).
 
-### auto_completions
-
-        auto_completions: ~/.etm/completions.cfg
-
-The absolute path to the file to be used for autocompletions. Each line in the file provides a possible completion. E.g.
-
-    @c computer
-    @c home
-    @c errands
-    @c office
-    @c phone
-    @z US/Eastern
-    @z US/Central
-    @z US/Mountain
-    @z US/Pacific
-    dnlgrhm@gmail.com
-
-If you enter, for example, "@c" in the editor and press Ctrl-Space, a list of possible completions will pop up. Choose the one you want and press *Return* to insert it and close the popup.
-
-Up and down arrow keys change the selection and either *Tab* or *Return* inserts the selection.
-
-To edit the auto_completions file, press *Shift-C* in the main window or from the main menu under *File/Open*.
-
-### shared_completions
-
-     shared_completions: ''
-
-The absolute path to an optional file to be used to augment autocompletions. Each line in the file provides a possible completion.
 
 ### completions_width
 
@@ -286,6 +258,68 @@ These are (label, default, path relative to `datadir`) tuples to be interpreted 
 When non-default calendars are selected, busy times in the "week view" will appear in one color for events from default calendars and in another color for events from non-default calendars.
 
 **Only data files that belong to one of the calendar directories or their subdirectories will be accessible within etm.**
+
+### cfg_files
+
+    cfg_files:
+        - completions: []
+        - reports:     []
+        - users:       []
+
+Each of the three list brackets can contain one or more comma separated *absolute* file paths. Additionally, paths corresponding to active calendars in the `datadir` directory are searched for files named `completions.cfg`, `reports.cfg` and `users.cfg` and these are processed in addition to the ones from `cfg_files`.
+
+Note. Windows users should place each absolute path in quotes and escape backslashes, i.e., use `\\` anywhere `\` appears in a path.
+
+- Completions
+
+    Each line in a completions file provides a possible completion when using the editor. E.g. with these completions
+
+        @c computer
+        @c home
+        @c errands
+        @c office
+        @c phone
+        @z US/Eastern
+        @z US/Central
+        @z US/Mountain
+        @z US/Pacific
+        dnlgrhm@gmail.com
+
+    entering, for example, "@c" in the editor and pressing Ctrl-Space, would popup a list of possible completions. Choosing the one you want and pressing *Return* would insert it and close the popup.
+
+    Up and down arrow keys change the selection and either *Tab* or *Return* inserts the selection.
+
+    To edit a completions file, press *Shift-C* in the main window or from the main menu under *File/Open* to choose from a list of completions files.
+
+- Reports
+
+    Each line in a reports file provides a possible reports specification. These are available when using the CLI `m` command and in the GUI custom view. See [Reports](#reports) for details.
+
+- Users
+
+    User files contain user (contact) information in a free form, text database. Each entry begins with a unique key for the person and is followed by detail lines each of which begins with a minus sign and contains some detail about the person that you want to record. Any detail line containing a colon should be quoted, e.g.,
+
+        jbrown:
+        - Brown, Joe
+        - jbr@whatever.com
+        - 'home: 123 456-7890'
+        - 'birthday: 1978-12-14'
+        dcharles:
+        - Charles, Debbie
+        - dch@sometime.com
+        - 'cell: 456 789-0123'
+        - 'spouse: Rebecca'
+
+    Keys from this file are added to auto-completions so that if you type, say, `@u jb` and press *Ctrl-Space*, then `@u jbrown` would be offered for completion.
+
+    If an item with the entry `@u jbrown` is selected in the GUI, you can press "u" to see a popup with the details:
+
+        Brown, Joe
+        jbr@whatever.com
+        home: 123 456-7890
+        birthday: 1978-12-14
+
+    You can press "U" in the GUI to choose a users file for editing.
 
 ### current files
 
@@ -474,8 +508,8 @@ Apply `prefix` (whitespace only) to the @keys in `prefix_uses` when displaying a
     report_begin:           '1'
     report_end:             '+1/1'
     report_colors:          2
-    report_specifications:  ~/.etm/reports.cfg
-    report_width:           54
+    report_width1:          61
+    report_width2:          19
 
 Report begin and end are fuzzy parsed dates specifying the default period for reports that group by dates. Each line in the file specified by `report_specifications` provides a possible specification for a report. E.g.
 
@@ -526,35 +560,6 @@ Required settings for text messaging in alerts. Enter the 10-digit area code and
     sundayfirst: false
 
 The setting affects only the twelve month calendar display.
-
-### users
-
-    users: ~/.etm/users.cfg
-
-User information in a free form, text database. Each entry begins with a unique key for the person and is followed by detail lines each of which begins with a minus sign and contains some detail about the person that you want to record. Any detail line containing a colon should be quoted, e.g.,
-
-    jbrown:
-    - Brown, Joe
-    - jbr@whatever.com
-    - 'home: 123 456-7890'
-    - 'birthday: 1978-12-14'
-    dcharles:
-    - Charles, Debbie
-    - dch@sometime.com
-    - 'cell: 456 789-0123'
-    - 'spouse: Rebecca'
-
-Keys from this file are added to auto-completions so that if you type, say, `@u jb` and press *Ctrl-Space*, then `@u jbrown` would be offered for completion.
-
-If an item with the entry `@u jbrown` is selected in the GUI, you can press "u" to see a popup with the details:
-
-    Brown, Joe
-    jbr@whatever.com
-    home: 123 456-7890
-    birthday: 1978-12-14
-
-You can press "U" in the GUI to open `users` for editing.
-
 
 ### vcs_settings
 

@@ -224,11 +224,39 @@ The first time you run etm it will create, if necessary, the following:
 
     ~/.etm/
     ~/.etm/etmtk.cfg
-    ~/.etm/completions.cfg
-    ~/.etm/reports.cfg
     ~/.etm/data/
 
-If the data directory needs to be created, then a file `~/.etm/data/sample.txt` will be added with illustrative entries. Similarly, the `*.cfg` files will be populated with useful entries.
+
+If the data directory needs to be created, then the following structure will be added:
+
+    ~/.etm/data/
+        personal/
+            monthly/
+        sample/
+            completions.cfg
+            reports.cfg
+            sample.txt
+            users.cfg
+        shared/
+            holidays.txt
+
+
+The files `sample.txt` and `holidays.txt` contain illustrative data entries and the `*.cfg` files contain illustrative configuration entries.
+
+The following entry will also be inserted in `etmtk.cfg`:
+
+        calendars:
+        - - personal
+          - true
+          - personal
+        - - sample
+          - true
+          - sample
+        - - shared
+          - true
+          - shared
+
+to illustrate the use of calendars.
 
 ### Previous etm users
 
