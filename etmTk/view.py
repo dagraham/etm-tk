@@ -485,9 +485,10 @@ class App(Tk):
         self.em_options = [
             [_('Copy'), 'c'],
             [_('Delete'), 'd'],
-            [_('Edit item'), 'e'],
+            [_('Edit'), 'e'],
             [_('Edit file'), 'E'],
             [_('Finish'), 'f'],
+            [_('Move'), 'm'],
             [_('Reschedule'), 'r'],
             [_('Schedule new'), 'R'],
             [_('Open link'), 'g'],
@@ -499,6 +500,7 @@ class App(Tk):
             'e': self.editItem,
             'E': self.editItemFile,
             'f': self.finishItem,
+            'm': self.moveItem,
             'r': self.rescheduleItem,
             'R': self.scheduleNewItem,
             'g': self.openWithDefault,
@@ -1275,6 +1277,34 @@ The local timezone is used when none is given."""
             self.tree.focus_set()
             self.showView(row=self.topSelected)
 
+    def moveItem(self, e=None):
+        if not self.itemSelected:
+            return
+        logger.debug('{0}: {1}'.format(self.itemSelected['_summary'], self.dtSelected))
+        oldrp, begline, endline = self.itemSelected['fileinfo']
+        oldfile = os.path.join(loop.options['datadir'], oldrp)
+        newfile = self.getDataFile(title="moving from {0}:".format(oldrp), start=oldfile)
+        if not (newfile and os.path.isfile(newfile)):
+            return
+        ret = loop.append_item(self.itemSelected, newfile)
+        if ret != "break":
+            # post message and quit
+            prompt = _("""\
+Adding item to {1} failed - aborted removing item from {2}""".format(
+                newfile, oldfile))
+            MessageWindow(self, 'Error', prompt)
+            return
+        loop.item_hsh = self.itemSelected
+        ret = loop.delete_item()
+
+        self.updateAlerts()
+        if self.weekly:
+            self.canvas.focus_set()
+            self.showWeek()
+        else:
+            self.tree.focus_set()
+            self.showView(row=self.topSelected)
+
 
     def editItem(self, e=None):
         if not self.itemSelected:
@@ -1440,11 +1470,20 @@ The local timezone is used when none is given."""
         if 'cfg_files' in loop.options:
             for key in ['reports']:
                 other.extend(loop.options['cfg_files'][key])
-        print('pat', r'*reports.cfg'.format(os.sep))
         prefix, tuples = getFileTuples(loop.options['datadir'], include=r'*reports.cfg', other=other)
         # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
         lst = []
         ret = FileChoice(self, "append to reports file", prefix=prefix, list=tuples).returnValue()
+        if not (ret and os.path.isfile(ret)):
+            return False
+        return ret
+
+    def getDataFile(self, e=None, title="data file", start=''):
+        other = []
+        prefix, tuples = getFileTuples(loop.options['datadir'], include=r'*.txt')
+        # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
+        lst = []
+        ret = FileChoice(self, title, prefix=prefix, list=tuples, start=start).returnValue()
         if not (ret and os.path.isfile(ret)):
             return False
         return ret
@@ -2559,27 +2598,27 @@ or 0 to display all changes.""").format(title)
                 text = "{1}\n\n{2}: {3}\n\n{4}: {5}".format(item, hsh['entry'].lstrip(), _("Errors"), hsh['errors'],  _("file"), filetext)
             else:
                 text = "{1}\n\n{2}: {3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
-            for i in [0, 1, 2, 3, 5, 6, 8]: # everything except finish and open link
+            for i in [0, 1, 2, 3, 5, 6, 7]: # everything except finish (4), open link (8) and show user (9)
                 self.itemmenu.entryconfig(i, state='normal')
             if isUnfinished:
                 self.itemmenu.entryconfig(4, state='normal')
             else:
                 self.itemmenu.entryconfig(4, state='disabled')
             if hasLink:
-                self.itemmenu.entryconfig(7, state='normal')
-            else:
-                self.itemmenu.entryconfig(7, state='disabled')
-            if hasUser:
                 self.itemmenu.entryconfig(8, state='normal')
             else:
                 self.itemmenu.entryconfig(8, state='disabled')
+            if hasUser:
+                self.itemmenu.entryconfig(9, state='normal')
+            else:
+                self.itemmenu.entryconfig(9, state='disabled')
             self.uuidSelected = uuid
             self.itemSelected = hsh
             logger.debug('dt selected: {0}, {1}'.format(dt, type(dt)))
             self.dtSelected = dt
         else:
             text = ""
-            for i in range(9):
+            for i in range(10):
                 self.itemmenu.entryconfig(i, state='disabled')
             self.itemSelected = None
             self.uuidSelected = None

@@ -6353,7 +6353,7 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
         lines = fo.readlines()
         fo.close()
         self.replace_lines(fp, lines, begline, endline, [])
-        # self.loadData()
+        return True
 
     def replace_item(self, new_hsh):
         new_item, msg = hsh2str(new_hsh, self.options)
