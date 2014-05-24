@@ -71,7 +71,7 @@ from etmTk.dialog import BGCOLOR, OptionsDialog, ReadOnlyText, FileChoice
 
 class SimpleEditor(Toplevel):
 
-    def __init__(self, parent=None, master=None, file=None, newhsh=None, rephsh=None, options=None, title=None, modified=False):
+    def __init__(self, parent=None, master=None, file=None, newhsh=None, rephsh=None, options=None, title=None, start=None, modified=False):
         """
         If file is given, open file for editing.
         Otherwise, we are creating a new item and/or replacing an item
@@ -159,7 +159,10 @@ class SimpleEditor(Toplevel):
 
         if title is not None:
             self.wm_title(title)
-        if file is not None:
+        if start is not None:
+            # we have the starting text
+            text = start
+        elif file is not None:
             # we're editing a file
             self.mode = 'file'
             inspect.configure(state="disabled")
@@ -229,7 +232,11 @@ class SimpleEditor(Toplevel):
         self.bind(c, lambda e: self.e.focus_set())
         l, c = commandShortcut('g')
         self.bind(c, lambda e: self.onFind())
-        self.text.mark_set(INSERT, END)
+        if start:
+            self.text.tag_add("sel", "1.1", "1.14")
+            self.text.mark_set(INSERT, "1.15")
+        else:
+            self.text.mark_set(INSERT, END)
         # l, c = commandShortcut('/')
         logger.debug("/: {0}, {1}".format(l, c))
         # self.text.bind("<Control-slash>", self.showCompletions)
@@ -510,6 +517,9 @@ class SimpleEditor(Toplevel):
         if self.autocompletewindow:
             self.hideCompletions()
             return "break"
+        if self.text.tag_ranges("sel"):
+            self.text.tag_remove('sel', "1.0", END)
+            return
         # if self.checkmodified():
         #     return "break"
         logger.debug(('calling quit'))

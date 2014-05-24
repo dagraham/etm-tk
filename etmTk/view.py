@@ -1138,7 +1138,11 @@ The local timezone is used when none is given."""
             master = self.canvas
         else:
             master = self.tree
-        changed = SimpleEditor(parent=self, master=master,  options=loop.options).changed
+        if self.view == DAY and self.active_date:
+            text = " @s {0}".format(self.active_date)
+            changed = SimpleEditor(parent=self, master=master, start=text, options=loop.options).changed
+        else:
+            changed = SimpleEditor(parent=self, master=master, options=loop.options).changed
         if changed:
             logger.debug('changed, reloading data')
             self.updateAlerts()
