@@ -1286,6 +1286,8 @@ The local timezone is used when none is given."""
         newfile = self.getDataFile(title="moving from {0}:".format(oldrp), start=oldfile)
         if not (newfile and os.path.isfile(newfile)):
             return
+        if newfile == oldfile:
+            return
         ret = loop.append_item(self.itemSelected, newfile)
         if ret != "break":
             # post message and quit

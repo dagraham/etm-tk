@@ -42,6 +42,7 @@
         Edit item                                      E
         Edit file                                   Shift-E
         Finish                                         F
+        Move                                           M
         Reschedule                                     R
         Schedule new                                Shift-R
         Open link                                      G
