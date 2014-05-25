@@ -1141,6 +1141,9 @@ The local timezone is used when none is given."""
         if self.view == DAY and self.active_date:
             text = " @s {0}".format(self.active_date)
             changed = SimpleEditor(parent=self, master=master, start=text, options=loop.options).changed
+        elif self.view in [KEYWORD, NOTE] and self.itemSelected:
+            text = " @k {0}".format(self.itemSelected['k'])
+            changed = SimpleEditor(parent=self, master=master, start=text, options=loop.options).changed
         else:
             changed = SimpleEditor(parent=self, master=master, options=loop.options).changed
         if changed:

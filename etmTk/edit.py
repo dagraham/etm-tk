@@ -233,8 +233,8 @@ class SimpleEditor(Toplevel):
         l, c = commandShortcut('g')
         self.bind(c, lambda e: self.onFind())
         if start:
-            self.text.tag_add("sel", "1.1", "1.14")
-            self.text.mark_set(INSERT, "1.15")
+            self.text.tag_add("sel", "1.1", "1.{0}".format(len(start)))
+            self.text.mark_set(INSERT, END)
         else:
             self.text.mark_set(INSERT, END)
         # l, c = commandShortcut('/')
