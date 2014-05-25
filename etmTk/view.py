@@ -1158,11 +1158,14 @@ The local timezone is used when none is given."""
             master = self.canvas
         else:
             master = self.tree
-        if self.view == DAY and self.active_date:
+        if self.view in [DAY, AGENDA] and self.active_date:
             text = " @s {0}".format(self.active_date)
             changed = SimpleEditor(parent=self, master=master, start=text, options=loop.options).changed
         elif self.view in [KEYWORD, NOTE] and self.itemSelected:
             text = " @k {0}".format(self.itemSelected['k'])
+            changed = SimpleEditor(parent=self, master=master, start=text, options=loop.options).changed
+        elif self.view in [TAG] and self.itemSelected:
+            text = " @t {0}".format(", ".join(self.itemSelected['t']))
             changed = SimpleEditor(parent=self, master=master, start=text, options=loop.options).changed
         else:
             changed = SimpleEditor(parent=self, master=master, options=loop.options).changed
@@ -2586,14 +2589,17 @@ or 0 to display all changes.""").format(title)
             type_chr = show_chr = self.tree.item(item)['text'][0]
             uuid, dt, hsh = self.getInstance(item)
             logger.debug('tree rowSelected: {0}; {1}; {2}'.format(self.rowSelected, self.tree.item(item)['text'], dt))
-            if self.view == DAY:
-                if dt is None:
-                    # we have the date selected
-                    self.active_date = self.id2date[self.rowSelected]
-                    logger.debug("active_date from id2date: {0}; {1}".format(self.active_date, self.tree.item(item)['text']))
+            if self.view in [AGENDA, DAY]:
+                if self.rowSelected in self.id2date:
+                    if dt is None:
+                        # we have the date selected
+                        self.active_date = self.id2date[self.rowSelected]
+                        logger.debug("active_date from id2date: {0}; {1}".format(self.active_date, self.tree.item(item)['text']))
+                    elif dt:
+                        # we have an item
+                        self.active_date = dt.date()
                 else:
-                    # we have an item
-                    self.active_date = dt.date()
+                    self.active_date = None
                 logger.debug('active_date: {0}'.format(self.active_date))
             if hsh:
                 type_chr = hsh['itemtype']
