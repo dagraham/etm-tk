@@ -2598,11 +2598,16 @@ or 0 to display all changes.""").format(title)
                         # we have the date selected
                         self.active_date = self.id2date[self.rowSelected]
                         logger.debug("active_date from id2date: {0}; {1}".format(self.active_date, self.tree.item(item)['text']))
-                    elif dt:
+                    else:
                         # we have an item
                         self.active_date = dt.date()
+                        logger.debug('active date from dt: {0}; {1}'.format(self.active_date, self.tree.item(item)))
                 else:
-                    self.active_date = None
+                    if dt:
+                        self.active_date = dt.date()
+                        logger.debug('active date from dt: {0}; {1}'.format(self.active_date, self.tree.item(item)))
+                    else:
+                        self.active_date = None
                 logger.debug('active_date: {0}'.format(self.active_date))
             if hsh:
                 type_chr = hsh['itemtype']
