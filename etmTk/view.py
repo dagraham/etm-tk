@@ -52,7 +52,7 @@ from dateutil.parser import parse
 from decimal import Decimal
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, zfmt, rfmt, efmt, hsh2str, str2hsh, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, fmt_datetime, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator, AFTER, export_ical_item, export_ical, fmt_time, TimeIt, getReportData, getFiles, getFileTuples)
+    init_localization, fmt_weekday, fmt_dt, zfmt, rfmt, efmt, hsh2str, str2hsh, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, fmt_datetime, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator, AFTER, export_ical_item, export_ical, fmt_time, TimeIt, getReportData, getFiles, getFileTuples, updateCurrentFiles)
 
 from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES, REPORTS)
 
@@ -1171,6 +1171,7 @@ The local timezone is used when none is given."""
             changed = SimpleEditor(parent=self, master=master, options=loop.options).changed
         if changed:
             logger.debug('changed, reloading data')
+            updateCurrentFiles(loop.rows, loop.file2uuids, loop.uuid2hash, loop.options)
             self.updateAlerts()
             if self.weekly:
                 self.showWeek()
@@ -1422,8 +1423,8 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
                      options=loop.options, title=title).changed
 
         if changed:
-
             logger.debug("starting if changed")
+            updateCurrentFiles(loop.rows, loop.file2uuids, loop.uuid2hash, loop.options)
             self.updateAlerts()
             if self.weekly:
                 self.canvas.focus_set()
@@ -1470,8 +1471,9 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
                 loop.options = options
                 if options['calendars'] != current_options['calendars']:
                     self.updateCalendars()
-            logger.debug("changed - calling updateAlerts")
+            updateCurrentFiles(loop.rows, loop.file2uuids, loop.uuid2hash, loop.options)
 
+            logger.debug("changed - calling updateAlerts")
             self.updateAlerts()
             if self.weekly:
                 self.canvas.focus_set()
