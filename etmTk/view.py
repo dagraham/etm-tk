@@ -1967,7 +1967,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
     def closeWeekly(self, event=None):
         self.today_col = None
-        for i in range(13, 19):
+        for i in range(14, 20):
             self.viewmenu.entryconfig(i, state="disabled")
         self.canvas.pack_forget()
         self.weekly = False
@@ -1981,7 +1981,7 @@ Enter the shortest time period you want displayed in minutes.""")
             self.viewmenu.entryconfig(6, state="normal")
             self.viewmenu.entryconfig(7, state="disabled")
 
-        for i in [4, 5, 8, 9, 10, 11]:
+        for i in [4, 5, 8, 9, 10, 11, 12]:
             self.viewmenu.entryconfig(i, state="normal")
         self.bind("<Control-f>", self.setFilter)
 
@@ -1998,7 +1998,7 @@ Enter the shortest time period you want displayed in minutes.""")
         self.weekly = True
         self.tree.pack_forget()
         self.fltr.pack_forget()
-        for i in range(4, 12):
+        for i in range(4, 13):
             self.viewmenu.entryconfig(i, state="disabled")
 
         self.view = WEEK
@@ -2019,7 +2019,7 @@ Enter the shortest time period you want displayed in minutes.""")
             self.hours = ["{0}am".format(i) for i in range(7,12)] + ['12pm'] + ["{0}pm".format(i) for i in range(1,12)]
         else:
             self.hours = ["{0}:00".format(i) for i in range(7, 24)]
-        for i in range(13, 19):
+        for i in range(14, 20):
             self.viewmenu.entryconfig(i, state="normal")
         self.canvas.focus_set()
         self.showWeek()
