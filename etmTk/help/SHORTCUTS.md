@@ -29,6 +29,7 @@
         Set outline depth                              O
         Show outline as text                           S
         Print outline                                  P
+        Toggle displaying finished                     X
         ----
         Previous week                                Left
         Next week                                    Right
