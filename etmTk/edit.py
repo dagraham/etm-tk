@@ -162,6 +162,8 @@ class SimpleEditor(Toplevel):
         if start is not None:
             # we have the starting text
             text = start
+            self.edithsh = {}
+            self.mode = 1
         elif file is not None:
             # we're editing a file
             self.mode = 'file'

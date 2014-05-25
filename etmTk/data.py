@@ -1605,6 +1605,7 @@ def get_options(d=''):
         lcl = locale.getdefaultlocale()
 
     options['lcl'] = lcl
+    options['hide_finished'] = False
     # define parse using dayfirst and yearfirst
     setup_parse(options['dayfirst'], options['yearfirst'])
     term_encoding = options['encoding']['term']
@@ -2001,15 +2002,13 @@ amp_keys = {
 }
 
 @memoize
-def makeTree(tree_rows, view=None, calendars=None, sort=True, fltr=None):
+def makeTree(tree_rows, view=None, calendars=None, sort=True, fltr=None, hide_finished=False):
     tree = {}
     lofl = []
     root = '_'
     empty = True
     cal_regex = None
     log_msg = []
-    # tree_rows = deepcopy(list_of_rows)
-    # tree_rows = [x for x in list_of_rows]
     if calendars:
         cal_pattern = r'^%s' % '|'.join([x[2] for x in calendars if x[1]])
         cal_regex = re.compile(cal_pattern)
@@ -2023,6 +2022,8 @@ def makeTree(tree_rows, view=None, calendars=None, sort=True, fltr=None):
     else:
         filter_regex = None
     for pc in tree_rows:
+        if hide_finished and pc[-1][1] == 'fn':
+            continue
         if cal_regex and not cal_regex.match(pc[0][-1]):
             continue
         if view and pc[0][0] != view:
@@ -2031,8 +2032,6 @@ def makeTree(tree_rows, view=None, calendars=None, sort=True, fltr=None):
             s = "{0} {1}".format(pc[-1][2], " ".join(pc[1:-1]))
             # logger.debug('looking in "{0}"'.format(s))
             m = filter_regex.search(s)
-            # m = filter_regex.search(pc[-1][2])
-            # ok if (mtch and m) or (not mtch and not m):
             if not ((mtch and m) or (not mtch and not m)):
                 continue
         root_key = tuple(["", root])
@@ -4770,15 +4769,14 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
             if 't' not in hsh:
                 hsh['t'] = [NONE]
 
-        # if 'z' in hsh and 'local_timezone' in options and hsh['z'] == options['local_timezone']:
-        #     hsh['_z'] = "~"
-            #--------- make entry for folder view ----------#
+        #---- make task entries for day, keyword and folder view ----#
         if hsh['itemtype'] in [u'+', u'-', u'%']:
             done, due, following = getDoneAndTwo(hsh)
             hist_key = 'f'
             if hsh['itemtype'] == '+' and 'h' in hsh:
                 hist_key = 'h'
             if done:
+                # add the last show_finished completions to day and keywords
                 dts = done.strftime(sortdatefmt)
                 # sdt = fmt_date(hsh['f'][-1][0], True)
                 sdt = fmt_date(hsh['f'][-1][0], True)
@@ -4796,6 +4794,15 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     # add2list("datetimes", (d0, f))
                     datetimes.append((d0, f))
                     # datetimes.append((d0, f))
+                    if 'k' in hsh:
+                        keywords = [x.strip() for x in hsh['k'].split(':')]
+                        item = [
+                            ('keyword', (hsh['k'], tstr2SCI[typ][0]),
+                             d0, hsh['_summary'], f), tuple(keywords),
+                            (uid, typ,
+                             setSummary(hsh, d0), fmt_date(d0, True), d0)]
+                        items.append(item)
+
                 if not due:
                     # add the last completion to folder view
                     item = [
@@ -5988,7 +5995,9 @@ class ETMCmd():
                     rows,
                     view=view,
                     calendars=self.calendars,
-                    fltr=f))
+                    fltr=f,
+                    hide_finished = self.options['hide_finished']
+                    ))
             else:
                 res = getReportData(
                     arg_str,

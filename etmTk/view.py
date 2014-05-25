@@ -415,42 +415,48 @@ class App(Tk):
         c = "p"
         label=_("Print outline")
         viewmenu.add_command( label=label, underline=1, command=self.printTree)
-        # self.bindTop(c, self.printTree)
-        # self.bindTop("p", lambda e: self.after(AFTER, self.printTree))
         self.bindTop("p", self.printTree)
-
         viewmenu.entryconfig(11, accelerator=l)
         self.add2menu(path, (label, l))
 
-        viewmenu.add_separator()  # 12
+        # toggle showing finished
+        l = "X"
+        c = "x"
+        label=_("Toggle displaying finished")
+        viewmenu.add_command( label=label, underline=1, command=self.toggleFinished)
+        self.bindTop(c, self.toggleFinished)
+        viewmenu.entryconfig(12, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        viewmenu.add_separator()  # 13
         self.add2menu(path, (SEP, ))
 
         l = "Left"
         label=_("Previous week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.showWeek(event=e, week=-1))
 
-        viewmenu.entryconfig(13, accelerator=l)
+        viewmenu.entryconfig(14, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Right"
         label=_("Next week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.showWeek(event=e, week=+1))
 
-        viewmenu.entryconfig(14, accelerator=l)
+        viewmenu.entryconfig(15, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Up"
         label=_("Previous item in week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=-1))
 
-        viewmenu.entryconfig(15, accelerator=l)
+        viewmenu.entryconfig(16, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Down"
         label=_("Next item in week")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=1))
 
-        viewmenu.entryconfig(16, accelerator=l)
+        viewmenu.entryconfig(17, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "B"
@@ -458,7 +464,7 @@ class App(Tk):
         label=_("List busy times in week")
         viewmenu.add_command(label=label, underline=5, command=self.showBusyPeriods)
 
-        viewmenu.entryconfig(17, accelerator=l)
+        viewmenu.entryconfig(18, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "F"
@@ -466,11 +472,11 @@ class App(Tk):
         label=_("List free times in week")
         viewmenu.add_command(label=label, underline=5, command=self.showFreePeriods)
 
-        viewmenu.entryconfig(18, accelerator=l)
+        viewmenu.entryconfig(19, accelerator=l)
         # set binding in showWeekly
         self.add2menu(path, (label, l))
 
-        for i in range(13, 19):
+        for i in range(14, 20):
             self.viewmenu.entryconfig(i, state="disabled")
 
 
@@ -944,6 +950,20 @@ class App(Tk):
             self.tree.column('#0', width=width0-self.col2_width)
             self.tree.column('#1', width=self.col2_width)
             self.labels = True
+
+    def toggleFinished(self, e=None):
+        if e and e.char != "x":
+            return
+        if loop.options['hide_finished']:
+            loop.options['hide_finished'] = False
+        else:
+            loop.options['hide_finished'] = True
+        logger.debug('reloading data')
+        # self.updateAlerts()
+        if self.weekly:
+            self.showWeek()
+        else:
+            self.showView()
 
 
     def saveGeometry(self):
