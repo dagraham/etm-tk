@@ -1445,11 +1445,11 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
     def editItemFile(self, e=None):
         if not self.itemSelected:
             return
-        logger.debug('starting editItemFile: {0}; {1}, {2}'.format(self.itemSelected['_summary'], self.dtSelected, type(self.dtSelected)))
-        self.editFile(e, os.path.join(loop.options['datadir'], self.itemSelected['fileinfo'][0]))
+        logger.debug('starting editItemFile: {0}; {1}, {2}, {3}'.format(self.itemSelected['_summary'], self.dtSelected, type(self.dtSelected), self.itemSelected['fileinfo']))
+        self.editFile(e, file=os.path.join(loop.options['datadir'], self.itemSelected['fileinfo'][0]), line=self.itemSelected['fileinfo'][1])
 
 
-    def editFile(self, e=None, file=None, config=False):
+    def editFile(self, e=None, file=None, line=None, config=False):
         if e and e.char not in ["F", "E", "C", "S", "P"]:
             return
         titlefile = os.path.normpath(relpath(file, loop.options['datadir']))
@@ -1458,7 +1458,8 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
             master = self.canvas
         else:
             master = self.tree
-        changed = SimpleEditor(parent=self, master=master, file=file, options=loop.options, title=titlefile).changed
+        changed = SimpleEditor(parent=self, master=master, file=file, line=line,
+            options=loop.options, title=titlefile).changed
         logger.debug('changed: {0}'.format(changed))
         if changed:
             logger.debug("config: {0}".format(config))

@@ -71,7 +71,7 @@ from etmTk.dialog import BGCOLOR, OptionsDialog, ReadOnlyText, FileChoice
 
 class SimpleEditor(Toplevel):
 
-    def __init__(self, parent=None, master=None, file=None, newhsh=None, rephsh=None, options=None, title=None, start=None, modified=False):
+    def __init__(self, parent=None, master=None, file=None, line=None, newhsh=None, rephsh=None, options=None, title=None, start=None, modified=False):
         """
         If file is given, open file for editing.
         Otherwise, we are creating a new item and/or replacing an item
@@ -237,8 +237,11 @@ class SimpleEditor(Toplevel):
         if start:
             self.text.tag_add("sel", "1.1", "1.{0}".format(len(start)))
             self.text.mark_set(INSERT, END)
+        elif line:
+            self.text.mark_set(INSERT, "{0}.0".format(line))
         else:
             self.text.mark_set(INSERT, END)
+        self.text.see(INSERT)
         # l, c = commandShortcut('/')
         logger.debug("/: {0}, {1}".format(l, c))
         # self.text.bind("<Control-slash>", self.showCompletions)
