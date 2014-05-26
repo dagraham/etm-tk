@@ -1158,7 +1158,16 @@ The local timezone is used when none is given."""
             master = self.canvas
         else:
             master = self.tree
-        if self.view in [DAY, AGENDA] and self.active_date:
+        if self.view in [AGENDA] and self.active_date:
+            if self.itemSelected:
+                if 's' in self.itemSelected:
+                    text = " @s {0}".format(self.active_date)
+                elif 'c' in self.itemSelected:
+                    text = " @c {0}".format(self.itemSelected['c'])
+            else:
+                text = " @s {0}".format(self.active_date)
+            changed = SimpleEditor(parent=self, master=master, start=text, options=loop.options).changed
+        elif self.view in [DAY] and self.active_date:
             text = " @s {0}".format(self.active_date)
             changed = SimpleEditor(parent=self, master=master, start=text, options=loop.options).changed
         elif self.view in [KEYWORD, NOTE] and self.itemSelected:
@@ -3333,7 +3342,7 @@ or 0 to expand all branches completely.""")
             if text in tree:
                 # this is a branch
                 item = " {0}".format(text[1])  # this is the label of the parent
-                children = tree[text]  # this are the children tuples of item
+                children = tree[text]  # these are the children tuples of item
                 oid = self.tree.insert(parent, 'end', iid=self.count, text=item,
                                        open=(depth <= max_depth))
                 self.depth2id.setdefault(depth, set([])).add(oid)
