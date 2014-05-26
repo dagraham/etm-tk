@@ -3192,13 +3192,21 @@ or 0 to expand all branches completely.""")
         else:
             depth -= 1
             depth = max(depth, 0)
+            logger.debug('using depth: {0}; {1}'.format(depth, maxdepth))
             for i in range(depth):
-                for item in self.depth2id[i]:
-                    self.tree.item(item, open=True)
+                if i in self.depth2id:
+                    for item in self.depth2id[i]:
+                        try:
+                            self.tree.item(item, open=True)
+                        except:
+                            logger.exception('open: {0}, {1}'.format(i, item))
             for i in range(depth, maxdepth+1):
-                for item in self.depth2id[i]:
-                    self.tree.item(item, open=False)
-
+                if i in self.depth2id:
+                    for item in self.depth2id[i]:
+                        try:
+                            self.tree.item(item, open=False)
+                        except:
+                            logger.exception('open: {0}, {1}'.format(i, item))
 
     def scrollToDate(self, date):
         # only makes sense for schedule

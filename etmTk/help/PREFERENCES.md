@@ -457,13 +457,13 @@ Tip: Need to tell someone when you're free in a given week? Jump to that week in
 
 #### icscal_file
 
-Pressing F8 in the gui main window will export the selected calendars in iCalendar format to this file.
+If an item is not selected, pressing Shift-X in the gui will export the active calendars in iCalendar format to this file.
 
     icscal_file: ~/.etm/etmcal.ics
 
 #### icsitem_file
 
-Pressing F8 in the gui detail view will export the selected item in iCalendar format to this file.
+If an item is selected, pressing Shift-X in the gui will export the selected item in iCalendar format to this file.
 
     icsitem_file: ~/.etm/etmitem.ics
 
@@ -611,7 +611,7 @@ If you specify either git or mercurial here (and have it installed on your syste
 
     weeks_after: 52
 
-In the schedule view, all non-repeating, dated items are shown. Additionally all repetitions of repeating items with a finite number of repetitions are shown. This includes 'list-only' repeating items and items with `&u` (until) or `&t` (total number of repetitions) entries. For repeating items with an infinite number of repetitions, those repetitions that occur within the first `weeks_after` weeks after the current week are displayed along with the first repetition after this interval. This assures that for infrequently repeating items such as voting for president, at least one repetition will be displayed.
+In the day view, all non-repeating, dated items are shown. Additionally all repetitions of repeating items with a finite number of repetitions are shown. This includes 'list-only' repeating items and items with `&u` (until) or `&t` (total number of repetitions) entries. For repeating items with an infinite number of repetitions, those repetitions that occur within the first `weeks_after` weeks after the current week are displayed along with the first repetition after this interval. This assures that for infrequently repeating items such as voting for president, at least one repetition will be displayed.
 
 ### yearfirst
 
