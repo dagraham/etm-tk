@@ -1401,7 +1401,7 @@ def get_options(d=''):
     # logger.debug("user_options: {0}".format(user_options))
 
     for key in default_options:
-        if key in ['show_finished', 'fontsize_fixed', 'fontsize_tree', 'outline_depth']:
+        if key in ['show_finished', 'fontsize_fixed', 'fontsize_tree', 'outline_depth', 'prefix']:
             if key not in user_options:
                 # we want to allow 0 as an entry
                 options[key] = default_options[key]
@@ -2352,7 +2352,7 @@ Recursively process groups and accumulate the totals.
 
     for i in range(len(auglst)):
         if type(auglst[i][-1]) is str:
-            summary, uuid = auglst[i][-1].split('!!')
+            summary, uuid, trailing = auglst[i][-1].split('!!')
             auglst[i][-1] = tuple((uuid, 'ac', summary, ''))
     res = makeTree(auglst, sort=False)
 
@@ -3977,7 +3977,7 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
                 items.append(item)
         else:  # action report
             summary = format(setSummary(hsh, parse(dt)))
-            item.append("{0}!!{1}".format(summary, uuid))
+            item.append("{0}!!{1}!!".format(summary, uuid))
             temp = []
             temp.extend(timeValue(hsh, options))
             temp.extend(expenseCharge(hsh, options))
