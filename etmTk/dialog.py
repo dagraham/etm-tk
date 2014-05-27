@@ -377,6 +377,7 @@ class FileChoice(object):
 
         self.modalPane = Toplevel(self.master, highlightbackground=BGCOLOR, background=BGCOLOR)
         if master:
+            logger.debug('winfo: {0}, {1}; {2}, {3}'.format(master.winfo_rootx(), type(master.winfo_rootx()), master.winfo_rooty(), type(master.winfo_rooty())))
             self.modalPane.geometry("+%d+%d" % (master.winfo_rootx() + 50,
                                   master.winfo_rooty() + 50))
 

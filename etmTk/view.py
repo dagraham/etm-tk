@@ -2798,7 +2798,7 @@ or 0 to display all changes.""").format(title)
         if loop.alerts:
             logger.debug('updateAlerts: {0}'.format(len(loop.alerts)))
         alerts = deepcopy(loop.alerts)
-        if loop.options['calendars']:
+        if alerts and loop.options['calendars']:
             alerts = [x for x in alerts if self.cal_regex.match(x[-1])]
         if alerts:
             curr_minutes = datetime2minutes(self.now)
@@ -2811,7 +2811,7 @@ or 0 to display all changes.""").format(title)
             if td == 0:
                 if ('alert_wakecmd' in loop.options and
                         loop.options['alert_wakecmd']):
-                    cmd = loop.options['alert_wakecmd']
+                    cmd = s2or3(loop.options['alert_wakecmd'])
                     subprocess.call(cmd, shell=True)
                 while td == 0:
                     hsh = alerts[0][2]
@@ -2820,8 +2820,8 @@ or 0 to display all changes.""").format(title)
                     if 's' in actions:
                         if ('alert_soundcmd' in self.options and
                                 self.options['alert_soundcmd']):
-                            scmd = expand_template(
-                                self.options['alert_soundcmd'], hsh)
+                            scmd = s2or3(expand_template(
+                                self.options['alert_soundcmd'], hsh))
                             subprocess.call(scmd, shell=True)
                         else:
                             self.textWindow(parent=self,
@@ -2831,8 +2831,8 @@ your etmtk.cfg."""), opts=self.options)
                     if 'd' in actions:
                         if ('alert_displaycmd' in self.options and
                                 self.options['alert_displaycmd']):
-                            dcmd = expand_template(
-                                self.options['alert_displaycmd'], hsh)
+                            dcmd = s2or3(expand_template(
+                                self.options['alert_displaycmd'], hsh))
                             subprocess.call(dcmd, shell=True)
                         else:
                             self.textWindow(parent=self,
@@ -2842,8 +2842,8 @@ from your etmtk.cfg."""), opts=self.options)
                     if 'v' in actions:
                         if ('alert_voicecmd' in self.options and
                                 self.options['alert_voicecmd']):
-                            vcmd = expand_template(
-                                self.options['alert_voicecmd'], hsh)
+                            vcmd = s2or3(expand_template(
+                                self.options['alert_voicecmd'], hsh))
                             subprocess.call(vcmd, shell=True)
                         else:
                             self.textWindow(parent=self,
@@ -2931,7 +2931,7 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
                     if 'p' in actions:
                         arguments = hsh['_alert_argument']
                         proc = str(arguments[0][0]).strip()
-                        cmd = expand_template(proc, hsh)
+                        cmd = s2or3(expand_template(proc, hsh))
                         subprocess.call(cmd, shell=True)
 
                     if not alerts:

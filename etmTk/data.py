@@ -287,6 +287,7 @@ SAMPLE ="""\
 - get haircut @s 24 @r d &i 14 @o r
 ^ payday @s 1/1 @r m &w MO, TU, WE, TH, FR &m -1, -2, -3 &s -1
 * take Rx @s +0 @r d &h 10, 22 &t 4 @a 0
+* Tête-à-têtes with staff @s fri 2p @e 90 @l conference room @t meetings
 """
 HOLIDAYS = """\
 ^ Martin Luther King Day @s 2010-01-18 @r y &w 3MO &M 1
@@ -1223,7 +1224,7 @@ def get_options(d=''):
     OLDCFG = "etm.cfg"
     using_oldcfg = False
     if d and os.path.isdir(d):
-        etmdir = d
+        etmdir = os.path.abspath(d)
     else:
         homedir = os.path.expanduser("~")
         etmdir = os.path.normpath(os.path.join(homedir, ".etm"))
@@ -1809,7 +1810,8 @@ def fmt_time(dt, omitMidnight=False, options=None):
     dt_fmt = dt.strftime(options['reprtimefmt'])
     if dt_fmt[0] == "0":
         dt_fmt = dt_fmt[1:]
-    if 'ampm' in options and options['ampm']:
+    # The 3rd test is for Poland where am, pm = ''
+    if 'ampm' in options and options['ampm'] and not dt_fmt[-1].isdigit():
         # dt_fmt = dt_fmt.lower()[:-1]
         dt_fmt = dt_fmt.lower()
         dt_fmt = leadingzero.sub('', dt_fmt)
