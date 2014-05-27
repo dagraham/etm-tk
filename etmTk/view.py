@@ -228,7 +228,6 @@ class App(Tk):
         label = _("File")
         newmenu.add_command(label=label, command=self.newFile)
         self.bindTop(c, self.newFile)
-
         newmenu.entryconfig(1, accelerator=l)
         self.add2menu(path, (label, l))
 
@@ -246,13 +245,25 @@ class App(Tk):
         c = "T"
         newmenu.add_command(label=label, command=self.finishActionTimer)
         self.bind(c, self.finishActionTimer)
-
-        newmenu.entryconfig(3, accelerator=l)
-        self.add2menu(path, (label, l))
-
-
         filemenu.add_cascade(label=NEW, menu=newmenu)
         newmenu.entryconfig(3, state="disabled")
+
+        label = _("Start Idle Timer")
+        l = "I"
+        c = 'i'
+        newmenu.add_command(label=label, command=self.startIdleTimer)
+        self.bindTop(c, self.startIdleTimer)
+        newmenu.entryconfig(4, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        label = _("Stop Idle Timer")
+        l = "Shift-I"
+        c = "I"
+        newmenu.add_command(label=label, command=self.stopIdleTimer)
+        self.bind(c, self.stopIdleTimer)
+        newmenu.entryconfig(5, accelerator=l)
+        self.add2menu(path, (label, l))
+        newmenu.entryconfig(5, state="disabled")
 
         path = FILE
 
@@ -2997,6 +3008,15 @@ Relative dates and fuzzy parsing are supported.""")
             self.tree.selection_set(self.rowSelected)
             self.tree.see(self.rowSelected)
 
+    def startIdleTimer(self, e=None):
+        self.actionTimer.idle_start()
+        self.newmenu.entryconfig(4, state="disabled")
+        self.newmenu.entryconfig(5, state="normal")
+
+    def stopIdleTimer(self, e=None):
+        self.actionTimer.idle_stop()
+        self.newmenu.entryconfig(4, state="normal")
+        self.newmenu.entryconfig(5, state="disabled")
 
     def startActionTimer(self, e=None):
         """

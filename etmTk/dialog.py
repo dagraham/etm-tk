@@ -256,16 +256,51 @@ class Timer():
 
     def timer_clear(self):
         self.timer_delta = 0 * ONEMINUTE
+        self.idle_delta = 0 * ONEMINUTE
         self.timer_active = False
+        self.idle_active = False
         self.timer_status = STOPPED
         self.stop_status = STOPPED
         self.timer_last = None
         self.timer_hsh = None
         self.timer_summary = None
 
+
+    def idle_start(self):
+        if self.idle_active:
+            return
+        self.idle_starttime = datetime.now()
+        self.idle_delta = 0 * ONEMINUTE
+        self.idle_active = True
+        print('idle start', self.idle_starttime)
+
+    def idle_stop(self):
+        if not self.idle_active:
+            return
+        if self.timer_status != STOPPED:
+            self.timer_stop()
+        if self.idle_delta:
+            self.idle_resolve()
+            print('stopping idle with', self.idle_delta)
+        self.idle_active = False
+
+    def idle_resolve(self):
+        """
+        Called when action timer is started or restarted
+        """
+        if not self.idle_active: return
+        self.idle_delta += datetime.now() - self.idle_starttime
+        print('resolve total idle time', self.idle_delta)
+
+    def idle_resume(self):
+        if not self.idle_active: return
+        self.idle_starttime = datetime.now()
+        print('resume total idle time', self.idle_delta)
+
     def timer_start(self, hsh=None, toggle=True):
         if not hsh: hsh = {}
-        self.starttime = datetime.now()
+        self.timer_starttime = datetime.now()
+        self.idle_resolve()
         self.timer_hsh = hsh
         text = hsh['_summary']
         # self.timer_hsh['s'] = self.starttime
@@ -283,6 +318,7 @@ class Timer():
     def timer_stop(self, create=True):
         if self.timer_status == STOPPED:
             return ()
+        self.idle_resume()
         self.stop_status = self.timer_status
         if self.timer_status == RUNNING:
             self.timer_delta += datetime.now() - self.timer_last
@@ -290,7 +326,7 @@ class Timer():
 
         self.timer_delta = max(self.timer_delta, ONEMINUTE)
         self.timer_hsh['e'] = self.timer_delta
-        self.timer_hsh['s'] = self.starttime
+        self.timer_hsh['s'] = self.timer_starttime
         self.timer_hsh['itemtype'] = '~'
 
     def timer_toggle(self, hsh=None):
@@ -300,9 +336,11 @@ class Timer():
             self.timer_last = datetime.now()
             self.timer_status = RUNNING
         elif self.timer_status == RUNNING:
+            self.idle_resume()
             self.timer_delta += datetime.now() - self.timer_last
             self.timer_status = PAUSED
         elif self.timer_status == PAUSED:
+            self.idle_resolve()
             self.timer_status = RUNNING
             self.timer_last = datetime.now()
         if self.parent:
