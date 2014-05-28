@@ -138,8 +138,8 @@ class App(Tk):
         self.minsize(460, 460)
         self.uuidSelected = None
         self.timerItem = None
-        self.actionTimer = Timer(self)
         self.loop = loop
+        self.actionTimer = Timer(self, options=loop.options)
         self.activeAlerts = []
         self.configure(background=BGCOLOR)
         self.option_add('*tearOff', False)
@@ -2782,7 +2782,7 @@ or 0 to display all changes.""").format(title)
 
         self.updateAlerts()
 
-        if self.actionTimer.timer_status != STOPPED:
+        if self.actionTimer.idle_active or self.actionTimer.timer_status != STOPPED:
             self.timerStatus.set(self.actionTimer.get_time())
             if self.actionTimer.timer_minutes >= 1:
                 if (self.options['action_interval'] and self.actionTimer.timer_minutes % loop.options['action_interval'] == 0):
@@ -2802,6 +2802,7 @@ or 0 to display all changes.""").format(title)
 
                             logger.debug('paused: {0}'.format(tcmd))
                             subprocess.call(tcmd, shell=True)
+
         tt.stop()
 
     def updateAlerts(self):
@@ -3009,12 +3010,18 @@ Relative dates and fuzzy parsing are supported.""")
             self.tree.see(self.rowSelected)
 
     def startIdleTimer(self, e=None):
+        if self.actionTimer.idle_active:
+            return
         self.actionTimer.idle_start()
+        self.timerStatus.set("[0m]")
         self.newmenu.entryconfig(4, state="disabled")
         self.newmenu.entryconfig(5, state="normal")
 
     def stopIdleTimer(self, e=None):
+        if not self.actionTimer.idle_active or self.actionTimer.timer_status != STOPPED:
+            return
         self.actionTimer.idle_stop()
+        self.timerStatus.set("")
         self.newmenu.entryconfig(4, state="normal")
         self.newmenu.entryconfig(5, state="disabled")
 
@@ -3104,7 +3111,7 @@ Relative dates and fuzzy parsing are supported.""")
         if changed:
             # clear status and reload
             self.actionTimer.timer_clear()
-            self.timerStatus.set("")
+            # self.timerStatus.set("")
             self.newmenu.entryconfig(3, state="disabled")
 
             self.updateAlerts()
@@ -3121,11 +3128,14 @@ Relative dates and fuzzy parsing are supported.""")
             if ans:
                 # restore timer with the old status
                 self.actionTimer.timer_start(hsh=hsh, toggle=False)
-                self.timerStatus.set(self.actionTimer.get_time())
             else:
+                if self.actionTimer.idle_active:
+                    # add the time back into idle
+                    self.actionTimer.idle_delta += self.actionTimer.timer_delta
                 self.actionTimer.timer_clear()
-                self.timerStatus.set("")
+                # self.timerStatus.set("")
                 self.newmenu.entryconfig(3, state="disabled")
+        self.timerStatus.set(self.actionTimer.get_time())
         self.tree.focus_set()
 
 

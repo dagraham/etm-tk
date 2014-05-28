@@ -1194,6 +1194,8 @@ def setConfig(options):
         completions = list(completions)
         completions.sort()
         options['completions'] = completions
+        options['keywords'] = [x[3:] for x in completions if x.startswith('@k')]
+        print(options['keywords'])
     if reports:
         reports = list(reports)
         reports.sort()
