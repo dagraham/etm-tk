@@ -335,6 +335,19 @@ When *Delete* is chosen for a repeating item, a further choice is available:
 
 Tip: Use *Reschedule* to enter a date for an undated item or to change the scheduled date for the item or the selected instance of a repeating item. All you have to do is enter the new (fuzzy parsed) datetime.
 
+## Idle Time
+
+Idle timing is also supported. An illustrative work flow would be to activate the idle timer first thing each morning by pressing *I*. The current value of this timer will then be displayed in brackets in the lower, left-hand corner of the GUI.
+
+If you later start an action timer, a dialog will open showing the current idle time and offering the opportunity to assign some or all of this period to a keyword that you select from a list. You can continue assigning time in this fashion until idle time is zero or you can press *Cancel* or *Escape* at any point to cancel the dialog and open the action timer dialog. While the action timer is running, the idle timer will be paused and vice-versa.
+
+If an action timer is canceled (stopped and not recorded), then the time for the action timer will be added to the current idle time.
+
+You can assign idle time without starting an action timer by pressing *I* or, at the end of the day, by pressing *Shift-I* to stop the idle timer.
+
+Note that the dialog to assign idle time will only open when starting or restarting an action timer if the current idle time is at least the number of minutes specified by `idle_minimum` in your etmtk.cfg file.
+
+
 ## Data Organization and Calendars
 
 *etm* offers two hierarchical ways of organizing your data: by keyword and file path. There are no hard and fast rules about how to use these hierarchies but the goal is a system that makes complementary uses of folder and keyword and fits your needs. As with any filing system, planning and consistency are paramount.

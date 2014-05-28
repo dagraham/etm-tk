@@ -236,7 +236,6 @@ class App(Tk):
         c = 't'
         newmenu.add_command(label=label, command=self.startActionTimer)
         self.bindTop(c, self.startActionTimer)
-
         newmenu.entryconfig(2, accelerator=l)
         self.add2menu(path, (label, l))
 
@@ -247,8 +246,9 @@ class App(Tk):
         self.bind(c, self.finishActionTimer)
         filemenu.add_cascade(label=NEW, menu=newmenu)
         newmenu.entryconfig(3, state="disabled")
+        self.add2menu(path, (label, l))
 
-        label = _("Start Idle Timer")
+        label = _("Start/Resolve Idle Timer")
         l = "I"
         c = 'i'
         newmenu.add_command(label=label, command=self.startIdleTimer)
@@ -3011,8 +3011,9 @@ Relative dates and fuzzy parsing are supported.""")
 
     def startIdleTimer(self, e=None):
         if self.actionTimer.idle_active:
-            return
-        self.actionTimer.idle_start()
+            self.actionTimer.idle_resolve()
+        else:
+            self.actionTimer.idle_start()
         self.newmenu.entryconfig(4, state="disabled")
         self.newmenu.entryconfig(5, state="normal")
 
@@ -3036,7 +3037,7 @@ Relative dates and fuzzy parsing are supported.""")
         # hack to avoid activating with Ctrl-t
         if e and e.char != "t":
             return
-        if self.actionTimer.idle_active and self.actionTimer.timer_status in [STOPPED, PAUSED]:
+        if self.actionTimer.idle_active and self.actionTimer.timer_status in [STOPPED, PAUSED] and self.actionTimer.idle_delta > int(loop.options['idle_minimum']) * ONEMINUTE:
             self.actionTimer.idle_resolve()
         if self.actionTimer.timer_status == STOPPED:
             if self.uuidSelected:

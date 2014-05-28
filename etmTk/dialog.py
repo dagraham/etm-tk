@@ -288,12 +288,13 @@ class Timer():
         """
         Called when action timer is started or restarted
         """
-        if not self.idle_active:
+        if not self.idle_active or self.idle_delta < ONEMINUTE:
             return
         self.idle_delta += datetime.now() - self.idle_starttime
         logger.debug('resolve, idle time: {0}'.format(self.idle_delta))
         opts = {'idle_delta': self.idle_delta, 'keywords': self.options['keywords'], 'currfile': ensureMonthly(self.options), 'tz': self.options['local_timezone']}
         self.idle_delta = ResolveIdleTime(self.parent, title="assign idle time", opts=opts).idle_delta
+
 
     def idle_resume(self):
         if not self.idle_active: return
@@ -342,7 +343,6 @@ class Timer():
             self.timer_delta += datetime.now() - self.timer_last
             self.timer_status = PAUSED
         elif self.timer_status == PAUSED:
-            self.idle_resolve()
             self.timer_status = RUNNING
             self.timer_last = datetime.now()
         if self.parent:
@@ -873,6 +873,10 @@ class ResolveIdleTime(Dialog):
 
         self.idle_delta -= period
         self.idletime.set(fmt_period(self.idle_delta))
+
+        if self.idle_delta < ONEMINUTE:
+            self.cancel()
+
 
     def ok(self, event=None):
         self.apply()

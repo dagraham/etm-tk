@@ -1269,7 +1269,7 @@ def get_options(d=''):
         'action_markups': {'default': 1.0, },
         'action_minutes': 6,
         'action_interval': 1,
-        'action_timer': {'running': '', 'paused': ''},
+        'action_timer': {'running': '', 'paused': '', 'idle': ''},
         'action_rates': {'default': 100.0, },
         'action_template': '!hours!h $!value!) !label! (!count!)',
 
@@ -1318,6 +1318,7 @@ def get_options(d=''):
         'icscal_file': os.path.normpath(os.path.join(etmdir, 'etmcal.ics')),
         'icsitem_file': os.path.normpath(os.path.join(etmdir, 'etmitem.ics')),
         'icsimport_dir': etmdir,
+        'idle_minimum': 10,
 
         'local_timezone': time_zone,
 
