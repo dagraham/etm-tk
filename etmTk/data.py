@@ -1195,6 +1195,7 @@ def setConfig(options):
         completions = list(completions)
         completions.sort()
         options['completions'] = completions
+        options['keywords'] = [x[3:] for x in completions if x.startswith('@k')]
     if reports:
         reports = list(reports)
         reports.sort()
@@ -1269,7 +1270,7 @@ def get_options(d=''):
         'action_markups': {'default': 1.0, },
         'action_minutes': 6,
         'action_interval': 1,
-        'action_timer': {'running': '', 'paused': ''},
+        'action_timer': {'running': '', 'paused': '', 'idle': ''},
         'action_rates': {'default': 100.0, },
         'action_template': '!hours!h $!value!) !label! (!count!)',
 
@@ -1318,6 +1319,7 @@ def get_options(d=''):
         'icscal_file': os.path.normpath(os.path.join(etmdir, 'etmcal.ics')),
         'icsitem_file': os.path.normpath(os.path.join(etmdir, 'etmitem.ics')),
         'icsimport_dir': etmdir,
+        'idle_minimum': 10,
 
         'local_timezone': time_zone,
 
@@ -1807,7 +1809,9 @@ def fmt_time(dt, omitMidnight=False, options=None):
     if not options: options = {}
     if omitMidnight and dt.hour == 0 and dt.minute == 0:
         return u''
+    logger.debug('dt before fmt: {0}'.format(dt))
     dt_fmt = dt.strftime(options['reprtimefmt'])
+    logger.debug('dt dt_fmt: {0}'.format(dt_fmt))
     if dt_fmt[0] == "0":
         dt_fmt = dt_fmt[1:]
     # The 3rd test is for Poland where am, pm = ''

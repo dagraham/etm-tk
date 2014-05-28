@@ -138,8 +138,8 @@ class App(Tk):
         self.minsize(460, 460)
         self.uuidSelected = None
         self.timerItem = None
-        self.actionTimer = Timer(self)
         self.loop = loop
+        self.actionTimer = Timer(self, options=loop.options)
         self.activeAlerts = []
         self.configure(background=BGCOLOR)
         self.option_add('*tearOff', False)
@@ -228,7 +228,6 @@ class App(Tk):
         label = _("File")
         newmenu.add_command(label=label, command=self.newFile)
         self.bindTop(c, self.newFile)
-
         newmenu.entryconfig(1, accelerator=l)
         self.add2menu(path, (label, l))
 
@@ -237,7 +236,6 @@ class App(Tk):
         c = 't'
         newmenu.add_command(label=label, command=self.startActionTimer)
         self.bindTop(c, self.startActionTimer)
-
         newmenu.entryconfig(2, accelerator=l)
         self.add2menu(path, (label, l))
 
@@ -246,13 +244,26 @@ class App(Tk):
         c = "T"
         newmenu.add_command(label=label, command=self.finishActionTimer)
         self.bind(c, self.finishActionTimer)
-
-        newmenu.entryconfig(3, accelerator=l)
-        self.add2menu(path, (label, l))
-
-
         filemenu.add_cascade(label=NEW, menu=newmenu)
         newmenu.entryconfig(3, state="disabled")
+        self.add2menu(path, (label, l))
+
+        label = _("Start/Resolve Idle Timer")
+        l = "I"
+        c = 'i'
+        newmenu.add_command(label=label, command=self.startIdleTimer)
+        self.bindTop(c, self.startIdleTimer)
+        newmenu.entryconfig(4, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        label = _("Stop Idle Timer")
+        l = "Shift-I"
+        c = "I"
+        newmenu.add_command(label=label, command=self.stopIdleTimer)
+        self.bind(c, self.stopIdleTimer)
+        newmenu.entryconfig(5, accelerator=l)
+        self.add2menu(path, (label, l))
+        newmenu.entryconfig(5, state="disabled")
 
         path = FILE
 
@@ -2771,7 +2782,7 @@ or 0 to display all changes.""").format(title)
 
         self.updateAlerts()
 
-        if self.actionTimer.timer_status != STOPPED:
+        if self.actionTimer.idle_active or self.actionTimer.timer_status != STOPPED:
             self.timerStatus.set(self.actionTimer.get_time())
             if self.actionTimer.timer_minutes >= 1:
                 if (self.options['action_interval'] and self.actionTimer.timer_minutes % loop.options['action_interval'] == 0):
@@ -2791,6 +2802,7 @@ or 0 to display all changes.""").format(title)
 
                             logger.debug('paused: {0}'.format(tcmd))
                             subprocess.call(tcmd, shell=True)
+
         tt.stop()
 
     def updateAlerts(self):
@@ -2997,6 +3009,21 @@ Relative dates and fuzzy parsing are supported.""")
             self.tree.selection_set(self.rowSelected)
             self.tree.see(self.rowSelected)
 
+    def startIdleTimer(self, e=None):
+        if self.actionTimer.idle_active:
+            self.actionTimer.idle_resolve()
+        else:
+            self.actionTimer.idle_start()
+        self.newmenu.entryconfig(4, state="disabled")
+        self.newmenu.entryconfig(5, state="normal")
+
+    def stopIdleTimer(self, e=None):
+        if not self.actionTimer.idle_active or self.actionTimer.timer_status != STOPPED:
+            return
+        self.actionTimer.idle_stop()
+        self.timerStatus.set("")
+        self.newmenu.entryconfig(4, state="normal")
+        self.newmenu.entryconfig(5, state="disabled")
 
     def startActionTimer(self, e=None):
         """
@@ -3010,6 +3037,8 @@ Relative dates and fuzzy parsing are supported.""")
         # hack to avoid activating with Ctrl-t
         if e and e.char != "t":
             return
+        if self.actionTimer.idle_active and self.actionTimer.timer_status in [STOPPED, PAUSED] and self.actionTimer.idle_delta > int(loop.options['idle_minimum']) * ONEMINUTE:
+            self.actionTimer.idle_resolve()
         if self.actionTimer.timer_status == STOPPED:
             if self.uuidSelected:
                 nullok = True
@@ -3084,7 +3113,7 @@ Relative dates and fuzzy parsing are supported.""")
         if changed:
             # clear status and reload
             self.actionTimer.timer_clear()
-            self.timerStatus.set("")
+            # self.timerStatus.set("")
             self.newmenu.entryconfig(3, state="disabled")
 
             self.updateAlerts()
@@ -3101,11 +3130,14 @@ Relative dates and fuzzy parsing are supported.""")
             if ans:
                 # restore timer with the old status
                 self.actionTimer.timer_start(hsh=hsh, toggle=False)
-                self.timerStatus.set(self.actionTimer.get_time())
             else:
+                if self.actionTimer.idle_active:
+                    # add the time back into idle
+                    self.actionTimer.idle_delta += self.actionTimer.timer_delta
                 self.actionTimer.timer_clear()
-                self.timerStatus.set("")
+                # self.timerStatus.set("")
                 self.newmenu.entryconfig(3, state="disabled")
+        self.timerStatus.set(self.actionTimer.get_time())
         self.tree.focus_set()
 
 

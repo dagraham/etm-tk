@@ -177,8 +177,9 @@ Note: when aggregating amounts in action reports, billing and markup rates are a
     action_timer:
         paused: 'play ~/.etm/sounds/timer_paused.wav'
         running: 'play ~/.etm/sounds/timer_running.wav'
+        idle: 'play ~/.etm/sounds/timer_idle.wav'
 
-The command `running` is executed every `action_interval` minutes whenever the action timer is running and `paused` every minute when the action timer is paused.
+The command `running` is executed every `action_interval` minutes whenever the action timer is running and `paused` every minute when the action timer is paused. The command `idle` is executed every `action_interval` minutes when the idle timer is running and the action timer is neither running nor paused.
 
 
 ### agenda
@@ -466,6 +467,12 @@ If an item is not selected, pressing Shift-X in the gui will export the active c
 If an item is selected, pressing Shift-X in the gui will export the selected item in iCalendar format to this file.
 
     icsitem_file: ~/.etm/etmitem.ics
+
+### idle_minimum
+
+    idle_minimum: 10
+
+When the idle timer is running and a action timer is started or restarted, only open the dialog to assign idle time if the current idle time is at least this many minutes.
 
 ### local_timezone
 

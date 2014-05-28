@@ -39,7 +39,7 @@ from datetime import datetime, timedelta
 
 from collections import OrderedDict
 
-from etmTk.data import fmt_period, parse_dt, get_current_time, getFiles, os_path_splitall, relpath
+from etmTk.data import fmt_period, parse_dt, get_current_time, getFiles, os_path_splitall, relpath, fmt_datetime, ensureMonthly, parse_period
 
 import gettext
 
@@ -246,13 +246,15 @@ class MenuTree:
 
 
 class Timer():
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, options={}):
         """
             Methods providing the action timer
         """
         self.timer_clear()
         self.parent = parent
-        # self.starttime = datetime.now()
+        self.options = options
+        self.idle_active = False
+        self.idle_delta = 0 * ONEMINUTE
 
     def timer_clear(self):
         self.timer_delta = 0 * ONEMINUTE
@@ -263,9 +265,45 @@ class Timer():
         self.timer_hsh = None
         self.timer_summary = None
 
+
+    def idle_start(self):
+        if self.idle_active:
+            return
+        self.idle_starttime = datetime.now()
+        self.idle_active = True
+        self.parent.timerStatus.set(self.get_time())
+        logger.debug('idle start: {0}'.format(self.idle_starttime))
+
+    def idle_stop(self):
+        if not self.idle_active:
+            return
+        if self.timer_status != STOPPED:
+            self.timer_stop()
+        if self.idle_delta:
+            self.idle_resolve()
+        logger.debug('idle stop: {0}'.format(self.idle_starttime))
+        self.idle_active = False
+
+    def idle_resolve(self):
+        """
+        Called when action timer is started or restarted
+        """
+        if not self.idle_active or self.idle_delta < ONEMINUTE:
+            return
+        self.idle_delta += datetime.now() - self.idle_starttime
+        logger.debug('resolve, idle time: {0}'.format(self.idle_delta))
+        opts = {'idle_delta': self.idle_delta, 'keywords': self.options['keywords'], 'currfile': ensureMonthly(self.options), 'tz': self.options['local_timezone']}
+        self.idle_delta = ResolveIdleTime(self.parent, title="assign idle time", opts=opts).idle_delta
+
+
+    def idle_resume(self):
+        if not self.idle_active: return
+        self.idle_starttime = datetime.now()
+        logger.debug('resume, idle time: {0}'.format(self.idle_delta))
+
     def timer_start(self, hsh=None, toggle=True):
         if not hsh: hsh = {}
-        self.starttime = datetime.now()
+        self.timer_starttime = datetime.now()
         self.timer_hsh = hsh
         text = hsh['_summary']
         # self.timer_hsh['s'] = self.starttime
@@ -283,6 +321,7 @@ class Timer():
     def timer_stop(self, create=True):
         if self.timer_status == STOPPED:
             return ()
+        self.idle_resume()
         self.stop_status = self.timer_status
         if self.timer_status == RUNNING:
             self.timer_delta += datetime.now() - self.timer_last
@@ -290,7 +329,7 @@ class Timer():
 
         self.timer_delta = max(self.timer_delta, ONEMINUTE)
         self.timer_hsh['e'] = self.timer_delta
-        self.timer_hsh['s'] = self.starttime
+        self.timer_hsh['s'] = self.timer_starttime
         self.timer_hsh['itemtype'] = '~'
 
     def timer_toggle(self, hsh=None):
@@ -300,6 +339,7 @@ class Timer():
             self.timer_last = datetime.now()
             self.timer_status = RUNNING
         elif self.timer_status == RUNNING:
+            self.idle_resume()
             self.timer_delta += datetime.now() - self.timer_last
             self.timer_status = PAUSED
         elif self.timer_status == PAUSED:
@@ -310,20 +350,32 @@ class Timer():
 
 
     def get_time(self):
-        if self.timer_status == PAUSED:
-            elapsed_time = self.timer_delta
-        elif self.timer_status == RUNNING:
-            elapsed_time = (self.timer_delta + datetime.now() -
-                       self.timer_last)
+        # if self.timer_status == STOPPED:
+        if self.idle_active:
+            if self.timer_status in [STOPPED, PAUSED]:
+                self.idle_delta += datetime.now() - self.idle_starttime
+                self.idle_starttime = datetime.now()
+            idle = "[{0}]".format(fmt_period(self.idle_delta))
+            logger.debug("idle: {0}, {1}".format(self.idle_starttime, self.idle_delta))
+        if self.timer_status == STOPPED:
+            ret = idle
+            self.timer_minutes = 0
+            self.elapsed_time = 0 * ONEMINUTE
         else:
-            elapsed_time = self.timer_delta
-        plus = " ({0})".format(_("paused"))
-        self.timer_minutes = elapsed_time.seconds//60
-        if self.timer_status == RUNNING:
-            plus = " ({0})".format(_("running"))
-        # ret = "{0}  {1}{2}".format(self.timer_summary, self.timer_time, s)
-        ret = "{0}  {1}{2}".format(self.timer_summary, fmt_period(elapsed_time), plus)
-        logger.debug("timer: {0}; {1}; {2}".format(ret, self.timer_last, elapsed_time))
+            if self.timer_status == PAUSED:
+                elapsed_time = self.timer_delta
+            elif self.timer_status == RUNNING:
+                elapsed_time = (self.timer_delta + datetime.now() -
+                           self.timer_last)
+            else:
+                elapsed_time = self.timer_delta
+            plus = " ({0})".format(_("paused"))
+            self.timer_minutes = elapsed_time.seconds//60
+            if self.timer_status == RUNNING:
+                plus = " ({0})".format(_("running"))
+            # ret = "{0}  {1}{2}".format(self.timer_summary, self.timer_time, s)
+            ret = "{1} {2}{3} {0}".format(idle, self.timer_summary, fmt_period(elapsed_time), plus)
+            logger.debug("timer: {0}, {1}".format(self.timer_last, elapsed_time))
         return ret
 
 
@@ -474,10 +526,6 @@ class FileChoice(object):
 
     def onSelect(self, *args):
         # Note here that Tkinter passes an event object to onselect()
-        # w = evt.widget
-        # index = int(w.curselection()[0])
-        # value = w.get(index)
-        # print('You selected item %d: "%s"' % (index, value))
 
         if self.listBox.curselection():
             firstIndex = self.listBox.curselection()[0]
@@ -706,6 +754,133 @@ class Dialog(Toplevel):
 
     def messageWindow(self, title, prompt):
         MessageWindow(self.parent, title, prompt)
+
+class ResolveIdleTime(Dialog):
+
+    def body(self, master):
+        """
+        !!! copy completions filter/listbox setup
+
+            Assign time period [   time period entry     ]
+            to [    keyword combo box                    ]
+            need:
+                options['idle_delta']
+                options['keywords']
+
+                file to append idle time assigned actions
+                options['idle_file']
+                file to append new keywords
+                options['keywords_file']
+        """
+        self.idle_delta = self.options['idle_delta']
+        self.completions = self.options['keywords']
+        self.currfile = self.options['currfile']
+        self.tz = self.options['tz']
+        period_frame = Frame(master, background= BGCOLOR)
+        period_frame.pack(side="top", fill="x", padx=4, pady=2)
+
+        period_label = Label(period_frame, text=_("Assign"), bg=BGCOLOR)
+        period_label.pack(side="left")
+        self.time_period = StringVar(self)
+        self.period_entry = Entry(period_frame, textvariable=self.time_period, highlightbackground=BGCOLOR)
+
+        self.idletime = StringVar(self)
+        self.idletime.set(fmt_period(self.idle_delta))
+        self.idle_label = Label(period_frame, textvariable=self.idletime, bg=BGCOLOR, takefocus=0)
+        self.idle_label.pack(side="right", padx=2)
+
+        of_label = Label(period_frame, text=_("of"), bg=BGCOLOR, takefocus=0)
+        of_label.pack(side="right")
+
+        self.period_entry.pack(side="left", fill="x", expand=1, padx=4)
+
+
+        self.keyword_frame = keyword_frame = Frame(master, background=BGCOLOR)
+        keyword_frame.pack(side="top", fill="both", padx=4, expand=1)
+
+        self.outcome = StringVar(self)
+        self.outcome.set("")
+        self.outcome_label = Label(keyword_frame, textvariable=self.outcome, bg=BGCOLOR, takefocus=0)
+        self.outcome_label.pack(side="bottom")
+
+        # keyword_label = Label(keyword_frame, text=_("to:"))
+        # keyword_label.pack(side="left")
+
+        self.filterValue = StringVar(self)
+        self.filterValue.set("")
+        self.filterValue.trace_variable("w", self.setCompletions)
+        self.fltr = fltr = Entry(self.keyword_frame, textvariable=self.filterValue, highlightbackground=BGCOLOR)
+        self.fltr.pack(fill="x") #, expand=1, fill=X)
+        self.fltr.icursor(END)
+
+        self.listbox = listbox = Listbox(self.keyword_frame, exportselection=False, width=self.parent.options['completions_width'])
+        listbox.pack(fill="both", expand=True, padx=2, pady=2)
+
+        self.keyword_frame.bind("<Double-1>", self.apply)
+        self.keyword_frame.bind("<Return>", self.apply)
+        self.listbox.bind("<Up>", self.cursorUp)
+        self.listbox.bind("<Down>", self.cursorDown)
+        self.fltr.bind("<Up>", self.cursorUp)
+        self.fltr.bind("<Down>", self.cursorDown)
+        self.setCompletions()
+        return self.period_entry
+
+
+    def setCompletions(self, *args):
+        match = self.filterValue.get()
+        self.matches = matches = [x for x in self.completions if x and x.lower().startswith(match.lower())]
+        self.listbox.delete(0, END)
+        for item in matches:
+            self.listbox.insert(END, item)
+        self.listbox.select_set(0)
+        self.listbox.see(0)
+
+    def cursorUp(self, event=None):
+        cursel = int(self.listbox.curselection()[0])
+        # newsel = max(0, cursel=1)
+        newsel = max(0, cursel-1)
+        self.listbox.select_clear(cursel)
+        self.listbox.select_set(newsel)
+        self.listbox.see(newsel)
+        return "break"
+
+    def cursorDown(self, event=None):
+        cursel = int(self.listbox.curselection()[0])
+        newsel = min(len(self.matches)-1, cursel+1)
+        self.listbox.select_clear(cursel)
+        self.listbox.select_set(newsel)
+        self.listbox.see(newsel)
+        return "break"
+
+    def apply(self):
+        """
+        Make sure values are ok, write action and update idle time
+        """
+        period_str = self.period_entry.get()
+        keyword_str = self.matches[int(self.listbox.curselection()[0])]
+        if not (period_str and keyword_str):
+            return
+        try:
+            period = parse_period(period_str)
+        except:
+            self.outcome.set(_("Could not parse period: {0}").format(period_str))
+            return
+
+        hsh = {'itemtype': '~', '_summary': 'idle time', 's': get_current_time(), 'e': period, 'k': keyword_str, 'z': self.tz}
+        self.parent.loop.append_item(hsh, self.currfile)
+
+        self.outcome.set(_("assigned {0} to {1}").format(fmt_period(period), keyword_str))
+        self.time_period.set("")
+
+        self.idle_delta -= period
+        self.idletime.set(fmt_period(self.idle_delta))
+
+        if self.idle_delta < ONEMINUTE:
+            self.cancel()
+
+
+    def ok(self, event=None):
+        self.apply()
 
 class TextVariableWindow(Dialog):
     def body(self, master):

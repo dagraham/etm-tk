@@ -9,6 +9,8 @@
             File                                    Shift-N
             Begin/Pause Action Timer                   T
             Finish Action Timer                     Shift-T
+            Start Idle Timer                           I
+            Stop Idle Timer                         Shift-I
         Open
             Data file ...                           Shift-F
             Configuration file ...                  Shift-C
