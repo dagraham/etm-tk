@@ -3013,7 +3013,6 @@ Relative dates and fuzzy parsing are supported.""")
         if self.actionTimer.idle_active:
             return
         self.actionTimer.idle_start()
-        self.timerStatus.set("[0m]")
         self.newmenu.entryconfig(4, state="disabled")
         self.newmenu.entryconfig(5, state="normal")
 
@@ -3037,6 +3036,8 @@ Relative dates and fuzzy parsing are supported.""")
         # hack to avoid activating with Ctrl-t
         if e and e.char != "t":
             return
+        if self.actionTimer.idle_active and self.actionTimer.timer_status in [STOPPED, PAUSED]:
+            self.actionTimer.idle_resolve()
         if self.actionTimer.timer_status == STOPPED:
             if self.uuidSelected:
                 nullok = True
