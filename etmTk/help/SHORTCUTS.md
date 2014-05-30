@@ -85,10 +85,9 @@
 
 ## Edit
 
-    Show possible completions                     Ctrl-Space
-    Validate entry                                  Ctrl-?
+    Show completions                              Ctrl-Space
     Cancel                                          Escape
-    Save changes and close editor                   Ctrl-W
+    Finish                                          Ctrl-W
 
 ## Custom
 
