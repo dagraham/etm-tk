@@ -1098,8 +1098,8 @@ zfmt = "%Y%m%dT%H%M"
 
 sortdatefmt = "%Y%m%d"
 reprdatefmt = "%a %b %d, %Y"
-shortdatefmt = "%b %d %Y"
-shortyearlessfmt = "%b %d"
+shortdatefmt = "%a %b %d %Y"
+shortyearlessfmt = "%a %b %d"
 weekdayfmt = "%a %d"
 sorttimefmt = "%H%M"
 etmdatefmt = "%Y-%m-%d"
@@ -1711,7 +1711,7 @@ id2Type = {
     "ds": '%',
     "du": '%',
     "ev": '*',
-    "fn": 'X',
+    "fn": u"\u2713",
     "ib": '$',
     "ns": '!',
     "nu": '!',

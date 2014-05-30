@@ -9,7 +9,6 @@ import codecs
 from datetime import datetime, timedelta, time
 
 from copy import deepcopy
-# from view import AFTER
 
 if platform.python_version() >= '3':
     import tkinter
@@ -17,28 +16,11 @@ if platform.python_version() >= '3':
     from tkinter import ttk
     # from ttk import Button, Style
     from tkinter import font as tkFont
-    # from tkinter import simpledialog as tkSimpleDialog
-    # from tkinter.simpledialog import askstring
-    # from tkinter.messagebox import askokcancel
-    # from tkinter.filedialog import asksaveasfilename
-    # from tkinter.filedialog import askopenfilename
 else:
     import Tkinter as tkinter
     from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Frame, LEFT, RIGHT, Text, PanedWindow, OptionMenu, StringVar, Menu, BooleanVar, ACTIVE, X, RIDGE, BOTH, SEL, SEL_FIRST, SEL_LAST, Button, FLAT, Listbox
     import ttk
-    # from ttk import Button, Style
     import tkFont
-    # import tkSimpleDialog
-    # from tkSimpleDialog import askstring
-    # from tkFileDialog import asksaveasfilename
-    # from tkFileDialog import askopenfilename
-    # from tkMessageBox import askokcancel
-
-# Also from messagebox:
-# askquestion()
-# askokcancel()
-# askyesno ()
-# askretrycancel ()
 
 import string
 ID_CHARS = string.ascii_letters + string.digits + "_@/"
@@ -51,9 +33,10 @@ import logging.config
 logger = logging.getLogger()
 
 
-SOMEREPS = _('Selected repetitions')
-ALLREPS = _('Repetitions')
+SOMEREPS = _('selected repetitions')
+ALLREPS = _('all repetitions')
 MESSAGES = _('Error messages')
+VALID = _("Valid entry")
 FOUND = "found"  # for found text marking
 
 MAKE = _("Make")
@@ -63,8 +46,27 @@ EXPORTCSV = _("Export report in CSV format ...")
 SAVESPECS = _("Save changes to report specifications")
 CLOSE = _("Close")
 
+# VALID = _("Valid {0}").format(u"\u2714")
+FINISH = _("Finish")
+SAVEANDEXIT = _("Save changes and exit?")
+UNCHANGEDEXIT = _("Item is unchanged. Exit?")
+CREATENEW = _("creating a new item")
+EDITEXISTING = _("editing an existing item")
 
-from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, optionShortcut, CMD, relpath, completion_regex, getReportData, tree2Text, AFTER, get_current_time, getFileTuples
+type2Text = {
+    '$': _("In Basket item"),
+    '^': _("Occasion"),
+    '*': _("Event"),
+    '~': _("Action"),
+    '!': _("Note"), # undated only appear in folders
+    '-': _("Task"), # for next view
+    '+': _("Task Group"), # for next view
+    '%': _("Delegated Task"),
+    '?': _("Someday Maybe item"),
+    '#': _("Hidden item")
+}
+
+from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, optionShortcut, CMD, relpath, completion_regex, getReportData, tree2Text, AFTER, get_current_time, getFileTuples, fmt_datetime, fmt_shortdatetime, fmt_date
 
 from etmTk.dialog import BGCOLOR, OptionsDialog, ReadOnlyText, FileChoice
 
@@ -122,23 +124,18 @@ class SimpleEditor(Toplevel):
 
         btnwdth = 5
 
-        # ok will check, save and quit
-        Button(frame, text=_("Save and Exit"), highlightbackground=BGCOLOR, command=self.onSave, pady=2).pack(side=RIGHT, padx=4)
-
-        l, c = commandShortcut('w')
-        self.bind(c, self.onSave)
-
         # quit with a warning prompt if modified
         Button(frame, text=_("Cancel"), highlightbackground=BGCOLOR, pady=2, command=self.quit).pack(side=LEFT, padx=4)
-        # self.bind("<Escape>", self.quit)
+        self.bind("<Escape>", self.quit)
 
         l, c = commandShortcut('q')
         self.bind(c, self.quit)
         self.bind("<Escape>", self.cancel)
-        # check will evaluate the item entry and, if repeating, show reps
-        inspect = Button(frame, text=_("Validate"), highlightbackground=BGCOLOR,  command=self.onCheck, pady=2)
-        self.bind("<Control-question>", self.onCheck)
-        inspect.pack(side=RIGHT, padx=4)
+
+        # finish will evaluate the item entry and, if repeating, show reps
+        finish = Button(frame, text=FINISH, highlightbackground=BGCOLOR,  command=self.onFinish, pady=2)
+        self.bind("<Control-w>", self.onCheck)
+        finish.pack(side=RIGHT, padx=4)
 
         # find
         Button(frame, text='x', command=self.clearFind, highlightbackground=BGCOLOR, padx=8, pady=2).pack(side=LEFT, padx=0)
@@ -157,17 +154,15 @@ class SimpleEditor(Toplevel):
 
         self.completions = self.loop.options['completions']
 
-        if title is not None:
-            self.wm_title(title)
         if start is not None:
             # we have the starting text
             text = start
             self.edithsh = {}
             self.mode = 1
+            self.title = CREATENEW
         elif file is not None:
             # we're editing a file
             self.mode = 'file'
-            inspect.configure(state="disabled")
             if not os.path.isfile(file):
                 logger.warn('could not open: {0}'.format(file))
                 text = ""
@@ -182,23 +177,24 @@ class SimpleEditor(Toplevel):
             #   2: replace
             #   3: new and replace
             self.initfile = initfile = ensureMonthly(options=self.options, date=datetime.now())
-            # logger.debug("newhsh: {0}".format(self.newhsh))
-            # logger.debug("rephsh: {0}".format(self.rephsh))
             # set the mode
             if newhsh is None and rephsh is None:
                 # we are creating a new item from scratch
                 self.mode = 1
+                self.title = CREATENEW
                 self.edithsh = self.newhsh
                 text = ''
             elif rephsh is None:  # newhsh is not None
                 # we are creating a new item as a copy
                 self.mode = 1
+                self.title = CREATENEW
                 self.edithsh = self.newhsh
                 if ('fileinfo' in newhsh and newhsh['fileinfo']):
                     initfile = newhsh['fileinfo'][0]
                 text, msg = hsh2str(self.edithsh, self.options)
             elif newhsh is None: # rephsh
                 # we are editing and replacing rephsh - no file prompt
+                self.title = EDITEXISTING
                 self.mode = 2
                 # self.repinfo = rephsh['fileinfo']
                 self.edithsh = self.rephsh
@@ -208,14 +204,15 @@ class SimpleEditor(Toplevel):
                 # we will be writing but not editing rephsh using its fileinfo
                 # we will be editing and saving newhsh using self.initfile
                 self.mode = 3
+                self.title = CREATENEW
                 self.edithsh = self.newhsh
-                # self.repinfo = rephsh['fileinfo']
                 if 'fileinfo' in newhsh and newhsh['fileinfo'][0]:
                     initfile = self.newhsh['fileinfo'][0]
                 text, msg = hsh2str(self.edithsh, self.options)
 
             logger.debug('mode: {0}; initfile: {1}; edit: {2}'.format(self.mode,  self.initfile,  self.edithsh))
-        # logger.debug("setting text {0}:\n{1}".format(type(text), text))
+        if self.title is not None:
+            self.wm_title(self.title)
         self.settext(text)
 
         # clear the undo buffer
@@ -244,12 +241,9 @@ class SimpleEditor(Toplevel):
         self.text.see(INSERT)
         # l, c = commandShortcut('/')
         logger.debug("/: {0}, {1}".format(l, c))
-        # self.text.bind("<Control-slash>", self.showCompletions)
         self.text.bind("<Control-space>", self.showCompletions)
         self.grab_set()
-
         self.wait_window(self)
-
 
     def settext(self, text=''):
         self.text.delete('1.0', END)
@@ -311,7 +305,6 @@ class SimpleEditor(Toplevel):
         self.fltr.bind("<Down>", self.cursorDown)
         self.setCompletions()
 
-
     def is_active(self):
         return self.autocompletewindow is not None
 
@@ -319,10 +312,6 @@ class SimpleEditor(Toplevel):
         if not self.is_active():
             return
         # destroy widgets
-        # self.match = None
-        # self.autocompletewindow.destroy()
-        # self.scrollbar.destroy()
-        # self.scrollbar = None
         self.listbox.destroy()
         self.listbox = None
         self.autocompletewindow.destroy()
@@ -364,10 +353,17 @@ class SimpleEditor(Toplevel):
         return self.text.edit_modified()
 
     def updateSaveStatus(self, event=None):
+        # Called by <<Modified>>
         if self.checkmodified():
-            self.wm_title("{0} *".format(self.title))
+            self.wm_title("{0} (modified)".format(self.title))
         else:
-            self.wm_title(self.title)
+            self.wm_title("{0}".format(self.title))
+
+    def onFinish(self, e=None):
+        if self.mode == 'file':
+            self.onSave()
+        else:
+            self.onCheck()
 
     def onSave(self, e=None):
         e = None
@@ -377,17 +373,11 @@ class SimpleEditor(Toplevel):
             # we are editing a file
             alltext = self.gettext()
             self.loop.safe_save(self.file, alltext)
-            # with codecs.open(self.file, 'w',
-            #                  self.options['encoding']['file']) as f:
-            #     f.write(alltext)
             self.setmodified(False)
             self.changed = True
             self.quit()
         else:
             # we are editing an item
-            ok = self.onCheck(showreps=False, showres=False)
-            if not ok:
-                return "break"
             if self.mode in [1, 3]:  # new
                 dir = self.options['datadir']
                 if 's' in self.edithsh and self.edithsh['s']:
@@ -400,7 +390,6 @@ class SimpleEditor(Toplevel):
                 # we need a filename for the new item
                 # make datadir the root
                 prefix, tuples = getFileTuples(self.options['datadir'], include=r'*.txt')
-                # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
                 lst = []
                 ret = FileChoice(self, "etm data files", prefix=prefix, list=tuples, start=file).returnValue()
                 if not ret: return False
@@ -439,6 +428,7 @@ class SimpleEditor(Toplevel):
             return "break"
 
     def onCheck(self, event=None, showreps=True, showres=True):
+        # only called when editing an item and finish is pressed
         self.loop.messages = []
         text = self.gettext()
         logger.debug("text: {0}".format(text))
@@ -449,6 +439,20 @@ class SimpleEditor(Toplevel):
 
         if not msg:
             # we have a good hsh
+            pre = post = ""
+            if 'r' in hsh:
+                pre = _("Repeating ")
+            elif 's' in hsh:
+                dt = hsh['s']
+                if not dt.hour and not dt.minute:
+                    dtfmt = fmt_date(dt, short=True)
+                else:
+                    dtfmt = fmt_shortdatetime(hsh['s'], self.options)
+                post = _(" scheduled for {0}").format(dtfmt)
+            else: # unscheduled
+                pre = _("Unscheduled ")
+
+            prompt = "{0}{1}{2}".format(pre, type2Text[hsh['itemtype']], post)
 
             if self.edithsh and 'fileinfo' in self.edithsh:
                 fileinfo = self.edithsh['fileinfo']
@@ -477,11 +481,13 @@ class SimpleEditor(Toplevel):
                 if showreps:
                     repsfmt = [x.strftime(rrulefmt) for x in reps]
                     logger.debug("{0}: {1}".format(showing_all, repsfmt))
-                    repetitions = "{0}".format("\n".join(repsfmt))
-                    if showing_all:
-                        self.messageWindow(ALLREPS, repetitions, opts=self.options, width=24)
+                    if showing_all and len(repsfmt) < 10:
+                        reps = ALLREPS
                     else:
-                        self.messageWindow(SOMEREPS, repetitions, opts=self.options, width=24)
+                        repsfmt = repsfmt[:10]
+                        reps = SOMEREPS
+                    prompt = "{0}, {1}:\n  {2}".format(prompt, reps, "\n  ".join(repsfmt))
+                    # self.messageWindow(VALID, repetitions, opts=self.options)
             else:
                 repetitions = "No repetitions were generated."
                 self.loop.messages.append(repetitions)
@@ -492,9 +498,15 @@ class SimpleEditor(Toplevel):
                 return False
 
 
-        elif showres:
-            self.messageWindow(MESSAGES, _("valid entry"), opts=self.options, height=1, width=14)
-        logger.debug(('Ok: {0}'.format(True)))
+        if self.checkmodified():
+            prompt += "\n\n{0}".format(SAVEANDEXIT)
+        else:
+            prompt += "\n\n{0}".format(UNCHANGEDEXIT)
+
+
+        ans, value = OptionsDialog(parent=self, title=self.title, prompt=prompt, yesno=False).getValue()
+        if ans:
+            self.onSave()
         return True
 
     def clearFind(self, *args):
@@ -546,7 +558,8 @@ class SimpleEditor(Toplevel):
             self.destroy()
             logger.debug('done')
 
-    def messageWindow(self, title, prompt, opts=None, height=14, width=52):
+    # def messageWindow(self, title, prompt, opts=None, height=14, width=52):
+    def messageWindow(self, title, prompt, opts=None, height=8, width=52):
         win = Toplevel(self)
         win.title(title)
         win.geometry("+%d+%d" % (self.text.winfo_rootx() + 50,
@@ -556,9 +569,11 @@ class SimpleEditor(Toplevel):
         f = Frame(win)
         # pack the button first so that it doesn't disappear with resizing
         b = Button(win, text=_('OK'), width=10, command=win.destroy, default='active', pady=2)
+        c = Button(win, text=_('Cancel'), width=10, command=win.destroy, pady=2)
+        c.pack(side='bottom', fill=tkinter.NONE, expand=0, pady=0)
         b.pack(side='bottom', fill=tkinter.NONE, expand=0, pady=0)
         win.bind('<Return>', (lambda e, b=b: b.invoke()))
-        win.bind('<Escape>', (lambda e, b=b: b.invoke()))
+        # win.bind('<Escape>', (lambda e, b=b: b.invoke()))
 
         t = ReadOnlyText(
             f, wrap="word", padx=2, pady=2, bd=2, relief="sunken",
@@ -568,10 +583,11 @@ class SimpleEditor(Toplevel):
             takefocus=False)
         t.insert("0.0", prompt)
         t.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0, pady=0)
-        # ysb = ttk.Scrollbar(f, orient='vertical', command=t.yview)
-        # ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
-        # t.configure(state="disabled", yscroll=ysb.set)
-        # t.configure(yscroll=ysb.set)
+        if height > 1:
+            ysb = ttk.Scrollbar(f, orient='vertical', command=t.yview)
+            ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
+            t.configure(state="disabled", yscroll=ysb.set)
+            t.configure(yscroll=ysb.set)
         f.pack(padx=2, pady=2, fill=tkinter.BOTH, expand=1)
 
         win.focus_set()

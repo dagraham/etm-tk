@@ -199,7 +199,7 @@ class App(Tk):
         self.canvas.bind("f", lambda event: self.after(AFTER, self.showFreePeriods))
 
         # main menu
-        menubar = Menu(self)
+        self.menubar = menubar = Menu(self)
         menu = _("Menubar")
         self.add2menu(root, (menu,))
 
@@ -645,7 +645,6 @@ class App(Tk):
                                    underline=0, command=self.rm2cmd[k])
             reportmenu.entryconfig(i, state="disabled")
 
-
         menubar.add_cascade(label=path, menu=reportmenu, underline=0)
 
         # help
@@ -920,10 +919,9 @@ class App(Tk):
             self.default_regex = re.compile(default_pattern)
 
         self.add2menu(root, (EDIT, ))
-        self.add2menu(EDIT, (_("Show possible completions"), "Ctrl-Space"))
-        self.add2menu(EDIT, (_("Validate entry"), "Ctrl-?"))
+        self.add2menu(EDIT, (_("Show completions"), "Ctrl-Space"))
         self.add2menu(EDIT, (_("Cancel"), "Escape"))
-        self.add2menu(EDIT, (_("Save changes and close editor"), "Ctrl-W"))
+        self.add2menu(EDIT, (_("Finish"), "Ctrl-W"))
 
         self.add2menu(root, (CUSTOM, ))
         self.add2menu(CUSTOM, (_("Create and display selected report"), "Return"))
@@ -3404,7 +3402,7 @@ or 0 to expand all branches completely.""")
                     col2 = loop.uuid2labels[id]
                 else:
                     col2 = "***"
-                    if item_type not in ["=", "$"]:
+                    if item_type not in ["=", "ib"]:
                         logger.warn('Missing key {0} for {1} {2}'.format(id, col1, col3))
 
                 oid = self.tree.insert(parent, 'end', iid=self.count, text=col1, open=(depth <= max_depth), values=[col2, col3], tags=(item_type, 'treefont'))
