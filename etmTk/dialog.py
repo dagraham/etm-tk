@@ -357,6 +357,8 @@ class Timer():
                 self.idle_starttime = datetime.now()
             idle = "[{0}]".format(fmt_period(self.idle_delta))
             logger.debug("idle: {0}, {1}".format(self.idle_starttime, self.idle_delta))
+        else:
+            idle = ""
         if self.timer_status == STOPPED:
             ret = idle
             self.timer_minutes = 0
