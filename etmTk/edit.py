@@ -47,7 +47,6 @@ SAVESPECS = _("Save changes to report specifications")
 CLOSE = _("Close")
 
 # VALID = _("Valid {0}").format(u"\u2714")
-FINISH = _("Finish")
 SAVEANDEXIT = _("Save changes and exit?")
 UNCHANGEDEXIT = _("Item is unchanged. Exit?")
 CREATENEW = _("creating a new item")
@@ -66,7 +65,7 @@ type2Text = {
     '#': _("Hidden item")
 }
 
-from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, optionShortcut, CMD, relpath, completion_regex, getReportData, tree2Text, AFTER, get_current_time, getFileTuples, fmt_datetime, fmt_shortdatetime, fmt_date
+from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, optionShortcut, CMD, relpath, completion_regex, getReportData, tree2Text, AFTER, get_current_time, getFileTuples, fmt_datetime, fmt_shortdatetime, fmt_date, FINISH
 
 from etmTk.dialog import BGCOLOR, OptionsDialog, ReadOnlyText, FileChoice
 
@@ -134,7 +133,8 @@ class SimpleEditor(Toplevel):
 
         # finish will evaluate the item entry and, if repeating, show reps
         finish = Button(frame, text=FINISH, highlightbackground=BGCOLOR,  command=self.onFinish, pady=2)
-        self.bind("<Control-w>", self.onCheck)
+        # self.bind("<Control-w>", self.onCheck)
+        self.bind("<Shift-Return>", self.onCheck)
         finish.pack(side=RIGHT, padx=4)
 
         # find
@@ -365,7 +365,7 @@ class SimpleEditor(Toplevel):
         else:
             self.onCheck()
 
-    def onSave(self, e=None):
+    def onSave(self, e=None, v=0):
         e = None
         if not self.checkmodified():
             self.quit()
@@ -391,9 +391,12 @@ class SimpleEditor(Toplevel):
                 # make datadir the root
                 prefix, tuples = getFileTuples(self.options['datadir'], include=r'*.txt')
                 lst = []
-                ret = FileChoice(self, "etm data files", prefix=prefix, list=tuples, start=file).returnValue()
-                if not ret: return False
-                filename = os.path.join(prefix, ret)
+                if v == 2:
+                    filename = file
+                else:
+                    ret = FileChoice(self, "etm data files", prefix=prefix, list=tuples, start=file).returnValue()
+                    if not ret: return False
+                    filename = os.path.join(prefix, ret)
                 if not os.path.isfile(filename): return False
                 filename = os.path.normpath(filename)
                 logger.debug('saving to: {0}'.format(filename))
@@ -506,7 +509,7 @@ class SimpleEditor(Toplevel):
 
         ans, value = OptionsDialog(parent=self, title=self.title, prompt=prompt, yesno=False).getValue()
         if ans:
-            self.onSave()
+            self.onSave(v=value)
         return True
 
     def clearFind(self, *args):

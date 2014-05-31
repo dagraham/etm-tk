@@ -309,7 +309,17 @@ The timer starts automatically when you close the dialog. Once the timer is runn
 
 While a timer is active, the title, elapsed time and status - running or paused - is displayed in the status bar.
 
-Tip: When creating or editing a repeating item, press *Validate* to check your entry and see a list of the instances that it will generate.
+When editing an item, clicking on *Finish* or pressing *Shift-Return* will validate your entry. If there are errors, they will be displayed and you can return to the editor to correct them. If there are no errors, this will be indicated in a dialog, e.g.,
+
+    Task scheduled for Tue Jun 03
+
+    Save changes and exit?
+
+Tip. When creating or editing a repeating item, pressing *Finish* will also display a list of instances that will be generated.
+
+Click on *Ok* or press *Return* or *Shift-Return* to save the item and close the editor. Click on *Cancel* or press *Escape* to return to the editor.
+
+If this is a new item and there are no errors, clicking on *Ok* or pressing *Return* will open a dialog to select the file to store the item with the current monthly file already selected. Pressing *Shift-Return* will bypass the file selection dialog and save to the current monthly file.
 
 ## Editing Existing Items
 
@@ -318,10 +328,12 @@ Double-clicking an item or pressing *Return* when an item is selected will open 
 - Copy
 - Delete
 - Edit
+- Edit file
 - Finish (unfinished tasks only)
 - Reschedule
+- Schedule new
 - Open link (items with `@g` entries only)
-- Export as iCal
+- Show user details (items with `@u` entries only)
 
 When either *Copy* or *Edit* is chosen for a repeating item, you can further choose:
 
@@ -346,7 +358,6 @@ If an action timer is canceled (stopped and not recorded), then the time for the
 You can assign idle time without starting an action timer by pressing *I* or, at the end of the day, by pressing *Shift-I* to stop the idle timer.
 
 Note that the dialog to assign idle time will only open when starting or restarting an action timer if the current idle time is at least the number of minutes specified by `idle_minimum` in your etmtk.cfg file.
-
 
 ## Data Organization and Calendars
 

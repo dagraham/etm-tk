@@ -273,6 +273,8 @@ yearfirst = True
 # bgclr = "#e9e9e9"
 # BGCOLOR = "#ebebeb"
 
+FINISH = _("Finish ...")
+
 IGNORE = """\
 syntax: glob
 .*

@@ -87,12 +87,5 @@
 
     Show completions                              Ctrl-Space
     Cancel                                          Escape
-    Finish                                          Ctrl-W
+    Finish ...                                    Shift-Return
 
-## Custom
-
-    Create and display selected report              Return
-    Export report in text format ...                Ctrl-T
-    Export report in csv format ...                 Ctrl-X
-    Save changes to report specifications           Ctrl-W
-    Expand report list                               Down

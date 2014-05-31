@@ -1034,6 +1034,7 @@ class OptionsDialog():
         o.pack(side=LEFT, padx=5, pady=5)
         box.pack()
         self.win.bind('<Return>', (lambda e, o=o: o.invoke()))
+        self.win.bind('<Shift-Return>', self.Ok)
         self.win.bind('<Escape>', (lambda e, c=c: c.invoke()))
         # self.choice.focus_set()
         logger.debug('parent: {0}'.format(parent))
@@ -1065,10 +1066,15 @@ class OptionsDialog():
         else: # askokcancel type dialog
             logger.debug(
                 'OptionsDialog returning {0}: {1}'.format(v, None))
-            return v, None
+            return v, v
 
     def ok(self, event=None):
         # self.parent.update_idletasks()
+        self.quit()
+
+    def Ok(self, event=None):
+        # self.parent.update_idletasks()
+        self.sv.set(2)
         self.quit()
 
     def cancel(self, event=None):

@@ -52,7 +52,7 @@ from dateutil.parser import parse
 from decimal import Decimal
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, zfmt, rfmt, efmt, hsh2str, str2hsh, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, fmt_datetime, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator, AFTER, export_ical_item, export_ical, fmt_time, TimeIt, getReportData, getFiles, getFileTuples, updateCurrentFiles)
+    init_localization, fmt_weekday, fmt_dt, zfmt, rfmt, efmt, hsh2str, str2hsh, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, fmt_datetime, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator, AFTER, export_ical_item, export_ical, fmt_time, TimeIt, getReportData, getFiles, getFileTuples, updateCurrentFiles, FINISH)
 
 from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES, REPORTS)
 
@@ -645,6 +645,12 @@ class App(Tk):
                                    underline=0, command=self.rm2cmd[k])
             reportmenu.entryconfig(i, state="disabled")
 
+        self.add2menu(CUSTOM, (_("Create and display selected report"), "Return"))
+        self.add2menu(CUSTOM, (_("Export report in text format ..."), "Ctrl-T"))
+        self.add2menu(CUSTOM, (_("Export report in csv format ..."), "Ctrl-X"))
+        self.add2menu(CUSTOM, (_("Save changes to report specifications"), "Ctrl-W"))
+        self.add2menu(CUSTOM, (_("Expand report list"), "Down"))
+
         menubar.add_cascade(label=path, menu=reportmenu, underline=0)
 
         # help
@@ -921,14 +927,7 @@ class App(Tk):
         self.add2menu(root, (EDIT, ))
         self.add2menu(EDIT, (_("Show completions"), "Ctrl-Space"))
         self.add2menu(EDIT, (_("Cancel"), "Escape"))
-        self.add2menu(EDIT, (_("Finish"), "Ctrl-W"))
-
-        self.add2menu(root, (CUSTOM, ))
-        self.add2menu(CUSTOM, (_("Create and display selected report"), "Return"))
-        self.add2menu(CUSTOM, (_("Export report in text format ..."), "Ctrl-T"))
-        self.add2menu(CUSTOM, (_("Export report in csv format ..."), "Ctrl-X"))
-        self.add2menu(CUSTOM, (_("Save changes to report specifications"), "Ctrl-W"))
-        self.add2menu(CUSTOM, (_("Expand report list"), "Down"))
+        self.add2menu(EDIT, (FINISH, "Shift-Return"))
 
         # start clock
         self.updateClock()
