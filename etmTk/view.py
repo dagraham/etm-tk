@@ -3008,6 +3008,10 @@ Relative dates and fuzzy parsing are supported.""")
             self.tree.see(self.rowSelected)
 
     def startIdleTimer(self, e=None):
+        if self.actionTimer.timer_status != STOPPED:
+            prompt = "The active action timer must be stopped before starting the idle timer."
+            MessageWindow(self, title="error", prompt=prompt)
+            return
         if self.actionTimer.idle_active:
             self.actionTimer.idle_resolve()
         else:
@@ -3016,7 +3020,11 @@ Relative dates and fuzzy parsing are supported.""")
         self.newmenu.entryconfig(5, state="normal")
 
     def stopIdleTimer(self, e=None):
-        if not self.actionTimer.idle_active or self.actionTimer.timer_status != STOPPED:
+        if not self.actionTimer.idle_active:
+            return
+        if self.actionTimer.timer_status != STOPPED:
+            prompt = "The active action timer must be stopped before stopping the idle timer."
+            MessageWindow(self, title="error", prompt=prompt)
             return
         self.actionTimer.idle_stop()
         self.timerStatus.set("")
