@@ -1198,10 +1198,14 @@ def setConfig(options):
         completions.sort()
         options['completions'] = completions
         options['keywords'] = [x[3:] for x in completions if x.startswith('@k')]
+    else:
+        logger.info('no completions')
     if reports:
         reports = list(reports)
         reports.sort()
         options['reports'] = reports
+    else:
+        logger.info('no reports')
 
 
 # noinspection PyGlobalUndefined

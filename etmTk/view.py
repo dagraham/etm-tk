@@ -25,9 +25,6 @@ if platform.python_version() >= '3':
     #, PhotoImage
     from tkinter import ttk
     from tkinter import font as tkFont
-    # from tkinter.messagebox import askokcancel
-    # from tkinter.filedialog import askopenfilename, asksaveasfilename, FileDialog
-    # from tkinter.filedialog import asksaveasfilename, FileDialog
     utf8 = lambda x: x
 
 else:
@@ -45,7 +42,6 @@ else:
 tkversion = tkinter.Tcl().eval('info patchlevel')
 
 import etmTk.data as data
-
 
 from dateutil.parser import parse
 
@@ -3512,17 +3508,14 @@ or 0 to expand all branches completely.""")
             export=False)
         res = tree2Text(tree)
         text = "\n".join([x for x in tree2Text(tree)[0]])
-        fileops = {'defaultextension': '.text',
-                   'filetypes': [('text files', '.text')],
-                   'initialdir': self.options['etmdir'],
-                   'title': 'Text report files',
-                   'parent': self}
-        filename = asksaveasfilename(**fileops)
+        prefix, tuples = getFileTuples(loop.options['etmdir'], include=r'*.text', all=True)
+        filename = FileChoice(self, "cvs file", prefix=prefix, list=tuples, ext="text", new=False).returnValue()
         if not filename:
             return False
         fo = codecs.open(filename, 'w', self.options['encoding']['file'])
         fo.write(text)
         fo.close()
+        MessageWindow(self, "etm", "Exported text to {0}".format(filename))
 
     def exportCSV(self):
         if self.view != CUSTOM: return
@@ -3533,18 +3526,15 @@ or 0 to expand all branches completely.""")
             self.loop.uuid2hash,
             self.loop.options,
             export=True)
-        fileops = {'defaultextension': '.csv',
-                   'filetypes': [('text files', '.csv')],
-                   'initialdir': self.options['etmdir'],
-                   'title': 'CSV data files',
-                   'parent': self}
-        filename = asksaveasfilename(**fileops)
-        if not filename:
-            return False
+        prefix, tuples = getFileTuples(loop.options['etmdir'], include=r'*.csv', all=True)
+        filename = FileChoice(self, "cvs file", prefix=prefix, list=tuples, ext="csv", new=False).returnValue()
+        if not filename: return
+
         import csv as CSV
         c = CSV.writer(open(filename, "w"), delimiter=",")
         for line in data:
             c.writerow(line)
+        MessageWindow(self, "etm", "Exported CSV to {0}".format(filename))
 
 
     def newselection(self, event=None):

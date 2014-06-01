@@ -226,7 +226,7 @@ class MenuTree:
         else:
             name, key = self[position].name.split("::")
             name = "{0}{1}".format("    "*(level-1), name.strip())
-            s = "{0:<49} {1:^11}".format(name, key.strip())
+            s = "{0:<48} {1:^12}".format(name, key.strip())
             self.lst.append(s)
             logger.debug("position: {0}, level: {1}, name: {2}, key: {3}".format(position, level, name, key))
         if self[position].expanded:
