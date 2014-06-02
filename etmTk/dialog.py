@@ -647,7 +647,7 @@ class FileChoice(object):
 
 class Dialog(Toplevel):
 
-    def __init__(self, parent, title=None, prompt=None, opts=None, default=None, modal=True, xoffset=50, yoffset=50, event=None, process=None):
+    def __init__(self, parent, title=None, prompt=None, opts=None, default=None, modal=True, xoffset=50, yoffset=50, event=None, process=None, font=None):
 
         Toplevel.__init__(self, parent, highlightbackground=BGCOLOR,
                     background=BGCOLOR)
@@ -667,6 +667,7 @@ class Dialog(Toplevel):
         logger.debug("parent: {0}".format(self.parent))
         self.prompt = prompt
         self.options = opts
+        self.font = font
         self.default = default
         self.value = ""
         self.process = process
@@ -939,8 +940,9 @@ class DialogWindow(Dialog):
     def body(self, master):
         self.entry = Entry(master)
         self.entry.pack(side="bottom", padx=5, pady=2, fill=X)
-        tkfixedfont = tkFont.nametofont("TkFixedFont")
-        tkfixedfont.configure(size=self.options['fontsize_fixed'])
+        tkfixedfont = self.font
+        # tkfixedfont = tkFont.nametofont("TkFixedFont")
+        # tkfixedfont.configure(size=self.options['fontsize_fixed'])
         lines = self.prompt.split('\n')
         height = min(20, len(lines) + 1)
         lengths = [len(line) for line in lines]

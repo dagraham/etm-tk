@@ -1145,7 +1145,7 @@ returns:
     Tue Jun 10
     Mon Jun 30\
 """
-        GetString(parent=self, title=_('available dates calculator'),  prompt=prompt, opts=loop.options, process=availableDates)
+        GetString(parent=self, title=_('available dates calculator'),  prompt=prompt, opts={}, process=availableDates, font=self.tkfixedfont)
         return
 
     def exportToIcal(self, e=None):
@@ -3075,7 +3075,7 @@ Relative dates and fuzzy parsing are supported.""")
                 prompt = _("""\
     Enter a summary for the new action timer.""")
             options = {'nullok': nullok}
-            value = GetString(parent=self, title=_('action timer'),  prompt=prompt, opts=loop.options).value
+            value = GetString(parent=self, title=_('action timer'),  prompt=prompt, opts={}, font=self.tkfixedfont).value
 
             self.tree.focus_set()
             logger.debug('value: {0}'.format(value))
