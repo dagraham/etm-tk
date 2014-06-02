@@ -52,8 +52,8 @@
     Tools
         Date and time calculator                   Shift-D
         Available dates calculator                 Shift-A
-        Display yearly calendar                    Shift-Y
-        Show history of changes                    Shift-H
+        Yearly calendar                            Shift-Y
+        History of changes                         Shift-H
         Export to iCal                             Shift-X
         Reload data from files                     Shift-L
     Custom

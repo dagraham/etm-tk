@@ -579,7 +579,7 @@ class App(Tk):
         l = "Shift-Y"
         c = "Y"
 
-        label=_("Display yearly calendar")
+        label=_("Yearly calendar")
         toolsmenu.add_command(label=label, underline=8, command=self.showCalendar)
         self.bindTop(c, self.showCalendar)
 
@@ -591,7 +591,7 @@ class App(Tk):
 
             l = 'Shift-H'
             c = 'H'
-            label = _("Show history of changes")
+            label = _("History of changes")
             toolsmenu.add_command(label=label, underline=1, command=self.showChanges)
             self.bind(c, lambda event: self.after(AFTER, self.showChanges))
 
@@ -1137,14 +1137,12 @@ Enter an expression of the form
     start; end; busy
 where start and end are dates and busy is comma separated list of
 busy dates or busy intervals, .e.g,
-    jun 1; jun 30; jun 2, jun 14 - jun 22, jun 5 - jun 9, jun 11 - jun 15, jun 17 - jun 29
+    6/1; 6/30; 6/2, 6/14-6/22, 6/5-6/9, 6/11-6/15, 6/17-6/29
 returns:
     Sun Jun 01
     Tue Jun 03
     Wed Jun 04
-    Mon Jun 09
-    Mon Jun 23
-    Tue Jun 24
+    Tue Jun 10
     Mon Jun 30\
 """
         GetString(parent=self, title=_('available dates calculator'),  prompt=prompt, opts=loop.options, process=availableDates)

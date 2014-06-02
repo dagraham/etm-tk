@@ -359,6 +359,93 @@ You can assign idle time without starting an action timer by pressing *I* or, at
 
 Note that the dialog to assign idle time will only open when starting or restarting an action timer if the current idle time is at least the number of minutes specified by `idle_minimum` in your etmtk.cfg file.
 
+## Tools
+
+### Date and time calculator
+
+Enter an expression of the form `x [+-] y` where `x` is a date and `y` is
+either a date or a time period if `-` is used and a time period if `+`
+is used. Both `x` and `y` can be followed by timezones, e.g.,
+
+     4/20 6:15p US/Central - 4/20 4:50p Asia/Shanghai:
+
+     14h25m
+
+or
+
+     4/20 4:50p Asia/Shanghai + 14h25m US/Central:
+
+     2014-04-20 18:15-0500
+
+The local timezone is assumed when none is given.
+
+### Available dates calculator
+
+Enter an expression of the form
+
+    start; end; busy
+
+where start and end are dates and busy is comma separated list of
+busy dates or busy intervals. E.g., entering
+
+    6/1; 6/30; 6/2, 6/14-6/22, 6/5-6/9, 6/11-6/15, 6/17-6/29
+
+would give:
+
+    Sun Jun 01
+    Tue Jun 03
+    Wed Jun 04
+    Tue Jun 10
+    Mon Jun 30
+
+### Yearly calendar
+
+Gives a display such as
+
+          January 2014           February 2014             March 2014
+      Mo Tu We Th Fr Sa Su    Mo Tu We Th Fr Sa Su    Mo Tu We Th Fr Sa Su
+             1  2  3  4  5                    1  2                    1  2
+       6  7  8  9 10 11 12     3  4  5  6  7  8  9     3  4  5  6  7  8  9
+      13 14 15 16 17 18 19    10 11 12 13 14 15 16    10 11 12 13 14 15 16
+      20 21 22 23 24 25 26    17 18 19 20 21 22 23    17 18 19 20 21 22 23
+      27 28 29 30 31          24 25 26 27 28          24 25 26 27 28 29 30
+                                                      31
+
+           April 2014               May 2014               June 2014
+      Mo Tu We Th Fr Sa Su    Mo Tu We Th Fr Sa Su    Mo Tu We Th Fr Sa Su
+          1  2  3  4  5  6              1  2  3  4                       1
+       7  8  9 10 11 12 13     5  6  7  8  9 10 11     2  3  4  5  6  7  8
+      14 15 16 17 18 19 20    12 13 14 15 16 17 18     9 10 11 12 13 14 15
+      21 22 23 24 25 26 27    19 20 21 22 23 24 25    16 17 18 19 20 21 22
+      28 29 30                26 27 28 29 30 31       23 24 25 26 27 28 29
+                                                      30
+
+           July 2014              August 2014            September 2014
+      Mo Tu We Th Fr Sa Su    Mo Tu We Th Fr Sa Su    Mo Tu We Th Fr Sa Su
+          1  2  3  4  5  6                 1  2  3     1  2  3  4  5  6  7
+       7  8  9 10 11 12 13     4  5  6  7  8  9 10     8  9 10 11 12 13 14
+      14 15 16 17 18 19 20    11 12 13 14 15 16 17    15 16 17 18 19 20 21
+      21 22 23 24 25 26 27    18 19 20 21 22 23 24    22 23 24 25 26 27 28
+      28 29 30 31             25 26 27 28 29 30 31    29 30
+
+          October 2014           November 2014           December 2014
+      Mo Tu We Th Fr Sa Su    Mo Tu We Th Fr Sa Su    Mo Tu We Th Fr Sa Su
+             1  2  3  4  5                    1  2     1  2  3  4  5  6  7
+       6  7  8  9 10 11 12     3  4  5  6  7  8  9     8  9 10 11 12 13 14
+      13 14 15 16 17 18 19    10 11 12 13 14 15 16    15 16 17 18 19 20 21
+      20 21 22 23 24 25 26    17 18 19 20 21 22 23    22 23 24 25 26 27 28
+      27 28 29 30 31          24 25 26 27 28 29 30    29 30 31
+
+Left and right cursor keys move backward and forward a year at a time, respectively, and pressing the spacebar returns to the current year.
+
+### History of changes
+
+This requires that either *git* or *mercurial* is installed. If an item is selected show a history of changes to the file that contains the item. Otherwise show a history of changes for all etm data files. In either case, choose an integer number of the most recent changes to show or choose 0 to show all changes.
+
+### Export to iCal
+
+If an item is selected, export the item in iCalendar format to the file given by `icsitem_file` in your etmtk.cfg. Otherwise, export active calendars in iCalendar format to the file given by `icscal_file`.
+
 ## Data Organization and Calendars
 
 *etm* offers two hierarchical ways of organizing your data: by keyword and file path. There are no hard and fast rules about how to use these hierarchies but the goal is a system that makes complementary uses of folder and keyword and fits your needs. As with any filing system, planning and consistency are paramount.
