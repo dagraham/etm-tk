@@ -393,12 +393,24 @@ class ReadOnlyText(Text):
 
 class MessageWindow():
     # noinspection PyShadowingNames
-    def __init__(self, parent, title, prompt):
+    def __init__(self, parent, title, prompt, opts={}):
         self.win = Toplevel(parent)
         self.win.protocol("WM_DELETE_WINDOW", self.cancel)
         self.parent = parent
+        self.options = opts
         self.win.title(title)
-        Label(self.win, text=prompt).pack(fill=tkinter.BOTH, expand=1, padx=10, pady=10)
+        tkfixedfont = tkFont.nametofont("TkFixedFont")
+        if 'fontsize_fixed' in self.options and self.options['fontsize_fixed']:
+            tkfixedfont.configure(size=self.options['fontsize_fixed'])
+
+        self.content = ReadOnlyText(self.win, wrap="word", padx=3, bd=2,
+            height=10, relief="sunken",
+            font=tkfixedfont,
+            width=46, takefocus=False)
+        self.content.pack(fill=tkinter.BOTH, expand=1, padx=10, pady=10)
+        # self.content.delete("1.0", END)
+        self.content.insert("1.0", prompt)
+        # Label(self.win, text=prompt).pack(fill=tkinter.BOTH, expand=1, padx=10, pady=10)
         b = Button(self.win, text=_('OK'), width=10, command=self.cancel,
                    default='active', pady=2)
         b.pack()
@@ -635,7 +647,7 @@ class FileChoice(object):
 
 class Dialog(Toplevel):
 
-    def __init__(self, parent, title=None, prompt=None, opts=None, default=None, modal=True, xoffset=50, yoffset=50, event=None):
+    def __init__(self, parent, title=None, prompt=None, opts=None, default=None, modal=True, xoffset=50, yoffset=50, event=None, process=None):
 
         Toplevel.__init__(self, parent, highlightbackground=BGCOLOR,
                     background=BGCOLOR)
@@ -657,6 +669,7 @@ class Dialog(Toplevel):
         self.options = opts
         self.default = default
         self.value = ""
+        self.process = process
 
         self.error_message = None
 
@@ -697,9 +710,9 @@ class Dialog(Toplevel):
         box = Frame(self, background=BGCOLOR, highlightbackground=BGCOLOR)
 
         w = Button(box, text="OK", width=10, command=self.ok, default=ACTIVE,  highlightbackground=BGCOLOR, pady=2)
-        w.pack(side="right", padx=5, pady=5)
+        w.pack(side="right", padx=5, pady=2)
         w = Button(box, text="Cancel", width=10, command=self.cancel, highlightbackground=BGCOLOR, pady=2)
-        w.pack(side="right", padx=5, pady=5)
+        w.pack(side="right", padx=5, pady=2)
 
         self.bind("<Return>", self.ok)
         self.bind("<Escape>", self.cancel)
@@ -925,8 +938,24 @@ class DialogWindow(Dialog):
     # master will be a frame in Dialog
     def body(self, master):
         self.entry = Entry(master)
-        self.entry.pack(side="bottom", padx=5, pady=5, fill=X)
-        Label(master, text=self.prompt, justify='left', highlightbackground=BGCOLOR, background=BGCOLOR).pack(side="top", fill=tkinter.BOTH, expand=1, padx=10, pady=5)
+        self.entry.pack(side="bottom", padx=5, pady=2, fill=X)
+        tkfixedfont = tkFont.nametofont("TkFixedFont")
+        tkfixedfont.configure(size=self.options['fontsize_fixed'])
+        lines = self.prompt.split('\n')
+        height = min(20, len(lines) + 1)
+        lengths = [len(line) for line in lines]
+        width = min(70, max(lengths) + 2)
+        self.text = ReadOnlyText(
+            master, wrap="word", padx=2, pady=2, bd=2, relief="sunken",
+            # font=tkFont.Font(family="Lucida Sans Typewriter"),
+            font=tkfixedfont,
+            height=height,
+            width=width,
+            bg=BGCOLOR,
+            takefocus=False)
+        self.text.insert("1.1", self.prompt)
+        self.text.pack(side="top", fill=tkinter.BOTH, expand=1, padx=6, pady=2)
+        # Label(master, text=self.prompt, justify='left', highlightbackground=BGCOLOR, background=BGCOLOR).pack(side="top", fill=tkinter.BOTH, expand=1, padx=10, pady=5)
         if self.default is not None:
             self.entry.insert(0, self.default)
             self.entry.select_range(0, END)
@@ -976,7 +1005,7 @@ class TextDialog(Dialog):
 
 
 class OptionsDialog():
-    def __init__(self, parent, master=None, title="", prompt="", opts=None, radio=True, yesno=True):
+    def __init__(self, parent, master=None, title="", prompt="", opts=None, radio=True, yesno=True, list=False):
         if not opts: opts = []
         self.win = Toplevel(parent)
         self.win.protocol("WM_DELETE_WINDOW", self.quit)
@@ -988,8 +1017,21 @@ class OptionsDialog():
         self.options = opts
         self.radio = radio
         self.win.title(title)
-        Label(self.win, text=prompt, justify='left').pack(fill=tkinter.BOTH, expand=1, padx=10, pady=5)
-        # self.sv = StringVar(parent)
+        if list:
+            tkfixedfont = tkFont.nametofont("TkFixedFont")
+            if 'fontsize_fixed' in self.parent.options and self.parent.options['fontsize_fixed']:
+                tkfixedfont.configure(size=self.parent.options['fontsize_fixed'])
+
+            self.content = ReadOnlyText(self.win, wrap="word", padx=3, bd=2,
+                height=10, relief="sunken",
+                font=tkfixedfont,
+                width=46, takefocus=False)
+            self.content.pack(fill=tkinter.BOTH, expand=1, padx=10, pady=5)
+            # self.content.delete("1.0", END)
+            self.content.insert("1.0", prompt)
+        else:
+            Label(self.win, text=prompt, justify='left').pack(fill=tkinter.BOTH, expand=1, padx=10, pady=5)
+            self.sv = StringVar(parent)
         self.sv = IntVar(parent)
         # self.sv.set(opts[0])
         self.sv.set(1)
@@ -1034,7 +1076,7 @@ class OptionsDialog():
         o.pack(side=LEFT, padx=5, pady=5)
         box.pack()
         self.win.bind('<Return>', (lambda e, o=o: o.invoke()))
-        self.win.bind('<Shift-Return>', self.Ok)
+        self.win.bind('<Control-w>', self.Ok)
         self.win.bind('<Escape>', (lambda e, c=c: c.invoke()))
         # self.choice.focus_set()
         logger.debug('parent: {0}'.format(parent))
@@ -1168,3 +1210,20 @@ class GetString(DialogWindow):
         else:
             self.error_message = _('an entry is required')
             return False
+
+    def ok(self, event=None):
+        res = self.validate()
+        logger.debug('validate: {0}, value: "{1}"'.format(res, self.value))
+        if not res:
+            if self.error_message:
+                self.messageWindow('error', self.error_message)
+            return "break"
+        if self.process:
+            res = self.process(self.value)
+            self.text.delete("1.0", END)
+            self.text.insert("1.0", res)
+        else:
+            self.withdraw()
+            self.update_idletasks()
+            self.apply()
+            self.quit()

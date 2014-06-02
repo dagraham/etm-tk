@@ -954,11 +954,16 @@ def date_calculator(s, options=None):
         if period_string_regex.match(pmy):
             dt = (dt_x + parse_period(pmy))
             dt = (dt_x + parse_period(pmy)).astimezone(yz)
-            return dt.strftime("%Y-%m-%d %H:%M%z")
+
+            res = dt.strftime("%Y-%m-%d %H:%M%z")
+            prompt = "{0}:\n\n{1}".format(s.strip(), res.strip())
+            return prompt
         else:
             dt_y = parse(parse_dtstr(y, timezone=yzs))
             if pm == '-':
-                return fmt_period(dt_x - dt_y)
+                res = fmt_period(dt_x - dt_y)
+                prompt = "{0}:\n\n{1}".format(s.strip(), res.strip())
+                return prompt
             else:
                 return 'error: datetimes cannot be added'
     except ValueError:
@@ -5538,6 +5543,28 @@ def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
     return(True)
 
 
+def availableDates(s):
+    """
+    start; end; busy
+    Return dates between start and end that are not in busy where
+    busy is a comma separated list of dates and date intervals, e.g.
+    'jul 3, jul 7 - jul 15, jul 8, jul 6 - jul 10, jul 23 - aug 8'.
+    """
+    start_date, end_date, busy_dates = s.split(';')
+
+    set = dtR.rruleset()
+    set.rrule(rrule(DAILY, dtstart=parse(start_date), until=parse(end_date)))
+    parts = busy_dates.split(',')
+    for part in parts:
+        interval = part.split('-')
+        if len(interval) == 1:
+            set.exdate(parse(interval[0]))
+        if len(interval) == 2:
+            set.exrule(rrule(DAILY, dtstart=parse(interval[0]), until=parse(interval[1])))
+
+    res = "\n  ".join(x.strftime("%a %b %d") for x in list(set))
+    prompt = "between {0} and {1}\nbut not in {2}:\n\n  {3}".format(start_date.strip(), end_date.strip(), busy_dates.strip(), res)
+    return prompt
 
 def tupleSum(list_of_tuples):
     # get the common length of the tuples

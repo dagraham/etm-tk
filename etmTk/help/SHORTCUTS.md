@@ -1,6 +1,5 @@
 # Command Shortcuts
 
-
 ## Menubar
 
     File
@@ -51,7 +50,8 @@
         Open link                                     G
         Show user details                             U
     Tools
-        Open date calculator                       Shift-D
+        Date and time calculator                   Shift-D
+        Available dates calculator                 Shift-A
         Display yearly calendar                    Shift-Y
         Show history of changes                    Shift-H
         Export to iCal                             Shift-X
@@ -87,5 +87,4 @@
 
     Show completions                              Ctrl-Space
     Cancel                                          Escape
-    Finish ...                                   Shift-Return
-
+    Finish ...                                      Ctrl-W

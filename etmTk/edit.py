@@ -133,8 +133,8 @@ class SimpleEditor(Toplevel):
 
         # finish will evaluate the item entry and, if repeating, show reps
         finish = Button(frame, text=FINISH, highlightbackground=BGCOLOR,  command=self.onFinish, pady=2)
-        # self.bind("<Control-w>", self.onCheck)
-        self.bind("<Shift-Return>", self.onCheck)
+        self.bind("<Control-w>", self.onCheck)
+
         finish.pack(side=RIGHT, padx=4)
 
         # find
@@ -484,10 +484,9 @@ class SimpleEditor(Toplevel):
                 if showreps:
                     repsfmt = [x.strftime(rrulefmt) for x in reps]
                     logger.debug("{0}: {1}".format(showing_all, repsfmt))
-                    if showing_all and len(repsfmt) < 10:
+                    if showing_all:
                         reps = ALLREPS
                     else:
-                        repsfmt = repsfmt[:10]
                         reps = SOMEREPS
                     prompt = "{0}, {1}:\n  {2}".format(prompt, reps, "\n  ".join(repsfmt))
                     # self.messageWindow(VALID, repetitions, opts=self.options)
@@ -507,10 +506,10 @@ class SimpleEditor(Toplevel):
             prompt += "\n\n{0}".format(UNCHANGEDEXIT)
 
 
-        ans, value = OptionsDialog(parent=self, title=self.title, prompt=prompt, yesno=False).getValue()
+        ans, value = OptionsDialog(parent=self, title=self.title, prompt=prompt, yesno=False, list=True).getValue()
         if ans:
             self.onSave(v=value)
-        return True
+        return
 
     def clearFind(self, *args):
         self.text.tag_remove(FOUND, "0.0", END)
@@ -577,10 +576,13 @@ class SimpleEditor(Toplevel):
         b.pack(side='bottom', fill=tkinter.NONE, expand=0, pady=0)
         win.bind('<Return>', (lambda e, b=b: b.invoke()))
         # win.bind('<Escape>', (lambda e, b=b: b.invoke()))
+        tkfixedfont = tkFont.nametofont("TkFixedFont")
+        if 'fontsize_fixed' in self.loop.options and self.loop.options['fontsize_fixed']:
+            tkfixedfont.configure(size=self.loop.options['fontsize_fixed'])
 
         t = ReadOnlyText(
             f, wrap="word", padx=2, pady=2, bd=2, relief="sunken",
-            font=self.tkfixedfont,
+            font=tkfixedfont,
             height=height,
             width=width,
             takefocus=False)

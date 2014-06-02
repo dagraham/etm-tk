@@ -48,7 +48,7 @@ from dateutil.parser import parse
 from decimal import Decimal
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, zfmt, rfmt, efmt, hsh2str, str2hsh, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, fmt_datetime, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator, AFTER, export_ical_item, export_ical, fmt_time, TimeIt, getReportData, getFiles, getFileTuples, updateCurrentFiles, FINISH)
+    init_localization, fmt_weekday, fmt_dt, zfmt, rfmt, efmt, hsh2str, str2hsh, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, fmt_datetime, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator, AFTER, export_ical_item, export_ical, fmt_time, TimeIt, getReportData, getFiles, getFileTuples, updateCurrentFiles, FINISH, availableDates)
 
 from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES, REPORTS)
 
@@ -559,12 +559,21 @@ class App(Tk):
         # date calculator
         l = "Shift-D"
         c = "D"
-
-        label=_("Open date calculator")
+        label=_("Date and time calculator")
         toolsmenu.add_command(label=label, underline=12, command=self.dateCalculator)
         self.bindTop(c, self.dateCalculator)
 
         toolsmenu.entryconfig(1, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        # available date calculator
+        l = "Shift-A"
+        c = "A"
+        label=_("Available dates calculator")
+        toolsmenu.add_command(label=label, underline=12, command=self.availableDateCalculator)
+        self.bindTop(c, self.availableDateCalculator)
+
+        toolsmenu.entryconfig(2, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Shift-Y"
@@ -574,7 +583,7 @@ class App(Tk):
         toolsmenu.add_command(label=label, underline=8, command=self.showCalendar)
         self.bindTop(c, self.showCalendar)
 
-        toolsmenu.entryconfig(2, accelerator=l)
+        toolsmenu.entryconfig(3, accelerator=l)
         self.add2menu(path, (label, l))
 
         # changes
@@ -586,7 +595,7 @@ class App(Tk):
             toolsmenu.add_command(label=label, underline=1, command=self.showChanges)
             self.bind(c, lambda event: self.after(AFTER, self.showChanges))
 
-            toolsmenu.entryconfig(3, accelerator=l)
+            toolsmenu.entryconfig(4, accelerator=l)
             self.add2menu(path, (label, l))
 
         ## export
@@ -596,7 +605,7 @@ class App(Tk):
         toolsmenu.add_command(label=label, underline=1, command=self.exportToIcal)
         self.bind(c, self.exportToIcal)
 
-        toolsmenu.entryconfig(4, accelerator=l)
+        toolsmenu.entryconfig(5, accelerator=l)
         self.add2menu(path, (label, l))
 
 
@@ -608,7 +617,7 @@ class App(Tk):
         toolsmenu.add_command(label=label, underline=1, command=loop.loadData)
         self.bind(c, loop.loadData)
 
-        toolsmenu.entryconfig(5, accelerator=l)
+        toolsmenu.entryconfig(6, accelerator=l)
         self.add2menu(path, (label, l))
 
         menubar.add_cascade(label=path, menu=toolsmenu, underline=0)
@@ -923,7 +932,7 @@ class App(Tk):
         self.add2menu(root, (EDIT, ))
         self.add2menu(EDIT, (_("Show completions"), "Ctrl-Space"))
         self.add2menu(EDIT, (_("Cancel"), "Escape"))
-        self.add2menu(EDIT, (FINISH, "Shift-Return"))
+        self.add2menu(EDIT, (FINISH, "Ctrl-W"))
 
         # start clock
         self.updateClock()
@@ -1119,12 +1128,27 @@ is used. Both x and y can be followed by timezones, e.g.,
      4/20 4:50p Asia/Shanghai + 14h25m US/Central
               = 2014-04-20 18:15-0500
 The local timezone is used when none is given."""
-        value = GetString(parent=self, title=_('date calculator'),  prompt=prompt, opts={}).value
-        if not value:
-            return
-        res = date_calculator(value, self.options)
-        prompt = "{0}:\n\n{1}".format(value, res)
-        MessageWindow(self, title=_("result"), prompt=prompt)
+        GetString(parent=self, title=_('date and time calculator'), prompt=prompt, opts=loop.options, process=date_calculator)
+        return
+
+    def availableDateCalculator(self, event=None):
+        prompt = """\
+Enter an expression of the form
+    start; end; busy
+where start and end are dates and busy is comma separated list of
+busy dates or busy intervals, .e.g,
+    jun 1; jun 30; jun 2, jun 14 - jun 22, jun 5 - jun 9, jun 11 - jun 15, jun 17 - jun 29
+returns:
+    Sun Jun 01
+    Tue Jun 03
+    Wed Jun 04
+    Mon Jun 09
+    Mon Jun 23
+    Tue Jun 24
+    Mon Jun 30\
+"""
+        GetString(parent=self, title=_('available dates calculator'),  prompt=prompt, opts=loop.options, process=availableDates)
+        return
 
     def exportToIcal(self, e=None):
         if self.itemSelected:
@@ -3053,7 +3077,7 @@ Relative dates and fuzzy parsing are supported.""")
                 prompt = _("""\
     Enter a summary for the new action timer.""")
             options = {'nullok': nullok}
-            value = GetString(parent=self, title=_('action timer'),  prompt=prompt, opts=options).value
+            value = GetString(parent=self, title=_('action timer'),  prompt=prompt, opts=loop.options).value
 
             self.tree.focus_set()
             logger.debug('value: {0}'.format(value))
