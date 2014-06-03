@@ -1086,7 +1086,7 @@ class App(Tk):
         else:
             cmd = 'xdg-open' + " {0}".format(path)
         subprocess.call(cmd, shell=True)
-        return True
+        return
 
     def printWithDefault(self, s, e=None):
         fo = codecs.open(loop.tmpfile, 'w', loop.options['encoding']['file'])
