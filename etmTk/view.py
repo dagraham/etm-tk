@@ -1086,7 +1086,7 @@ class App(Tk):
         else:
             cmd = 'xdg-open' + " {0}".format(path)
         subprocess.call(cmd, shell=True)
-        return True
+        return
 
     def printWithDefault(self, s, e=None):
         fo = codecs.open(loop.tmpfile, 'w', loop.options['encoding']['file'])
@@ -3060,7 +3060,7 @@ Relative dates and fuzzy parsing are supported.""")
         # hack to avoid activating with Ctrl-t
         if e and e.char != "t":
             return
-        if self.actionTimer.idle_active and self.actionTimer.timer_status in [STOPPED, PAUSED] and self.actionTimer.idle_delta > int(loop.options['idle_minimum']) * ONEMINUTE:
+        if self.actionTimer.idle_active and self.actionTimer.timer_status in [STOPPED, PAUSED] and self.actionTimer.idle_delta > int(loop.options['idle_minutes']) * ONEMINUTE:
             self.actionTimer.idle_resolve()
         if self.actionTimer.timer_status == STOPPED:
             if self.uuidSelected:

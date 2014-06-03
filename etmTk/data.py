@@ -1330,7 +1330,7 @@ def get_options(d=''):
         'icscal_file': os.path.normpath(os.path.join(etmdir, 'etmcal.ics')),
         'icsitem_file': os.path.normpath(os.path.join(etmdir, 'etmitem.ics')),
         'icsimport_dir': etmdir,
-        'idle_minimum': 10,
+        'idle_minutes': 10,
 
         'local_timezone': time_zone,
 
