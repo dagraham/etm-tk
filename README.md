@@ -277,7 +277,7 @@ Please share your ideas in the discussion group at [GoogleGroups][].
 
 - Major version numbers change whenever there is a large or potentially backward-incompatible change.
 
-- Minor version numbers change when a new, minor feature or a set of smaller features is introduced or when a status change has occured. A change in the minor version from zero to one, for example, indicates a change in the status of the major version from alpha to beta. Minor version numbers greater than one indicate production/stable status.
+- Minor version numbers change when a new, minor feature or a set of smaller features is introduced or when a status change has occured.
 
 - Patch numbers change for new builds involving small bugfixes or the like. Some new builds may not be released.
 
