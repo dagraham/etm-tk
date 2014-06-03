@@ -64,6 +64,7 @@ RUNNING = _('running')
 
 FOUND = "found"
 
+BGLCOLOR = "#f2f2f2"
 BGCOLOR = "#ebebeb"
 
 class OriginalCommand:
@@ -388,7 +389,7 @@ class ReadOnlyText(Text):
         self.redirector = WidgetRedirector(self)
         self.insert = self.redirector.register("insert", lambda *args, **kw: "break")
         self.delete = self.redirector.register("delete", lambda *args, **kw: "break")
-        self.configure(highlightthickness=0, wrap="word")
+        self.configure(highlightthickness=0, insertwidth=0, takefocus=0, wrap="word")
 
 
 class MessageWindow():
@@ -904,7 +905,7 @@ class TextVariableWindow(Dialog):
             return
         self.entry = entry = Entry(master, textvariable=self.options['textvariable'])
         self.entry.pack(side="bottom", padx=5, pady=5)
-        Label(master, text=self.prompt, justify='left', highlightbackground=BGCOLOR, background=BGCOLOR).pack(side="top", fill=tkinter.BOTH, expand=1, padx=10, pady=5)
+        Label(master, text=self.prompt, justify='left', highlightbackground=BGLCOLOR, background=BGLCOLOR).pack(side="top", fill=tkinter.BOTH, expand=1, padx=10, pady=5)
         self.entry.focus_set()
         self.entry.bind('<Escape>', self.entry.delete(0, END))
         return self.entry
@@ -953,7 +954,7 @@ class DialogWindow(Dialog):
             font=tkfixedfont,
             height=height,
             width=width,
-            bg=BGCOLOR,
+            bg=BGLCOLOR,
             takefocus=False)
         self.text.insert("1.1", self.prompt)
         self.text.pack(side="top", fill=tkinter.BOTH, expand=1, padx=6, pady=2)
@@ -967,8 +968,9 @@ class DialogWindow(Dialog):
 class TextDialog(Dialog):
 
     def body(self, master):
-        tkfixedfont = tkFont.nametofont("TkFixedFont")
-        tkfixedfont.configure(size=self.options['fontsize_fixed'])
+        # tkfixedfont = tkFont.nametofont("TkFixedFont")
+        # tkfixedfont.configure(size=self.options['fontsize_fixed'])
+        tkfixedfont = self.font
         lines = self.prompt.split('\n')
         height = min(25, len(lines) + 1)
         lengths = [len(line) for line in lines]
@@ -979,15 +981,16 @@ class TextDialog(Dialog):
             font=tkfixedfont,
             height=height,
             width=width,
+            bg=BGLCOLOR,
+            highlightbackground=BGLCOLOR,
             takefocus=False)
         self.text.insert("1.1", self.prompt)
-        self.text.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0,
-                       pady=0)
-        ysb = Scrollbar(master, orient='vertical', command=self.text
-                            .yview, width=8)
-        ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
-        # t.configure(state="disabled", yscroll=ysb.set)
-        self.text.configure(yscroll=ysb.set)
+        self.text.pack(side='left', fill=tkinter.BOTH, expand=1, padx=5,
+                       pady=2)
+        # ysb = Scrollbar(master, orient='vertical', command=self.text
+        #                     .yview, width=8)
+        # ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
+        # self.text.configure(yscroll=ysb.set)
         return self.text
 
     def buttonbox(self):
@@ -1020,6 +1023,7 @@ class OptionsDialog():
         self.radio = radio
         self.win.title(title)
         if list:
+            self.win.configure(bg=BGCOLOR)
             tkfixedfont = tkFont.nametofont("TkFixedFont")
             if 'fontsize_fixed' in self.parent.options and self.parent.options['fontsize_fixed']:
                 tkfixedfont.configure(size=self.parent.options['fontsize_fixed'])
@@ -1027,6 +1031,8 @@ class OptionsDialog():
             self.content = ReadOnlyText(self.win, wrap="word", padx=3, bd=2,
                 height=10, relief="sunken",
                 font=tkfixedfont,
+                bg=BGLCOLOR,
+                highlightbackground=BGLCOLOR,
                 width=46, takefocus=False)
             self.content.pack(fill=tkinter.BOTH, expand=1, padx=10, pady=5)
             # self.content.delete("1.0", END)
@@ -1066,6 +1072,8 @@ class OptionsDialog():
                         padx=20,
                         variable=self.check_values[i]).pack(padx=10, anchor=W)
         box = Frame(self.win)
+        if list:
+            box.configure(bg=BGCOLOR)
         if yesno:
             YES = _("Yes")
             NO = _("No")
@@ -1076,6 +1084,9 @@ class OptionsDialog():
         c.pack(side=LEFT, padx=5, pady=5)
         o = Button(box, text=YES, width=10, default='active', command=self.ok, pady=2)
         o.pack(side=LEFT, padx=5, pady=5)
+        if list:
+            for b in [c, o]:
+                b.configure(bg=BGCOLOR, highlightbackground=BGCOLOR)
         box.pack()
         self.win.bind('<Return>', (lambda e, o=o: o.invoke()))
         self.win.bind('<Control-w>', self.Ok)
