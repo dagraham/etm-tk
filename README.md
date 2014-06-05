@@ -6,15 +6,23 @@
     <center><img src="images/agenda.gif" /></a></center>
     </td>
     <td>
-    <center><img src="images/context.gif" /></a></center>
+    <center><img src="images/day.gif"/></a></center>
     </td>
 </tr>
 <tr>
     <td>
-    <center><img src="images/day.gif"/></a></center>
+    <center><img src="images/week.gif"/></a></center>
     </td>
     <td>
-    <center><img src="images/week.gif"/></a></center>
+    <center><img src="images/monthly.gif"/></a></center>
+    </td>
+</tr>
+<tr>
+    <td>
+    <center><img src="images/finishitem.gif"/></a></center>
+    </td>
+    <td>
+    <center><img src="images/completion.gif"/></a></center>
     </td>
 </tr>
 <tr>
@@ -27,11 +35,18 @@
 </tr>
 <tr>
     <td>
-    <center><img src="images/completion.gif"/></a></center>
+    <center><img src="images/date_calculator_entry.gif"/></a></center>
     </td>
     <td>
-    <center><img src="images/date_calculator_entry.gif"/></a>
-    <img src="images/date_calculator_result.gif"/></a></center>
+    <center><img src="images/date_calculator_result.gif"/></a></center>
+    </td>
+</tr>
+<tr>
+    <td>
+    <center><img src="images/availabledates1.gif"/></a></center>
+    </td>
+    <td>
+    <center><img src="images/availabledates2.gif"/></a></center>
     </td>
 </tr>
 <tr>
