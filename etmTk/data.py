@@ -1820,9 +1820,9 @@ def fmt_time(dt, omitMidnight=False, options=None):
     if not options: options = {}
     if omitMidnight and dt.hour == 0 and dt.minute == 0:
         return u''
-    logger.debug('dt before fmt: {0}'.format(dt))
+    # logger.debug('dt before fmt: {0}'.format(dt))
     dt_fmt = dt.strftime(options['reprtimefmt'])
-    logger.debug('dt dt_fmt: {0}'.format(dt_fmt))
+    # logger.debug('dt dt_fmt: {0}'.format(dt_fmt))
     if dt_fmt[0] == "0":
         dt_fmt = dt_fmt[1:]
     # The 3rd test is for Poland where am, pm = ''
