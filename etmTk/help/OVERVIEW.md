@@ -265,6 +265,18 @@ All dated items appear in this view, grouped by date and sorted by starting time
 
 Tip: Want to see your next appointment with Dr. Jones? Switch to day view and enter "jones" in the filter.
 
+### Week View
+
+Events and occasions displayed graphically by week. Left and right cursor keys change, respectively, to the previous and next week. Up and down cursor keys select, respectively, the previous and next items within the given week. Items can also be selected by moving the mouse over the item. The details for the selected item are displayed at the bottom of the screen. Pressing return with an item selected or double-clicking an item opens a context menu. Control-clicking an unscheduled time opens a dialog to create an event for that date and time.
+
+Tip. Press *Ctrl-B* to display a list of busy times for the selected week or *Ctrl-F* and provide the needed period in minutes to display a list of free times that would accomodate the requirement.
+
+### Month View
+
+Events and occasions displayed graphically by month. Left and right cursor keys change, respectively, to the previous and next month. Up and down cursor keys select, respectively, the previous and next days within the given month. Days can also be selected by moving the mouse over the item. A list of occasions and events for the selected day is displayed at the bottom of the screen. 
+
+The current date and days with occasions are highlighted and day numbers are colored in shades ranging from black to red to reflect the time scheduled for events in the day.
+
 ### Tag View
 
 All items with tag entries grouped by tag and sorted by type and *relevant datetime*. Note that items with multiple tags will be listed under each tag.
@@ -275,10 +287,6 @@ Tip: Use the filter to limit the display to items with a particular tag.
 
 All items grouped by keyword and sorted by type and *relevant datetime*.
 
-### Note View
-
-All notes grouped and sorted by keyword and summary.
-
 ### Path View
 
 All items grouped by file path and sorted by type and *relevant datetime*. Use this view to review the status of your projects.
@@ -287,11 +295,9 @@ The *relevant datetime* is the past due date for any past due task, the starting
 
 Note: Items that you have "commented out" by beginning the item with a `#` will only be visible in this view.
 
-### Week View
+### Note View
 
-Events and occasions displayed graphically by week. Left and right cursor keys change, respectively, to the previous and next week. Up and down cursor keys select, respectively, the previous and next items within the given week. Items can also be selected by moving the mouse over the item. The summary and time period for the selected item is displayed at the bottom of the screen. Pressing return with an item selected or double-clicking an item opens a context menu. Control-clicking an unscheduled time opens a dialog to create an event for that date and time.
-
-Tip. Press *Ctrl-B* to display a list of busy times for the selected week or *Ctrl-F* and provide the needed period in minutes to display a list of free times that would accomodate the requirement.
+All notes grouped and sorted by keyword and summary.
 
 ### Custom View
 

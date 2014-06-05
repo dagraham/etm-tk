@@ -501,14 +501,14 @@ class App(Tk):
         self.add2menu(path, (label, l))
 
         l = "Up"
-        label=_("Previous item in week/month")
+        label=_("Previous item/day in week/month")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=-1))
 
         viewmenu.entryconfig(16, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Down"
-        label=_("Next item in week/month")
+        label=_("Next item/day in week/month")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=1))
 
         viewmenu.entryconfig(17, accelerator=l)
@@ -2407,6 +2407,8 @@ Enter the shortest time period you want displayed in minutes.""")
         self.canvas.focus_set()
         self.selectedId = None
         matching = self.cal_regex is not None and self.default_regex is not None
+        busy_lst = []
+        occasion_lst = []
 
         self.current_day = get_current_time().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
 
@@ -2506,20 +2508,54 @@ Enter the shortest time period you want displayed in minutes.""")
                     # date2Id[id] = thisdate
                     monthid2date[id] = thisdate
                     today = (thisdate == self.current_day.date())
+                    bt = []
                     if today:
                         tags.append('current_day')
                     if isokey in loop.occasions:
-                        if not today:
-                            tags.append('occasion')
-                            # self.canvas.itemconfig(id, tag='occasion', fill=OCCASIONFILL)
-                        self.busyHsh.setdefault(id, []).extend([x[0] for x in loop.occasions[isokey]])
+                        bt = []
+                        for item in loop.occasions[isokey]:
+                            it = list(item)
+                            if matching:
+                                if not self.cal_regex.match(it[-1]):
+                                    continue
+                                mtch = (self.default_regex.match(it[-1]) is not None)
+                            else:
+                                mtch = True
+                            it.append(mtch)
+                            item = tuple(it)
+                            bt.append(item)
+                        occasion_lst.append(bt)
+                        if bt:
+                            if not today:
+                                tags.append('occasion')
+                            self.busyHsh.setdefault(id, []).extend(["^ {0}".format(x[0]) for x in bt])
+                    else:
+                        occasion_lst.append([])
 
                     if isokey in loop.busytimes:
-                        for bt in loop.busytimes[isokey]:
-                            sm, em, sum, uuid, f = bt
-                            busytimes += em - sm
-                            self.busyHsh.setdefault(id, []).append(sum)
-                        tags.append('busy')
+                        bt = []
+                        for item in loop.busytimes[isokey]:
+                            it = list(item)
+                            if it[0] == it[1]:
+                                # skip reminders
+                                continue
+                            if matching:
+                                if not self.cal_regex.match(it[-1]):
+                                    continue
+                                mtch = (self.default_regex.match(it[-1]) is not None)
+                            else:
+                                mtch = True
+                            it.append(mtch)
+                            item = tuple(it)
+                            bt.append(item)
+                        busy_lst.append(bt)
+                        if bt:
+                            for pts in bt:
+                                busytimes += pts[1] - pts[0]
+                                self.busyHsh.setdefault(id, []).append("* {0}".format(pts[2]))
+                            tags.append('busy')
+                    else:
+                        busy_lst.append([])
                         # self.canvas.itemconfig(id, tag='busy')
                     fill = getDayColor(busytimes)
                 if 'current_day' in tags:
