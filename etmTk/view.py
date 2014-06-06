@@ -1249,7 +1249,7 @@ returns:
             else:
                 text = " @s {0}".format(self.active_date)
             changed = SimpleEditor(parent=self, master=master, start=text, options=loop.options).changed
-        elif self.view in [DAY, MONTH] and self.active_date:
+        elif self.view in [DAY, WEEK, MONTH] and self.active_date:
             text = " @s {0}".format(self.active_date)
             changed = SimpleEditor(parent=self, master=master, start=text, options=loop.options).changed
         elif self.view in [KEYWORD, NOTE] and self.itemSelected:
@@ -2643,6 +2643,8 @@ Enter the shortest time period you want displayed in minutes.""")
             self.canvas.tag_raise('current_time')
             if id in self.busyHsh:
                 self.OnSelect(uuid=self.busyHsh[id][-4], dt=self.busyHsh[id][-1])
+                self.active_date = self.busyHsh[id][-1].date()
+
         elif self.monthly:
             if old_id is not None and old_id in self.busy_ids:
                 tags = self.canvas.gettags(old_id)
@@ -2686,6 +2688,9 @@ Enter the shortest time period you want displayed in minutes.""")
                     self.canvas.tag_lower(old_id)
 
             self.selectedId = id = self.canvas.find_withtag(CURRENT)[0]
+            if id in self.busyHsh:
+                self.active_date = self.busyHsh[id][-1].date()
+
             self.canvas.itemconfig(id, fill=ACTIVEFILL)
             self.canvas.tag_raise('conflict')
             self.canvas.tag_raise('grid')
@@ -2759,28 +2764,34 @@ Enter the shortest time period you want displayed in minutes.""")
 
 
     def on_select_item(self, event):
-        current = self.canvas.find_withtag(CURRENT)
-        logger.debug('current: {0}'.format(current))
-        if current and current[0] in self.busy_ids:
-            self.selectedId = id = current[0]
-            self.on_activate_item(event)
+        if self.monthly:
+            self.newItem()
         else:
-            self.newEvent(event)
-        return "break"
+            current = self.canvas.find_withtag(CURRENT)
+            logger.debug('current: {0}'.format(current))
+            if current and current[0] in self.busy_ids:
+                self.selectedId = id = current[0]
+                self.on_activate_item(event)
+            else:
+                self.newEvent(event)
+            return "break"
 
     def on_activate_item(self, event):
-        x = self.winfo_rootx() + 350
-        y = self.winfo_rooty() + 50
-        id = self.selectedId
-        if not id:
-            return
+        if self.monthly:
+            self.newItem()
+        else:
+            x = self.winfo_rootx() + 350
+            y = self.winfo_rooty() + 50
+            id = self.selectedId
+            if not id:
+                return
 
-        logger.debug("id: {0}, coords: {1}, {2}\n    {3}".format(id, x, y, self.busyHsh[id]))
-        self.uuidSelected = uuid = self.busyHsh[id][1]
-        self.itemSelected = hsh = loop.uuid2hash[uuid]
-        self.dtSelected = dt = self.busyHsh[id][-1]
-        self.itemmenu.post(x, y)
-        self.itemmenu.focus_set()
+            logger.debug("id: {0}, coords: {1}, {2}\n    {3}".format(id, x, y, self.busyHsh[id]))
+            self.uuidSelected = uuid = self.busyHsh[id][1]
+            self.itemSelected = hsh = loop.uuid2hash[uuid]
+            self.dtSelected = dt = self.busyHsh[id][-1]
+            self.itemmenu.post(x, y)
+            self.itemmenu.focus_set()
 
 
     def newEvent(self, event):
@@ -3058,7 +3069,6 @@ or 0 to display all changes.""").format(title)
         self.update_idletasks()
 
         if uuid is not None:
-
             isRepeating = ('r' in hsh and dt)
             if isRepeating:
                 logger.debug('selected: {0}, {1}'.format(dt, type(dt)))
@@ -3136,17 +3146,17 @@ or 0 to display all changes.""").format(title)
         self.itemmenu.focus_set()
         return "break"
 
-    def OnDoubleClick(self, event):
-        """
-        Double click on tree row
-        """
-        self.update_idletasks()
-
-        item = self.tree.identify('item', event.x, event.y)
-        uuid, dt, hsh = self.getInstance(item)
-        if uuid is not None:
-            self.editItem()
-        return "break"
+    # def OnDoubleClick(self, event):
+    #     """
+    #     Double click on tree row
+    #     """
+    #     self.update_idletasks()
+    #
+    #     item = self.tree.identify('item', event.x, event.y)
+    #     uuid, dt, hsh = self.getInstance(item)
+    #     if uuid is not None:
+    #         self.editItem()
+    #     return "break"
 
     def getInstance(self, item):
         instance = self.count2id[item]
@@ -3746,6 +3756,8 @@ or 0 to expand all branches completely.""")
                 self.goHome()
 
     def popupTree(self, e=None):
+        if self.weekly or self.monthly:
+            return
         if not self.active_tree:
             return
         depth = self.outline_depths[self.view]
