@@ -269,13 +269,15 @@ Tip: Want to see your next appointment with Dr. Jones? Switch to day view and en
 
 Events and occasions displayed graphically by week. Left and right cursor keys change, respectively, to the previous and next week. Up and down cursor keys select, respectively, the previous and next items within the given week. Items can also be selected by moving the mouse over the item. The details for the selected item are displayed at the bottom of the screen. Pressing return with an item selected or double-clicking an item opens a context menu. Control-clicking an unscheduled time opens a dialog to create an event for that date and time.
 
-Tip. Press *Ctrl-B* to display a list of busy times for the selected week or *Ctrl-F* and provide the needed period in minutes to display a list of free times that would accomodate the requirement.
+Tip. You can display a list of busy times or, after providing the needed period in minutes, a list of free times that would accomodate the requirement within the selected week. Both options are in the *View* menu.
 
 ### Month View
 
 Events and occasions displayed graphically by month. Left and right cursor keys change, respectively, to the previous and next month. Up and down cursor keys select, respectively, the previous and next days within the given month. Days can also be selected by moving the mouse over the item. A list of occasions and events for the selected day is displayed at the bottom of the screen. 
 
 The current date and days with occasions are highlighted and day numbers are colored in shades ranging from black to red to reflect the time scheduled for events in the day.
+
+Tip. You can display a list of busy times or, after providing the needed period in minutes, a list of free times that would accomodate the requirement within the selected month. Both options are in the *View* menu.
 
 ### Tag View
 

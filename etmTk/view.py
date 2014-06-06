@@ -2348,7 +2348,7 @@ Enter the shortest time period you want displayed in minutes.""")
             self.viewmenu.entryconfig(6, state="normal")
             self.viewmenu.entryconfig(7, state="disabled")
 
-        for i in [4, 5, 8, 9, 10, 11, 12, 13, 14]:
+        for i in [4, 5, 8, 9, 10, 11, 12]:
             self.viewmenu.entryconfig(i, state="normal")
         self.bind("<Control-f>", self.setFilter)
 
