@@ -1370,6 +1370,11 @@ def get_options(d=''):
     if not os.path.isdir(etmdir):
         # first etm use, no etmdir
         os.makedirs(etmdir)
+    logfile = os.path.normpath(os.path.abspath(os.path.join(etmdir, "etmtk_log.txt")))
+    if not os.path.isfile(logfile):
+        fo = codecs.open(logfile, 'w', options['encoding']['file'])
+        fo.write("")
+        fo.close()
 
     if os.path.isfile(newconfig):
         try:
