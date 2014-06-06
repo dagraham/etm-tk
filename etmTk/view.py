@@ -2829,27 +2829,20 @@ Enter the shortest time period you want displayed in minutes.""")
             p = self.canvas
         else:
             p = self.tree
-        ans = self.confirm(
-            parent=p,
-            title=_('New event'),
-            prompt=_("Create a new event for {0}?").format(dtfmt))
-        if ans:
 
-            s = "*   @s {0}".format(dtfmt)
-            hsh, msg = str2hsh(s, options=loop.options)
+        s = "*  @s {0}".format(dtfmt)
+        changed = SimpleEditor(parent=self, master=self.canvas, start=s, options=loop.options).changed
 
-            changed = SimpleEditor(parent=self, master=self.canvas, newhsh=hsh, options=loop.options).changed
+        if changed:
+            logger.debug('changed, updating alerts, ...')
 
-            if changed:
-                logger.debug('changed, updating alerts, ...')
-
-                self.updateAlerts()
-                if self.weekly:
-                    self.showWeek()
-                elif self.monthly:
-                    self.showMonth()
-                else:
-                    self.showView()
+            self.updateAlerts()
+            if self.weekly:
+                self.showWeek()
+            elif self.monthly:
+                self.showMonth()
+            else:
+                self.showView()
 
     def showCalendar(self, e=None):
         cal_year = 0
