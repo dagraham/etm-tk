@@ -261,7 +261,7 @@ class App(Tk):
         c = "n"
         newmenu.add_command(label=label, command=self.newItem)
         # self.bindTop("n", self.newItem)
-        self.tree.bind(c, lambda e: self.after(AFTER, self.newItem(e)))
+        self.bindTop(c, lambda e: self.after(AFTER, self.newItem(e)))
         self.canvas.bind(c, lambda e: self.after(AFTER, self.newItem(e)))
 
         newmenu.entryconfig(0, accelerator=l)
@@ -992,6 +992,7 @@ class App(Tk):
         self.updateAlerts()
         self.etmgeo = os.path.normpath(os.path.join(loop.options['etmdir'], ".etmgeo"))
         self.restoreGeometry()
+        self.tree.focus_set()
 
     def bindTop(self, c, cmd, e=None):
         if e and e.char != c:
@@ -1234,6 +1235,7 @@ returns:
 
     def newItem(self, e=None):
         # hack to avoid Ctrl-n activation
+        print('newItem')
         if e and e.char != "n":
             return
         if self.weekly or self.monthly:
@@ -1259,6 +1261,7 @@ returns:
             text = " @t {0}".format(", ".join(self.itemSelected['t']))
             changed = SimpleEditor(parent=self, master=master, start=text, options=loop.options).changed
         else:
+            print('else')
             changed = SimpleEditor(parent=self, master=master, options=loop.options).changed
         if changed:
             logger.debug('changed, reloading data')
