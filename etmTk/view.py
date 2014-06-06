@@ -2835,7 +2835,7 @@ Enter the shortest time period you want displayed in minutes.""")
             prompt=_("Create a new event for {0}?").format(dtfmt))
         if ans:
 
-            s = "* ? @s {0} @e 1h".format(dtfmt)
+            s = "*   @s {0}".format(dtfmt)
             hsh, msg = str2hsh(s, options=loop.options)
 
             changed = SimpleEditor(parent=self, master=self.canvas, newhsh=hsh, options=loop.options).changed
