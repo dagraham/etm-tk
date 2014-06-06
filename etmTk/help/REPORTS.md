@@ -2,7 +2,7 @@
 
 To create a report open the custom view in the GUI. If you have entries in your report specifications file, `~./etm/reports.cfg` by default, you can choose one of them in the selection box at the bottom of the window.
 
-You can also add report specifications to the list by selecting any item from the list and then replacing the content with anything you like. Press *Return* to *add* your specification temporarily to the list. *Note that the original entry will not be affected.*  When you leave the custom view you will have an opportunity to save the additions you have made. If you choose "Yes", your additions will be inserted into the list and it will be opened for editing. You can also edit this file by pressing *Shift Ctrl-R* when the report window is closed.
+You can also add report specifications to the list by selecting any item from the list and then replacing the content with anything you like. Press *Return* to *add* your specification temporarily to the list. *Note that the original entry will not be affected.*  When you leave the custom view you will have an opportunity to save the additions you have made. If you choose a file, your additions will be inserted into the list and it will be opened for editing. 
 
 When you have selected a report specification, press *Return* to generate the report and display it.
 

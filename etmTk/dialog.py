@@ -750,7 +750,7 @@ class Dialog(Toplevel):
             logger.debug("returning focus to parent: {0}".format(self.parent))
             self.parent.focus()
             # self.parent.tree.focus_set()
-            if self.parent.weekly:
+            if self.parent.weekly or self.parent.monthly:
                 self.parent.canvas.focus_set()
             else:
                 self.parent.tree.focus_set()

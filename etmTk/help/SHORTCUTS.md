@@ -36,8 +36,8 @@
         Next week/month                             Right    
         Previous item/day in week/month               Up     
         Next item/day in week/month                  Down    
-        List busy times in week                       B      
-        List free times in week                       F      
+        List busy times in week/month                 B      
+        List free times in week/month                 F      
     Item                                                     
         Copy                                          C      
         Delete                                    BackSpace  

@@ -290,8 +290,6 @@ Note. Windows users should place each absolute path in quotes and escape backsla
 
     Up and down arrow keys change the selection and either *Tab* or *Return* inserts the selection.
 
-    To edit a completions file, press *Shift-C* in the main window or from the main menu under *File/Open* to choose from a list of completions files.
-
 - Reports
 
     Each line in a reports file provides a possible reports specification. These are available when using the CLI `m` command and in the GUI custom view. See [Reports](#reports) for details.
@@ -319,8 +317,6 @@ Note. Windows users should place each absolute path in quotes and escape backsla
         jbr@whatever.com
         home: 123 456-7890
         birthday: 1978-12-14
-
-    You can press "U" in the GUI to choose a users file for editing.
 
 ### current files
 
@@ -468,11 +464,11 @@ If an item is selected, pressing Shift-X in the gui will export the selected ite
 
     icsitem_file: ~/.etm/etmitem.ics
 
-### idle_minimum
+### idle_minutes
 
-    idle_minimum: 10
+    idle_minutes: 10
 
-When the idle timer is running and a action timer is started or restarted, only open the dialog to assign idle time if the current idle time is at least this many minutes.
+When the idle timer is running and an action timer is started or restarted, only open the dialog to assign idle time if the current idle time is at least this many minutes.
 
 ### local_timezone
 
