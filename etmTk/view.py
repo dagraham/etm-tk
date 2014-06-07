@@ -1235,7 +1235,6 @@ returns:
 
     def newItem(self, e=None):
         # hack to avoid Ctrl-n activation
-        print('newItem')
         if e and e.char != "n":
             return
         if self.weekly or self.monthly:
@@ -1261,7 +1260,6 @@ returns:
             text = " @t {0}".format(", ".join(self.itemSelected['t']))
             changed = SimpleEditor(parent=self, master=master, start=text, options=loop.options).changed
         else:
-            print('else')
             changed = SimpleEditor(parent=self, master=master, options=loop.options).changed
         if changed:
             logger.debug('changed, reloading data')
@@ -2427,7 +2425,8 @@ Enter the shortest time period you want displayed in minutes.""")
         weeks = self.monthly_calendar.monthdatescalendar(*self.year_month)
         num_weeks = len(weeks)
         weekdays = [x.strftime("%a") for x in weeks[0]]
-        weeknumbers = [x[0].strftime("%W") for x in weeks]
+        # weeknumbers = [x[0].strftime("%W") for x in weeks]
+        weeknumbers = [x[0].isocalendar()[1] for x in weeks]
         themonth = weeks[1][0].strftime("%B %Y")
         self.canvas.delete("all")
         l = 36
