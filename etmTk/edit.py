@@ -479,7 +479,7 @@ class SimpleEditor(Toplevel):
         if str != text:
             self.settext(str)
         if 'r' in hsh:
-            showing_all, reps =  get_reps(self.options['bef'], hsh)
+            showing_all, reps =  get_reps(self.loop.options['bef'], hsh)
             if reps:
                 if showreps:
                     repsfmt = [x.strftime(rrulefmt) for x in reps]
@@ -560,7 +560,6 @@ class SimpleEditor(Toplevel):
             self.destroy()
             logger.debug('done')
 
-    # def messageWindow(self, title, prompt, opts=None, height=14, width=52):
     def messageWindow(self, title, prompt, opts=None, height=8, width=52):
         win = Toplevel(self)
         win.title(title)
