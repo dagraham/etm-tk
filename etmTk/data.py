@@ -287,10 +287,12 @@ SAMPLE ="""\
 * sales meeting @s +7 9a @e 1h @a 5 @a 2d: e; who@when.com, what@where.org @u jsmith
 - prepare report @s +7 @b 3
 - get haircut @s 24 @r d &i 14 @o r
+- put out trash @s 1 @r w &w MO @o s
 ^ payday @s 1/1 @r m &w MO, TU, WE, TH, FR &m -1, -2, -3 &s -1
-* take Rx @s +0 @r d &h 10, 22 &t 4 @a 0
-* Tête-à-têtes with staff @s fri 2p @e 90 @l conference room @t meetings
+* stationary bike @s 1 @e 15 @r d &h 10, 16 @a 0
+* Tête-à-têtes with staff @s 1 3p @e 90 @r w &w fri @l conference room @t meetings
 """
+
 HOLIDAYS = """\
 ^ Martin Luther King Day @s 2010-01-18 @r y &w 3MO &M 1
 ^ Valentine's Day @s 2010-02-14 @r y &M 2 &m 14

@@ -2127,6 +2127,7 @@ Enter the shortest time period you want displayed in minutes.""")
             return
         if self.monthly:
             self.closeMonthly()
+        self.content.delete("1.0", END)
         self.weekly = True
         self.tree.pack_forget()
         self.fltr.pack_forget()
@@ -2366,6 +2367,7 @@ Enter the shortest time period you want displayed in minutes.""")
             return
         if self.weekly:
             self.closeWeekly()
+        self.content.delete("1.0", END)
         self.monthly = True
         self.tree.pack_forget()
         self.fltr.pack_forget()
