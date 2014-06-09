@@ -110,6 +110,7 @@ class SimpleEditor(Toplevel):
         self.fileinfo = None
         self.repinfo = None
         self.title = title
+        self.edithsh = {}
         self.newhsh = newhsh
         self.rephsh = rephsh
         self.value = ''
