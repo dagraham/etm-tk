@@ -428,7 +428,7 @@ class App(Tk):
         self.add2menu(path, (label, l))
 
         # clear filter
-        l = "Escape"
+        l = "Shift-Ctrl-F"
         label=_("Clear outline filter")
         viewmenu.add_command( label=label, underline=1, command=self.clearFilter)
 
@@ -892,8 +892,9 @@ class App(Tk):
 
         self.fltr = Entry(topbar, textvariable=self.filterValue, width=14, highlightbackground=BGCOLOR, bg=BGCOLOR)
         self.fltr.pack(side="left", padx=0, expand=1, fill=X)
-        self.fltr.bind("<Escape>", self.clearFilter)
         self.fltr.bind("<FocusIn>", self.setFilter)
+        self.fltr.bind("<Escape>", self.clearFilter)
+        self.bind("<Shift-Control-F>", self.clearFilter)
         self.filter_active = False
         self.viewmenu.entryconfig(6, state="normal")
         self.viewmenu.entryconfig(7, state="disabled")

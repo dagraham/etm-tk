@@ -25,7 +25,7 @@
         Next sibling                             Control-Down
         Previous sibling                          Control-Up 
         Set outline filter                          Ctrl-F   
-        Clear outline filter                        Escape   
+        Clear outline filter                     Shift-Ctrl-F
         Toggle displaying labels column               L      
         Set outline depth                             O      
         Show outline as text                          S      
