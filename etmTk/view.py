@@ -3496,7 +3496,7 @@ Relative dates and fuzzy parsing are supported.""")
                 prompt = _("""\
     Enter a summary for the new action timer.""")
             options = {'nullok': nullok}
-            value = GetString(parent=self, title=_('action timer'),  prompt=prompt, opts={}, font=self.tkfixedfont).value
+            value = GetString(parent=self, title=_('action timer'),  prompt=prompt, opts={'nullok': nullok}, font=self.tkfixedfont).value
 
             self.tree.focus_set()
             logger.debug('value: {0}'.format(value))

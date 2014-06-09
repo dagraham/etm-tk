@@ -280,17 +280,34 @@ syntax: glob
 .*
 """
 
+from datetime import datetime, timedelta, time
+from dateutil.tz import (tzlocal, tzutc)
+
+def get_current_time():
+    return datetime.now(tzlocal())
+
 # this task will be created for first time users
 SAMPLE ="""\
 # Sample entries - this file can be edited or deleted at your pleasure
-
-* sales meeting @s +7 9a @e 1h @a 5 @a 2d: e; who@when.com, what@where.org @u jsmith
-- prepare report @s +7 @b 3
-- get haircut @s 24 @r d &i 14 @o r
+= @t sample, tasks
+? lose weight and exercise more
+- milk and eggs @c errands
+- reservation for Saturday dinner @c phone
+- hair cut @s -1 @r w &i 2 &o r @c errands
 - put out trash @s 1 @r w &w MO @o s
-^ payday @s 1/1 @r m &w MO, TU, WE, TH, FR &m -1, -2, -3 &s -1
-* stationary bike @s 1 @e 15 @r d &h 10, 16 @a 0
-* Tête-à-têtes with staff @s 1 3p @e 90 @r w &w fri @l conference room @t meetings
+
+= @t sample, occasions
+^ etm's !2009! birthday @s 2010-02-27 @r y @d initial release 2009-02-27
+^ payday @s 1/1 @r m &w MO, TU, WE, TH, FR &m -1, -2, -3 &s -1 @d the last weekday of each month
+
+= @t sample, events
+* sales meeting @s +7 9a @e 1h @a 5 @a 2d: e; who@when.com, what@where.org @u jsmith
+* stationary bike @s 1 5:30p @e 30 @r d @a 0
+* Tête-à-têtes @s 1 3p @e 90 @r w &w fri @l conference room @t meetings
+* Book club @s -1/1 7pm @e 2h @z US/Eastern @r w &w TH
+* Tennis @s -1/1 9am @e 1h30m @z US/Eastern @r w &w SA
+* Dinner @s -1/1 7:30pm @e 2h30m @z US/Eastern @a 1h, 40m: m @u dag @r w &w SA
+* Appt with Dr Burns @s 2014-05-15 10am @e 1h @r m &i 9 &w 1TU &t 2
 """
 
 HOLIDAYS = """\
@@ -598,7 +615,6 @@ except ImportError:
         logger.info('Could not import icalendar and/or pytz')
     has_icalendar = False
 
-from datetime import datetime, timedelta, time
 from time import sleep
 import dateutil.rrule as dtR
 from dateutil.parser import parse as dparse
@@ -636,8 +652,6 @@ def memoize(fn):
 def gettz(z=None):
     return getTz(z)
 
-
-from dateutil.tz import (tzlocal, tzutc)
 
 import calendar
 
@@ -837,11 +851,6 @@ zonelist = [
     'US/Michigan',
     'US/Mountain',
     'US/Pacific']
-
-
-def get_current_time():
-    return datetime.now(tzlocal())
-
 
 def get_localtz(zones=zonelist):
     """
