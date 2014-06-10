@@ -2523,7 +2523,6 @@ def parse_datetime(dt, timezone='', f=rfmt):
     # # easter
     # estr = estr_regex.search(dt)
     # if estr:
-    #     print(estr.groups())
     #     y = estr.group(1)
     #     e = easter(int(y))
     #     E = e.strftime("%Y-%m-%d")
@@ -2580,6 +2579,15 @@ def parse_dtstr(dtstr, timezone="", f=rfmt):
         dtz = dt.replace(tzinfo=gettz(timezone))
     else:
         dtz = dt.replace(tzinfo=tzlocal())
+    if windoz and dtz.year < 1970:
+        if timezone:
+            tzinfo=gettz(timezone)
+        else:
+            tzinfo=tzlocal()
+        epoch = datetime(1970,1,1,0,0,0,0,None)
+        td = epoch - dtz.replace(tzinfo=None)
+        dtz = epoch - td
+
     return dtz.strftime(f)
 
 def parse_dt(s, timezone='', f=rfmt):
@@ -3274,6 +3282,23 @@ def get_reps(bef, hsh):
     else:
         tmp.extend(list(hsh['rrule'].between(start, bef, inc=True)))
         tmp.append(hsh['rrule'].after(bef, inc=False))
+
+    if windoz:
+        ret = []
+        epoch = datetime(1970,1,1,0,0,0,0,tzinfo=None)
+        for i in tmp:
+            if not i:
+                continue
+            # i.replace(tzinfo=gettz(hsh['z']))
+            if i.year < 1970:
+                # i.replace(tzinfo=gettz(hsh['z']))
+                td = epoch - i
+                i = epoch - td
+            else:
+                i.replace(tzinfo=gettz(hsh['z'])).astimezone(tzlocal()).replace(tzinfo=None)
+            ret.append(i)
+        return passed, ret
+
     return passed, [i.replace(
         tzinfo=gettz(hsh['z'])).astimezone(tzlocal()).replace(tzinfo=None)
                      for i in tmp if i]
@@ -4535,7 +4560,7 @@ def get_data(options=None, dirty=False, use_pickle=True):
         dirty = True
     else:  # objects is not None
         if not dirty:
-            new, modified, deleted = get_changes(options, objects[2])
+            new, modified, deleted = get_changes(options, objects[3])
             dirty = new or modified or deleted
         if dirty:
             logger.debug('pickle but dirty; calling process_all_files')
@@ -4543,7 +4568,7 @@ def get_data(options=None, dirty=False, use_pickle=True):
              bad_datafiles, messages) = process_all_datafiles(options)
         else:
             logger.debug('pickle ok; loading data from pickle file')
-            (uuid2hash, file2uuids, file2lastmodified,
+            (uuid2hash, uuid2labels, file2uuids, file2lastmodified,
              bad_datafiles, messages) = objects
     if bad_datafiles:
         logger.warn("bad data files: {0}".format(bad_datafiles))
