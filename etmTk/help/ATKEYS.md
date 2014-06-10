@@ -203,6 +203,7 @@ The `@r frequency` entry can, optionally, be followed by one or more `&key value
     &w: byweekday (*English* weekday abbreviation SU ... SA). Use, e.g., 3WE for the 3rd Wednesday or -1FR, for the last Friday in the month.
     &h: byhour (0 ... 23)
     &n: byminute (0 ... 59)
+    &E: byeaster (integer number of days before, < 0, or after, > 0, Easter)
 
 Repetition examples:
 
@@ -224,6 +225,14 @@ Repetition examples:
 
         ^ Vote for president @s 2012-11-06
           @r y &i 4 &M 11 &m range(2,9) &w TU
+          
+- Ash Wednesday (an occasion) that occurs 46 days before Easter each year.
+          
+    ^ Ash Wednesday 2010-01-01 @r y &E -46
+    
+- Easter Sunday (an occasion).
+
+    ^ Easter Sunday 2010-01-01 @r y &E 0
 
 Optionally, `@+` and `@-` entries can be given.
 

@@ -35,27 +35,44 @@ def setup_logging(level, etmdir=None):
     else:
         loglevel = log_levels['3']
 
-    logfile = os.path.normpath(os.path.abspath(os.path.join(etmdir, "etmtk_log.txt")))
-
-    config = {'disable_existing_loggers': False,
-              'formatters': {'simple': {
-                  'format': '--- %(asctime)s - %(levelname)s - %(module)s.%(funcName)s\n    %(message)s'}},
-              'handlers': {'console': {'class': 'logging.StreamHandler',
-                                       'formatter': 'simple',
-                                       'level': loglevel,
-                                       'stream': 'ext://sys.stdout'},
-                           'file': {'backupCount': 5,
-                                    'class': 'logging.handlers.RotatingFileHandler',
-                                    'encoding': 'utf8',
-                                    'filename': logfile,
-                                    'formatter': 'simple',
-                                    'level': 'WARN',
-                                    'maxBytes': 1048576}},
-              'loggers': {'etmtk': {'handlers': ['console'],
-                                    'level': 'DEBUG',
-                                    'propagate': False}},
-              'root': {'handlers': ['console', 'file'], 'level': 'DEBUG'},
-              'version': 1}
+    if os.path.isdir(etmdir):
+        logfile = os.path.normpath(os.path.abspath(os.path.join(etmdir, "etmtk_log.txt")))
+        if not os.path.isfile(logfile):
+            fo = codecs.open(fp, 'w', dfile_encoding)
+            fo.write("")
+            fo.close()
+        config = {'disable_existing_loggers': False,
+                  'formatters': {'simple': {
+                      'format': '--- %(asctime)s - %(levelname)s - %(module)s.%(funcName)s\n    %(message)s'}},
+                  'handlers': {'console': {'class': 'logging.StreamHandler',
+                                           'formatter': 'simple',
+                                           'level': loglevel,
+                                           'stream': 'ext://sys.stdout'},
+                               'file': {'backupCount': 5,
+                                        'class': 'logging.handlers.RotatingFileHandler',
+                                        'encoding': 'utf8',
+                                        'filename': logfile,
+                                        'formatter': 'simple',
+                                        'level': 'WARN',
+                                        'maxBytes': 1048576}},
+                  'loggers': {'etmtk': {'handlers': ['console'],
+                                        'level': 'DEBUG',
+                                        'propagate': False}},
+                  'root': {'handlers': ['console', 'file'], 'level': 'DEBUG'},
+                  'version': 1}
+    else: # no etmdir - first use
+        config = {'disable_existing_loggers': False,
+                  'formatters': {'simple': {
+                      'format': '--- %(asctime)s - %(levelname)s - %(module)s.%(funcName)s\n    %(message)s'}},
+                  'handlers': {'console': {'class': 'logging.StreamHandler',
+                                           'formatter': 'simple',
+                                           'level': loglevel,
+                                           'stream': 'ext://sys.stdout'}},
+                  'loggers': {'etmtk': {'handlers': ['console'],
+                                        'level': 'DEBUG',
+                                        'propagate': False}},
+                  'root': {'handlers': ['console'], 'level': 'DEBUG'},
+                  'version': 1}
 
     logging.config.dictConfig(config)
     logger.info('logging at level: {0}\n    writing exceptions to: {1}'.format(loglevel, logfile))
@@ -282,13 +299,14 @@ syntax: glob
 
 from datetime import datetime, timedelta, time
 from dateutil.tz import (tzlocal, tzutc)
+# from dateutil.easter import easter
 
 def get_current_time():
     return datetime.now(tzlocal())
 
 # this task will be created for first time users
 SAMPLE ="""\
-# Sample entries - this file can be edited or deleted at your pleasure
+# Sample entries - edit or delete at your pleasure
 = @t sample, tasks
 ? lose weight and exercise more
 - milk and eggs @c errands
@@ -316,6 +334,7 @@ HOLIDAYS = """\
 ^ President's Day @s 2010-02-15 @c holiday @r y &w 3MO &M 2
 ^ Daylight saving time begins @s 2010-03-14 @r y &w 2SU &M 3
 ^ St Patrick's Day @s 2010-03-17 @r y &M 3 &m 17
+^ Easter Sunday @s 2010-01-01 @r y &E 0
 ^ Mother's Day @s 2010-05-09 @r y &w 2SU &M 5
 ^ Memorial Day @s 2010-05-31 @r y &w -1MO &M 5
 ^ Father's Day @s 2010-06-20 @r y &w 3SU &M 6
@@ -943,6 +962,13 @@ def date_calculator(s, options=None):
         where x is a datetime and y is either a datetime or a timeperiod
     :param s:
     """
+    estr = estr_regex.search(s)
+    if estr:
+        y = estr.group(1)
+        e = easter(int(y))
+        E = e.strftime("%Y-%m-%d")
+        s = estr_regex.sub(E, s)
+
     m = date_calc_regex.match(s)
     if not m:
         return 'Could not parse "%s"' % s
@@ -1068,6 +1094,7 @@ item_regex = re.compile(r'^([\$\^\*~!%\?#=\+\-])\s')
 email_regex = re.compile('([\w\-\.]+@(\w[\w\-]+\.)+[\w\-]+)')
 sign_regex = re.compile(r'(^\s*([+-])?)')
 week_regex = re.compile(r'[+-]?(\d+)w', flags=re.I)
+# estr_regex = re.compile(r'easter\((\d{4,4})\)', flags=re.I)
 day_regex = re.compile(r'[+-]?(\d+)d', flags=re.I)
 hour_regex = re.compile(r'[+-]?(\d+)h', flags=re.I)
 minute_regex = re.compile(r'[+-]?(\d+)m', flags=re.I)
@@ -1383,7 +1410,7 @@ def get_options(d=''):
         os.makedirs(etmdir)
     logfile = os.path.normpath(os.path.abspath(os.path.join(etmdir, "etmtk_log.txt")))
     if not os.path.isfile(logfile):
-        fo = codecs.open(logfile, 'w', options['encoding']['file'])
+        fo = codecs.open(logfile, 'w', dfile_encoding)
         fo.write("")
         fo.close()
 
@@ -1910,6 +1937,7 @@ rrule_hsh = {
     'w': 'BYWEEKDAY', # integer 0 (SU) ... 6 (SA)
     'h': 'BYHOUR', # positive integer
     'n': 'BYMINUTE', # positive integer
+    'E': 'BYEASTER', # non-negative integer number of days after easter
 }
 
 ### for icalendar export we need BYDAY instead of BYWEEKDAY
@@ -1931,10 +1959,11 @@ ical_rrule_hsh = {
     # 'BYWEEKDAY': 'w',  # integer 0 (SU) ... 6 (SA)
     'BYHOUR': 'h', # positive integer
     'BYMINUTE': 'n', # positive integer
+    'BYEASTER': 'E', # non negative integer number of days after easter
 }
 
 # don't add f and u - they require special processing in get_rrulestr
-rrule_keys = ['i', 'm', 'M', 'w', 'W', 'h', 'n', 't', 's']
+rrule_keys = ['i', 'm', 'M', 'w', 'W', 'h', 'n', 't', 's', 'E']
 ical_rrule_keys = ['f', 'i', 'm', 'M', 'w', 'W', 'h', 'n', 't', 's', 'u']
 
 # ^ Presidential election day @s 2004-11-01 12am
@@ -1947,7 +1976,8 @@ freq_hsh = {
     'w': 'WEEKLY',
     'd': 'DAILY',
     'h': 'HOURLY',
-    'n': 'MINUTELY'
+    'n': 'MINUTELY',
+    'E': 'EASTERLY',
 }
 
 ical_freq_hsh = {
@@ -1956,7 +1986,8 @@ ical_freq_hsh = {
     'WEEKLY': 'w',
     'DAILY': 'd',
     'HOURLY': 'h',
-    'MINUTELY': 'n'
+    'MINUTELY': 'n',
+    # 'EASTERLY': 'e'
 }
 
 amp_hsh = {
@@ -2018,6 +2049,7 @@ amp_keys = {
         u'W',   # r week
         u'h',   # r hour
         u'n',   # r minute
+        u'E',   # r easter
         u't',   # r total (dateutil COUNT) (c is context in j)
         u'u',   # r until
         u's'],  # r set position
@@ -2419,6 +2451,7 @@ def dump_data(options, uuid2hashes, uuid2labels, file2uuids, file2lastmodified,
     logger.info("dumping data to: {0}".format(options['datafile']))
     ouf = open(options['datafile'], "wb")
     pickle.dump(uuid2hashes, ouf)
+    pickle.dump(uuid2labels, ouf)
     pickle.dump(file2uuids, ouf)
     pickle.dump(file2lastmodified, ouf)
     pickle.dump(bad_datafiles, ouf)
@@ -2435,6 +2468,7 @@ def load_data(options):
         try:
             inf = open(options['datafile'], "rb")
             uuid2hashes = pickle.load(inf)
+            uuid2labels = pickle.load(inf)
             file2uuids = pickle.load(inf)
             file2lastmodified = pickle.load(inf)
             bad_datafiles = pickle.load(inf)
@@ -2451,7 +2485,8 @@ def load_data(options):
                         bad_datafiles, messages)
         except Exception:
             # bad pickle file? remove it
-            os.remove(options['datafile'])
+            if os.path.isfile(options['datafile']):
+                os.remove(options['datafile'])
         finally:
             if inf:
                 inf.close()
@@ -2485,6 +2520,14 @@ def parse_datetime(dt, timezone='', f=rfmt):
     new_y = now.year
     now_m = new_m = now.month
     new_d = now.day
+    # # easter
+    # estr = estr_regex.search(dt)
+    # if estr:
+    #     print(estr.groups())
+    #     y = estr.group(1)
+    #     e = easter(int(y))
+    #     E = e.strftime("%Y-%m-%d")
+    #     dt = estr_regex.sub(E, dt)
     try:
         rel_mnth = rel_month_regex.search(dt)
         if rel_mnth:
