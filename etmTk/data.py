@@ -982,21 +982,30 @@ def date_calculator(s, options=None):
     if ny:
         y, yzs = ny.groups()
         yz = gettz(yzs)
+    windoz_epoch = _("Warning: under Windows with dates prior to 1970,\nany timezone information is ignored.")
+    warn = ""
     try:
         dt_x = parse(parse_dtstr(x, timezone=xzs))
         pmy = "%s%s" % (pm, y)
         if period_string_regex.match(pmy):
             dt = (dt_x + parse_period(pmy))
-            dt = (dt_x + parse_period(pmy)).astimezone(yz)
+            if windoz and (dt_x.year < 1970 or dt.year < 1970):
+                warn = "\n\n{0}".format(windoz_epoch)
+            else:
+                dt.astimezone(yz)
 
             res = dt.strftime("%Y-%m-%d %H:%M%z")
-            prompt = "{0}:\n\n{1}".format(s.strip(), res.strip())
+            prompt = "{0}:\n\n{1}{2}".format(s.strip(), res.strip(), warn)
             return prompt
         else:
             dt_y = parse(parse_dtstr(y, timezone=yzs))
+            if windoz and (dt_x.year < 1970 or dt_y.year < 1970):
+                warn = "\n\n{0}".format(windoz_epoch)
+                dt_x = dt_x.replace(tzinfo=None)
+                dt_y = dt_y.replace(tzinfo=None)
             if pm == '-':
                 res = fmt_period(dt_x - dt_y)
-                prompt = "{0}:\n\n{1}".format(s.strip(), res.strip())
+                prompt = "{0}:\n\n{1}{2}".format(s.strip(), res.strip(), warn)
                 return prompt
             else:
                 return 'error: datetimes cannot be added'
@@ -2529,13 +2538,22 @@ def parse_dtstr(dtstr, timezone="", f=rfmt):
     else:
         dtz = dt.replace(tzinfo=tzlocal())
     if windoz and dtz.year < 1970:
+        y = dtz.year
+        m = dtz.month
+        d = dtz.day
+        H = dtz.hour
+        M = dtz.minute
         if timezone:
             tzinfo=gettz(timezone)
         else:
             tzinfo=tzlocal()
-        epoch = datetime(1970,1,1,0,0,0,0,None)
-        td = epoch - dtz.replace(tzinfo=None)
-        dtz = epoch - td
+        dtz = datetime(y, m, d, H, M, 0, 0)
+        epoch = datetime(1970, 1, 1, 0, 0, 0, 0)
+
+        # dtz.replace(tzinfo=None)
+        td = epoch - dtz
+        seconds = td.days * 24*60*60 + td.seconds
+        dtz = epoch - timedelta(seconds=seconds)
 
     return dtz.strftime(f)
 
