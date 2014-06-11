@@ -3001,7 +3001,6 @@ or 0 to display all changes.""").format(title)
             self.tree.focus(1)
             self.tree.selection_set(1)
             self.tree.yview(0)
-        # return "break"
 
     def nextItem(self, e=None):
         item = self.tree.selection()[0]
@@ -3700,10 +3699,10 @@ or 0 to expand all branches completely.""")
         # only makes sense for schedule
         logger.debug("DAY: {0}; date: {1}".format(self.view == DAY, date))
         if self.view != DAY or date not in loop.prevnext:
-            return ()
+            return
         active_date = loop.prevnext[date][1]
         if active_date not in self.date2id:
-            return ()
+            return
         uid = self.date2id[active_date]
         self.active_date = active_date
         self.scrollToId(uid)

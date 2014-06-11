@@ -85,7 +85,6 @@ if platform.python_version() >= '3':
     python_version = 3
     python_version2 = False
     from io import StringIO
-    import pickle
     from gettext import gettext as _
 
     unicode = str
@@ -95,8 +94,6 @@ else:
     python_version = 2
     python_version2 = True
     from cStringIO import StringIO
-    # noinspection PyPep8Naming
-    import cPickle as pickle
     _ = gettext.lgettext
 
 #######################################################
@@ -299,7 +296,7 @@ syntax: glob
 
 from datetime import datetime, timedelta, time
 from dateutil.tz import (tzlocal, tzutc)
-# from dateutil.easter import easter
+from dateutil.easter import easter
 
 def get_current_time():
     return datetime.now(tzlocal())
@@ -1094,11 +1091,11 @@ item_regex = re.compile(r'^([\$\^\*~!%\?#=\+\-])\s')
 email_regex = re.compile('([\w\-\.]+@(\w[\w\-]+\.)+[\w\-]+)')
 sign_regex = re.compile(r'(^\s*([+-])?)')
 week_regex = re.compile(r'[+-]?(\d+)w', flags=re.I)
-# estr_regex = re.compile(r'easter\((\d{4,4})\)', flags=re.I)
+estr_regex = re.compile(r'easter\((\d{4,4})\)', flags=re.I)
 day_regex = re.compile(r'[+-]?(\d+)d', flags=re.I)
 hour_regex = re.compile(r'[+-]?(\d+)h', flags=re.I)
 minute_regex = re.compile(r'[+-]?(\d+)m', flags=re.I)
-date_calc_regex = re.compile(r'^\s*(.+)\s*([+-])\s*(.+)\s*$')
+date_calc_regex = re.compile(r'^\s*(.+)\s+([+-])\s+(.+)\s*$')
 period_string_regex = re.compile(r'^\s*([+-]?(\d+[wWdDhHmM]?)+\s*$)')
 timezone_regex = re.compile(r'^(.+)\s+([A-Za-z]+/[A-Za-z]+)$')
 int_regex = re.compile(r'^\s*([+-]?\d+)\s*$')
@@ -2445,54 +2442,6 @@ def group_sort(row_lst):
         s = tupleSum(t)
         yield k, g, s
 
-
-def dump_data(options, uuid2hashes, uuid2labels, file2uuids, file2lastmodified,
-              bad_datafiles, messages):
-    logger.info("dumping data to: {0}".format(options['datafile']))
-    ouf = open(options['datafile'], "wb")
-    pickle.dump(uuid2hashes, ouf)
-    pickle.dump(uuid2labels, ouf)
-    pickle.dump(file2uuids, ouf)
-    pickle.dump(file2lastmodified, ouf)
-    pickle.dump(bad_datafiles, ouf)
-    pickle.dump(messages, ouf)
-    pickle.dump(last_version, ouf)
-    ouf.close()
-
-
-def load_data(options):
-    global last_version
-    # logger.debug("options: {0}".format(options))
-    if 'datafile' in options and os.path.isfile(options['datafile']):
-        messages = []
-        try:
-            inf = open(options['datafile'], "rb")
-            uuid2hashes = pickle.load(inf)
-            uuid2labels = pickle.load(inf)
-            file2uuids = pickle.load(inf)
-            file2lastmodified = pickle.load(inf)
-            bad_datafiles = pickle.load(inf)
-            messages = pickle.load(inf)
-            last_version = pickle.load(inf)
-            inf.close()
-            if version != last_version:
-                logger.info("version change: {0} to {1}. Removing '{2}'".format(last_version, version, options['datafile']))
-                # remove the pickle file
-                os.remove(options['datafile'])
-                last_version = version
-            else:
-                return (uuid2hashes, uuid2labels, file2uuids, file2lastmodified,
-                        bad_datafiles, messages)
-        except Exception:
-            # bad pickle file? remove it
-            if os.path.isfile(options['datafile']):
-                os.remove(options['datafile'])
-        finally:
-            if inf:
-                inf.close()
-    return None
-
-
 def uniqueId():
     return unicode(uuid.uuid4())
 
@@ -2520,13 +2469,13 @@ def parse_datetime(dt, timezone='', f=rfmt):
     new_y = now.year
     now_m = new_m = now.month
     new_d = now.day
-    # # easter
-    # estr = estr_regex.search(dt)
-    # if estr:
-    #     y = estr.group(1)
-    #     e = easter(int(y))
-    #     E = e.strftime("%Y-%m-%d")
-    #     dt = estr_regex.sub(E, dt)
+    # easter
+    estr = estr_regex.search(dt)
+    if estr:
+        y = estr.group(1)
+        e = easter(int(y))
+        E = e.strftime("%Y-%m-%d")
+        dt = estr_regex.sub(E, dt)
     try:
         rel_mnth = rel_month_regex.search(dt)
         if rel_mnth:
@@ -4544,38 +4493,13 @@ def get_changes(options, file2lastmodified):
     return new, modified, deleted
 
 
-def get_data(options=None, dirty=False, use_pickle=True):
+def get_data(options=None):
     if not options: options = {}
     objects = None
     bad_datafiles = []
-    logger.debug("initial value of dirty: {0}".format(dirty))
-
-
-    if use_pickle and os.path.isfile(options['datafile']):
-        objects = load_data(options)
-    # objects = uuid2hash uuid2labels file2lastmodified, bad_datafiles, messages
-    if objects is None:
-        logger.debug('no pickle; loading data using process_all_files')
-        (uuid2hash, uuid2labels, file2uuids, file2lastmodified, bad_datafiles, messages) = process_all_datafiles(options)
-        dirty = True
-    else:  # objects is not None
-        if not dirty:
-            new, modified, deleted = get_changes(options, objects[3])
-            dirty = new or modified or deleted
-        if dirty:
-            logger.debug('pickle but dirty; calling process_all_files')
-            (uuid2hash, uuid2labels, file2uuids, file2lastmodified,
-             bad_datafiles, messages) = process_all_datafiles(options)
-        else:
-            logger.debug('pickle ok; loading data from pickle file')
-            (uuid2hash, uuid2labels, file2uuids, file2lastmodified,
-             bad_datafiles, messages) = objects
+    (uuid2hash, uuid2labels, file2uuids, file2lastmodified, bad_datafiles, messages) = process_all_datafiles(options)
     if bad_datafiles:
         logger.warn("bad data files: {0}".format(bad_datafiles))
-    if dirty and not messages:
-        logger.debug("writing pickle file")
-        dump_data(options, uuid2hash, uuid2labels, file2uuids, file2lastmodified,
-                  bad_datafiles, messages)
     return uuid2hash, uuid2labels, file2uuids, file2lastmodified, bad_datafiles, messages
 
 
@@ -6217,18 +6141,6 @@ class ETMCmd():
             self.file2uuids.setdefault(rp, []).append(id)
         mtime = os.path.getmtime(fp)
         self.file2lastmodified[(fp, rp)] = mtime
-        dump_data(self.options, self.uuid2hash, self.uuid2labels, self.file2uuids, self.file2lastmodified, [], [])
-
-        # self.rows = list(itemsSL)
-        # self.alerts = list(alertsSL)
-        # self.datetimes = list(datetimesSL)
-        # self.busytimes = {}
-        # for key in busytimesSL:
-        #     self.busytimes[key] = list(busytimesSL[key])
-        # self.occasions = {}
-        # for key in occasionsSL:
-        #     self.occasions[key] = list(occasionsSL[key])
-
         (self.rows, self.alerts, self.busytimes, self.datetimes, self.occasions, self.file2data) = updateViewData(rp, bef, self.file2uuids, self.uuid2hash, self.options, self.file2data)
         logger.debug('ended updateDataFromFile')
 
