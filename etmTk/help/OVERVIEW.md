@@ -191,41 +191,41 @@ You can add a question mark to a command to get details about the commmand, e.g.
 
         etm c 'c ddd, MMM dd yyyy -b 1 -e +1/1'
 
-Note: The CLI offers the same views and reporting, with the exception of week view, as the GUI. It is also possible to create new items in the CLI with the `n` command. Other modifications such as copying, deleting, finishing and so forth, can only be done in the GUI or, perhaps, in your favorite text editor. An advantage to using the GUI is that it provides validation.
+Note: The CLI offers the same views and reporting, with the exception of week and month view, as the GUI. It is also possible to create new items in the CLI with the `n` command. Other modifications such as copying, deleting, finishing and so forth, can only be done in the GUI or, perhaps, in your favorite text editor. An advantage to using the GUI is that it provides auto-completion and validation.
 
-Tip: If you have a terminal open, you can create a new item or put something to finish later in your inbox quickly and easily with the "i" command. For example,
+Tip: If you have a terminal open, you can create a new item or put something to finish later in your inbox quickly and easily with the "N" command. For example,
 
-        etm i '123 456-7890'
+        etm N '123 456-7890'
 
 would create an entry in your inbox with this phone number. (With no type character an "$" would be supplied automatically to make the item an inbox entry and no further validation would be done.)
 
 ## Views
 
-All views, including week view, display only items consistent with the current choices of active calendars.
+All views display only items consistent with the current choices of active calendars.
 
-If a (case-insensitive) filter is entered then the display in all views other than week view and custom view will be limited to items that match somewhere in either the branch or the leaf.  Relevant branches will automatically be expanded to show matches.
+If a (case-insensitive) filter is entered then the display in all views other than week, month and custom view will be limited to items that match somewhere in either the branch or the leaf.  Relevant branches will automatically be expanded to show matches.
 
-In day and week views, pressing the space bar will move the display to the current date. In all other views, pressing the space bar will move the display to the first item in the outline.
+In day, week and month views, pressing the space bar will move the display to the current date. In all other views, pressing the space bar will move the display to the first item in the outline.
 
-In day and week views, pressing *J* will first prompt for a fuzzy-parsed date and then "jump" to the specified date.
+In day, week and month views, pressing *J* will first prompt for a fuzzy-parsed date and then "jump" to the specified date.
 
-If you scroll or jump to a date in either day view or week view and then open the other view, the same day(s) will be displayed.
+If you scroll or jump to a date in day, week or month view and then switch to another one of these views, the same day(s) will be displayed.
 
 In all views, pressing *Return* with an item selected or double clicking an item or a busy period in week view will open a context menu with options to copy, delete, edit and so forth.
 
 In all views, clicking in the details panel with an item selected will open the item for editing if it is not repeating and otherwise prompt for the instance(s) to be changed.
 
-In all views other than week view, pressing *O* will open a dialog to choose the outline depth.
+In all views other than week and month view, pressing *O* will open a dialog to choose the outline depth.
 
-In all views other than week view, pressing *L* will toggle the display of a column displaying item *labels* where, for example, an item with @a, @d and @u fields would have the label "adu".
+In all views other than week and month view, pressing *L* will toggle the display of a column displaying item *labels* where, for example, an item with @a, @d and @u fields would have the label "adu".
 
-In all views other than week view, pressing *S* will show a text verion of the current display suitable for copy and paste. The text version will respect the current outline depth in the view.
+In all views other than week and month view, pressing *S* will show a text verion of the current display suitable for copy and paste. The text version will respect the current outline depth in the view.
 
 In custom view it is possible to export the current report in either text or CSV (comma separated values) format to a file of your choosing.
 
-Note. In custom view you need to remove the focus from the report specification entry field in order for the shortcuts *O*, *L* and *S* to work.
+Note. In custom view you need to move the focus from the report specification entry field in order for the shortcuts *O*, *L* and *S* to work.
 
-In all views other than custom view and week view:
+In all views:
 
 - if an item is selected:
 
@@ -273,7 +273,7 @@ Tip. You can display a list of busy times or, after providing the needed period 
 
 ### Month View
 
-Events and occasions displayed graphically by month. Left and right cursor keys change, respectively, to the previous and next month. Up and down cursor keys select, respectively, the previous and next days within the given month. Days can also be selected by moving the mouse over the item. A list of occasions and events for the selected day is displayed at the bottom of the screen. 
+Events and occasions displayed graphically by month. Left and right cursor keys change, respectively, to the previous and next month. Up and down cursor keys select, respectively, the previous and next days within the given month. Days can also be selected by moving the mouse over the item. A list of occasions and events for the selected day is displayed at the bottom of the screen. Double clicking a date or pressing *Return* with a date selected opens a dialog to create an item for that date.
 
 The current date and days with occasions are highlighted and day numbers are colored in shades ranging from black to red to reflect the time scheduled for events in the day.
 
