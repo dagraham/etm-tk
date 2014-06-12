@@ -5,9 +5,9 @@ import glob
 
 import sys
 if sys.version_info >= (3, 2):
-    REQUIRES = ["python-dateutil>=1.5", "PyYaml>=3.10","icalendar>=3.6", "pytz"]
+    REQUIRES = ["tkinter>=8.5.11", "python-dateutil>=1.5", "PyYaml>=3.10","icalendar>=3.6", "pytz"]
 else:
-    REQUIRES = ["python>=2.7,<3.0", "python-dateutil>=1.5", "PyYaml>=3.10", "icalendar>=3.5", "pytz"]
+    REQUIRES = ["Tkinter>=8.5.11", "python>=2.7,<3.0", "python-dateutil>=1.5", "PyYaml>=3.10", "icalendar>=3.5", "pytz"]
 
 APP = ['etm']
 
