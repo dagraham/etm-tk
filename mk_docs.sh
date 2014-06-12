@@ -28,38 +28,45 @@ ps2pdf etm-man.ps etm-man.pdf
 #done
 
 cd etmTk/help
-echo Creating help.py
-quotes='"""'
-echo "" > ../help.py
-#for file in OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS; do
-for file in OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS; do
-    pandoc  -s --toc --toc-depth=2 -o $file.text -t plain --no-wrap $file.md
-    echo "$file = $quotes\\" >> ../help.py
-    cat $file.text >> ../help.py
-    echo '"""' >> ../help.py
-    echo '' >> ../help.py
+echo Creating help files
+
+#quotes='"""'
+#echo "" > ../help.py
+##for file in OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS; do
+#for file in OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS; do
+#    pandoc  -s --toc --toc-depth=2 -o $file.text -t plain --no-wrap $file.md
+#    echo "$file = $quotes\\" >> ../help.py
+#    cat $file.text >> ../help.py
+#    echo '"""' >> ../help.py
+#    echo '' >> ../help.py
+#done
+
+for file in INDEX OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS; do
+    pandoc  -s --toc --toc-depth=3 --template=default.html -o $file.html -B ~/etm-tk/style-before -f markdown -t html --no-wrap $file.md
 done
+#cp INDEX.html UserManual.html
 
-echo Creating UserManual.md
-echo "% ETM Users Manual" > UserManual.md
-for file in OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS KEYBINDINGS; do
-    echo "" >> UserManual.md
-    sed '1 s/%/##/' <$file.md >> UserManual.md
-done
-echo Creating UserManual.html
-pandoc -s --toc --toc-depth=2 -B ~/etm-tk/style-before -f markdown -t html -o UserManual.html  UserManual.md
-
-echo Creating UserManual.tex
-pandoc -s --toc --toc-depth=2 -f markdown -t latex -o UserManual.tex UserManual.md
-
-echo Creating UserManual.pdf
-pdflatex UserManual.tex
+#echo Creating UserManual.md
+#echo "% ETM Users Manual" > UserManual.md
+#for file in OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS KEYBINDINGS; do
+#    echo "" >> UserManual.md
+#    sed '1 s/%/##/' <$file.md >> UserManual.md
+#done
+#
+##echo Creating UserManual.html
+##pandoc -s --toc --toc-depth=2 -B ~/etm-tk/style-before -f markdown -t html -o UserManual.html  UserManual.md
+#
+#echo Creating UserManual.tex
+#pandoc -s --toc --toc-depth=2 -f markdown -t latex -o UserManual.tex UserManual.md
+#
+#echo Creating UserManual.pdf
+#pdflatex UserManual.tex
 
 #echo Creating help.text
 #pandoc -s --toc --toc-depth=2 -f markdown -t plain -o help.text  help.md
 
-# pandoc -s --toc --toc-depth=3 -f markdown -t html -o help.html  help.md overview.md data.md views.md reports.md shortcuts.md preferences.md
-# pdflatex help.tex
+#pandoc -s --toc --toc-depth=3 -f markdown -t html -o help.html  help.md overview.md data.md views.md reports.md shortcuts.md preferences.md
+#pdflatex help.tex
 
 cd ~/etm-tk
 echo Creating HEADER and README

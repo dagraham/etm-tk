@@ -1,4 +1,4 @@
-# Preferences
+% Preferences
 
 Configuration options are stored in a file named `etmtk.cfg` which, by default, belongs to the folder `.etm` in your home directory. When this file is edited in *etm* (Shift Ctrl-P), your changes become effective as soon as they are saved --- you do not need to restart *etm*. These options are listed below with illustrative entries and brief descriptions.
 

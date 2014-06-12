@@ -1,4 +1,4 @@
-# Reports
+% Reports
 
 To create a report open the custom view in the GUI. If you have entries in your report specifications file, `~./etm/reports.cfg` by default, you can choose one of them in the selection box at the bottom of the window.
 

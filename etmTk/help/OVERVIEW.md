@@ -1,8 +1,8 @@
-# Overview
+% Overview
 
 In contrast to most calendar/todo applications, creating items (events, tasks, and so forth) in etm does not require filling out fields in a form. Instead, items are created as free-form text entries using a simple, intuitive format and stored in plain text files.
 
-Dates in the examples below are entered using *fuzzy parsing* - e.g., `+7` for seven days from today, `fri` for the first Friday on or after today, `+1/1` for the first day of next month, `sun - 6d` for Monday of the current week. See [Dates](#dates) for details.
+Dates in the examples below are entered using *fuzzy parsing* - e.g., `+7` for seven days from today, `fri` for the first Friday on or after today, `+1/1` for the first day of next month, `sun - 6d` for Monday of the current week. See [Dates](DATES.html#dates) for details.
 
 ## Sample entries
 

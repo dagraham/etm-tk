@@ -1,4 +1,4 @@
-# Dates
+% Dates
 
 ## Fuzzy dates
 

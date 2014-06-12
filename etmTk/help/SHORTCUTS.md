@@ -1,4 +1,4 @@
-# Command Shortcuts
+% Shortcuts
 
 ## Menubar                                                      
 

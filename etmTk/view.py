@@ -170,7 +170,7 @@ LINECOLOR = "gray80"
 OCCASIONFILL = "gray96"
 
 this_dir, this_filename = os.path.split(__file__)
-USERMANUAL = os.path.normpath(os.path.join(this_dir, "help", "UserManual.html"))
+USERMANUAL = os.path.normpath(os.path.join(this_dir, "help", "INDEX.html"))
 
 
 class App(Tk):

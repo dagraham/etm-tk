@@ -1,4 +1,4 @@
-# Editor Shortcuts
+% Editor Shortcuts
 
 ## etm
 
