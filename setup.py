@@ -43,7 +43,6 @@ setup(
         'Intended Audience :: End Users/Desktop',
         'License :: OSI Approved :: GNU General Public License (GPL)',
         'Operating System :: MacOS :: MacOS X',
-        'Operating System :: Microsoft :: Windows :: Windows XP',
         'Operating System :: Microsoft :: Windows :: Windows Vista',
         'Operating System :: Microsoft :: Windows :: Windows 7',
         'Operating System :: OS Independent',
