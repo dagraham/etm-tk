@@ -46,21 +46,23 @@ for file in INDEX OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS;
 done
 #cp INDEX.html UserManual.html
 
-#echo Creating UserManual.md
-#echo "% ETM Users Manual" > UserManual.md
-#for file in OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS KEYBINDINGS; do
-#    echo "" >> UserManual.md
-#    sed '1 s/%/##/' <$file.md >> UserManual.md
-#done
-#
-##echo Creating UserManual.html
-##pandoc -s --toc --toc-depth=2 -B ~/etm-tk/style-before -f markdown -t html -o UserManual.html  UserManual.md
-#
-#echo Creating UserManual.tex
-#pandoc -s --toc --toc-depth=2 -f markdown -t latex -o UserManual.tex UserManual.md
-#
-#echo Creating UserManual.pdf
-#pdflatex UserManual.tex
+echo Creating UserManual.md
+echo "% ETM Users Manual" > UserManual.md
+for file in OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS KEYBINDINGS; do
+    echo "" >> UserManual.md
+    sed '1 s/%/#/' <$file.md >> UserManual.md
+done
+
+echo Creating UserManual.html
+pandoc -s --toc --toc-depth=2 -B ~/etm-tk/style-before -f markdown -t html -o UserManual.html  UserManual.md
+
+echo Creating UserManual.tex
+pandoc -s --toc --toc-depth=2 -f markdown -t latex -o UserManual.tex UserManual.md
+
+echo Creating UserManual.pdf
+pdflatex UserManual.tex
+
+rm UserManual.md
 
 #echo Creating help.text
 #pandoc -s --toc --toc-depth=2 -f markdown -t plain -o help.text  help.md

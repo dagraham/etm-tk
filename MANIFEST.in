@@ -1,2 +1,1 @@
-include etmTk/help/*.html
-include etmTk/help/*.md
+include etmTk/help/UserManual.html

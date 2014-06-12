@@ -93,7 +93,7 @@ def hsv_to_rgb(h, s, v):
 from etmTk.data import (
     init_localization, fmt_weekday, fmt_dt, zfmt, rfmt, efmt, hsh2str, str2hsh, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, fmt_datetime, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator, AFTER, export_ical_item, export_ical, fmt_time, TimeIt, getReportData, getFiles, getFileTuples, updateCurrentFiles, FINISH, availableDates)
 
-from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES, REPORTS)
+# from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES, REPORTS)
 
 from etmTk.dialog import Node, MenuTree, Timer, ReadOnlyText, MessageWindow,TextVariableWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, FileChoice, STOPPED, PAUSED, RUNNING,  BGCOLOR, ONEDAY, ONEMINUTE
 
@@ -170,7 +170,7 @@ LINECOLOR = "gray80"
 OCCASIONFILL = "gray96"
 
 this_dir, this_filename = os.path.split(__file__)
-USERMANUAL = os.path.normpath(os.path.join(this_dir, "help", "INDEX.html"))
+USERMANUAL = os.path.normpath(os.path.join(this_dir, "help", "UserManual.html"))
 
 
 class App(Tk):

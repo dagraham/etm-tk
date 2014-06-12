@@ -53,8 +53,8 @@ else
         for file in INDEX OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS; do
             cp -p etmTk/help/$file.html ~/.TEMP/help
          done
-#        cp -p etmTk/help/UserManual.pdf ~/.TEMP
-#        cp -p etmTk/help/UserManual.html ~/.TEMP
+        cp -p etmTk/help/UserManual.pdf ~/.TEMP
+        cp -p etmTk/help/UserManual.html ~/.TEMP
 
         # careful that the following doesn't overwrite modified files
         cp -p HEADER.html README.html ~/.TEMP
