@@ -64,6 +64,7 @@ echo Creating UserManual.pdf
 pdflatex UserManual.tex
 
 rm UserManual.md
+cp UserManual.html ~/etm-tk/help/manual
 
 #echo Creating help.text
 #pandoc -s --toc --toc-depth=2 -f markdown -t plain -o help.text  help.md
