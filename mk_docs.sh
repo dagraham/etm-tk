@@ -42,9 +42,9 @@ echo Creating help files
 #    echo '' >> ../help.py
 #done
 
-for file in INDEX OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS; do
-    pandoc  -s --toc --toc-depth=3 --template=default.html -o $file.html -B ~/etm-tk/style-before -f markdown -t html --no-wrap $file.md
-done
+#for file in INDEX OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS; do
+#    pandoc  -s --toc --toc-depth=3 --template=default.html -o $file.html -B ~/etm-tk/style-before -f markdown -t html --no-wrap $file.md
+#done
 #cp INDEX.html UserManual.html
 
 echo Creating UserManual.md
