@@ -11,8 +11,6 @@ if [ -z "$1" ]; then
     echo "          m: movies; p: PyPI; s: sound files "
 else
     copy=0
-    # version=`cat v.txt`
-#    version=`cat etmTk/v.py | head -1 | sed 's/\"//g' | sed 's/^.*= *//g'`
     version=`cat etmTk/v.py | head -1 | sed 's/\"//g' | sed 's/^.*= *//g' | sed 's/-.*$//g'`
 
     echo $version

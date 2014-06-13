@@ -1,0 +1,173 @@
+# Changes in the 2 weeks preceding Fri Jun 13 06:30:32 EDT 2014:
+- 2014-06-13 06:31:06 -0400 (HEAD, tag: 3.0.11, master): Dan Graham
+   tagged version 3.0.11
+- 2014-06-13 06:24:32 -0400 (origin/master): Dan Graham
+   Tweaks for mk_docs and upload.
+- 2014-06-13 06:12:46 -0400: Dan Graham
+   Merge branch 'master' of https://github.com/dagraham/etm-tk
+- 2014-06-12 22:28:54 -0400 (tag: 3.0.13): Dan Graham
+   tagged version 3.0.13
+- 2014-06-12 22:28:41 -0400: Dan Graham
+   Version number catchup.
+- 2014-06-12 22:13:48 -0400: Dan Graham
+   moved help files to etm-tk.wiki.
+- 2014-06-12 17:43:23 -0400 (tag: 3.0.12): Dan Graham
+   tagged version 3.0.12
+- 2014-06-12 16:28:49 -0400 (tag: 3.0.9-7): Dan Graham
+   tagged version 3.0.11
+- 2014-06-12 16:24:46 -0400: Dan Graham
+   Keep UserManual pdf and html.
+- 2014-06-12 15:55:01 -0400: Dan Graham
+   Updated version numbers and added INDEX.md.
+- 2014-06-12 15:52:17 -0400: Dan Graham
+   Documentation reorganization.
+- 2014-06-12 10:14:39 -0400 (tag: 3.0.10): Dan Graham
+   tagged version 3.0.10
+- 2014-06-12 10:14:26 -0400: Dan Graham
+   Added tkinter >= 8.5.11 to REQUIRES.
+- 2014-06-12 10:02:25 -0400: Dan Graham
+   Removed Windows XP from the trove list of supported platforms.
+- 2014-06-12 08:14:13 -0400: Dan Graham
+   Documentation updates.
+- 2014-06-11 16:16:39 -0400 (tag: 3.0.9): Dan Graham
+   tagged version 3.0.9
+- 2014-06-11 16:02:36 -0400: Dan Graham
+   Added warning that timezone information is ignored to result from
+   date calculator for pre 1970 dates under Windows.
+- 2014-06-11 13:00:43 -0400: Dan Graham
+   Eliminated use of the .etmtkdata.pkl file and, with it, the need to
+   import pickle and the functions dump_data and load_data.  Fixed bug
+   in date calculator regex. Restored ability to use "easter(yyyy)" in
+   date calculator.
+- 2014-06-10 16:55:19 -0400 (tag: 3.0.8): Dan Graham
+   tagged version 3.0.8
+- 2014-06-10 15:24:52 -0400: Dan Graham
+   Added hack to enable Windoz to deal with pre 1970-01-01 datetimes. 
+   Corrected argument call to get_changes.
+- 2014-06-10 11:44:10 -0400 (tag: 3.0.7): Dan Graham
+   tagged version 3.0.7
+- 2014-06-10 11:40:02 -0400: Dan Graham
+   Only use logfile on startup if etmdir exists.  Dump and load
+   uuid2labels in pickle file.  Only remove pickle file with bad data
+   if it exists. Added &E, byeaster, to rrule options.
+- 2014-06-09 13:03:11 -0400: Dan Graham
+   Added Shift-Ctrl-F shortcut for clear filter.
+- 2014-06-09 10:12:35 -0400: Dan Graham
+   Added missing nullok to opts for startActionTimer.
+- 2014-06-09 07:06:24 -0400 (tag: 3.0.6): Dan Graham
+   tagged version 3.0.6
+- 2014-06-09 07:05:22 -0400: Dan Graham
+   Initialize edithsh to avoid error when editing files.
+- 2014-06-08 12:58:42 -0400: Dan Graham
+   Fixed bug in reference to self.options instead of loop.options in
+   edit.py.
+- 2014-06-08 07:38:43 -0400: Dan Graham
+   Delete content on switch to either week or month view.
+- 2014-06-07 07:22:09 -0400 (tag: 3.0.5): Dan Graham
+   tagged version 3.0.5
+- 2014-06-07 07:21:55 -0400: Dan Graham
+   Use isocalendar week numbers in month view (as in week view).
+   Updated screenshots.
+- 2014-06-07 06:39:47 -0400 (tag: 3.0.4): Dan Graham
+   tagged version 3.0.4
+- 2014-06-06 17:36:08 -0400: Dan Graham
+   Make sure tree has focus on startup, even if there are no data
+   items.
+- 2014-06-06 15:43:35 -0400: Dan Graham
+   Remove confirmation for new event on double-click in week view.
+- 2014-06-06 15:28:05 -0400: Dan Graham
+   Don't insert ? and @e 1h when creating a new event in week view.
+- 2014-06-06 15:17:24 -0400: Dan Graham
+   When pressing "N" to create a new item in day, week or month view,
+   start with @s set to the currently selected date. Also for Return
+   or Double-Click in month view.
+- 2014-06-06 11:40:07 -0400 (tag: 3.0.3): Dan Graham
+   tagged version 3.0.3
+- 2014-06-06 11:39:29 -0400: Dan Graham
+   Fixed bug in closeMonthly.
+- 2014-06-06 10:53:47 -0400: Dan Graham
+   Create etmtk_log.txt if it does not exist in get_options.
+- 2014-06-06 10:41:31 -0400: Dan Graham
+   Added busy and free times lists to month view.
+- 2014-06-05 16:29:15 -0400: Dan Graham
+   Updated images and README.
+- 2014-06-05 13:06:42 -0400 (tag: 3.0.1): Dan Graham
+   tagged version 3.0.1
+- 2014-06-05 13:05:46 -0400: Dan Graham
+   Added monthly screenshot.
+- 2014-06-05 13:05:22 -0400: Dan Graham
+   Respect active calendars in month view. Updated shortcuts. Added
+   Month view to overview.
+- 2014-06-05 12:03:37 -0400: Dan Graham
+   Month view works with up, down, left, right and space bindings. Day
+   number color reflects number of minutes scheduled.
+- 2014-06-03 18:56:54 -0400: Dan Graham
+   Background color tweaks. Hide insertion cursor in ReadOnlyText.
+- 2014-06-03 06:52:27 -0400: Dan Graham
+   Merge branch 'master' of https://github.com/dagraham/etm-tk
+- 2014-06-03 06:50:31 -0400 (tag: 3.0.0): Dan Graham
+   tagged version 3.0.0
+- 2014-06-03 06:49:06 -0400: Dan Graham
+   Restart version numbering at 3.0.0.
+- 2014-06-03 06:43:05 -0400: Dan Graham
+   Changed idle_minum to idle_minutes.  Changed development status to
+   5 - Production/Stable.
+- 2014-06-02 22:50:06 -0400: Dan Graham
+   Merge branch 'master' of https://github.com/dagraham/etm-tk
+- 2014-06-02 22:48:09 -0400 (tag: 0.2.1): Dan Graham
+   tagged version 0.2.1
+- 2014-06-02 22:47:34 -0400: Dan Graham
+   Changed development status to 5 - Production/Stable and version to
+   0.2.0.
+- 2014-06-02 22:31:44 -0400: Dan Graham
+   tagged version 0.2.1
+- 2014-06-02 22:31:12 -0400: Dan Graham
+   Changed development status to 5 - Production/Stable and version to
+   0.2.0.
+- 2014-06-02 14:59:46 -0400 (tag: 0.1.44): Dan Graham
+   tagged version 0.1.44
+- 2014-06-02 14:59:35 -0400: Dan Graham
+   Fixed bug in passing font to DialogWindow.
+- 2014-06-02 13:15:10 -0400 (tag: 0.1.43): Dan Graham
+   tagged version 0.1.43
+- 2014-06-02 13:14:46 -0400: Dan Graham
+   Added available dates screenshots.
+- 2014-06-02 13:13:53 -0400: Dan Graham
+   Updated documentation. Added "tools" section to overview.
+- 2014-06-02 12:06:19 -0400: Dan Graham
+   Added availableDates dialog bound to Shift-A. Have MessageWindow
+   and, optionally, OptionsDialog use ReadOnlyText instead of Label.
+   Bind Ctrl-W to Ok in dialog and onCheck in edit. In date calculator
+   and available dates calculator, display result in the GetString
+   itself.
+- 2014-06-01 13:04:04 -0400 (tag: 0.1.42-1): Dan Graham
+   Replaced erroneous calls to askfilesaveas with FileChoice in export
+   custom to text and export custom to CSV. Added successful
+   completion message dialog for both.
+- 2014-05-31 12:27:17 -0400 (tag: 0.1.42): Dan Graham
+   tagged version 0.1.42
+- 2014-05-31 12:16:05 -0400: Dan Graham
+   In Finish dialog with new item, Return opens file dialog and
+   Shift-Return bypasses file dialog and saves to current monthly
+   file. In editor, Shift-Return activates Finish. Removed duplicate
+   Custom entry from shortcuts.
+- 2014-05-30 21:15:10 -0400 (tag: 0.1.41): Dan Graham
+   tagged version 0.1.41
+- 2014-05-30 20:57:58 -0400: Dan Graham
+   Don't allow starting or stopping the idle timer unless the action
+   timer is stopped.
+- 2014-05-30 20:41:54 -0400: Dan Graham
+   Fixed bug in setting idle when inactive.
+- 2014-05-30 16:22:33 -0400 (tag: 0.1.40): Dan Graham
+   tagged version 0.1.40
+- 2014-05-30 16:22:17 -0400: Dan Graham
+   Updated shortcut documentation.
+- 2014-05-30 16:18:52 -0400: Dan Graham
+   Added finish screenshots.
+- 2014-05-30 16:17:40 -0400: Dan Graham
+   Changed edit item workflow. Removed Validate button. Finish now
+   calls onCheck and either shows errors or offers the opportunity to
+   save changes and exit. Added weekday name abbreviation (%a) to
+   shortdatefmt and shortyearlessfmt.  Changed finished from X to
+   u"\2713" (checkmark). Show at most 10 repetions in finish item
+   dialog.
