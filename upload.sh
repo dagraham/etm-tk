@@ -48,9 +48,6 @@ else
         ;;
         d)
         echo "### copying html and pdf documentation files ###"
-#        for file in INDEX OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS; do
-#            cp -p etm-tk.wiki/help/$file.html ~/.TEMP/help
-#         done
         cp -p etm-tk.wiki/help/UserManual.pdf ~/.TEMP
         cp -p etm-tk.wiki/help/UserManual.html ~/.TEMP
 
@@ -59,15 +56,6 @@ else
         cp -p cheatsheet.pdf ~/.TEMP
         copy=1
         ;;
-#        e)
-#        echo "### copying examples ###"
-#        cp -p etm-sample/data/shared/sample_datafile.txt ~/.TEMP/sample
-#        cp -p etm-sample/reports.cfg ~/.TEMP/sample
-#        cp -p etm-sample/locale.cfg ~/.TEMP/sample
-#        cp -p COMPLETIONS ~/.TEMP/sample/
-#        cp -p TIMEZONES ~/.TEMP/sample/
-#        copy=1
-#        ;;
         i)
         echo "### copying images ###"
         cp -p images/*.gif ~/.TEMP/images
