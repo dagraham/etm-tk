@@ -50,9 +50,9 @@ else
         ;;
         d)
         echo "### copying html and pdf documentation files ###"
-        for file in INDEX OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS; do
-            cp -p etm-tk.wiki/help/$file.html ~/.TEMP/help
-         done
+#        for file in INDEX OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS; do
+#            cp -p etm-tk.wiki/help/$file.html ~/.TEMP/help
+#         done
         cp -p etm-tk.wiki/help/UserManual.pdf ~/.TEMP
         cp -p etm-tk.wiki/help/UserManual.html ~/.TEMP
 
