@@ -27,7 +27,8 @@ ps2pdf etm-man.ps etm-man.pdf
 #    pandoc -s --toc --toc-depth=2 -B ~/etm-tk/etmTk/style-before -f markdown -t html -o $file.html $file.md
 #done
 
-cd etmTk/help
+#cd etmTk/help
+cd etm-tk.wiki/help
 echo Creating help files
 
 #quotes='"""'
