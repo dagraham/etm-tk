@@ -48,6 +48,12 @@ else
         ;;
         d)
         echo "### copying html and pdf documentation files ###"
+<<<<<<< HEAD
+=======
+#        for file in INDEX OVERVIEW ITEMTYPES ATKEYS DATES PREFERENCES REPORTS SHORTCUTS; do
+#            cp -p etm-tk.wiki/help/$file.html ~/.TEMP/help
+#         done
+>>>>>>> FETCH_HEAD
         cp -p etm-tk.wiki/help/UserManual.pdf ~/.TEMP
         cp -p etm-tk.wiki/help/UserManual.html ~/.TEMP
 
