@@ -4,21 +4,21 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
 import os
-import platform, sys
+import platform
 import codecs
-from datetime import datetime, timedelta, time
+from datetime import datetime
 
-from copy import deepcopy
+# from copy import deepcopy
 
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Frame, LEFT, RIGHT, Text, PanedWindow, OptionMenu, StringVar, Menu, BooleanVar, ACTIVE, X, RIDGE, BOTH, SEL, SEL_FIRST, SEL_LAST, Button, FLAT, Listbox
+    from tkinter import Entry, INSERT, END, Toplevel, Frame, LEFT, RIGHT, Text, StringVar, X, BOTH, Button, FLAT, Listbox
     from tkinter import ttk
     # from ttk import Button, Style
     from tkinter import font as tkFont
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Frame, LEFT, RIGHT, Text, PanedWindow, OptionMenu, StringVar, Menu, BooleanVar, ACTIVE, X, RIDGE, BOTH, SEL, SEL_FIRST, SEL_LAST, Button, FLAT, Listbox
+    from Tkinter import Entry, INSERT, END, Toplevel, Frame, LEFT, RIGHT, Text, StringVar, X, BOTH, Button, FLAT, Listbox
     import ttk
     import tkFont
 
@@ -57,15 +57,15 @@ type2Text = {
     '^': _("Occasion"),
     '*': _("Event"),
     '~': _("Action"),
-    '!': _("Note"), # undated only appear in folders
-    '-': _("Task"), # for next view
-    '+': _("Task Group"), # for next view
+    '!': _("Note"),  # undated only appear in folders
+    '-': _("Task"),  # for next view
+    '+': _("Task Group"),  # for next view
     '%': _("Delegated Task"),
     '?': _("Someday Maybe item"),
     '#': _("Hidden item")
 }
 
-from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, optionShortcut, CMD, relpath, completion_regex, getReportData, tree2Text, AFTER, get_current_time, getFileTuples, fmt_datetime, fmt_shortdatetime, fmt_date, FINISH
+from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, completion_regex, getFileTuples, fmt_shortdatetime, fmt_date, FINISH
 
 from etmTk.dialog import BGCOLOR, OptionsDialog, ReadOnlyText, FileChoice
 
@@ -122,8 +122,6 @@ class SimpleEditor(Toplevel):
         frame.pack(side="bottom", fill=X, padx=4, pady=0)
         frame.configure(background=BGCOLOR, highlightbackground=BGCOLOR)
 
-        btnwdth = 5
-
         # quit with a warning prompt if modified
         Button(frame, text=_("Cancel"), highlightbackground=BGCOLOR, pady=2, command=self.quit).pack(side=LEFT, padx=4)
         self.bind("<Escape>", self.quit)
@@ -133,7 +131,7 @@ class SimpleEditor(Toplevel):
         self.bind("<Escape>", self.cancel)
 
         # finish will evaluate the item entry and, if repeating, show reps
-        finish = Button(frame, text=FINISH, highlightbackground=BGCOLOR,  command=self.onFinish, pady=2)
+        finish = Button(frame, text=FINISH, highlightbackground=BGCOLOR, command=self.onFinish, pady=2)
         self.bind("<Control-w>", self.onCheck)
 
         finish.pack(side=RIGHT, padx=4)
@@ -168,8 +166,7 @@ class SimpleEditor(Toplevel):
                 logger.warn('could not open: {0}'.format(file))
                 text = ""
             else:
-                with codecs.open(file, 'r',
-                             self.options['encoding']['file']) as f:
+                with codecs.open(file, 'r', self.options['encoding']['file']) as f:
                     text = f.read()
         else:
             # we are creating a new item and/or replacing an item
@@ -177,7 +174,7 @@ class SimpleEditor(Toplevel):
             #   1: new
             #   2: replace
             #   3: new and replace
-            self.initfile = initfile = ensureMonthly(options=self.options, date=datetime.now())
+            initfile = ensureMonthly(options=self.options, date=datetime.now())
             # set the mode
             if newhsh is None and rephsh is None:
                 # we are creating a new item from scratch
@@ -193,7 +190,7 @@ class SimpleEditor(Toplevel):
                 if ('fileinfo' in newhsh and newhsh['fileinfo']):
                     initfile = newhsh['fileinfo'][0]
                 text, msg = hsh2str(self.edithsh, self.options)
-            elif newhsh is None: # rephsh
+            elif newhsh is None:
                 # we are editing and replacing rephsh - no file prompt
                 self.title = EDITEXISTING
                 self.mode = 2
@@ -210,8 +207,8 @@ class SimpleEditor(Toplevel):
                 if 'fileinfo' in newhsh and newhsh['fileinfo'][0]:
                     initfile = self.newhsh['fileinfo'][0]
                 text, msg = hsh2str(self.edithsh, self.options)
-
-            logger.debug('mode: {0}; initfile: {1}; edit: {2}'.format(self.mode,  self.initfile,  self.edithsh))
+            self.initfile = initfile
+            logger.debug('mode: {0}; initfile: {1}; edit: {2}'.format(self.mode, self.initfile, self.edithsh))
         if self.title is not None:
             self.wm_title(self.title)
         self.settext(text)
@@ -282,16 +279,15 @@ class SimpleEditor(Toplevel):
         logger.debug("found match '{0}' in line '{1}'".format(match, line))
 
         self.autocompletewindow = acw = Toplevel(master=self.text)
-        acw.geometry("+%d+%d" % (self.text.winfo_rootx() + 50,
-                          self.text.winfo_rooty() + 50))
+        acw.geometry("+%d+%d" % (self.text.winfo_rootx() + 50, self.text.winfo_rooty() + 50))
 
         self.autocompletewindow.wm_attributes("-topmost", 1)
 
         self.filterValue = StringVar(self)
         self.filterValue.set(match)
         self.filterValue.trace_variable("w", self.setCompletions)
-        self.fltr = fltr = Entry(acw, textvariable=self.filterValue)
-        self.fltr.pack(side="top", fill="x") #, expand=1, fill=X)
+        self.fltr = Entry(acw, textvariable=self.filterValue)
+        self.fltr.pack(side="top", fill="x")
         self.fltr.icursor(END)
 
         self.listbox = listbox = Listbox(acw, exportselection=False, width=self.loop.options['completions_width'])
@@ -332,7 +328,7 @@ class SimpleEditor(Toplevel):
     def cursorUp(self, event=None):
         cursel = int(self.listbox.curselection()[0])
         # newsel = max(0, cursel=1)
-        newsel = max(0, cursel-1)
+        newsel = max(0, cursel - 1)
         self.listbox.select_clear(cursel)
         self.listbox.select_set(newsel)
         self.listbox.see(newsel)
@@ -340,7 +336,7 @@ class SimpleEditor(Toplevel):
 
     def cursorDown(self, event=None):
         cursel = int(self.listbox.curselection()[0])
-        newsel = min(len(self.matches)-1, cursel+1)
+        newsel = min(len(self.matches) - 1, cursel + 1)
         self.listbox.select_clear(cursel)
         self.listbox.select_set(newsel)
         self.listbox.see(newsel)
@@ -367,7 +363,6 @@ class SimpleEditor(Toplevel):
             self.onCheck()
 
     def onSave(self, e=None, v=0):
-        e = None
         if not self.checkmodified():
             self.quit()
         elif self.file is not None:
@@ -391,38 +386,38 @@ class SimpleEditor(Toplevel):
                 # we need a filename for the new item
                 # make datadir the root
                 prefix, tuples = getFileTuples(self.options['datadir'], include=r'*.txt')
-                lst = []
                 if v == 2:
                     filename = file
                 else:
                     ret = FileChoice(self, "etm data files", prefix=prefix, list=tuples, start=file).returnValue()
-                    if not ret: return False
+                    if not ret:
+                        return False
                     filename = os.path.join(prefix, ret)
-                if not os.path.isfile(filename): return False
+                if not os.path.isfile(filename):
+                    return False
                 filename = os.path.normpath(filename)
                 logger.debug('saving to: {0}'.format(filename))
                 self.text.focus_set()
             logger.debug('edithsh: {0}'.format(self.edithsh))
-            ok = True
             if self.mode == 1:
                 if self.loop.append_item(self.edithsh, filename):
                     logger.debug('append mode: {0}'.format(self.mode))
-                else:
-                    ok = False
+                # else:
+                #     ok = False
             elif self.mode == 2:
                 if self.loop.replace_item(self.edithsh):
                     logger.debug('replace mode: {0}'.format(self.mode))
-                else:
-                    ok = False
+                # else:
+                #     ok = False
             else:  # self.mode == 3
                 if self.loop.append_item(self.edithsh, filename):
                     logger.debug('append mode: {0}'.format(self.mode))
-                else:
-                    ok = False
+                # else:
+                #     ok = False
                 if self.loop.replace_item(self.rephsh):
                     logger.debug('replace mode: {0}'.format(self.mode))
-                else:
-                    ok = False
+                # else:
+                #     ok = False
 
             # update the return value so that when it is not null then modified
             # is false and when modified is true then it is null
@@ -438,7 +433,7 @@ class SimpleEditor(Toplevel):
         logger.debug("text: {0}".format(text))
         msg = []
         reps = []
-        error = False
+        # error = False
         hsh, msg = str2hsh(text, options=self.options)
 
         if not msg:
@@ -453,7 +448,7 @@ class SimpleEditor(Toplevel):
                 else:
                     dtfmt = fmt_shortdatetime(hsh['s'], self.options)
                 post = _(" scheduled for {0}").format(dtfmt)
-            else: # unscheduled
+            else:  # unscheduled
                 pre = _("Unscheduled ")
 
             prompt = "{0}{1}{2}".format(pre, type2Text[hsh['itemtype']], post)
@@ -480,7 +475,7 @@ class SimpleEditor(Toplevel):
         if str != text:
             self.settext(str)
         if 'r' in hsh:
-            showing_all, reps =  get_reps(self.loop.options['bef'], hsh)
+            showing_all, reps = get_reps(self.loop.options['bef'], hsh)
             if reps:
                 if showreps:
                     repsfmt = [x.strftime(rrulefmt) for x in reps]
@@ -500,12 +495,10 @@ class SimpleEditor(Toplevel):
                 self.messageWindow(MESSAGES, messages, opts=self.options)
                 return False
 
-
         if self.checkmodified():
             prompt += "\n\n{0}".format(SAVEANDEXIT)
         else:
             prompt += "\n\n{0}".format(UNCHANGEDEXIT)
-
 
         ans, value = OptionsDialog(parent=self, title=self.title, prompt=prompt, yesno=False, list=True).getValue()
         if ans:
@@ -547,9 +540,7 @@ class SimpleEditor(Toplevel):
 
     def quit(self, e=None):
         if self.checkmodified():
-            ans = self.confirm(parent=self,
-                title=_('Quit'),
-                prompt=_("There are unsaved changes.\nDo you really want to quit?"))
+            ans = self.confirm(parent=self, title=_('Quit'), prompt=_("There are unsaved changes.\nDo you really want to quit?"))
         else:
             ans = True
         if ans:
@@ -564,10 +555,7 @@ class SimpleEditor(Toplevel):
     def messageWindow(self, title, prompt, opts=None, height=8, width=52):
         win = Toplevel(self)
         win.title(title)
-        win.geometry("+%d+%d" % (self.text.winfo_rootx() + 50,
-                          self.text.winfo_rooty() + 50))
-        # win.minsize(444, 430)
-        # win.minsize(450, 450)
+        win.geometry("+%d+%d" % (self.text.winfo_rootx() + 50, self.text.winfo_rooty() + 50))
         f = Frame(win)
         # pack the button first so that it doesn't disappear with resizing
         b = Button(win, text=_('OK'), width=10, command=win.destroy, default='active', pady=2)

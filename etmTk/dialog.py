@@ -6,7 +6,8 @@ from __future__ import (absolute_import, division, print_function,
 import logging
 import logging.config
 import uuid
-import os, os.path
+import os
+import os.path
 
 logger = logging.getLogger()
 
@@ -14,36 +15,25 @@ import platform
 
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, Checkbutton, W, X, LabelFrame, Canvas, CURRENT, TclError, Listbox, SINGLE, BROWSE, Scrollbar
-    # from tkinter import ttk
+    from tkinter import Entry, END, Label, Toplevel, Button, Frame, LEFT, Text, StringVar, IntVar, BooleanVar, ACTIVE, Radiobutton, Checkbutton, W, X, TclError, Listbox, BROWSE, Scrollbar
     from tkinter import font as tkFont
-    from tkinter.messagebox import askokcancel
-    # from tkinter.filedialog import askopenfilename
     utf8 = lambda x: x
-    # from tkinter import simpledialog as tkSimpleDialog
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, Checkbutton, W, X, LabelFrame, Canvas, CURRENT, TclError, Listbox, SINGLE, BROWSE, Scrollbar
-    # import tkMessageBox
-    # import ttk
+    from Tkinter import Entry, END, Label, Toplevel, Button, Frame, LEFT, Text, StringVar, IntVar, BooleanVar, ACTIVE, Radiobutton, Checkbutton, W, X, TclError, Listbox, BROWSE, Scrollbar
     import tkFont
-    from tkMessageBox import askokcancel
-    # from tkFileDialog import askopenfilename
-    # import tkSimpleDialog
+
     def utf8(s):
         return s
 
-# from idlelib.WidgetRedirector import WidgetRedirector
-
 from datetime import datetime, timedelta
 
-from collections import OrderedDict
-
-from etmTk.data import fmt_period, parse_dt, get_current_time, getFiles, os_path_splitall, relpath, fmt_datetime, ensureMonthly, parse_period
+from etmTk.data import fmt_period, parse_dt, get_current_time, relpath, ensureMonthly, parse_period
 
 import gettext
 
 _ = gettext.gettext
+
 
 def sanitize_id(id):
     return id.strip().replace(" ", "")
@@ -63,9 +53,11 @@ PAUSED = _('paused')
 RUNNING = _('running')
 
 FOUND = "found"
+CLOSE = _("Close")
 
 BGLCOLOR = "#f2f2f2"
 BGCOLOR = "#ebebeb"
+
 
 class OriginalCommand:
 
@@ -82,6 +74,7 @@ class OriginalCommand:
 
     def __call__(self, *args):
         return self.tk_call(self.orig_and_operation + args)
+
 
 ########################################################
 # WidgetRedirector and OriginalCommand are from idlelib
@@ -129,8 +122,10 @@ class WidgetRedirector:
     def close(self):
         for operation in list(self._operations):
             self.unregister(operation)
-        widget = self.widget; del self.widget
-        orig = self.orig; del self.orig
+        widget = self.widget
+        del self.widget
+        orig = self.orig
+        del self.orig
         tk = widget.tk
         w = widget._w
         tk.deletecommand(w)
@@ -173,11 +168,11 @@ class WidgetRedirector:
         except TclError:
             return ""
 
+
 class Node:
 
     def __init__(self, name, identifier=None, expanded=True):
-        self.__identifier = (str(uuid.uuid1()) if identifier is None else
-                sanitize_id(str(identifier)))
+        self.__identifier = (str(uuid.uuid1()) if identifier is None else sanitize_id(str(identifier)))
         self.name = name
         self.expanded = expanded
         self.__bpointer = None
@@ -198,6 +193,7 @@ class Node:
             self.__fpointer.remove(sanitize_id(identifier))
         elif mode is _INSERT:
             self.__fpointer = [sanitize_id(identifier)]
+
 
 class MenuTree:
 
@@ -226,7 +222,7 @@ class MenuTree:
             self.lst = []
         else:
             name, key = self[position].name.split("::")
-            name = "{0}{1}".format("    "*(level-1), name.strip())
+            name = "{0}{1}".format("    " * (level - 1), name.strip())
             s = "{0:<48} {1:^12}".format(name, key.strip())
             self.lst.append(s)
             logger.debug("position: {0}, level: {1}, name: {2}, key: {3}".format(position, level, name, key))
@@ -266,7 +262,6 @@ class Timer():
         self.timer_hsh = None
         self.timer_summary = None
 
-
     def idle_start(self):
         if self.idle_active:
             return
@@ -296,14 +291,15 @@ class Timer():
         opts = {'idle_delta': self.idle_delta, 'keywords': self.options['keywords'], 'currfile': ensureMonthly(self.options), 'tz': self.options['local_timezone']}
         self.idle_delta = ResolveIdleTime(self.parent, title="assign idle time", opts=opts).idle_delta
 
-
     def idle_resume(self):
-        if not self.idle_active: return
+        if not self.idle_active:
+            return
         self.idle_starttime = datetime.now()
         logger.debug('resume, idle time: {0}'.format(self.idle_delta))
 
     def timer_start(self, hsh=None, toggle=True):
-        if not hsh: hsh = {}
+        if not hsh:
+            hsh = {}
         self.timer_starttime = datetime.now()
         self.timer_hsh = hsh
         text = hsh['_summary']
@@ -334,7 +330,8 @@ class Timer():
         self.timer_hsh['itemtype'] = '~'
 
     def timer_toggle(self, hsh=None):
-        if not hsh: hsh = {}
+        if not hsh:
+            hsh = {}
         if self.timer_status == STOPPED:
             self.get_time()
             self.timer_last = datetime.now()
@@ -348,7 +345,6 @@ class Timer():
             self.timer_last = datetime.now()
         if self.parent:
             self.parent.update_idletasks()
-
 
     def get_time(self):
         # if self.timer_status == STOPPED:
@@ -368,12 +364,11 @@ class Timer():
             if self.timer_status == PAUSED:
                 elapsed_time = self.timer_delta
             elif self.timer_status == RUNNING:
-                elapsed_time = (self.timer_delta + datetime.now() -
-                           self.timer_last)
+                elapsed_time = (self.timer_delta + datetime.now() - self.timer_last)
             else:
                 elapsed_time = self.timer_delta
             plus = " ({0})".format(_("paused"))
-            self.timer_minutes = elapsed_time.seconds//60
+            self.timer_minutes = elapsed_time.seconds // 60
             if self.timer_status == RUNNING:
                 plus = " ({0})".format(_("running"))
             # ret = "{0}  {1}{2}".format(self.timer_summary, self.timer_time, s)
@@ -404,16 +399,10 @@ class MessageWindow():
         if 'fontsize_fixed' in self.options and self.options['fontsize_fixed']:
             tkfixedfont.configure(size=self.options['fontsize_fixed'])
 
-        self.content = ReadOnlyText(self.win, wrap="word", padx=3, bd=2,
-            height=10, relief="sunken",
-            font=tkfixedfont,
-            width=46, takefocus=False)
+        self.content = ReadOnlyText(self.win, wrap="word", padx=3, bd=2, height=10, relief="sunken", font=tkfixedfont, width=46, takefocus=False)
         self.content.pack(fill=tkinter.BOTH, expand=1, padx=10, pady=10)
-        # self.content.delete("1.0", END)
         self.content.insert("1.0", prompt)
-        # Label(self.win, text=prompt).pack(fill=tkinter.BOTH, expand=1, padx=10, pady=10)
-        b = Button(self.win, text=_('OK'), width=10, command=self.cancel,
-                   default='active', pady=2)
+        b = Button(self.win, text=_('OK'), width=10, command=self.cancel, default='active', pady=2)
         b.pack()
         self.win.bind('<Return>', (lambda e, b=b: b.invoke()))
         self.win.bind('<Escape>', (lambda e, b=b: b.invoke()))
@@ -440,13 +429,12 @@ class FileChoice(object):
         else:
             self.start = start
         self.ext = ext
-        self.new = new # choose a new or an exising file?
+        self.new = new
 
         self.modalPane = Toplevel(self.master, highlightbackground=BGCOLOR, background=BGCOLOR)
         if master:
             logger.debug('winfo: {0}, {1}; {2}, {3}'.format(master.winfo_rootx(), type(master.winfo_rootx()), master.winfo_rooty(), type(master.winfo_rooty())))
-            self.modalPane.geometry("+%d+%d" % (master.winfo_rootx() + 50,
-                                  master.winfo_rooty() + 50))
+            self.modalPane.geometry("+%d+%d" % (master.winfo_rootx() + 50, master.winfo_rooty() + 50))
 
         self.modalPane.transient(self.master)
         self.modalPane.grab_set()
@@ -467,12 +455,11 @@ class FileChoice(object):
             self.fileName = StringVar(self.modalPane)
             self.fileName.set("untitled.{0}".format(ext))
             self.fileName.trace_variable("w", self.onSelect)
-            self.fname = fname = Entry(nameFrame, textvariable=self.fileName, bd=1, highlightbackground=BGCOLOR)
-            self.fname.pack(side="left", fill="x", expand=1, padx=0, pady=0) #, expand=1, fill=X)
+            self.fname = Entry(nameFrame, textvariable=self.fileName, bd=1, highlightbackground=BGCOLOR)
+            self.fname.pack(side="left", fill="x", expand=1, padx=0, pady=0)
             self.fname.icursor(END)
             self.fname.bind("<Up>", self.cursorUp)
             self.fname.bind("<Down>", self.cursorDown)
-
 
         filterFrame = Frame(self.modalPane, highlightbackground=BGCOLOR, background=BGCOLOR)
         filterFrame.pack(side="top", padx=18, pady=4, fill="x")
@@ -483,16 +470,15 @@ class FileChoice(object):
         self.filterValue = StringVar(self.modalPane)
         self.filterValue.set("")
         self.filterValue.trace_variable("w", self.setMatching)
-        self.fltr = fltr = Entry(filterFrame, textvariable=self.filterValue, bd=1, highlightbackground=BGCOLOR)
-        self.fltr.pack(side="left", fill="x", expand=1, padx=0, pady=0) #, expand=1, fill=X)
+        self.fltr = Entry(filterFrame, textvariable=self.filterValue, bd=1, highlightbackground=BGCOLOR)
+        self.fltr.pack(side="left", fill="x", expand=1, padx=0, pady=0)
         self.fltr.icursor(END)
 
         prefixFrame = Frame(self.modalPane, highlightbackground=BGCOLOR, background=BGCOLOR)
         prefixFrame.pack(side="top", padx=8, pady=2, fill="x")
 
         self.prefixLabel = Label(prefixFrame, text=_("{0}:").format(prefix), bd=1, highlightbackground=BGCOLOR, background=BGCOLOR)
-        self.prefixLabel.pack(side="left", expand=0,  padx=0, pady=0) #, expand=1, fill=X)
-
+        self.prefixLabel.pack(side="left", expand=0, padx=0, pady=0)
 
         buttonFrame = Frame(self.modalPane, highlightbackground=BGCOLOR, background=BGCOLOR)
         buttonFrame.pack(side="bottom", padx=10, pady=2)
@@ -508,8 +494,8 @@ class FileChoice(object):
 
         self.selectionValue = StringVar(self.modalPane)
         self.selectionValue.set("")
-        self.selection = selection = Label(selectionFrame, textvariable=self.selectionValue, bd=1, highlightbackground=BGCOLOR, background=BGCOLOR)
-        self.selection.pack(side="left", fill="x", expand=1, padx=0, pady=0) #, expand=1, fill=X)
+        self.selection = Label(selectionFrame, textvariable=self.selectionValue, bd=1, highlightbackground=BGCOLOR, background=BGCOLOR)
+        self.selection.pack(side="left", fill="x", expand=1, padx=0, pady=0)
 
         listFrame = Frame(self.modalPane, highlightbackground=BGCOLOR, background=BGCOLOR, width=40)
         listFrame.pack(side="top", fill="both", expand=1, padx=5, pady=2)
@@ -526,15 +512,9 @@ class FileChoice(object):
         # self.modalPane.bind("<Down>", self.cursorDown)
         self.fltr.bind("<Up>", self.cursorUp)
         self.fltr.bind("<Down>", self.cursorDown)
-        # self.fltr.bind("<Down>", self.cursorDown)
-
-
         scrollBar.config(command=self.listBox.yview)
         self.listBox.config(yscrollcommand=scrollBar.set)
-
         self.setMatching()
-
-        # self.fltr.focus_set()
 
     def ignore(self, e=None):
         return "break"
@@ -559,11 +539,9 @@ class FileChoice(object):
             self.value = p
         return "break"
 
-
     def cursorUp(self, event=None):
         cursel = int(self.listBox.curselection()[0])
-        # newsel = max(0, cursel=1)
-        newsel = max(0, cursel-1)
+        newsel = max(0, cursel - 1)
         self.listBox.select_clear(cursel)
         self.listBox.select_set(newsel)
         self.listBox.see(newsel)
@@ -572,7 +550,7 @@ class FileChoice(object):
 
     def cursorDown(self, event=None):
         cursel = int(self.listBox.curselection()[0])
-        newsel = min(len(self.list)-1, cursel+1)
+        newsel = min(len(self.list) - 1, cursel + 1)
         self.listBox.select_clear(cursel)
         self.listBox.select_set(newsel)
         self.listBox.see(newsel)
@@ -650,8 +628,7 @@ class Dialog(Toplevel):
 
     def __init__(self, parent, title=None, prompt=None, opts=None, default=None, modal=True, xoffset=50, yoffset=50, event=None, process=None, font=None):
 
-        Toplevel.__init__(self, parent, highlightbackground=BGCOLOR,
-                    background=BGCOLOR)
+        Toplevel.__init__(self, parent, highlightbackground=BGCOLOR, background=BGCOLOR)
         self.protocol("WM_DELETE_WINDOW", self.quit)
         if modal:
             logger.debug('modal')
@@ -684,38 +661,26 @@ class Dialog(Toplevel):
         self.buttonbox()
         # don't expand body or it will fill below the actual content
         body.pack(side="top", fill=tkinter.BOTH, padx=0, pady=0, expand=1)
-
-
         self.protocol("WM_DELETE_WINDOW", self.quit)
-
         if parent:
-            self.geometry("+%d+%d" % (parent.winfo_rootx() + xoffset,
-                                  parent.winfo_rooty() + yoffset))
-
+            self.geometry("+%d+%d" % (parent.winfo_rootx() + xoffset, parent.winfo_rooty() + yoffset))
         if modal:
             self.grab_set()
             self.wait_window(self)
-        # return "break"
-
-    # construction hooks
 
     def body(self, master):
         # create dialog body.  return widget that should have
         # initial focus.  this method should be overridden
-
         pass
 
     def buttonbox(self):
         # add standard button box. override if you don't want the
         # standard buttons
-
         box = Frame(self, background=BGCOLOR, highlightbackground=BGCOLOR)
-
-        w = Button(box, text="OK", width=10, command=self.ok, default=ACTIVE,  highlightbackground=BGCOLOR, pady=2)
+        w = Button(box, text="OK", width=10, command=self.ok, default=ACTIVE, highlightbackground=BGCOLOR, pady=2)
         w.pack(side="right", padx=5, pady=2)
         w = Button(box, text="Cancel", width=10, command=self.cancel, highlightbackground=BGCOLOR, pady=2)
         w.pack(side="right", padx=5, pady=2)
-
         self.bind("<Return>", self.ok)
         self.bind("<Escape>", self.cancel)
 
@@ -757,20 +722,17 @@ class Dialog(Toplevel):
         else:
             logger.debug("returning focus, no parent")
         self.destroy()
-        # return "break"
 
     # command hooks
-
     def validate(self):
-
-        return 1 # override
+        return 1  # override
 
     def apply(self):
-
-        pass # override
+        pass  # override
 
     def messageWindow(self, title, prompt):
         MessageWindow(self.parent, title, prompt)
+
 
 class ResolveIdleTime(Dialog):
 
@@ -793,7 +755,7 @@ class ResolveIdleTime(Dialog):
         self.completions = self.options['keywords']
         self.currfile = self.options['currfile']
         self.tz = self.options['tz']
-        period_frame = Frame(master, background= BGCOLOR)
+        period_frame = Frame(master, background=BGCOLOR)
         period_frame.pack(side="top", fill="x", padx=4, pady=2)
 
         period_label = Label(period_frame, text=_("Assign"), bg=BGCOLOR)
@@ -808,31 +770,21 @@ class ResolveIdleTime(Dialog):
 
         of_label = Label(period_frame, text=_("of"), bg=BGCOLOR, takefocus=0)
         of_label.pack(side="right")
-
         self.period_entry.pack(side="left", fill="x", expand=1, padx=4)
-
-
         self.keyword_frame = keyword_frame = Frame(master, background=BGCOLOR)
         keyword_frame.pack(side="top", fill="both", padx=4, expand=1)
-
         self.outcome = StringVar(self)
         self.outcome.set("")
         self.outcome_label = Label(keyword_frame, textvariable=self.outcome, bg=BGCOLOR, takefocus=0)
         self.outcome_label.pack(side="bottom")
-
-        # keyword_label = Label(keyword_frame, text=_("to:"))
-        # keyword_label.pack(side="left")
-
         self.filterValue = StringVar(self)
         self.filterValue.set("")
         self.filterValue.trace_variable("w", self.setCompletions)
-        self.fltr = fltr = Entry(self.keyword_frame, textvariable=self.filterValue, highlightbackground=BGCOLOR)
-        self.fltr.pack(fill="x") #, expand=1, fill=X)
+        self.fltr = Entry(self.keyword_frame, textvariable=self.filterValue, highlightbackground=BGCOLOR)
+        self.fltr.pack(fill="x")
         self.fltr.icursor(END)
-
         self.listbox = listbox = Listbox(self.keyword_frame, exportselection=False, width=self.parent.options['completions_width'])
         listbox.pack(fill="both", expand=True, padx=2, pady=2)
-
         self.keyword_frame.bind("<Double-1>", self.apply)
         self.keyword_frame.bind("<Return>", self.apply)
         self.listbox.bind("<Up>", self.cursorUp)
@@ -841,7 +793,6 @@ class ResolveIdleTime(Dialog):
         self.fltr.bind("<Down>", self.cursorDown)
         self.setCompletions()
         return self.period_entry
-
 
     def setCompletions(self, *args):
         match = self.filterValue.get()
@@ -854,8 +805,7 @@ class ResolveIdleTime(Dialog):
 
     def cursorUp(self, event=None):
         cursel = int(self.listbox.curselection()[0])
-        # newsel = max(0, cursel=1)
-        newsel = max(0, cursel-1)
+        newsel = max(0, cursel - 1)
         self.listbox.select_clear(cursel)
         self.listbox.select_set(newsel)
         self.listbox.see(newsel)
@@ -863,7 +813,7 @@ class ResolveIdleTime(Dialog):
 
     def cursorDown(self, event=None):
         cursel = int(self.listbox.curselection()[0])
-        newsel = min(len(self.matches)-1, cursel+1)
+        newsel = min(len(self.matches) - 1, cursel + 1)
         self.listbox.select_clear(cursel)
         self.listbox.select_set(newsel)
         self.listbox.see(newsel)
@@ -882,28 +832,24 @@ class ResolveIdleTime(Dialog):
         except:
             self.outcome.set(_("Could not parse period: {0}").format(period_str))
             return
-
         hsh = {'itemtype': '~', '_summary': 'idle time', 's': get_current_time(), 'e': period, 'k': keyword_str, 'z': self.tz}
         self.parent.loop.append_item(hsh, self.currfile)
-
         self.outcome.set(_("assigned {0} to {1}").format(fmt_period(period), keyword_str))
         self.time_period.set("")
-
         self.idle_delta -= period
         self.idletime.set(fmt_period(self.idle_delta))
-
         if self.idle_delta < ONEMINUTE:
             self.cancel()
 
-
     def ok(self, event=None):
         self.apply()
+
 
 class TextVariableWindow(Dialog):
     def body(self, master):
         if 'textvariable' not in self.options:
             return
-        self.entry = entry = Entry(master, textvariable=self.options['textvariable'])
+        self.entry = Entry(master, textvariable=self.options['textvariable'])
         self.entry.pack(side="bottom", padx=5, pady=5)
         Label(master, text=self.prompt, justify='left', highlightbackground=BGLCOLOR, background=BGLCOLOR).pack(side="top", fill=tkinter.BOTH, expand=1, padx=10, pady=5)
         self.entry.focus_set()
@@ -913,7 +859,6 @@ class TextVariableWindow(Dialog):
     def buttonbox(self):
         # add standard button box. override if you don't want the
         # standard buttons
-
         box = Frame(self, highlightbackground=BGCOLOR, background=BGCOLOR)
 
         w = Button(box, text=CLOSE, width=10, command=self.ok,
@@ -927,14 +872,13 @@ class TextVariableWindow(Dialog):
         if self.parent:
             logger.debug("returning focus to parent: {0}".format(self.parent))
             self.parent.focus()
-            # self.parent.tree.focus_set()
             self.parent.focus_set()
-            # self.parent.focus_set()
         else:
             logger.debug("returning focus, no parent")
         self.entry.delete(0, END)
         self.options['textvariable'].set("")
         self.destroy()
+
 
 class DialogWindow(Dialog):
     # master will be a frame in Dialog
@@ -942,15 +886,12 @@ class DialogWindow(Dialog):
         self.entry = Entry(master)
         self.entry.pack(side="bottom", padx=5, pady=2, fill=X)
         tkfixedfont = self.font
-        # tkfixedfont = tkFont.nametofont("TkFixedFont")
-        # tkfixedfont.configure(size=self.options['fontsize_fixed'])
         lines = self.prompt.split('\n')
         height = min(20, len(lines) + 1)
         lengths = [len(line) for line in lines]
         width = min(70, max(lengths) + 2)
         self.text = ReadOnlyText(
             master, wrap="word", padx=2, pady=2, bd=2, relief="sunken",
-            # font=tkFont.Font(family="Lucida Sans Typewriter"),
             font=tkfixedfont,
             height=height,
             width=width,
@@ -958,18 +899,15 @@ class DialogWindow(Dialog):
             takefocus=False)
         self.text.insert("1.1", self.prompt)
         self.text.pack(side="top", fill=tkinter.BOTH, expand=1, padx=6, pady=2)
-        # Label(master, text=self.prompt, justify='left', highlightbackground=BGCOLOR, background=BGCOLOR).pack(side="top", fill=tkinter.BOTH, expand=1, padx=10, pady=5)
         if self.default is not None:
             self.entry.insert(0, self.default)
             self.entry.select_range(0, END)
-            # self.entry.pack(padx=5, pady=5)
         return self.entry
+
 
 class TextDialog(Dialog):
 
     def body(self, master):
-        # tkfixedfont = tkFont.nametofont("TkFixedFont")
-        # tkfixedfont.configure(size=self.options['fontsize_fixed'])
         tkfixedfont = self.font
         lines = self.prompt.split('\n')
         height = min(25, len(lines) + 1)
@@ -1011,12 +949,12 @@ class TextDialog(Dialog):
 
 class OptionsDialog():
     def __init__(self, parent, master=None, title="", prompt="", opts=None, radio=True, yesno=True, list=False):
-        if not opts: opts = []
+        if not opts:
+            opts = []
         self.win = Toplevel(parent)
         self.win.protocol("WM_DELETE_WINDOW", self.quit)
         if parent:
-            self.win.geometry("+%d+%d" % (parent.winfo_rootx() + 50,
-                                  parent.winfo_rooty() + 50))
+            self.win.geometry("+%d+%d" % (parent.winfo_rootx() + 50, parent.winfo_rooty() + 50))
         self.parent = parent
         self.master = master
         self.options = opts
@@ -1027,39 +965,23 @@ class OptionsDialog():
             tkfixedfont = tkFont.nametofont("TkFixedFont")
             if 'fontsize_fixed' in self.parent.options and self.parent.options['fontsize_fixed']:
                 tkfixedfont.configure(size=self.parent.options['fontsize_fixed'])
-
-            self.content = ReadOnlyText(self.win, wrap="word", padx=3, bd=2,
-                height=10, relief="sunken",
-                font=tkfixedfont,
-                bg=BGLCOLOR,
-                highlightbackground=BGLCOLOR,
-                width=46, takefocus=False)
+            self.content = ReadOnlyText(self.win, wrap="word", padx=3, bd=2, height=10, relief="sunken", font=tkfixedfont, bg=BGLCOLOR, highlightbackground=BGLCOLOR, width=46, takefocus=False)
             self.content.pack(fill=tkinter.BOTH, expand=1, padx=10, pady=5)
-            # self.content.delete("1.0", END)
             self.content.insert("1.0", prompt)
         else:
             Label(self.win, text=prompt, justify='left').pack(fill=tkinter.BOTH, expand=1, padx=10, pady=5)
             self.sv = StringVar(parent)
         self.sv = IntVar(parent)
-        # self.sv.set(opts[0])
         self.sv.set(1)
-        # logger.debug('sv: {0}'.format(self.sv.get()))
         if self.options:
             if radio:
                 self.value = opts[0]
                 for i in range(min(9, len(self.options))):
                     txt = self.options[i]
                     val = i + 1
-                    # bind keyboard numbers 1-9 (at most) to options selection, i.e., press 1
-                    # to select option 1, 2 to select 2, etc.
+                    # bind keyboard numbers 1-9 (at most) to options selection, i.e., press 1 to select option 1, 2 to select 2, etc.
                     self.win.bind(str(val), (lambda e, x=val: self.sv.set(x)))
-                    Radiobutton(self.win,
-                        text="{0}: {1}".format(val, txt),
-                        padx=20,
-                        indicatoron=True,
-                        variable=self.sv,
-                        command=self.getValue,
-                        value=val).pack(padx=10, anchor=W)
+                    Radiobutton(self.win, text="{0}: {1}".format(val, txt), padx=20, indicatoron=True, variable=self.sv, command=self.getValue, value=val).pack(padx=10, anchor=W)
             else:
                 self.check_values = {}
                 # show 0, check 1, return 2
@@ -1067,10 +989,7 @@ class OptionsDialog():
                     txt = self.options[i][0]
                     self.check_values[i] = BooleanVar(self.parent)
                     self.check_values[i].set(self.options[i][1])
-                    Checkbutton(self.win,
-                        text=self.options[i][0],
-                        padx=20,
-                        variable=self.check_values[i]).pack(padx=10, anchor=W)
+                    Checkbutton(self.win, text=self.options[i][0], padx=20, variable=self.check_values[i]).pack(padx=10, anchor=W)
         box = Frame(self.win)
         if list:
             box.configure(bg=BGCOLOR)
@@ -1102,23 +1021,23 @@ class OptionsDialog():
         logger.debug("sv: {0}".format(v))
         if self.options:
             if self.radio:
-                if v-1 in range(len(self.options)):
-                    o = self.options[v-1]
+                if v - 1 in range(len(self.options)):
+                    o = self.options[v - 1]
                     logger.debug(
                         'OptionsDialog returning {0}: {1}'.format(v, o))
                     return v, o
                     # return o, v
                 else:
                     logger.debug(
-                        'OptionsDialog returning {0}: {1}'.format(v,  None))
+                        'OptionsDialog returning {0}: {1}'.format(v, None))
                     return 0, None
-            else: # checkbutton
+            else:  # checkbutton
                 values = []
                 for i in range(len(self.options)):
                     bool = self.check_values[i].get() > 0
                     values.append([self.options[i][0], bool, self.options[i][2]])
                 return values
-        else: # askokcancel type dialog
+        else:  # askokcancel type dialog
             logger.debug(
                 'OptionsDialog returning {0}: {1}'.format(v, None))
             return v, v
@@ -1210,7 +1129,6 @@ class GetString(DialogWindow):
             nullok = True
             # an entry is required
         val = self.entry.get()
-        ok = False
         if val.strip():
             self.value = val
             return True
