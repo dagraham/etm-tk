@@ -13,6 +13,7 @@ import logging
 import logging.config
 logger = logging.getLogger()
 
+
 def setup_logging(level, etmdir=None):
     """
     Setup logging configuration. Override root:level in
@@ -60,7 +61,7 @@ def setup_logging(level, etmdir=None):
                                         'propagate': False}},
                   'root': {'handlers': ['console', 'file'], 'level': 'DEBUG'},
                   'version': 1}
-    else: # no etmdir - first use
+    else:  # no etmdir - first use
         config = {'disable_existing_loggers': False,
                   'formatters': {'simple': {
                       'format': '--- %(asctime)s - %(levelname)s - %(module)s.%(funcName)s\n    %(message)s'}},
@@ -103,10 +104,13 @@ else:
 from random import random
 from math import log
 
+
 class Node(object):
     __slots__ = 'value', 'next', 'width'
+
     def __init__(self, value, next, width):
         self.value, self.next, self.width = value, next, width
+
 
 class End(object):
     """
@@ -146,7 +150,7 @@ class IndexableSkiplist:
         self.size = 0
         self.type = type
         self.maxlevels = int(1 + log(expected_size, 2))
-        self.head = Node('HEAD', [NIL]*self.maxlevels, [1]*self.maxlevels)
+        self.head = Node('HEAD', [NIL] * self.maxlevels, [1] * self.maxlevels)
 
     def __len__(self):
         return self.size
@@ -177,7 +181,7 @@ class IndexableSkiplist:
 
         # insert a link to the newnode at each level
         d = min(self.maxlevels, 1 - int(log(random(), 2.0)))
-        newnode = Node(value, [None]*d, [None]*d)
+        newnode = Node(value, [None] * d, [None] * d)
         steps = 0
         for level in range(d):
             prevnode = chain[level]
@@ -249,6 +253,7 @@ name2SL = {
     "datetimes": datetimesSL
 }
 
+
 def clear_all_data():
     global itemsSL, alertsSL, datetimesSL, datesSL, busytimesSL, occasionsSL, items, alerts, datetimes, busytimes, occasions, file2uuids, uuid2hash, file2data, name2list, name2SL
     itemsSL = IndexableSkiplist(5000, "items")
@@ -265,7 +270,6 @@ def clear_all_data():
     file2uuids = {}
     uuid2hash = {}
     file2data = {}
-
 
     name2list = {
         "items": items,
@@ -298,11 +302,12 @@ from datetime import datetime, timedelta, time
 from dateutil.tz import (tzlocal, tzutc)
 from dateutil.easter import easter
 
+
 def get_current_time():
     return datetime.now(tzlocal())
 
 # this task will be created for first time users
-SAMPLE ="""\
+SAMPLE = """\
 # Sample entries - edit or delete at your pleasure
 = @t sample, tasks
 ? lose weight and exercise more
@@ -471,6 +476,7 @@ qt2dt = [
     ('w', 'WEEK')
 ]
 
+
 def commandShortcut(s):
     """
     Produce label, command pairs from s based on Command for OSX
@@ -482,10 +488,9 @@ def commandShortcut(s):
         shift = ""
     if mac:
         # return "{0}Cmd-{1}".format(shift, s), "<{0}Command-{1}>".format(shift, s)
-        return "{0}Ctrl-{1}".format(shift, s.upper()), "<{0}Control-{1}>".format(shift,
-                                                                       s)
+        return "{0}Ctrl-{1}".format(shift, s.upper()), "<{0}Control-{1}>".format(shift, s)
     else:
-        return "{0}Ctrl-{1}".format(shift, s.upper()), "<{0}Control-{1}>".format( shift, s)
+        return "{0}Ctrl-{1}".format(shift, s.upper()), "<{0}Control-{1}>".format(shift, s)
 
 
 def optionShortcut(s):
@@ -507,21 +512,9 @@ def init_localization():
     """prepare l10n"""
     locale.setlocale(locale.LC_ALL, '')  # use user's preferred locale
     # take first two characters of country code
-    loc = locale.getlocale()
-    # FIXME: path won't work in package
-    # filename = "language/messages_%s.mo" % locale.getlocale()[0][0:2]
-    # if os.path.isfile(filename):
-    #     try:
-    #         logging.debug("Opening message file %s for locale %s", filename, loc[0])
-    #         trans = gettext.GNUTranslations(open(filename, "rb"))
-    #     except IOError:
-    #         logging.error("Could not load {0}. Using default messages.".format(filename))
-    #         trans = gettext.NullTranslations()
-    # else:
-    #     logging.info("Could not find {0}. Using default messages.".format(filename))
-    #     trans = gettext.NullTranslations()
     trans = gettext.NullTranslations()
     trans.install()
+
 
 def d_to_str(d, s):
     for key, val in qt2dt:
@@ -532,6 +525,7 @@ def d_to_str(d, s):
         ret = ret.replace('WEEK', theweek)
     return ret
 
+
 def dt_to_str(dt, s):
     for key, val in qt2dt:
         s = s.replace(key, val)
@@ -540,6 +534,7 @@ def dt_to_str(dt, s):
         theweek = get_week(dt)
         ret = ret.replace('WEEK', theweek)
     return ret
+
 
 def get_week(dt):
     yn, wn, dn = dt.isocalendar()
@@ -707,10 +702,11 @@ def term_print(s):
     if python_version2:
         try:
             print(unicode(s).encode(term_encoding))
-        except Exception as e:
+        except Exception:
             logger.exception("error printing: '{0}', {1}".format(s, type(s)))
     else:
         print(s)
+
 
 # noinspection PyGlobalUndefined
 def setup_parse(day_first, year_first):
@@ -776,6 +772,7 @@ def getMercurial():
         logger.debug('could not find hg in path')
         base_command = history_command = commit_command = init_command = ''
     return base_command, history_command, commit_command, init_command
+
 
 def getGit():
     if windoz:
@@ -868,6 +865,7 @@ zonelist = [
     'US/Mountain',
     'US/Pacific']
 
+
 def get_localtz(zones=zonelist):
     """
 
@@ -901,14 +899,9 @@ def get_localtz(zones=zonelist):
 
 def calyear(advance=0, options=None):
     """
-
-
-    :type options: string
-    :param advance: integer
-    :param options: hash
-    :return: list
     """
-    if not options: options = {}
+    if not options:
+        options = {}
     lcl = options['lcl']
     if 'sundayfirst' in options and options['sundayfirst']:
         week_begin = 6
@@ -945,11 +938,9 @@ def calyear(advance=0, options=None):
                     cal[r + i].append('')
         for j in range(l):
             if python_version2:
-                ret.append(s2or3(u'  %-20s    %-20s    %-20s' %
-                            (cal[r][j], cal[r + 1][j], cal[r + 2][j])))
+                ret.append(s2or3(u'  %-20s    %-20s    %-20s' % (cal[r][j], cal[r + 1][j], cal[r + 2][j])))
             else:
-                ret.append((u'  %-20s    %-20s    %-20s' %
-                            (cal[r][j], cal[r + 1][j], cal[r + 2][j])))
+                ret.append((u'  %-20s    %-20s    %-20s' % (cal[r][j], cal[r + 1][j], cal[r + 2][j])))
     return ret
 
 
@@ -970,12 +961,10 @@ def date_calculator(s, options=None):
     if not m:
         return 'Could not parse "%s"' % s
     x, pm, y = [z.strip() for z in m.groups()]
-    xz = tzlocal()
     xzs = ''
     nx = timezone_regex.match(x)
     if nx:
         x, xzs = nx.groups()
-        xz = gettz(xzs)
     yz = tzlocal()
     yzs = ''
     ny = timezone_regex.match(y)
@@ -1043,14 +1032,15 @@ def send_mail(smtp_to, subject, message, files=None, smtp_from=None, smtp_server
               smtp_id=None, smtp_pw=None):
     """
     """
-    if not files: files = []
+    if not files:
+        files = []
     import smtplib
     if windoz:
         from email.mime.multipart import MIMEMultipart
         from email.mime.base import MIMEBase
         from email.mime.text import MIMEText
         from email.utils import COMMASPACE, formatdate
-        from email import encoders
+        from email import encoders as Encoders
     else:
         from email.MIMEMultipart import MIMEMultipart
         from email.MIMEBase import MIMEBase
@@ -1165,8 +1155,8 @@ tomorrow = today + oneday
 day_begin = time(0, 0)
 day_end = time(23, 59)
 day_end_minutes = 23 * 60 + 59
-
 actions = ["s", "d", "e", "p", "v"]
+
 
 def setConfig(options):
     dfile_encoding = options['encoding']['file']
@@ -1189,7 +1179,7 @@ def setConfig(options):
         if os.path.split(rp)[0] and cal_regex and not cal_regex.match(rp):
             continue
         drive, parts = os_path_splitall(fp)
-        n, e  = os.path.splitext(parts[-1])
+        n, e = os.path.splitext(parts[-1])
         # skip etmtk and any other .cfg files other than the following
         if n == "completions":
             with codecs.open(fp, 'r', dfile_encoding) as fo:
@@ -1314,7 +1304,7 @@ def get_options(d=''):
 
     time_zone = get_localtz()[0]
 
-    default_freetimes = {'opening': 8*60, 'closing': 17*60, 'minimum': 30, 'buffer': 15}
+    default_freetimes = {'opening': 8 * 60, 'closing': 17 * 60, 'minimum': 30, 'buffer': 15}
 
     git_command, git_history, git_commit, git_init = getGit()
     hg_command, hg_history, hg_commit, hg_init = getMercurial()
@@ -1369,8 +1359,7 @@ def get_options(d=''):
         'filechange_alert': '',
         'fontsize_fixed': 0,
         'fontsize_tree': 0,
-        # 'formats': {'r': "\n  ", 'j': "\n  ", "+": "\n  ", "-": "\n  ", "t": "\n  ", "l": "\n  ", "d": "\n  ", "m": "\n  "},
-        'freetimes' : default_freetimes,
+        'freetimes': default_freetimes,
         'icscal_file': os.path.normpath(os.path.join(etmdir, 'etmcal.ics')),
         'icsitem_file': os.path.normpath(os.path.join(etmdir, 'etmitem.ics')),
         'icsimport_dir': etmdir,
@@ -1558,11 +1547,7 @@ def get_options(d=''):
             fo.write(USERS)
         if not options['calendars']:
             options['calendars'] = [['personal', True, 'personal'], ['sample', True, 'sample'], ['shared', True, 'shared']]
-
     logger.info('using datadir: {0}'.format(options['datadir']))
-
-
-
     logger.debug('changed: {0}; user: {1}; options: {2}'.format(changed, (user_options != default_options), (options != default_options)))
     if changed or using_oldcfg:
         # save options to newconfig even if user options came from oldconfig
@@ -1753,9 +1738,9 @@ type2Str = {
     '^': "oc",
     '*': "ev",
     '~': "ac",
-    '!': "nu", # undated only appear in folders
-    '-': "un", # for next view
-    '+': "un", # for next view
+    '!': "nu",  # undated only appear in folders
+    '-': "un",  # for next view
+    '+': "un",  # for next view
     '%': "du",
     '?': "so",
     '#': "dl"}
@@ -1776,8 +1761,8 @@ id2Type = {
     "ns": '!',
     "nu": '!',
     "oc": '^',
-    "pc": '+', # job pastdue
-    "pu": '+', # job pastdue with unfinished prereqs
+    "pc": '+',  # job pastdue
+    "pu": '+',  # job pastdue with unfinished prereqs
     "pd": '%',
     "pt": '-',
     "rm": '*',
@@ -1843,7 +1828,6 @@ tstr2SCI = {
 
 def fmt_period(td, parent=None):
     # logger.debug('td: {0}, {1}'.format(td, type(td)))
-    msg = ""
     if td < oneminute * 0:
         return '0m'
     if td == oneminute * 0:
@@ -1859,14 +1843,16 @@ def fmt_period(td, parent=None):
         until.append("%dh" % td_hours)
     if td_minutes:
         until.append("%dm" % td_minutes)
-    if not until: until = "0m"
+    if not until:
+        until = "0m"
     return "".join(until)
 
 
 def fmt_time(dt, omitMidnight=False, options=None):
     # fmt time, omit leading zeros and, if ampm, convert to lowercase
     # and omit trailing m's
-    if not options: options = {}
+    if not options:
+        options = {}
     if omitMidnight and dt.hour == 0 and dt.minute == 0:
         return u''
     # logger.debug('dt before fmt: {0}'.format(dt))
@@ -1898,8 +1884,10 @@ def fmt_date(dt, short=False):
         dt_fmt = dt.strftime(reprdatefmt)
     return s2or3(dt_fmt)
 
+
 def fmt_shortdatetime(dt, options=None):
-    if not options: options = {}
+    if not options:
+        options = {}
     if type(dt) in [str, unicode]:
         return unicode(dt)
     tdy = datetime.today()
@@ -1914,9 +1902,8 @@ def fmt_shortdatetime(dt, options=None):
 
 
 def fmt_datetime(dt, options=None):
-    if not options: options = {}
-    # if type(dt) in [unicode, str]:
-    #     dt = parse_dtstr(dt)
+    if not options:
+        options = {}
     t_fmt = fmt_time(dt, options=options)
     dt_fmt = "%s %s" % (dt.strftime(etmdatefmt), t_fmt)
     return s2or3(dt_fmt)
@@ -1932,18 +1919,18 @@ def fmt_dt(dt, f):
 
 
 rrule_hsh = {
-    'f': 'FREQUENCY', # unicode
-    'i': 'INTERVAL', # positive integer
-    't': 'COUNT', # total count positive integer
-    's': 'BYSETPOS', # integer
-    'u': 'UNTIL', # unicode
-    'M': 'BYMONTH', # integer 1...12
-    'm': 'BYMONTHDAY', # positive integer
-    'W': 'BYWEEKNO', # positive integer
-    'w': 'BYWEEKDAY', # integer 0 (SU) ... 6 (SA)
-    'h': 'BYHOUR', # positive integer
-    'n': 'BYMINUTE', # positive integer
-    'E': 'BYEASTER', # non-negative integer number of days after easter
+    'f': 'FREQUENCY',  # unicode
+    'i': 'INTERVAL',  # positive integer
+    't': 'COUNT',  # total count positive integer
+    's': 'BYSETPOS',  # integer
+    'u': 'UNTIL',  # unicode
+    'M': 'BYMONTH',  # integer 1...12
+    'm': 'BYMONTHDAY',  # positive integer
+    'W': 'BYWEEKNO',  # positive integer
+    'w': 'BYWEEKDAY',  # integer 0 (SU) ... 6 (SA)
+    'h': 'BYHOUR',  # positive integer
+    'n': 'BYMINUTE',  # positive integer
+    'E': 'BYEASTER',  # non-negative integer number of days after easter
 }
 
 ### for icalendar export we need BYDAY instead of BYWEEKDAY
@@ -1953,19 +1940,19 @@ ical_hsh['f'] = 'FREQ'
 # del ical_hsh['f']
 
 ical_rrule_hsh = {
-    'FREQ': 'r', # unicode
-    'INTERVAL': 'i', # positive integer
-    'COUNT': 't', # total count positive integer
-    'BYSETPOS': 's', # integer
-    'UNTIL': 'u', # unicode
-    'BYMONTH': 'M', # integer 1...12
-    'BYMONTHDAY': 'm', # positive integer
-    'BYWEEKNO': 'W', # positive integer
-    'BYDAY': 'w', # integer 0 (SU) ... 6 (SA)
+    'FREQ': 'r',  # unicode
+    'INTERVAL': 'i',  # positive integer
+    'COUNT': 't',  # total count positive integer
+    'BYSETPOS': 's',  # integer
+    'UNTIL': 'u',  # unicode
+    'BYMONTH': 'M',  # integer 1...12
+    'BYMONTHDAY': 'm',  # positive integer
+    'BYWEEKNO': 'W',  # positive integer
+    'BYDAY': 'w',  # integer 0 (SU) ... 6 (SA)
     # 'BYWEEKDAY': 'w',  # integer 0 (SU) ... 6 (SA)
-    'BYHOUR': 'h', # positive integer
-    'BYMINUTE': 'n', # positive integer
-    'BYEASTER': 'E', # non negative integer number of days after easter
+    'BYHOUR': 'h',  # positive integer
+    'BYMINUTE': 'n',  # positive integer
+    'BYEASTER': 'E',  # non negative integer number of days after easter
 }
 
 # don't add f and u - they require special processing in get_rrulestr
@@ -2027,14 +2014,14 @@ at_keys = [
     'i',  # id',
 ]
 
-all_keys = at_keys + ['entry', 'fileinfo', 'itemtype', 'rrule', '_summary', '_group_summary', '_a', '_j', '_p', '_r' ]
+all_keys = at_keys + ['entry', 'fileinfo', 'itemtype', 'rrule', '_summary', '_group_summary', '_a', '_j', '_p', '_r']
 
 label_keys = [
     # 'f',  # finish date
     '_a',  # alert
     'b',  # begin
     'c',  # context
-    'd',  #description
+    'd',  # description
     'g',  # goto
     'k',  # keyword
     'l',  # location
@@ -2072,6 +2059,7 @@ amp_keys = {
         u'q'],  # j queue position
 }
 
+
 @memoize
 def makeTree(tree_rows, view=None, calendars=None, sort=True, fltr=None, hide_finished=False):
     tree = {}
@@ -2079,7 +2067,6 @@ def makeTree(tree_rows, view=None, calendars=None, sort=True, fltr=None, hide_fi
     root = '_'
     empty = True
     cal_regex = None
-    log_msg = []
     if calendars:
         cal_pattern = r'^%s' % '|'.join([x[2] for x in calendars if x[1]])
         cal_regex = re.compile(cal_pattern)
@@ -2180,9 +2167,9 @@ def tree2Html(tree, indent=2, width1=54, width2=20, colors=2):
         nodes = tree_hsh[node]
         for n in nodes:
             t2H(tree_hsh, n, level)
-
     t2H(tree)
     return [x[indent:] for x in html_lst]
+
 
 def tree2Rst(tree, indent=2, width1=54, width2=14, colors=0,
              number=False, count=0, count2id=None):
@@ -2249,8 +2236,8 @@ def tree2Text(tree, indent=4, width1=43, width2=20, colors=0,
     tab = " " * indent
 
     def t2H(tree_hsh, node=('', '_'), level=0):
-        if depth and level > depth: return
-        # logger.debug("node: {0}".format(node))
+        if depth and level > depth:
+            return
         if args[1] is None:
             args[1] = {}
         if type(node) == tuple:
@@ -2317,7 +2304,8 @@ to be tallied.
 
 Recursively process groups and accumulate the totals.
     """
-    if not options: options = {}
+    if not options:
+        options = {}
     if not max_level:
         max_level = len(list_of_tuples[0]) - 1
     level = -1
@@ -2326,7 +2314,6 @@ Recursively process groups and accumulate the totals.
     global auglst
     head = []
     auglst = []
-    root = "-"
     lst = []
     if 'action_template' in options:
         action_template = options['action_template']
@@ -2423,8 +2410,8 @@ Recursively process groups and accumulate the totals.
 
     for i in range(len(auglst)):
         if type(auglst[i][-1]) is str:
-            summary, uuid, trailing = auglst[i][-1].split('!!')
-            auglst[i][-1] = tuple((uuid, 'ac', summary, ''))
+            summary, uid, trailing = auglst[i][-1].split('!!')
+            auglst[i][-1] = tuple((uid, 'ac', summary, ''))
     res = makeTree(auglst, sort=False)
 
     if export:
@@ -2450,6 +2437,7 @@ def group_sort(row_lst):
             g.append(x[1:])
         s = tupleSum(t)
         yield k, g, s
+
 
 def uniqueId():
     return unicode(uuid.uuid4())
@@ -2543,23 +2531,21 @@ def parse_dtstr(dtstr, timezone="", f=rfmt):
         d = dtz.day
         H = dtz.hour
         M = dtz.minute
-        if timezone:
-            tzinfo=gettz(timezone)
-        else:
-            tzinfo=tzlocal()
         dtz = datetime(y, m, d, H, M, 0, 0)
         epoch = datetime(1970, 1, 1, 0, 0, 0, 0)
 
         # dtz.replace(tzinfo=None)
         td = epoch - dtz
-        seconds = td.days * 24*60*60 + td.seconds
+        seconds = td.days * 24 * 60 * 60 + td.seconds
         dtz = epoch - timedelta(seconds=seconds)
 
     return dtz.strftime(f)
 
+
 def parse_dt(s, timezone='', f=rfmt):
     dt = parse(parse_datetime(s, timezone, ))
     return(dt)
+
 
 def parse_date_period(s):
     """
@@ -2617,7 +2603,6 @@ def parse_period(s, minutes=True):
     m = period_string_regex.match(s)
     if not m:
         logger.error("Invalid period string: '{0}'".format(s))
-        msg = "Invalid period string: '{0}'".format(s)
         return "Invalid period string: '{0}'".format(s)
     m = week_regex.search(s)
     if m:
@@ -2675,7 +2660,8 @@ For editing one or more, but not all, instances of an item. Needed:
    @s datetime
 3. Add &f datetime to selected job.
     """
-    if not options: options = {}
+    if not options:
+        options = {}
     msg = []
     if '_summary' not in hsh:
         hsh['_summary'] = ''
@@ -2806,8 +2792,8 @@ def process_all_datafiles(options):
 
 
 def process_data_file_list(filelist, options=None):
-    if not options: options = {}
-    fatal_exceptions = (KeyboardInterrupt, MemoryError)
+    if not options:
+        options = {}
     messages = []
     file2lastmodified = {}
     bad_datafiles = {}
@@ -2837,7 +2823,8 @@ def process_data_file_list(filelist, options=None):
 
 
 def process_one_file(full_filename, rel_filename, options=None):
-    if not options: options = {}
+    if not options:
+        options = {}
     file_items = getFileItems(full_filename, rel_filename)
     return items2Hashes(file_items, options)
 
@@ -2874,6 +2861,7 @@ def getFiles(root, include=r'*.txt', exclude=r'.*', other=[]):
             filelist.append((fname, rel_path))
     return common_prefix, filelist
 
+
 def getAllFiles(root, include=r'*', exclude=r'.*', other=[]):
     """
     Return the common prefix and a list of full paths from root
@@ -2906,6 +2894,7 @@ def getAllFiles(root, include=r'*', exclude=r'.*', other=[]):
             filelist.append((path, rel_path))
     return common_prefix, filelist
 
+
 def getFileTuples(root, include=r'*.txt', exclude=r'.*', all=False, other=[]):
     if all:
         common_prefix, filelist = getAllFiles(root, include, exclude, other=other)
@@ -2919,8 +2908,8 @@ def getFileTuples(root, include=r'*.txt', exclude=r'.*', all=False, other=[]):
             if len(prior) > i and tup[i] == prior[i]:
                 continue
             prior = tup[:i]
-            disable = (i < len(tup)-1) or os.path.isdir(fp)
-            lst.append(("{0}{1}".format(" "*6*i, tup[i]), rp, disable))
+            disable = (i < len(tup) - 1) or os.path.isdir(fp)
+            lst.append(("{0}{1}".format(" " * 6 * i, tup[i]), rp, disable))
     return common_prefix, lst
 
 
@@ -2949,7 +2938,6 @@ def lines2Items(lines):
     linenum = 0
     linenums = []
     logical_line = []
-    r = {0: []}
     for line in lines:
         linenums.append(linenum)
         linenum += 1
@@ -2989,7 +2977,6 @@ def getFileItems(full_name, rel_name, append_newline=True):
     linenum = 0
     linenums = []
     logical_line = []
-    r = {0: []}
     for line in lines:
         linenums.append(linenum)
         linenum += 1
@@ -3018,8 +3005,8 @@ def items2Hashes(list_of_items, options=None):
         Return a list of messages and a list of hashes corresponding to items in
         list_of_items.
     """
-    if not options: options = {}
-    # list_of_hashes = []
+    if not options:
+        options = {}
     messages = []
     hashes = []
     uuid2labels = {}
@@ -3252,7 +3239,7 @@ def get_reps(bef, hsh):
 
     if windoz:
         ret = []
-        epoch = datetime(1970,1,1,0,0,0,0,tzinfo=None)
+        epoch = datetime(1970, 1, 1, 0, 0, 0, 0, tzinfo=None)
         for i in tmp:
             if not i:
                 continue
@@ -3266,9 +3253,7 @@ def get_reps(bef, hsh):
             ret.append(i)
         return passed, ret
 
-    return passed, [i.replace(
-        tzinfo=gettz(hsh['z'])).astimezone(tzlocal()).replace(tzinfo=None)
-                     for i in tmp if i]
+    return passed, [i.replace(tzinfo=gettz(hsh['z'])).astimezone(tzlocal()).replace(tzinfo=None) for i in tmp if i]
 
 
 def get_rrulestr(hsh, key_hsh=rrule_hsh):
@@ -3295,7 +3280,6 @@ def get_rrulestr(hsh, key_hsh=rrule_hsh):
                 l = ["RRULE:FREQ=%s" % freq_hsh[h['f']]]
             except:
                 logger.exception("bad rrule: {0}, {1}, {2}\n{3}".format(rrule, "\nh:", h, hsh))
-                f = StringIO()
 
         for k in rrule_keys:
             if k in h and h[k]:
@@ -3401,7 +3385,8 @@ def checkhsh(hsh):
 
 
 def str2opts(s, options=None, cli=True):
-    if not options: options = {}
+    if not options:
+        options = {}
     filters = {}
     if 'calendars' in options:
         cal_pattern = r'^%s' % '|'.join(
@@ -3550,11 +3535,9 @@ def str2opts(s, options=None, cli=True):
         elif key == 'S':
             value = unicode(part[1:].strip())
             if value[0] == '!':
-                filters['search-all'] = (False, re.compile(r'%s' % value[1:],
-                                                       re.IGNORECASE|re.DOTALL))
+                filters['search-all'] = (False, re.compile(r'%s' % value[1:], re.IGNORECASE | re.DOTALL))
             else:
-                filters['search-all'] = (True, re.compile(r'%s' % value,
-                                                      re.IGNORECASE|re.DOTALL))
+                filters['search-all'] = (True, re.compile(r'%s' % value, re.IGNORECASE | re.DOTALL))
         elif key == 'd':
             if cli:
                 if grpby['report'] == 'a':
@@ -3734,7 +3717,8 @@ def applyFilters(file2uuids, uuid2hash, filters):
 
 def reportDT(dt, include, options=None):
     # include will be something like "MMM d yyyy"
-    if not options: options = {}
+    if not options:
+        options = {}
     res = ''
     if dt.hour == 0 and dt.minute == 0:
         if not include:
@@ -3763,7 +3747,8 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
         using dt takes care of time when need or date and time when
         grpby has no date specification
     """
-    if not options: options = {}
+    if not options:
+        options = {}
     today_datetime = datetime.now().replace(
         hour=0, minute=0, second=0, microsecond=0)
     today_date = datetime.now().date()
@@ -3783,7 +3768,8 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                 dates = []
                 if 'f' in hsh and hsh['f']:
                     next = getDoneAndTwo(hsh)[1]
-                    if next: start = next
+                    if next:
+                        start = next
                 else:
                     start = parse(parse_dtstr(hsh['s'], hsh['z'])).astimezone(tzlocal()).replace(tzinfo=None)
                 if 'rrule' in hsh:
@@ -3844,10 +3830,7 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                     if 's' in hsh:
                         if 'rrule' in hsh:
                             if tchr in ['^', '*', '~']:
-                                dt = (hsh['rrule'].after(
-                                    today_datetime, inc=True)
-                                      or hsh['rrule'].before(
-                                    today_datetime, inc=True))
+                                dt = (hsh['rrule'].after(today_datetime, inc=True) or hsh['rrule'].before(today_datetime, inc=True))
                                 if dt is None:
                                     logger.warning('No valid datetimes for {0}, {1}'.format(hsh['_summary'], hsh['fileinfo']))
                                     continue
@@ -3887,12 +3870,8 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
 
 def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
               width2=14, calendars=None, mode='html', fltr=None):
-
-    if not calendars: calendars = []
-    cal_regex = None
-    if calendars:
-        cal_pattern = r'^%s' % '|'.join([x[2] for x in calendars if x[1]])
-        cal_regex = re.compile(cal_pattern)
+    if not calendars:
+        calendars = []
     items = deepcopy(allrows)
     day = []
     inbasket = []
@@ -3937,9 +3916,6 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
         elif item[0][0] == 'someday':
             item.insert(1, "%sSomeday%s" % (bb, eb))
             someday.append(item)
-    output = []
-    count = 0
-    count2id = None
     tree = {}
     nv = 0
     for l in [day, inbasket, now, next, someday]:
@@ -3965,20 +3941,12 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
         for actions (tallyByGroup) we need
             (node1, node2, ... (minutes, value, expense, charge))
     """
-    if not options: options = {}
+    if not options:
+        options = {}
     try:
         grpby, dated, filters = str2opts(s, options, cli)
     except:
         return _("Could not process: {0}").format(s)
-    if 'width1' in grpby:
-        width1 = grpby['width1']
-    else:
-        width1=options['report_width1'],
-    if 'width2' in grpby:
-        width2 = grpby['width2']
-    else:
-        width2=options['report_width2'],
-
     logger.debug("grpby: {0}\ndated: {1}\nfilters: {2}".format(grpby, dated, filters))
     if not grpby:
         return [str(_('invalid grpby setting'))]
@@ -4003,7 +3971,7 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
                      {'tup': tup, 'hsh': hsh, 'rsplit': rsplit,
                       'd_to_str': d_to_str, 'dt_to_str': dt_to_str})
                 for x in fmts]
-        except Exception as e:
+        except Exception:
             logger.exception('fmts: {0}'.format(fmts))
             continue
         if filters['dates']:
@@ -4028,7 +3996,6 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
         try:
             item = (cols.format(*eval_fmts)).split('::')
         except:
-            us = u"{0}".format(*eval_fmts)
             logger.exception("eval_fmts: {0}".format(*eval_fmts))
 
         if grpby['report'] == 'c':
@@ -4051,13 +4018,7 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
             temp.extend(expenseCharge(hsh, options))
             item.append(temp)
             items.append(item)
-    count = 0
-    count2id = None
     if grpby['report'] == 'c' and not export:
-        if colors is not None:
-            clrs = colors
-        else:
-            clrs = grpby['colors']
         tree = makeTree(items, sort=False)
         return tree
     else:
@@ -4070,7 +4031,6 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
             data = []
             head = [x for x in grpby['lst'][:depth]]
             logger.debug('head: {0}\nlst: {1}\ndepth: {2}'.format(head, grpby['lst'], depth))
-            csv = [head]
             if grpby['report'] == 'c':
                 for row in items:
                     tup = ['"{0}"'.format(x) for x in row.pop(-1)[2:6]]
@@ -4092,7 +4052,8 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
 
 
 def str2hsh(s, uid=None, options=None):
-    if not options: options = {}
+    if not options:
+        options = {}
     msg = []
     try:
         hsh = {}
@@ -4373,7 +4334,8 @@ def str2hsh(s, uid=None, options=None):
 
 
 def expand_template(template, hsh, lbls=None, complain=False):
-    if not lbls: lbls = {}
+    if not lbls:
+        lbls = {}
     marker = '!'
 
     def lookup(w):
@@ -4431,6 +4393,7 @@ def add2list(l, item, expand=True):
 
     return True
 
+
 def removeFromlist(l, item, expand=True):
     """Add item to l if not already present using bisect to maintain order."""
     global last_added
@@ -4450,8 +4413,8 @@ def removeFromlist(l, item, expand=True):
     except:
         logger.exception("error adding:\n{0}\n\n    last added:\n{1}".format(item, last_added))
         return ()
-
     return True
+
 
 def getPrevNext(l, cal_regex):
     result = []
@@ -4512,8 +4475,8 @@ def get_changes(options, file2lastmodified):
 
 
 def get_data(options=None):
-    if not options: options = {}
-    objects = None
+    if not options:
+        options = {}
     bad_datafiles = []
     (uuid2hash, uuid2labels, file2uuids, file2lastmodified, bad_datafiles, messages) = process_all_datafiles(options)
     if bad_datafiles:
@@ -4544,10 +4507,7 @@ def getDoneAndTwo(hsh, keep=False):
     nxt = None
     following = None
     if 'z' in hsh:
-        today_datetime = datetime.now(
-            gettz(
-                hsh['z'])).replace(hour=0, minute=0, second=0,
-                               microsecond=0, tzinfo=None)
+        today_datetime = datetime.now(gettz(hsh['z'])).replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
     else:
         today_datetime = get_current_time()
     if 'f' in hsh and hsh['f']:
@@ -4707,6 +4667,7 @@ def add_busytime(key, sm, em, evnt_summary, uid, rpth):
     # logger.debug("adding busytime: {0}; {1}".format(key, evnt_summary))
     busytimesSL.setdefault(key, IndexableSkiplist(2000, "busytimes")).insert(entry)
 
+
 def remove_busytime(key, bt):
     """
     key = (year, weeknum, weekdaynum with Monday=1, Sunday=7)
@@ -4717,14 +4678,17 @@ def remove_busytime(key, bt):
     # daykey = sd
     busytimesSL[key].remove(bt)
 
+
 def add_occasion(key, evnt_summary, uid, f):
     # key = tuple(sd.isocalendar())  # year, weeknum, weekdaynum
     # logger.debug("adding occasion: {0}; {1}".format(key, evnt_summary))
     occasionsSL.setdefault(key, IndexableSkiplist(1000, "occasions")).insert((evnt_summary, uid, f))
 
+
 def remove_occasion(key, oc):  # sd, evnt_summary, uid, f):
     # logger.debug("removing occasion: {0}, {1}".format(key, oc))
     occasionsSL[key].remove(oc)
+
 
 def setSummary(hsh, dt):
     if not dt:
@@ -4740,7 +4704,8 @@ def setSummary(hsh, dt):
 
 
 def setItemPeriod(hsh, start, end, short=False, options=None):
-    if not options: options = {}
+    if not options:
+        options = {}
     sy = start.year
     ey = end.year
     sm = start.month
@@ -4767,13 +4732,16 @@ def setItemPeriod(hsh, start, end, short=False, options=None):
         period = "%s %s - %s %s" % (
             fmt_time(start, options=options), fmt_date(start, True),
             fmt_time(end, options=options), fmt_date(end, True))
-
     return period
 
+
 def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=None):
-    if not options: options = {}
-    if not file2uuids: file2uuids = {}
-    if not uuid2hash: uuid2hash = {}
+    if not options:
+        options = {}
+    if not file2uuids:
+        file2uuids = {}
+    if not uuid2hash:
+        uuid2hash = {}
     today_datetime = datetime.now().replace(
         hour=0, minute=0, second=0, microsecond=0)
     today_date = datetime.now().date()
@@ -4820,7 +4788,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 hist_key = 'h'
             if done:
                 # add the last show_finished completions to day and keywords
-                dts = done.strftime(sortdatefmt)
+                # dts = done.strftime(sortdatefmt)
                 # sdt = fmt_date(hsh['f'][-1][0], True)
                 sdt = fmt_date(hsh['f'][-1][0], True)
                 typ = 'fn'
@@ -4857,10 +4825,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
             if due:
                 # add a due entry to folder view
                 dtl = due
-                etmdt = "%s %s" % (dtl.strftime(etmdatefmt),
-                                   fmt_time(dtl, True, options=options))
-
-                dts = due.strftime(sortdatefmt)
+                # dts = due.strftime(sortdatefmt)
                 sdt = fmt_date(due, True)
                 time_diff = (due - today_datetime).days
                 if time_diff >= 0:
@@ -4918,18 +4883,14 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                              setSummary(hsh, due), time_str, dtl)]
                         items.append(item)
             if not due and not done:  # undated
-                dts = "none"
+                # dts = "none"
                 dtl = today_datetime
-                etmdt = "%s %s" % (
-                    dtl.strftime(etmdatefmt),
-                    fmt_time(dtl, True, options=options))
                 item = [
                     ('folder', (f, tstr2SCI[typ][0]), '',
                      hsh['_summary'], f),
                     tuple(folders),
                     (uid, typ, setSummary(hsh, ''), '')]
                 items.append(item)
-
 
                 if 'k' in hsh and hsh['itemtype'] != "#":
                     keywords = [x.strip() for x in hsh['k'].split(':')]
@@ -4961,17 +4922,10 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                                            hsh['z'])).replace(tzinfo=None)
             else:
                 dt = None
-                dts = "none"
+                # dts = "none"
                 sdt = ""
 
             if dt:
-                try:
-                    etmdt = "%s %s" % (
-                        dt.strftime(etmdatefmt),
-                        fmt_time(dt, True, options=options))
-                    dts = dt.strftime(sortdatefmt)
-                except:
-                    logger.exception("bad datetime: {0}, {1}\n{2}".format(dt, type(dt), hsh))
                 if hsh['itemtype'] == '*':
                     # sdt = "%s %s" % (
                     #     fmt_time(dt, True, options=options),
@@ -4994,7 +4948,6 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     sdt = leadingzero.sub('', sdt)
             else:
                 dt = today_datetime
-                etmdt = ''
 
             if hsh['itemtype'] == '*':
                 if 'e' in hsh and hsh['e']:
@@ -5052,7 +5005,6 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
             items.append(item)
         #--------- make entry for next view ----------#
         if 's' not in hsh and hsh['itemtype'] in [u'+', u'-', u'%']:
-            dts = "none"
             if 'f' in hsh:
                 continue
             if 'e' in hsh and hsh['e'] is not None:
@@ -5095,8 +5047,6 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
             datetimes.append((thisdate, f))
         for dt in dates:
             dtl = dt
-            etmdt = "%s %s" % (dtl.strftime(etmdatefmt),
-                               fmt_time(dtl, True, options=options))
             sd = dtl.date()
             st = dtl.time()
             if typ == 'oc':
@@ -5141,7 +5091,6 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     for td in time_deltas:
                         adt = dtl - td
                         if adt.date() == today_date:
-                            tmp = []
                             this_hsh = deepcopy(tmpl_hsh)
                             this_hsh['alert_time'] = fmt_time(
                                 adt, True, options=options)
@@ -5162,8 +5111,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                             # add2list(alerts, (amn, this_hsh, f), False)
                             # add2list("alerts", (alert_minutes[amn], this_hsh['i'], this_hsh, f), False)
                             alerts.append((alert_minutes[amn], this_hsh['i'], this_hsh, f))
-            if (hsh['itemtype'] in ['+', '-', '%'] and
-                        dtl < today_datetime):
+            if (hsh['itemtype'] in ['+', '-', '%'] and dtl < today_datetime):
                 time_diff = (dtl - today_datetime).days
                 if time_diff == 0:
                     time_str = fmt_period(hsh['e'])
@@ -5263,8 +5211,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 ed = etl.date()
                 et = etl.time()
                 em = et.hour * 60 + et.minute
-                evnt_summary = "%s: %s" % (
-                     tmpl_hsh['summary'], tmpl_hsh['busy_span'])
+                evnt_summary = "%s: %s" % (tmpl_hsh['summary'], tmpl_hsh['busy_span'])
                 if et != st:
                     et_fmt = " ~ %s" % fmt_time(et, options=options)
                 else:
@@ -5283,8 +5230,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                                             (st_fmt,
                                              options['dayend_fmt']), dtl)]
                     items.append(item)
-                    busytimes.append([sd, sm, day_end_minutes,
-                                 evnt_summary, uid, f])
+                    busytimes.append([sd, sm, day_end_minutes, evnt_summary, uid, f])
                     sd += oneday
                     i = 0
                     item_copy = []
@@ -5389,15 +5335,19 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 continue
     file2data[f] = [items, alerts, busytimes, datetimes, occasions]
 
+
 # noinspection PyChainedComparisons
 def getViewData(bef, file2uuids=None, uuid2hash=None, options=None, file2data=None):
     """
         Collect data on all items, apply filters later
     """
     tt = TimeIt(loglevel=2, label="getViewData")
-    if not file2uuids: file2uuids = {}
-    if not uuid2hash: uuid2hash = {}
-    if not options: options = {}
+    if not file2uuids:
+        file2uuids = {}
+    if not uuid2hash:
+        uuid2hash = {}
+    if not options:
+        options = {}
     file2data = {}
     clear_all_data()
     logger.debug('calling getDataFromFile for {0} files'.format(len(file2uuids.keys())))
@@ -5408,11 +5358,10 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None, file2data=No
         updateViewFromFile(f, file2data)
     numfiles = len(file2uuids.keys())
     numitems = len(uuid2hash.keys())
-    tmplst = [len(x) for x in items]
     logger.info("files: {0}\n    file items: {1}\n    view items: {2}\n    datetimes: {3}\n    alerts: {4}\n    busytimes: {5}\n    occasions: {6}".format(numfiles, numitems, len(list(itemsSL)), len(list(datetimesSL)), len(list(alertsSL)), len(busytimesSL.keys()), len(occasionsSL.keys())))
     tt.stop()
-
     return file2data
+
 
 def updateViewFromFile(f, file2data):
     _items, _alerts, _busytimes, _datetimes, _occasions = file2data[f]
@@ -5437,11 +5386,15 @@ def updateViewFromFile(f, file2data):
         key = sd.isocalendar()
         add_occasion(key, evnt_summary, uid, f)
 
+
 def updateViewData(f, bef, file2uuids=None, uuid2hash=None, options=None, file2data=None):
     tt = TimeIt(loglevel=2, label="updateViewData")
-    if not file2uuids: file2uuids = {}
-    if not uuid2hash: uuid2hash = {}
-    if not options: options = {}
+    if not file2uuids:
+        file2uuids = {}
+    if not uuid2hash:
+        uuid2hash = {}
+    if not options:
+        options = {}
     # clear data for this file
     _items = _alerts = _busytimes = _datetimes = _occasions = []
     if f in file2data:
@@ -5492,12 +5445,12 @@ def updateViewData(f, bef, file2uuids=None, uuid2hash=None, options=None, file2d
     for key in occasionsSL:
         occasions[key] = list(occasionsSL[key])
 
-    t1 = timer()
+    tt = timer()
     numitems = len(file2uuids[f])
     logger.info("file: {0}\n    file items: {1}\n    view items: {2}\n    datetimes: {3}\n    alerts: {4}\n    busytimes: {5}\n    occasions: {5}".format(f, numitems, len(_items), len(_datetimes), len(_alerts), len(_busytimes), len(_occasions)))
     tt.stop()
-
     return rows, alerts, busytimes, datetimes, occasions, file2data
+
 
 def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
     logger.debug("updateCurrent")
@@ -5522,12 +5475,7 @@ def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
                 mode='text'
             )
         # logger.debug('text colors: {0}'.format(options['agenda_colors']))
-        txt, args0, args1 = tree2Text(tree,
-                colors=options['agenda_colors'],
-                indent=options['current_indent'],
-                width1=options['current_width1'],
-                width2=options['current_width2']
-     )
+        txt, args0, args1 = tree2Text(tree, colors=options['agenda_colors'], indent=options['current_indent'], width1=options['current_width1'], width2=options['current_width2'])
         # logger.debug('text: {0}'.format(txt))
         if txt and not txt[0].strip():
             txt.pop(0)
@@ -5542,7 +5490,6 @@ def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
                 uuid2hash,
                 options)
         else:
-            # logger.debug('calendars: {0}'.format(options['calendars']))
             tree = getAgenda(
                 allrows,
                 colors=options['agenda_colors'],
@@ -5552,14 +5499,7 @@ def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
                 width2=options['current_width2'],
                 calendars=options['calendars'],
                 mode='html')
-        # logger.debug('html width2: {0}'.format(options['current_width2']))
-        txt = tree2Html(tree,
-                colors=options['agenda_colors'],
-                indent=options['current_indent'],
-                width1=options['current_width1'],
-                width2=options['current_width2']
-     )
-        # logger.debug('html: {0}'.format(txt))
+        txt = tree2Html(tree, colors=options['agenda_colors'], indent=options['current_indent'], width1=options['current_width1'], width2=options['current_width2'])
         if not txt[0].strip():
             txt.pop(0)
         fo = codecs.open(options['current_htmlfile'], 'w', file_encoding)
@@ -5591,6 +5531,7 @@ def availableDates(s):
     res = "\n  ".join(x.strftime("%a %b %d") for x in list(set))
     prompt = "between {0} and {1}\nbut not in {2}:\n\n  {3}".format(start_date.strip(), end_date.strip(), busy_dates.strip(), res)
     return prompt
+
 
 def tupleSum(list_of_tuples):
     # get the common length of the tuples
@@ -5744,7 +5685,6 @@ def export_ical_item(hsh, vcal_file):
     try:
         cal_str = cal.to_ical()
     except Exception:
-        f = StringIO()
         logger.exception("could not serialize the calendar")
         return False
     try:
@@ -5752,13 +5692,14 @@ def export_ical_item(hsh, vcal_file):
     except:
         logger.exception("Could not open {0}".format(pname))
         return False
+    finally:
+        fo.close()
     try:
         fo.write(cal_str)
     except Exception:
-        f = StringIO()
         logger.exception("Could not write to {0}".format(pname))
     finally:
-        fo.close()
+        pass
     return True
 
 
@@ -5935,7 +5876,8 @@ class ETMCmd():
     """
 
     def __init__(self, options=None, parent=None):
-        if not options: options = {}
+        if not options:
+            options = {}
         self.options = options
         self.calendars = deepcopy(options['calendars'])
 
@@ -6056,13 +5998,7 @@ class ETMCmd():
                 if not self.rows:
                     return "no output"
                 rows = deepcopy(self.rows)
-                return (makeTree(
-                    rows,
-                    view=view,
-                    calendars=self.calendars,
-                    fltr=f,
-                    hide_finished = self.options['hide_finished']
-                    ))
+                return (makeTree(rows, view=view, calendars=self.calendars, fltr=f, hide_finished=self.options['hide_finished']))
             else:
                 res = getReportData(
                     arg_str,
@@ -6228,9 +6164,6 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
             # add a trailing newline to make diff happy
             fo.write("{0}\n".format(s.rstrip()))
             fo.close()
-            # with codecs.open(self.tmpfile, 'w', file_encoding) as fo:
-            #     # add a trailing newline to make diff happy
-            #     fo.write("{0}\n".format(s.rstrip()))
         except:
             return 'error writing to file - aborted'
         shutil.copy2(self.tmpfile, file)
@@ -6243,7 +6176,6 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
             # this will update self.uuid2hash, ...
             self.updateDataFromFile(fp, rp)
         return self.commit(file, mode)
-
 
     def get_itemhash(self, arg_str):
         try:
@@ -6260,7 +6192,6 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
 
     def do_a(self, arg_str):
         return self.mk_rep('a {0}'.format(arg_str))
-
 
     def help_a(self):
         return ("""\
@@ -6350,7 +6281,6 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
         else:
             self.delete_item()
 
-
     def cmd_do_reschedule(self, new_dtn):
         # new_dtn = new_dt.astimezone(gettz(self.item_hsh['z'])).replace(tzinfo=None)
         hsh_rev = deepcopy(self.item_hsh)
@@ -6358,7 +6288,6 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
             # old_dtn = self.old_dt.astimezone(gettz(self.item_hsh['z'])).replace(tzinfo=None)
             old_dtn = self.old_dt
             if 'r' in hsh_rev:
-                mode = 'append'
                 if '+' in hsh_rev and old_dtn in hsh_rev['+']:
                     hsh_rev['+'].remove(old_dtn)
                     if not hsh_rev['+'] and hsh_rev['r'] == 'l':
@@ -6369,12 +6298,11 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
                 hsh_rev.setdefault('+', []).append(new_dtn)
                 # check starting time
                 if new_dtn < hsh_rev['s']:
-                    olds = hsh_rev['s']
                     d = (hsh_rev['s'] - new_dtn).days
-                    hsh_rev['s'] = hsh_rev['s'] - (d+1) * oneday
-            else: # dated but not repeating
+                    hsh_rev['s'] = hsh_rev['s'] - (d + 1) * oneday
+            else:  # dated but not repeating
                 hsh_rev['s'] = new_dtn
-        else: # either undated or not repeating
+        else:  # either undated or not repeating
             hsh_rev['s'] = new_dtn
         logger.debug(('replacement: {0}'.format(hsh_rev)))
         self.replace_item(hsh_rev)
@@ -6384,9 +6312,7 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
         hsh_rev = deepcopy(self.item_hsh)
         if self.old_dt:
             # old_dtn = self.old_dt.astimezone(gettz(self.item_hsh['z'])).replace(tzinfo=None)
-            old_dtn = self.old_dt
             if 'r' in hsh_rev:
-                mode = 'append'
                 if '+' in hsh_rev and new_dtn in hsh_rev['+']:
                     return
                 if '-' in hsh_rev and new_dtn in hsh_rev['-']:
@@ -6395,15 +6321,14 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
                     hsh_rev.setdefault('+', []).append(new_dtn)
                 # check starting time
                 if new_dtn < hsh_rev['s']:
-                    olds = hsh_rev['s']
                     d = (hsh_rev['s'] - new_dtn).days
-                    hsh_rev['s'] = hsh_rev['s'] - (d+1) * oneday
-            else: # dated but not repeating
+                    hsh_rev['s'] = hsh_rev['s'] - (d + 1) * oneday
+            else:  # dated but not repeating
                 if hsh_rev['s'] == new_dtn:
                     return
                 hsh_rev['r'] = 'l'
                 hsh_rev.setdefault('+', []).append(new_dtn)
-        else: # either undated or not repeating
+        else:  # either undated or not repeating
             hsh_rev['s'] = new_dtn
         logger.debug(('replacement: {0}'.format(hsh_rev)))
         self.replace_item(hsh_rev)
@@ -6483,9 +6408,7 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
                     completion = (dt.replace(tzinfo=None), ddn)
                     hsh['f'] = [completion]
         else:
-            dtz = dt.replace(
-                    tzinfo=tzlocal()).astimezone(
-                    gettz(hsh['z'])).replace(tzinfo=None)
+            dtz = dt.replace(tzinfo=tzlocal()).astimezone(gettz(hsh['z'])).replace(tzinfo=None)
             if not ddn:
                 ddn = dtz
             hsh.setdefault('f', []).append((dtz, ddn))
@@ -6550,7 +6473,6 @@ Usage:
 
 Show notes grouped and sorted by keyword optionally limited to those containing a case insenstive match for the regex FILTER.\
 """)
-
 
     def do_N(self, arg_str='', itemstr=""):
         logger.debug('arg_str: {0}'.format(arg_str))
@@ -6709,7 +6631,7 @@ Show items grouped and sorted by tag, optionally limited to those containing a c
             'tkversion': self.tkversion,
             'github': 'https://github.com/dagraham/etm-tk',
         }
-        if not d['tkversion']: # command line
+        if not d['tkversion']:  # command line
             d['tkversion'] = 'NA'
         return _("""\
 Event and Task Manager
