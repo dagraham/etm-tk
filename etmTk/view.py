@@ -4,10 +4,10 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
 import os
-import sys
+# import sys
 import re
 import uuid
-from copy import deepcopy, t
+from copy import deepcopy
 import subprocess
 from dateutil.tz import tzlocal
 import codecs
@@ -21,7 +21,7 @@ import platform
 
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas, CURRENT, Scrollbar
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, PanedWindow, OptionMenu, StringVar, IntVar, Menu, X, Canvas, CURRENT, Scrollbar
     #, PhotoImage
     from tkinter import ttk
     from tkinter import font as tkFont
@@ -29,7 +29,7 @@ if platform.python_version() >= '3':
 
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, Text, PanedWindow, OptionMenu, StringVar, IntVar, Menu, BooleanVar, ACTIVE, Radiobutton, W, X, LabelFrame, Canvas, CURRENT, Scrollbar
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, PanedWindow, OptionMenu, StringVar, IntVar, Menu, X, Canvas, CURRENT, Scrollbar
     import ttk
     import tkFont
     # from tkMessageBox import askokcancel
@@ -49,14 +49,13 @@ from calendar import Calendar
 
 from decimal import Decimal
 
+
 def getDayColor(num_minutes):
-    # green = 120/355.0
-    # blue = 240/355.0
-    red = 10/355.0
+    red = 10 / 355.0
     hue = red
     saturation = 1
     min_b = .3
-    max_b = 1           # must be <= 1
+    max_b = 1  # must be <= 1
     max_minutes = 480
     lightness = min(
         max_b, min_b + (max_b - min_b) * num_minutes / float(max_minutes))
@@ -65,18 +64,18 @@ def getDayColor(num_minutes):
     r = int(r * 255)
     g = int(g * 255)
     b = int(b * 255)
-
     return "#%02x%02x%02x" % (r, g, b)
+
 
 def hsv_to_rgb(h, s, v):
     if s == 0.0:
         return v, v, v
-    i = int(h*6.0) # XXX assume int() truncates!
-    f = (h*6.0) - i
-    p = v*(1.0 - s)
-    q = v*(1.0 - s*f)
-    t = v*(1.0 - s*(1.0-f))
-    i = i%6
+    i = int(h * 6.0)  # XXX assume int() truncates!
+    f = (h * 6.0) - i
+    p = v * (1.0 - s)
+    q = v * (1.0 - s * f)
+    t = v * (1.0 - s * (1.0 - f))
+    i = i % 6
     if i == 0:
         return v, t, p
     if i == 1:
@@ -91,11 +90,11 @@ def hsv_to_rgb(h, s, v):
         return v, p, q
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, zfmt, rfmt, efmt, hsh2str, str2hsh, tstr2SCI, leadingzero, relpath, parse_datetime, s2or3, send_mail, send_text, fmt_period, get_changes, fmt_datetime, checkForNewerVersion, datetime2minutes, calyear, expand_template, sys_platform, id2Type, get_current_time, windoz, mac, setup_logging, uniqueId, gettz, commandShortcut, optionShortcut, rrulefmt, makeTree, tree2Text, checkForNewerVersion, date_calculator, AFTER, export_ical_item, export_ical, fmt_time, TimeIt, getReportData, getFiles, getFileTuples, updateCurrentFiles, FINISH, availableDates)
+    init_localization, fmt_weekday, fmt_dt, str2hsh, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical, fmt_time, TimeIt, getReportData, getFileTuples, updateCurrentFiles, FINISH, availableDates)
 
 # from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES, REPORTS)
 
-from etmTk.dialog import Node, MenuTree, Timer, ReadOnlyText, MessageWindow,TextVariableWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, FileChoice, STOPPED, PAUSED, RUNNING,  BGCOLOR, ONEDAY, ONEMINUTE
+from etmTk.dialog import MenuTree, Timer, ReadOnlyText, MessageWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, FileChoice, STOPPED, PAUSED, RUNNING, BGCOLOR, ONEDAY, ONEMINUTE
 
 from etmTk.edit import SimpleEditor
 
@@ -104,13 +103,13 @@ import gettext
 _ = gettext.gettext
 
 
-from datetime import datetime, timedelta, time
+from datetime import datetime, time
 
 ETM = "etm"
 
-STOPPED = _('stopped')
-PAUSED = _('paused')
-RUNNING = _('running')
+# STOPPED = _('stopped')
+# PAUSED = _('paused')
+# RUNNING = _('running')
 
 FILTER = _("filter")
 FILTERCOLOR = "gray"
@@ -156,8 +155,8 @@ SEP = "----"
 ACTIVEFILL = "#FAFCAC"
 ACTIVEOUTLINE = "gray40"
 
-DEFAULTFILL = "#D4DCFC" # blue
-OTHERFILL = "#C7EDC8" # green
+DEFAULTFILL = "#D4DCFC"  # blue
+OTHERFILL = "#C7EDC8"  # green
 
 BUSYOUTLINE = ""
 
@@ -191,8 +190,8 @@ class App(Tk):
         self.chosen_day = None
         self.active_date = None
         self.busy_info = None
-        self.weekly = False # showWeekly
-        self.monthly = False # showMonthly
+        self.weekly = False
+        self.monthly = False
         self.today_col = None
         self.specsModified = False
         self.active_tree = {}
@@ -200,12 +199,8 @@ class App(Tk):
 
         ef = "%a %b %d"
         if 'ampm' in loop.options and loop.options['ampm']:
-            reprtimefmt = "%I:%M%p"
-
             self.efmt = "%I:%M%p {0}".format(ef)
         else:
-            reprtimefmt = "%H:%M"
-
             self.efmt = "%H:%M {0}".format(ef)
 
         self.default_calendars = deepcopy(loop.options['calendars'])
@@ -227,7 +222,7 @@ class App(Tk):
         self.panedwindow = panedwindow = PanedWindow(self, orient="vertical", sashwidth=8, sashrelief='flat')
         self.toppane = toppane = Frame(panedwindow, bd=0, highlightthickness=0, background=BGCOLOR)
         self.tree = ttk.Treeview(toppane, show='tree', columns=["#1", "#2"], selectmode='browse')
-        self.canvas = canvas = Canvas(self.toppane, background="white", bd=2, relief="sunken")
+        self.canvas = Canvas(self.toppane, background="white", bd=2, relief="sunken")
 
         self.canvas.bind("<Control-Button-1>", self.on_select_item)
         self.canvas.bind("<Double-1>", self.on_select_item)
@@ -394,34 +389,34 @@ class App(Tk):
         # go to date
         l = "J"
         c = "j"
-        label=_("Jump to date")
+        label = _("Jump to date")
         viewmenu.add_command(label=label, command=self.goToDate)
         self.bindTop(c, self.goToDate)
 
         viewmenu.entryconfig(2, accelerator=l)
         self.add2menu(path, (label, l))
 
-        viewmenu.add_separator() # 3
+        viewmenu.add_separator()  # 3
         self.add2menu(path, (SEP, ))
 
         l = "Control-Down"
         label = _("Next sibling")
-        viewmenu.add_command( label=label, underline=1,  command=self.nextItem)
+        viewmenu.add_command(label=label, underline=1, command=self.nextItem)
 
         viewmenu.entryconfig(4, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Control-Up"
         label = _("Previous sibling")
-        viewmenu.add_command( label=label, underline=1,  command=self.prevItem)
+        viewmenu.add_command(label=label, underline=1, command=self.prevItem)
 
         viewmenu.entryconfig(5, accelerator=l)
         self.add2menu(path, (label, l))
 
         # apply filter
         l, c = commandShortcut('f')
-        label=_("Set outline filter")
-        viewmenu.add_command( label=label, underline=1,  command=self.setFilter)
+        label = _("Set outline filter")
+        viewmenu.add_command(label=label, underline=1, command=self.setFilter)
         self.bind(c, self.setFilter)
 
         viewmenu.entryconfig(6, accelerator=l)
@@ -429,8 +424,8 @@ class App(Tk):
 
         # clear filter
         l = "Shift-Ctrl-F"
-        label=_("Clear outline filter")
-        viewmenu.add_command( label=label, underline=1, command=self.clearFilter)
+        label = _("Clear outline filter")
+        viewmenu.add_command(label=label, underline=1, command=self.clearFilter)
 
         viewmenu.entryconfig(7, accelerator=l)
         self.add2menu(path, (label, l))
@@ -438,8 +433,8 @@ class App(Tk):
         # toggle showing labels
         l = "L"
         c = "l"
-        label=_("Toggle displaying labels column")
-        viewmenu.add_command( label=label, underline=1, command=self.toggleLabels)
+        label = _("Toggle displaying labels column")
+        viewmenu.add_command(label=label, underline=1, command=self.toggleLabels)
         self.bindTop(c, self.toggleLabels)
 
         viewmenu.entryconfig(8, accelerator=l)
@@ -448,8 +443,8 @@ class App(Tk):
         # expand to depth
         l = "O"
         c = "o"
-        label=_("Set outline depth")
-        viewmenu.add_command( label=label, underline=1, command=self.expand2Depth)
+        label = _("Set outline depth")
+        viewmenu.add_command(label=label, underline=1, command=self.expand2Depth)
         self.bindTop(c, self.expand2Depth)
 
         viewmenu.entryconfig(9, accelerator=l)
@@ -458,8 +453,8 @@ class App(Tk):
         # popup active tree
         l = "S"
         c = "s"
-        label=_("Show outline as text")
-        viewmenu.add_command( label=label, underline=1, command=self.popupTree)
+        label = _("Show outline as text")
+        viewmenu.add_command(label=label, underline=1, command=self.popupTree)
         self.bindTop(c, self.popupTree)
 
         viewmenu.entryconfig(10, accelerator=l)
@@ -468,8 +463,8 @@ class App(Tk):
         # print active tree
         l = "P"
         c = "p"
-        label=_("Print outline")
-        viewmenu.add_command( label=label, underline=1, command=self.printTree)
+        label = _("Print outline")
+        viewmenu.add_command(label=label, underline=1, command=self.printTree)
         self.bindTop("p", self.printTree)
         viewmenu.entryconfig(11, accelerator=l)
         self.add2menu(path, (label, l))
@@ -477,8 +472,8 @@ class App(Tk):
         # toggle showing finished
         l = "X"
         c = "x"
-        label=_("Toggle displaying finished")
-        viewmenu.add_command( label=label, underline=1, command=self.toggleFinished)
+        label = _("Toggle displaying finished")
+        viewmenu.add_command(label=label, underline=1, command=self.toggleFinished)
         self.bindTop(c, self.toggleFinished)
         viewmenu.entryconfig(12, accelerator=l)
         self.add2menu(path, (label, l))
@@ -487,28 +482,28 @@ class App(Tk):
         self.add2menu(path, (SEP, ))
 
         l = "Left"
-        label=_("Previous week/month")
+        label = _("Previous week/month")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.priorWeekMonth(event=e))
 
         viewmenu.entryconfig(14, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Right"
-        label=_("Next week/month")
+        label = _("Next week/month")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.nextWeekMonth(event=e))
 
         viewmenu.entryconfig(15, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Up"
-        label=_("Previous item/day in week/month")
+        label = _("Previous item/day in week/month")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=-1))
 
         viewmenu.entryconfig(16, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Down"
-        label=_("Next item/day in week/month")
+        label = _("Next item/day in week/month")
         viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=1))
 
         viewmenu.entryconfig(17, accelerator=l)
@@ -516,7 +511,7 @@ class App(Tk):
 
         l = "B"
         c = 'b'
-        label=_("List busy times in week/month")
+        label = _("List busy times in week/month")
         viewmenu.add_command(label=label, underline=5, command=self.showBusyPeriods)
 
         viewmenu.entryconfig(18, accelerator=l)
@@ -524,7 +519,7 @@ class App(Tk):
 
         l = "F"
         c = 'f'
-        label=_("List free times in week/month")
+        label = _("List free times in week/month")
         viewmenu.add_command(label=label, underline=5, command=self.showFreePeriods)
 
         viewmenu.entryconfig(19, accelerator=l)
@@ -533,8 +528,6 @@ class App(Tk):
 
         for i in range(14, 20):
             self.viewmenu.entryconfig(i, state="disabled")
-
-
         menubar.add_cascade(label=path, underline=0, menu=viewmenu)
 
         # Item menu
@@ -553,8 +546,7 @@ class App(Tk):
             [_('Reschedule'), 'r'],
             [_('Schedule new'), 'R'],
             [_('Open link'), 'g'],
-            [_('Show user details'), 'u'],
-            ]
+            [_('Show user details'), 'u']]
         self.edit2cmd = {
             'c': self.copyItem,
             'd': self.deleteItem,
@@ -565,11 +557,8 @@ class App(Tk):
             'r': self.rescheduleItem,
             'R': self.scheduleNewItem,
             'g': self.openWithDefault,
-            'u': self.showUserDetails,
-            }
+            'u': self.showUserDetails}
         self.em_opts = [x[0] for x in self.em_options]
-
-
         for i in range(len(self.em_options)):
             label = self.em_options[i][0]
             k = self.em_options[i][1]
@@ -585,7 +574,6 @@ class App(Tk):
             else:
                 l = k.upper()
                 c = k
-
             itemmenu.add_command(label=label, underline=0, command=self.edit2cmd[k])
             if k == 'f':
                 self.tree.bind(c, self.edit2cmd[k])
@@ -594,7 +582,6 @@ class App(Tk):
 
             itemmenu.entryconfig(i, accelerator=l)
             self.add2menu(path, (label, l))
-
         menubar.add_cascade(label=path, underline=0, menu=itemmenu)
 
         # tools menu
@@ -602,12 +589,10 @@ class App(Tk):
         self.add2menu(menu, (path, ))
         toolsmenu = Menu(menubar, tearoff=0)
 
-        # report
-
         # date calculator
         l = "Shift-D"
         c = "D"
-        label=_("Date and time calculator")
+        label = _("Date and time calculator")
         toolsmenu.add_command(label=label, underline=12, command=self.dateCalculator)
         self.bindTop(c, self.dateCalculator)
 
@@ -617,7 +602,7 @@ class App(Tk):
         # available date calculator
         l = "Shift-A"
         c = "A"
-        label=_("Available dates calculator")
+        label = _("Available dates calculator")
         toolsmenu.add_command(label=label, underline=12, command=self.availableDateCalculator)
         self.bindTop(c, self.availableDateCalculator)
 
@@ -627,7 +612,7 @@ class App(Tk):
         l = "Shift-Y"
         c = "Y"
 
-        label=_("Yearly calendar")
+        label = _("Yearly calendar")
         toolsmenu.add_command(label=label, underline=8, command=self.showCalendar)
         self.bindTop(c, self.showCalendar)
 
@@ -656,9 +641,7 @@ class App(Tk):
         toolsmenu.entryconfig(5, accelerator=l)
         self.add2menu(path, (label, l))
 
-
         ## load data
-
         l = "Shift-L"
         c = "L"
         label = _("Reload data from files")
@@ -678,13 +661,12 @@ class App(Tk):
         self.rm_options = [[MAKE, 'm'],
                            [EXPORTTEXT, 't'],
                            [EXPORTCSV, 'x'],
-                           [SAVESPECS, 'w'],
-        ]
+                           [SAVESPECS, 'w']]
 
         self.rm2cmd = {'m': self.makeReport,
-                         't': self.exportText,
-                         'x': self.exportCSV,
-                         'w': self.saveSpecs}
+                       't': self.exportText,
+                       'x': self.exportCSV,
+                       'w': self.saveSpecs}
 
         self.rm_opts = [x[0] for x in self.rm_options]
 
@@ -694,8 +676,7 @@ class App(Tk):
             l = k.upper()
             c = k
 
-            reportmenu.add_command(label=label, # accelerator=l,
-                                   underline=0, command=self.rm2cmd[k])
+            reportmenu.add_command(label=label, underline=0, command=self.rm2cmd[k])
             reportmenu.entryconfig(i, state="disabled")
 
         self.add2menu(CUSTOM, (_("Create and display selected report"), "Return"))
@@ -724,10 +705,8 @@ class App(Tk):
         self.add2menu(path, (label, "F1"))
         self.bind("<F1>", lambda e: self.after(AFTER, self.help))
 
-
         label = _("About")
-        helpmenu.add_command(label="About", accelerator="F2", command=self \
-                             .about)
+        helpmenu.add_command(label="About", accelerator="F2", command=self .about)
         self.bind("<F2>", self.about)
         self.add2menu(path, (label, "F2"))
 
@@ -828,18 +807,17 @@ class App(Tk):
         # self.report_box.pack(side="left", padx=3, bd=2, relief="sunken", fill=X, expand=1)
 
         self.vm_options = [[AGENDA, 'a'],
-                           ['-',''],
+                           ['-', ''],
                            [DAY, 'd'],
                            [WEEK, 'w'],
                            [MONTH, 'm'],
-                           ['-',''],
+                           ['-', ''],
                            [TAG, 't'],
                            [KEYWORD, 'k'],
                            [PATH, 'p'],
-                           ['-',''],
+                           ['-', ''],
                            [NOTE, 'n'],
-                           [CUSTOM, 'c'],
-                           ]
+                           [CUSTOM, 'c']]
 
         self.view2cmd = {'a': self.agendaView,
                          'd': self.dayView,
@@ -937,7 +915,7 @@ class App(Tk):
 
         self.timerStatus = StringVar(self)
         self.timerStatus.set("")
-        timer_status = Label(self.statusbar, textvariable=self.timerStatus, bd=0,  relief="flat",  anchor="w", padx=0, pady=0)
+        timer_status = Label(self.statusbar, textvariable=self.timerStatus, bd=0, relief="flat", anchor="w", padx=0, pady=0)
         timer_status.pack(side="left", expand=0, padx=2)
         timer_status.configure(background=BGCOLOR, highlightthickness=0)
 
@@ -950,8 +928,7 @@ class App(Tk):
         self.pending.configure(highlightbackground=BGCOLOR,
                                background=BGCOLOR,
                                highlightthickness=0,
-                               state="disabled"
-        )
+                               state="disabled")
         self.showPending = True
 
         self.currentTime = StringVar(self)
@@ -1009,12 +986,12 @@ class App(Tk):
             return
         if self.labels:
             width0 = self.tree.column('#0')['width']
-            self.tree.column('#0', width=width0+self.col2_width)
+            self.tree.column('#0', width=width0 + self.col2_width)
             self.tree.column('#1', width=0)
             self.labels = False
         else:
             width0 = self.tree.column('#0')['width']
-            self.tree.column('#0', width=width0-self.col2_width)
+            self.tree.column('#0', width=width0 - self.col2_width)
             self.tree.column('#1', width=self.col2_width)
             self.labels = True
 
@@ -1033,7 +1010,6 @@ class App(Tk):
             self.showMonth()
         else:
             self.showView()
-
 
     def saveGeometry(self):
         str = self.geometry()
@@ -1074,7 +1050,6 @@ class App(Tk):
             leaf = "{0}::".format(child[0])
         self.menutree.create_node(leaf, id, parent=parent)
 
-
     def confirm(self, parent=None, title="", prompt="", instance="xyz"):
         ok, value = OptionsDialog(parent=parent, title=_("confirm").format(instance), prompt=prompt).getValue()
         return ok
@@ -1098,7 +1073,6 @@ class App(Tk):
         else:
             prompt = _("No calendars have been specified in etmtk.cfg.")
             self.textWindow(self, CALENDARS, prompt, opts=self.options)
-
 
     def updateCalendars(self, *args):
         cal_pattern = r'^%s' % '|'.join(
@@ -1172,8 +1146,6 @@ class App(Tk):
         else:
             detail = _("No record was found for {0}".format(user))
         self.textWindow(self, user, detail, opts=loop.options)
-
-
         return
 
     def dateCalculator(self, event=None):
@@ -1203,7 +1175,7 @@ returns:
     Tue Jun 10
     Mon Jun 30\
 """
-        GetString(parent=self, title=_('available dates calculator'),  prompt=prompt, opts={}, process=availableDates, font=self.tkfixedfont)
+        GetString(parent=self, title=_('available dates calculator'), prompt=prompt, opts={}, process=availableDates, font=self.tkfixedfont)
         return
 
     def exportToIcal(self, e=None):
@@ -1340,7 +1312,6 @@ returns:
 
             elif choice == 2:
                 # this and all subsequent instances
-                tmp = []
                 if u'+' in hsh_cpy:
                     tmp_cpy = []
                     for d in hsh_cpy['+']:
@@ -1355,8 +1326,7 @@ returns:
                     hsh_cpy['-'] = tmp_cpy
                 hsh_cpy['s'] = dtn
 
-        changed = SimpleEditor(parent=self, newhsh=hsh_cpy, rephsh=None,
-                         options=loop.options, title=title, modified=True).changed
+        changed = SimpleEditor(parent=self, newhsh=hsh_cpy, rephsh=None, options=loop.options, title=title, modified=True).changed
         if changed:
             self.updateAlerts()
             if self.weekly:
@@ -1443,7 +1413,6 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
             self.tree.focus_set()
             self.showView(row=self.topSelected)
 
-
     def editItem(self, e=None):
         if not self.itemSelected:
             return
@@ -1519,13 +1488,12 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
                     hsh_rev['-'] = tmp_rev
                     hsh_cpy['-'] = tmp_cpy
                 hsh_cpy['s'] = dtn
-        else: # replace
+        else:  # replace
             self.mode = 2
             hsh_rev = deepcopy(self.itemSelected)
 
-        logger.debug("mode: {0}; newhsh: {1}; rephsh: {2}".format( self.mode, hsh_cpy is not None, hsh_rev is not None))
-        changed = SimpleEditor(parent=self, newhsh=hsh_cpy, rephsh=hsh_rev,
-                     options=loop.options, title=title).changed
+        logger.debug("mode: {0}; newhsh: {1}; rephsh: {2}".format(self.mode, hsh_cpy is not None, hsh_rev is not None))
+        changed = SimpleEditor(parent=self, newhsh=hsh_cpy, rephsh=hsh_rev, options=loop.options, title=title).changed
 
         if changed:
             logger.debug("starting if changed")
@@ -1557,7 +1525,6 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
         logger.debug('starting editItemFile: {0}; {1}, {2}, {3}'.format(self.itemSelected['_summary'], self.dtSelected, type(self.dtSelected), self.itemSelected['fileinfo']))
         self.editFile(e, file=os.path.join(loop.options['datadir'], self.itemSelected['fileinfo'][0]), line=self.itemSelected['fileinfo'][1])
 
-
     def editFile(self, e=None, file=None, line=None, config=False):
         if e and e.char not in ["F", "E", "C", "S", "P"]:
             return
@@ -1567,8 +1534,7 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
             master = self.canvas
         else:
             master = self.tree
-        changed = SimpleEditor(parent=self, master=master, file=file, line=line,
-            options=loop.options, title=titlefile).changed
+        changed = SimpleEditor(parent=self, master=master, file=file, line=line, options=loop.options, title=titlefile).changed
         logger.debug('changed: {0}'.format(changed))
         if changed:
             logger.debug("config: {0}".format(config))
@@ -1604,8 +1570,6 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
             for key in ['completions', 'reports', 'users']:
                 other.extend(loop.options['cfg_files'][key])
         prefix, tuples = getFileTuples(loop.options['datadir'], include=r'*.cfg', other=other)
-        # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
-        lst = []
         ret = FileChoice(self, "open configuration file", prefix=prefix, list=tuples).returnValue()
         if not (ret and os.path.isfile(ret)):
             return False
@@ -1617,18 +1581,13 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
             for key in ['reports']:
                 other.extend(loop.options['cfg_files'][key])
         prefix, tuples = getFileTuples(loop.options['datadir'], include=r'*reports.cfg', other=other)
-        # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
-        lst = []
         ret = FileChoice(self, "append to reports file", prefix=prefix, list=tuples).returnValue()
         if not (ret and os.path.isfile(ret)):
             return False
         return ret
 
     def getDataFile(self, e=None, title="data file", start=''):
-        other = []
         prefix, tuples = getFileTuples(loop.options['datadir'], include=r'*.txt')
-        # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
-        lst = []
         ret = FileChoice(self, title, prefix=prefix, list=tuples, start=start).returnValue()
         if not (ret and os.path.isfile(ret)):
             return False
@@ -1642,8 +1601,6 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
         if e and e.char != "F":
             return
         prefix, tuples = getFileTuples(loop.options['datadir'], include=r'*.txt', all=False)
-        # logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
-        lst = []
         ret = FileChoice(self, "open data file", prefix=prefix, list=tuples).returnValue()
         if not (ret and os.path.isfile(ret)):
             return False
@@ -1657,11 +1614,9 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
             for key in ['completions', 'reports', 'users']:
                 other.extend(loop.options['cfg_files'][key])
         prefix, tuples = getFileTuples(loop.options['datadir'], include=r'*', other=other, all=True)
-        # logger.info('prefix: {0}; files: {1}'.format(prefix, tuples))
-        lst = []
-        # tuples.insert(0, ("", "", False))
         filename = FileChoice(self, "create new file", prefix=prefix, list=tuples, new=True).returnValue()
-        if not filename: return
+        if not filename:
+            return
         if os.path.isfile(filename):
             prompt = _("Aborting. File {0} already exists.").format(filename)
             MessageWindow(self, title=_("new file"), prompt=prompt)
@@ -1716,7 +1671,7 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
             return
         if not self.itemSelected:
             return
-        loop.item_hsh = item_hsh = self.itemSelected
+        loop.item_hsh = self.itemSelected
         if self.dtSelected:
             loop.old_dt = old_dt = self.dtSelected
             title = _('rescheduling {0}').format(old_dt.strftime(
@@ -1725,15 +1680,10 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
             loop.old_dt = None
             title = _('scheduling an undated item')
         logger.debug('dtSelected: {0}'.format(self.dtSelected))
-        if self.weekly or self.monthly:
-            master = self.canvas
-        else:
-            master = self.tree
         prompt = _("""\
 Enter the new date and time for the item or return an empty string to
 use the current time. Relative dates and fuzzy parsing are supported.""")
-        dt = GetDateTime(parent=self,  title=title,
-                         prompt=prompt)
+        dt = GetDateTime(parent=self, title=title, prompt=prompt)
         new_dt = dt.value
         if new_dt is None:
             return
@@ -1757,23 +1707,18 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             return
         if not self.itemSelected:
             return
-        loop.item_hsh = item_hsh = self.itemSelected
+        loop.item_hsh = self.itemSelected
         if self.dtSelected:
-            loop.old_dt = old_dt = self.dtSelected
+            loop.old_dt = self.dtSelected
             title = _('adding new instance')
         else:
             loop.old_dt = None
             title = _('scheduling an undated item')
         logger.debug('dtSelected: {0}'.format(self.dtSelected))
-        if self.weekly or self.monthly:
-            master = self.canvas
-        else:
-            master = self.tree
         prompt = _("""\
 Enter the new date and time for the item or return an empty string to
 use the current time. Relative dates and fuzzy parsing are supported.""")
-        dt = GetDateTime(parent=self,  title=title,
-                         prompt=prompt)
+        dt = GetDateTime(parent=self, title=title, prompt=prompt)
         new_dt = dt.value
         if new_dt is None:
             return
@@ -1791,7 +1736,6 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         else:
             self.tree.focus_set()
             self.showView(row=self.topSelected)
-
 
     def showAlerts(self, e=None):
         # hack to avoid activating with Ctrl-a
@@ -1891,7 +1835,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             self.mode = 'command'
             self.process_input(event=e, cmd=cmd)
             if row:
-                row = max(0, row-1)
+                row = max(0, row - 1)
                 self.tree.yview(row)
         tt.stop()
 
@@ -1903,7 +1847,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         theweek, weekdays, busy_lst, occasion_lst = self.busy_info
         theweek = _("Busy periods in {0}").format(theweek)
 
-        lines = [theweek, '-'*len(theweek)]
+        lines = [theweek, '-' * len(theweek)]
         ampm = loop.options['ampm']
         s1 = s2 = ''
         for i in range(len(busy_lst)):
@@ -1957,7 +1901,7 @@ Enter the shortest time period you want displayed in minutes.""")
             return
         theweek, weekdays, busy_lst, occasion_lst = self.busy_info
         theweek = _("Free periods in {0}").format(theweek)
-        lines = [theweek, '-'*len(theweek)]
+        lines = [theweek, '-' * len(theweek)]
         s1 = s2 = ''
         for i in range(len(busy_lst)):
             times = []
@@ -2000,7 +1944,7 @@ Enter the shortest time period you want displayed in minutes.""")
                     times.append("%s-%s" % (T1, T2))
             if times:
                 lines.append("%s: %s" % (weekdays[i], "; ".join(times)))
-        lines.append('-'*len(theweek))
+        lines.append('-' * len(theweek))
         lines.append("Only periods of at least {0} minutes are displayed.".format(mm))
         s = "\n".join(lines)
         self.textWindow(parent=self, title=_('free times'), prompt=s, opts=self.options)
@@ -2148,9 +2092,8 @@ Enter the shortest time period you want displayed in minutes.""")
         self.canvas.configure(highlightthickness=0)
         self.canvas.pack(side="top", fill="both", expand=1, padx=4, pady=0)
 
-
         if self.options['ampm']:
-            self.hours = ["{0}am".format(i) for i in range(7,12)] + ['12pm'] + ["{0}pm".format(i) for i in range(1,12)]
+            self.hours = ["{0}am".format(i) for i in range(7, 12)] + ['12pm'] + ["{0}pm".format(i) for i in range(1, 12)]
         else:
             self.hours = ["{0}:00".format(i) for i in range(7, 24)]
         for i in range(14, 20):
@@ -2214,12 +2157,12 @@ Enter the shortest time period you want displayed in minutes.""")
             h = self.canvas.winfo_height()
         logger.debug("w: {0}, h: {1}, l: {2}, t: {3}".format(w, h, l, t))
         self.margins = (w, h, l, r, t, b)
-        self.week_x = x = Decimal(w-1-l-r)/Decimal(7)
-        self.week_y = y = Decimal(h-1-t-b)/Decimal(16)
+        self.week_x = x = Decimal(w - 1 - l - r) / Decimal(7)
+        self.week_y = y = Decimal(h - 1 - t - b) / Decimal(16)
         logger.debug("x: {0}, y: {1}".format(x, y))
 
         # week
-        p = l + (w-1-l-r)/2, 20
+        p = l + (w - 1 - l - r) / 2, 20
         self.canvas.create_text(p, text=theweek)
         self.busyHsh = {}
 
@@ -2233,13 +2176,13 @@ Enter the shortest time period you want displayed in minutes.""")
             start_x = l + i * x
             end_x = start_x + x
             for tup in occasions:
-                xy = int(start_x), int(t), int(end_x), int(t+y*16)
+                xy = int(start_x), int(t), int(end_x), int(t + y * 16)
                 id = self.canvas.create_rectangle(xy, fill=OCCASIONFILL, outline="", width=0, tag='occasion')
                 tmp = list(tup)
                 tmp.append(day)
                 self.busyHsh[id] = tmp
                 occasion_ids.append(id)
-        self.y_per_minute = y_per_minute = y/Decimal(60)
+        self.y_per_minute = y_per_minute = y / Decimal(60)
         busy_ids = []
         conf_ids = []
         self.today_id = None
@@ -2253,9 +2196,7 @@ Enter the shortest time period you want displayed in minutes.""")
             end_x = start_x + x
             if day == self.current_day:
                 self.today_col = i
-                today_start = int(start_x)
-                today_end = int(end_x)
-                xy = int(start_x), int(t), int(end_x), int(t+y*16)
+                xy = int(start_x), int(t), int(end_x), int(t + y * 16)
                 self.canvas.create_rectangle(xy, fill=CURRENTFILL, outline="", width=0, tag='current_day')
             if not busy_times and self.today_col is None:
                 continue
@@ -2269,11 +2210,11 @@ Enter the shortest time period you want displayed in minutes.""")
                     busyColor = OTHERFILL
                     ttag = 'other'
                 daytime = day + tup[0] * ONEMINUTE
-                t1 = t + (max(7 * 60, tup[0]) - 7 * 60 ) * y_per_minute
+                t1 = t + (max(7 * 60, tup[0]) - 7 * 60) * y_per_minute
 
                 t2 = t + min(23 * 60, max(7 * 60, tup[1]) - 7 * 60) * y_per_minute
 
-                xy = int(start_x), int(max(t, t1)), int(end_x), int(min(t2, t+y*16))
+                xy = int(start_x), int(max(t, t1)), int(end_x), int(min(t2, t + y * 16))
                 conf = self.canvas.find_overlapping(*xy)
                 id = self.canvas.create_rectangle(xy, fill=busyColor, width=0, tag=ttag)
                 conf = [z for z in conf if z in busy_ids]
@@ -2288,7 +2229,7 @@ Enter the shortest time period you want displayed in minutes.""")
                     ol = bb1[0], max(bb1[1], bb2[1]), bb1[2], min(bb1[3], bb2[3])
                     self.canvas.create_rectangle(ol, fill=CONFLICTFILL, outline="", width=0, tag="conflict")
 
-                tmp = list(tup[2:]) #id, time str, summary and file info
+                tmp = list(tup[2:])  # id, time str, summary and file info
                 tmp.append(daytime)
                 self.busyHsh[id] = tmp
             if self.today_col is not None:
@@ -2299,7 +2240,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
         self.busy_ids = busy_ids
         self.conf_ids = conf_ids
-        for id in occasion_ids + busy_ids + conf_ids: #  + conf_ids:
+        for id in occasion_ids + busy_ids + conf_ids:  # + conf_ids:
             self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
 
         self.canvas.bind('<Escape>', self.on_clear_item)
@@ -2308,27 +2249,27 @@ Enter the shortest time period you want displayed in minutes.""")
         self.canvas_ids.sort()
         self.canvas_idpos = None
         # border
-        xy = int(l), int(t), int(l+x*7), int(t+y*16)
+        xy = int(l), int(t), int(l + x * 7), int(t + y * 16)
         self.canvas.create_rectangle(xy, tag="grid")
 
         # verticals
-        for i in range(1,7):
+        for i in range(1, 7):
 
-            xy = int(l+x*i), int(t), int(l+x*i), int(t+y*16)
+            xy = int(l + x * i), int(t), int(l + x * i), int(t + y * 16)
             self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
         # horizontals
-        for j in range(1,16):
-            xy = int(l), int(t+y*j), int(l+x*7), int(t+y*j)
+        for j in range(1, 16):
+            xy = int(l), int(t + y * j), int(l + x * 7), int(t + y * j)
             self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
         # hours
         for j in range(17):
-            if j%2:
-                p = int(l-5), int(t+y*j)
+            if j % 2:
+                p = int(l - 5), int(t + y * j)
                 self.canvas.create_text(p, text=self.hours[j], anchor="e")
         # days
         for i in range(7):
 
-            p = int(l + x/2 + x*i), int(t-13)
+            p = int(l + x / 2 + x * i), int(t - 13)
 
             if self.today_col is not None and i == self.today_col:
                 self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=CURRENTLINE)
@@ -2354,7 +2295,6 @@ Enter the shortest time period you want displayed in minutes.""")
         for i in [4, 5, 8, 9, 10, 11, 12]:
             self.viewmenu.entryconfig(i, state="normal")
         self.bind("<Control-f>", self.setFilter)
-
 
     def showMonthly(self, event=None, chosen_day=None):
         """
@@ -2452,13 +2392,13 @@ Enter the shortest time period you want displayed in minutes.""")
 
         self.margins = (w, h, l, r, t, b)
 
-        self.month_x = x_ = Decimal(w-1-l-r)/Decimal(7)
-        self.month_y = y_ = Decimal(h-1-t-b)/Decimal(num_weeks)
+        self.month_x = x_ = Decimal(w - 1 - l - r) / Decimal(7)
+        self.month_y = y_ = Decimal(h - 1 - t - b) / Decimal(num_weeks)
 
         logger.debug("x: {0}, y: {1}".format(x_, y_))
 
         # month
-        p = l + (w-1-l-r)/2, 20
+        p = l + (w - 1 - l - r) / 2, 20
         self.canvas.create_text(p, text="{0}".format(themonth))
         self.busyHsh = {}
 
@@ -2469,16 +2409,15 @@ Enter the shortest time period you want displayed in minutes.""")
         self.canvas.bind('<Escape>', self.on_clear_item)
 
         # monthdays
-        itemhsh = {}
         for j in range(num_weeks):
             for i in range(7):
                 busytimes = 0
                 start_x = l + i * x_
                 end_x = start_x + x_
-                start_y = int(t+y_*j)
+                start_y = int(t + y_ * j)
                 end_y = start_y + y_
                 xy = start_x, start_y, end_x, end_y
-                p = int(l + x_/2 + x_*i), int(t+y_*j + y_/2)
+                p = int(l + x_ / 2 + x_ * i), int(t + y_ * j + y_ / 2)
                 thisdate = weeks[j][i]
                 isokey = thisdate.isocalendar()
                 month, day = thisdate.month, thisdate.day
@@ -2558,26 +2497,26 @@ Enter the shortest time period you want displayed in minutes.""")
             self.canvas.tag_bind(id, '<Any-Leave>', self.on_leave_item)
 
         # border
-        xy = int(l), int(t), int(l+x_*7), int(t+y_*num_weeks+1)
+        xy = int(l), int(t), int(l + x_ * 7), int(t + y_ * num_weeks + 1)
         self.canvas.create_rectangle(xy, tag="grid")
 
         # verticals
-        for i in range(1,7):
-            xy = int(l+x_*i), int(t), int(l+x_*i), int(t+y_*num_weeks)
+        for i in range(1, 7):
+            xy = int(l + x_ * i), int(t), int(l + x_ * i), int(t + y_ * num_weeks)
             self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
         # horizontals
-        for j in range(1,num_weeks):
-            xy = int(l), int(t+y_*j), int(l+x_*7), int(t+y_*j)
+        for j in range(1, num_weeks):
+            xy = int(l), int(t + y_ * j), int(l + x_ * 7), int(t + y_ * j)
             self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
 
         # week numbers
         for j in range(num_weeks):
-            p = int(l-5), int(t+y_*j + y_/2)
+            p = int(l - 5), int(t + y_ * j + y_ / 2)
             self.canvas.create_text(p, text=weeknumbers[j], anchor="e")
         # days
         for i in range(7):
 
-            p = int(l + x_/2 + x_*i), int(t-13)
+            p = int(l + x_ / 2 + x_ * i), int(t - 13)
 
             if self.today_col is not None and i == self.today_col:
                 self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=CURRENTLINE)
@@ -2590,7 +2529,6 @@ Enter the shortest time period you want displayed in minutes.""")
         self.canvas_ids = self.busy_ids
         self.monthid2date = monthid2date
         self.canvas_idpos = None
-
 
     def get_timeline(self):
         if not (self.weekly and self.today_col is not None):
@@ -2606,7 +2544,7 @@ Enter the shortest time period you want displayed in minutes.""")
         start_x = l + self.today_col * x
         end_x = start_x + x
 
-        t1 = t + (current_minutes - 7 * 60 ) * self.y_per_minute
+        t1 = t + (current_minutes - 7 * 60) * self.y_per_minute
         xy = int(start_x), int(t1), int(end_x), int(t1)
         return xy
 
@@ -2767,7 +2705,6 @@ Enter the shortest time period you want displayed in minutes.""")
         self.OnSelect()
         self.canvas.focus("")
 
-
     def on_select_item(self, event):
         if self.monthly:
             self.newItem()
@@ -2775,7 +2712,7 @@ Enter the shortest time period you want displayed in minutes.""")
             current = self.canvas.find_withtag(CURRENT)
             logger.debug('current: {0}'.format(current))
             if current and current[0] in self.busy_ids:
-                self.selectedId = id = current[0]
+                self.selectedId = current[0]
                 self.on_activate_item(event)
             else:
                 self.newEvent(event)
@@ -2793,11 +2730,10 @@ Enter the shortest time period you want displayed in minutes.""")
 
             logger.debug("id: {0}, coords: {1}, {2}\n    {3}".format(id, x, y, self.busyHsh[id]))
             self.uuidSelected = uuid = self.busyHsh[id][1]
-            self.itemSelected = hsh = loop.uuid2hash[uuid]
-            self.dtSelected = dt = self.busyHsh[id][-1]
+            self.itemSelected = loop.uuid2hash[uuid]
+            self.dtSelected = self.busyHsh[id][-1]
             self.itemmenu.post(x, y)
             self.itemmenu.focus_set()
-
 
     def newEvent(self, event):
         logger.debug("event: {0}".format(event))
@@ -2806,8 +2742,8 @@ Enter the shortest time period you want displayed in minutes.""")
         px = event.x
         py = event.y
         (w, h, l, r, t, b) = self.margins
-        x = Decimal(w-1-l-r)/Decimal(7)        # x per day intervals
-        y = Decimal(h-1-t-b)/Decimal(16 * 60)       # y per minute intervals
+        x = Decimal(w - 1 - l - r) / Decimal(7)  # x per day intervals
+        y = Decimal(h - 1 - t - b) / Decimal(16 * 60)  # y per minute intervals
         if px < l:
             px = l
         elif px > l + 7 * x:
@@ -2817,24 +2753,17 @@ Enter the shortest time period you want displayed in minutes.""")
         elif py > t + 16 * 60 * y:
             py = t + 16 * 60 * y
 
-        rx = int(round(Decimal(px - l)/x - Decimal(0.5)))  # number of days
-        ry = int(7 * 60 + round(Decimal(py - t)/y))  # number of minutes
-        ryr = round(Decimal(ry)/min_round) * min_round
-        # logger.debug('rx: {0}, {1}; ry: {2}, {3}'.format(rx, type(rx), ry, type(ry)))
+        rx = int(round(Decimal(px - l) / x - Decimal(0.5)))  # number of days
+        ry = int(7 * 60 + round(Decimal(py - t) / y))  # number of minutes
+        ryr = round(Decimal(ry) / min_round) * min_round
 
-        hours = int(ryr//60)
+        hours = int(ryr // 60)
         minutes = int(ryr % 60)
-        time = "{0}:{1:02d}".format(hours, minutes)
         dt = (self.week_beg + rx * ONEDAY).replace(hour=hours, minute=minutes, second=0, microsecond=0, tzinfo=None)
 
         tfmt = fmt_time(dt, options=loop.options)
         dfmt = dt.strftime("%a %b %d")
         dtfmt = "{0} {1}".format(tfmt, dfmt)
-        if self.weekly or self.monthly:
-            p = self.canvas
-        else:
-            p = self.tree
-
         s = "*  @s {0}".format(dtfmt)
         changed = SimpleEditor(parent=self, master=self.canvas, start=s, options=loop.options).changed
 
@@ -2903,7 +2832,6 @@ Enter the shortest time period you want displayed in minutes.""")
         win.wait_window(win)
 
     def newCommand(self, e=None):
-        newcommand = self.newValue.get()
         self.newValue.set(self.newLabel)
 
     def showShortcuts(self, e=None):
@@ -2923,7 +2851,6 @@ Enter the shortest time period you want displayed in minutes.""")
             cmd = 'xdg-open' + " {0}".format(path)
         subprocess.call(cmd, shell=True)
         return True
-
 
     def about(self, event=None):
         res = loop.do_v("")
@@ -2983,7 +2910,6 @@ or 0 to display all changes.""").format(title)
 
         self.textWindow(parent=self, title=title, prompt=s2or3(p), opts=self.options)
 
-
     def focus_next_window(self, event):
         event.widget.tk_focusNext().focus()
         return "break"
@@ -3030,12 +2956,12 @@ or 0 to display all changes.""").format(title)
         """
         logger.debug("starting OnSelect with uuid: {0}".format(uuid))
         self.content.delete("1.0", END)
-        if self.weekly: # week view
+        if self.weekly:  # week view
             if uuid:
                 # an item is selected, enable clear selection
                 hsh = loop.uuid2hash[uuid]
                 type_chr = hsh['itemtype']
-        elif uuid is None: # tree view
+        elif uuid is None:  # tree view
             item = self.tree.selection()[0]
             self.rowSelected = int(item)
             logger.debug('rowSelected: {0}'.format(self.rowSelected))
@@ -3086,13 +3012,12 @@ or 0 to display all changes.""").format(title)
                 lines = "{0} {1}".format(_('line'), l1)
             else:
                 lines = "{0} {1}-{2}".format(_('lines'), l1, l2)
-            self.filetext = filetext = "{0}, {1}".format(hsh['fileinfo'][0],
-                                                      lines)
+            self.filetext = filetext = "{0}, {1}".format(hsh['fileinfo'][0], lines)
             if 'errors' in hsh and hsh['errors']:
-                text = "{1}\n\n{2}: {3}\n\n{4}: {5}".format(item, hsh['entry'].lstrip(), _("Errors"), hsh['errors'],  _("file"), filetext)
+                text = "{1}\n\n{2}: {3}\n\n{4}: {5}".format(item, hsh['entry'].lstrip(), _("Errors"), hsh['errors'], _("file"), filetext)
             else:
                 text = "{1}\n\n{2}: {3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
-            for i in [0, 1, 2, 3, 5, 6, 7]: # everything except finish (4), open link (8) and show user (9)
+            for i in [0, 1, 2, 3, 5, 6, 7]:  # everything except finish (4), open link (8) and show user (9)
                 self.itemmenu.entryconfig(i, state='normal')
             if isUnfinished:
                 self.itemmenu.entryconfig(4, state='normal')
@@ -3122,7 +3047,7 @@ or 0 to display all changes.""").format(title)
             self.topSelected = int(r)
         else:
             self.topSelected = 1
-        logger.debug("row: {0}; uuid: {1}; instance: {2}, {3}; top: {4}".format(self.rowSelected, self.uuidSelected, self.dtSelected, type(self.dtSelected), self.topSelected));
+        logger.debug("row: {0}; uuid: {1}; instance: {2}, {3}; top: {4}".format(self.rowSelected, self.uuidSelected, self.dtSelected, type(self.dtSelected), self.topSelected))
         self.content.insert(INSERT, text)
         self.update_idletasks()
         logger.debug('ending OnSelect')
@@ -3188,14 +3113,9 @@ or 0 to display all changes.""").format(title)
         new, modified, deleted = get_changes(
             self.options, loop.file2lastmodified)
         if newday or new or modified or deleted:
-            if newday: logger.info('newday')
-            logger.info("new: {0}; modified: {1}; deleted: {2}".format(len(new),  len(modified),  len(deleted)))
-            # if new:
-            #     logger.debug('new files: {0}'.format([x[0] for x in new]))
-            # if modified:
-            #     logger.debug('modified files: {0}'.format([x[0] for x in  modified]))
-            # if deleted:
-            #     logger.debug('deleted files: {0}'.format([x[0] for x in deleted]))
+            if newday:
+                logger.info('newday')
+            logger.info("new: {0}; modified: {1}; deleted: {2}".format(len(new), len(modified), len(deleted)))
             logger.debug('calling loadData')
             loop.loadData()
             if self.weekly:
@@ -3250,7 +3170,6 @@ or 0 to display all changes.""").format(title)
             curr_minutes = datetime2minutes(self.now)
             td = -1
             while td < 0 and alerts:
-                file = alerts[0][-1]
                 td = alerts[0][0] - curr_minutes
                 if td < 0:
                     alerts.pop(0)
@@ -3270,10 +3189,8 @@ or 0 to display all changes.""").format(title)
                                 self.options['alert_soundcmd'], hsh))
                             subprocess.call(scmd, shell=True)
                         else:
-                            self.textWindow(parent=self,
-                                title="etm", prompt=_("""\
-A sound alert failed. The setting for 'alert_soundcmd' is missing from \
-your etmtk.cfg."""), opts=self.options)
+                            self.textWindow(parent=self, title="etm", prompt=_("""\
+A sound alert failed. The setting for 'alert_soundcmd' is missing from  your etmtk.cfg."""), opts=self.options)
                     if 'd' in actions:
                         if ('alert_displaycmd' in self.options and
                                 self.options['alert_displaycmd']):
@@ -3281,8 +3198,7 @@ your etmtk.cfg."""), opts=self.options)
                                 self.options['alert_displaycmd'], hsh))
                             subprocess.call(dcmd, shell=True)
                         else:
-                            self.textWindow(parent=self,
-                                title="etm", prompt=_("""\
+                            self.textWindow(parent=self, title="etm", prompt=_("""\
 A display alert failed. The setting for 'alert_displaycmd' is missing \
 from your etmtk.cfg."""), opts=self.options)
                     if 'v' in actions:
@@ -3292,23 +3208,16 @@ from your etmtk.cfg."""), opts=self.options)
                                 self.options['alert_voicecmd'], hsh))
                             subprocess.call(vcmd, shell=True)
                         else:
-                            self.textWindow(parent=self,
-                                title="etm", prompt=_("""\
+                            self.textWindow(parent=self, title="etm", prompt=_("""\
 An email alert failed. The setting for 'alert_voicecmd' is missing from \
 your etmtk.cfg."""), opts=self.options)
                     if 'e' in actions:
                         missing = []
-                        for field in [
-                            'smtp_from',
-                            'smtp_id',
-                            'smtp_pw',
-                            'smtp_server',
-                            'smtp_to']:
+                        for field in ['smtp_from', 'smtp_id', 'smtp_pw', 'smtp_server', 'smtp_to']:
                             if not self.options[field]:
-                                missing.append(field)
+                                    missing.append(field)
                         if missing:
-                            self.textWindow(parent=self,
-                                title="etm", prompt=_("""\
+                            self.textWindow(parent=self, title="etm", prompt=_("""\
 An email alert failed. Settings for the following variables are missing \
 from your etmtk.cfg: %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=self.options)
                         else:
@@ -3341,18 +3250,11 @@ from your etmtk.cfg: %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
 
                     if 't' in actions:
                         missing = []
-                        for field in [
-                            'sms_from',
-                            'sms_message',
-                            'sms_phone',
-                            'sms_pw',
-                            'sms_server',
-                            'sms_subject']:
+                        for field in ['sms_from', 'sms_message', 'sms_phone', 'sms_pw', 'sms_server', 'sms_subject']:
                             if not self.options[field]:
                                 missing.append(field)
                         if missing:
-                            self.textWindow(parent=self,
-                                title="etm", prompt=_("""\
+                            self.textWindow(parent=self, title="etm", prompt=_("""\
 A text alert failed. Settings for the following variables are missing \
 from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=self.options)
                         else:
@@ -3393,8 +3295,7 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
             self.pending.configure(state="disabled")
 
     def textWindow(self, parent, title=None, prompt=None, opts=None, modal=True):
-        d = TextDialog(parent, title=title, prompt=prompt, opts=opts, modal=modal)
-
+        TextDialog(parent, title=title, prompt=prompt, opts=opts, modal=modal)
 
     def goToDate(self, e=None):
         """
@@ -3495,8 +3396,7 @@ Relative dates and fuzzy parsing are supported.""")
 
                 prompt = _("""\
     Enter a summary for the new action timer.""")
-            options = {'nullok': nullok}
-            value = GetString(parent=self, title=_('action timer'),  prompt=prompt, opts={'nullok': nullok}, font=self.tkfixedfont).value
+            value = GetString(parent=self, title=_('action timer'), prompt=prompt, opts={'nullok': nullok}, font=self.tkfixedfont).value
 
             self.tree.focus_set()
             logger.debug('value: {0}'.format(value))
@@ -3506,8 +3406,6 @@ Relative dates and fuzzy parsing are supported.""")
             if value:
                 self.timerItem = None
                 hsh = str2hsh(value, options=loop.options)[0]
-
-
             elif nullok:
                 self.timerItem = self.uuidSelected
                 # Based on item, 'entry' will be in hsh
@@ -3551,9 +3449,7 @@ Relative dates and fuzzy parsing are supported.""")
         self.actionTimer.timer_stop()
         self.timerStatus.set(self.actionTimer.get_time())
         hsh = self.actionTimer.timer_hsh
-        changed = SimpleEditor(parent=self, newhsh=hsh, rephsh=None,
-                         options=loop.options, title=_("new action"), modified=True).changed
-
+        changed = SimpleEditor(parent=self, newhsh=hsh, rephsh=None, options=loop.options, title=_("new action"), modified=True).changed
         if changed:
             # clear status and reload
             self.actionTimer.timer_clear()
@@ -3585,7 +3481,6 @@ Relative dates and fuzzy parsing are supported.""")
                 self.newmenu.entryconfig(3, state="disabled")
         self.timerStatus.set(self.actionTimer.get_time())
         self.tree.focus_set()
-
 
     def gettext(self, event=None):
         s = self.e.get()
@@ -3687,7 +3582,7 @@ or 0 to expand all branches completely.""")
                             self.tree.item(item, open=True)
                         except:
                             logger.exception('open: {0}, {1}'.format(i, item))
-            for i in range(depth, maxdepth+1):
+            for i in range(depth, maxdepth + 1):
                 if i in self.depth2id:
                     for item in self.depth2id[i]:
                         try:
@@ -3747,7 +3642,7 @@ or 0 to expand all branches completely.""")
                         for i in range(depth):
                             for item in self.depth2id[i]:
                                 self.tree.item(item, open=True)
-                        for i in range(depth, maxdepth+1):
+                        for i in range(depth, maxdepth + 1):
                             for item in self.depth2id[i]:
                                 self.tree.item(item, open=False)
                 self.goHome()
@@ -3770,7 +3665,8 @@ or 0 to expand all branches completely.""")
             width1 = 43
             width2 = 20
         res = tree2Text(self.active_tree, indent=indent, width1=width1, width2=width2, depth=depth)
-        if not res[0][0]: res[0].pop(0)
+        if not res[0][0]:
+            res[0].pop(0)
         prompt = "\n".join(res[0])
         self.textWindow(parent=self, title='etm', opts=self.options, prompt=prompt, modal=False)
 
@@ -3781,11 +3677,9 @@ or 0 to expand all branches completely.""")
             return
         if not self.active_tree:
             return
-        ans = self.confirm(parent=self.tree,
-            prompt=_("""Print current outline?"""))
+        ans = self.confirm(parent=self.tree, prompt=_("""Print current outline?"""))
         if not ans:
             return False
-
         depth = self.outline_depths[self.view]
 
         if loop.options:
@@ -3800,7 +3694,8 @@ or 0 to expand all branches completely.""")
             width1 = 43
             width2 = 20
         res = tree2Text(self.active_tree, indent=indent, width1=width1, width2=width2, depth=depth)
-        if not res[0][0]: res[0].pop(0)
+        if not res[0][0]:
+            res[0].pop(0)
         res[0].append('')
         s = "{0}".format("\n".join(res[0]))
         self.printWithDefault(s)
@@ -3854,9 +3749,7 @@ or 0 to expand all branches completely.""")
                     col2 = "***"
                     if item_type not in ["=", "ib"]:
                         logger.warn('Missing key {0} for {1} {2}'.format(id, col1, col3))
-
                 oid = self.tree.insert(parent, 'end', iid=self.count, text=col1, open=(depth <= max_depth), values=[col2, col3], tags=(item_type, 'treefont'))
-
                 self.count2id[oid] = "{0}::{1}".format(uuid, dt)
                 if dt:
                     if item_type == 'by':
@@ -3875,7 +3768,8 @@ or 0 to expand all branches completely.""")
                         self.id2date[int(parent)] = d
 
     def makeReport(self, event=None):
-        if self.view != CUSTOM: return
+        if self.view != CUSTOM:
+            return
         self.outline_depths[CUSTOM] = 0
         self.value_of_combo = self.custom_box.get()
         if not self.value_of_combo.strip():
@@ -3899,7 +3793,6 @@ or 0 to expand all branches completely.""")
         except:
             logger.exception("could not process: {0}".format(self.value_of_combo))
             res = _("'{0}' could not be processed".format(self.value_of_combo))
-
         if type(res) == dict:
             self.showTree(res, event=event)
         else:
@@ -3913,11 +3806,11 @@ or 0 to expand all branches completely.""")
         if 'reports' in loop.options:
             self.specs = loop.options['reports']
 
-
     def saveSpecs(self, e=None):
         # called when changing from custom view or
         # when calling save changes to specs
-        if self.view != CUSTOM: return
+        if self.view != CUSTOM:
+            return
         if not self.specsModified:
             return
         # remove duplicates
@@ -3927,25 +3820,22 @@ or 0 to expand all branches completely.""")
         if not added:
             self.specsModified = False
             return
-        ans = self.confirm(parent=self,
-            prompt=_("""Save the additions to your report specifications?
-    {0}
-""".format("\n    ".join(added))))
+        ans = self.confirm(parent=self, prompt=_("""Save the additions to your report specifications? {0} """.format("\n    ".join(added))))
         if ans:
             file = self.getReportsFile()
             if not (file and os.path.isfile(file)):
                 return
             with codecs.open(file, 'w', loop.options['encoding']['file']) as fo:
-                tmp = fo.write("\n".join(self.specs))
+                fo.write("\n".join(self.specs))
             logger.debug("saved: {0}".format(file))
             self.getSpecs()
             self.custom_box['values'] = self.specs
             self.value_of_combo = self.specs[0]
             self.specsModified = False
 
-
     def exportText(self):
-        if self.view != CUSTOM: return
+        if self.view != CUSTOM:
+            return
         logger.debug("spec: {0}".format(self.value_of_combo))
         tree = getReportData(
             self.value_of_combo,
@@ -3953,7 +3843,6 @@ or 0 to expand all branches completely.""")
             self.loop.uuid2hash,
             self.loop.options,
             export=False)
-        res = tree2Text(tree)
         text = "\n".join([x for x in tree2Text(tree)[0]])
         prefix, tuples = getFileTuples(loop.options['etmdir'], include=r'*.text', all=True)
         filename = FileChoice(self, "cvs file", prefix=prefix, list=tuples, ext="text", new=False).returnValue()
@@ -3965,7 +3854,8 @@ or 0 to expand all branches completely.""")
         MessageWindow(self, "etm", "Exported text to {0}".format(filename))
 
     def exportCSV(self):
-        if self.view != CUSTOM: return
+        if self.view != CUSTOM:
+            return
         logger.debug("spec: {0}".format(self.value_of_combo))
         data = getReportData(
             self.value_of_combo,
@@ -3975,14 +3865,13 @@ or 0 to expand all branches completely.""")
             export=True)
         prefix, tuples = getFileTuples(loop.options['etmdir'], include=r'*.csv', all=True)
         filename = FileChoice(self, "cvs file", prefix=prefix, list=tuples, ext="csv", new=False).returnValue()
-        if not filename: return
-
+        if not filename:
+            return
         import csv as CSV
         c = CSV.writer(open(filename, "w"), delimiter=",")
         for line in data:
             c.writerow(line)
         MessageWindow(self, "etm", "Exported CSV to {0}".format(filename))
-
 
     def newselection(self, event=None):
         self.value_of_combo = self.custom_box.get()
@@ -3996,6 +3885,7 @@ log_levels = {
     '4': logging.ERROR,
     '5': logging.CRITICAL
 }
+
 
 def main(dir=None):  # debug, info, warn, error, critical
     global loop
