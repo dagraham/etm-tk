@@ -5445,7 +5445,6 @@ def updateViewData(f, bef, file2uuids=None, uuid2hash=None, options=None, file2d
     for key in occasionsSL:
         occasions[key] = list(occasionsSL[key])
 
-    tt = timer()
     numitems = len(file2uuids[f])
     logger.info("file: {0}\n    file items: {1}\n    view items: {2}\n    datetimes: {3}\n    alerts: {4}\n    busytimes: {5}\n    occasions: {5}".format(f, numitems, len(_items), len(_datetimes), len(_alerts), len(_busytimes), len(_occasions)))
     tt.stop()
