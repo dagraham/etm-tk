@@ -60,6 +60,8 @@ def setup_logging(level, etmdir=None):
                                         'propagate': False}},
                   'root': {'handlers': ['console', 'file'], 'level': 'DEBUG'},
                   'version': 1}
+        logging.config.dictConfig(config)
+        logger.info('logging at level: {0}\n    writing exceptions to: {1}'.format(loglevel, logfile))
     else:  # no etmdir - first use
         config = {'disable_existing_loggers': False,
                   'formatters': {'simple': {
@@ -73,9 +75,8 @@ def setup_logging(level, etmdir=None):
                                         'propagate': False}},
                   'root': {'handlers': ['console'], 'level': 'DEBUG'},
                   'version': 1}
-
-    logging.config.dictConfig(config)
-    logger.info('logging at level: {0}\n    writing exceptions to: {1}'.format(loglevel, logfile))
+        logging.config.dictConfig(config)
+        logger.info('logging at level: {0}'.format(loglevel))
 
 import subprocess
 
