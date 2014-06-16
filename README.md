@@ -239,6 +239,7 @@ The first time you run etm it will create, if necessary, the following:
 
     ~/.etm/
     ~/.etm/etmtk.cfg
+    ~/.etm/etmtk_log.txt
     ~/.etm/data/
 
 

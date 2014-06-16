@@ -39,9 +39,8 @@ def setup_logging(level, etmdir=None):
     if os.path.isdir(etmdir):
         logfile = os.path.normpath(os.path.abspath(os.path.join(etmdir, "etmtk_log.txt")))
         if not os.path.isfile(logfile):
-            fo = codecs.open(fp, 'w', dfile_encoding)
-            fo.write("")
-            fo.close()
+            open(logfile, 'a').close()
+
         config = {'disable_existing_loggers': False,
                   'formatters': {'simple': {
                       'format': '--- %(asctime)s - %(levelname)s - %(module)s.%(funcName)s\n    %(message)s'}},
