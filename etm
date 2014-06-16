@@ -12,7 +12,7 @@ import logging
 import logging.config
 logger = logging.getLogger()
 
-log_levels = [str(x) for x in range(1,6)]
+log_levels = [str(x) for x in range(1, 6)]
 
 if __name__ == "__main__":
     etmdir = ''
@@ -42,4 +42,3 @@ if __name__ == "__main__":
         logger.debug("calling view.main with etmdir: {0}".format(etmdir))
         view.main(dir=etmdir)
         sys.exit()
-

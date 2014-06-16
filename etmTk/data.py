@@ -2506,6 +2506,7 @@ def parse_dtstr(dtstr, timezone="", f=rfmt):
         Take a string and a time zone and return a formatted datetime
         string. E.g., ('2/5/12', 'US/Pacific') => "20120205T0000-0800"
     """
+    msg = ""
     if type(dtstr) in [str, unicode]:
         if dtstr == 'now':
             if timezone:
@@ -2515,7 +2516,11 @@ def parse_dtstr(dtstr, timezone="", f=rfmt):
             else:
                 dt = datetime.now()
         else:
-            dt = parse(dtstr)
+            try:
+                dt = parse(dtstr)
+            except:
+                msg = _("Could not parse: {0}".format(dtstr))
+                return msg
     elif dtstr.utcoffset() is None:
         dt = dtstr.replace(tzinfo=tzlocal())
     else:

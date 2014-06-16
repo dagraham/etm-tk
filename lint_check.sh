@@ -2,6 +2,11 @@
 ls etmTk/*.py
 if [ "$1" = "" ]; then
     echo no pattern
+    echo pep8 etm
+    pep8 etm
+    echo
+    echo pyflakes etm
+    pyflakes etm
     pat="*.py"
 else
     echo pattern $1

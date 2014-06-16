@@ -559,11 +559,9 @@ class SimpleEditor(Toplevel):
         f = Frame(win)
         # pack the button first so that it doesn't disappear with resizing
         b = Button(win, text=_('OK'), width=10, command=win.destroy, default='active', pady=2)
-        c = Button(win, text=_('Cancel'), width=10, command=win.destroy, pady=2)
-        c.pack(side='bottom', fill=tkinter.NONE, expand=0, pady=0)
         b.pack(side='bottom', fill=tkinter.NONE, expand=0, pady=0)
         win.bind('<Return>', (lambda e, b=b: b.invoke()))
-        # win.bind('<Escape>', (lambda e, b=b: b.invoke()))
+        win.bind('<Escape>', (lambda e, b=b: b.invoke()))
         tkfixedfont = tkFont.nametofont("TkFixedFont")
         if 'fontsize_fixed' in self.loop.options and self.loop.options['fontsize_fixed']:
             tkfixedfont.configure(size=self.loop.options['fontsize_fixed'])
