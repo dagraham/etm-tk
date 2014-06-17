@@ -5696,14 +5696,12 @@ def export_ical_item(hsh, vcal_file):
     except:
         logger.exception("Could not open {0}".format(pname))
         return False
-    finally:
-        fo.close()
     try:
         fo.write(cal_str)
     except Exception:
         logger.exception("Could not write to {0}".format(pname))
     finally:
-        pass
+        fo.close()
     return True
 
 
