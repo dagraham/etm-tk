@@ -5676,7 +5676,7 @@ def export_ical_item(hsh, vcal_file):
         return False
 
     cal = Calendar()
-    cal.add('prodid', '-//etm_qt %s//dgraham.us//' % version)
+    cal.add('prodid', '-//etm-tk %s//dgraham.us//' % version)
     cal.add('version', '2.0')
 
     ok, element = hsh2ical(hsh)
@@ -5714,7 +5714,7 @@ def export_ical(uuid2hash, vcal_file, calendars=None):
         return False
 
     cal = Calendar()
-    cal.add('prodid', '-//etm_qt %s//dgraham.us//' % version)
+    cal.add('prodid', '-//etm-tk %s//dgraham.us//' % version)
     cal.add('version', '2.0')
 
     cal_regex = None
