@@ -13,6 +13,7 @@
 
 In contrast to most calendar/todo applications, creating items (events, tasks, and so forth) in *etm* does not require filling out fields in a form. Instead, items are created as free-form text entries using a simple, intuitive format and stored in plain text files.
 
-This project is hosted on [GitHub][].
+This source code for this project is available at [GitHub][] and the documenation is available at [GitHub wiki][].
 
 [GitHub]: https://github.com/dagraham/etm-tk
+[GitHub wiki]: https://github.com/dagraham/etm-tk/wiki
