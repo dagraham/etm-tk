@@ -98,7 +98,7 @@ fi
 
 echo $tag > etmTk/v.txt
 
-#./mk_docs.sh
+./mk_docs.sh
 weeks=2
 echo "# Changes in the $weeks weeks preceding $now:" > CHANGES.txt
      #Changes in the 4 weeks :
