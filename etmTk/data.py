@@ -1653,6 +1653,7 @@ def get_options(d=''):
         lcl = locale.getdefaultlocale()
 
     options['lcl'] = lcl
+    logger.info('using lcl: {0}'.format(lcl))
     options['hide_finished'] = False
     # define parse using dayfirst and yearfirst
     setup_parse(options['dayfirst'], options['yearfirst'])

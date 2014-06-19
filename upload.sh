@@ -20,7 +20,6 @@ else
     fi
     mkdir ~/.TEMP
     mkdir ~/.TEMP/images
-    mkdir ~/.TEMP/help
 
     while getopts "DLWbdeilps" Option
     do
