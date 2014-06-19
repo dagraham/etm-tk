@@ -5606,16 +5606,19 @@ def hsh2ical(hsh):
                             rhsh[ical_hsh[k]] = [x.upper() for x in r[k]]
                         else:
                             rhsh[ical_hsh[k]] = r[k].upper()
+                    elif k == 'u':
+                        uz = parse(parse_dtstr(r[k], hsh['z'])).replace(tzinfo=tzinfo)
+                        rhsh[ical_hsh[k]] = uz
                     else:
                         rhsh[ical_hsh[k]] = r[k]
             chsh = CaselessDict(rhsh)
             element.add('rrule', chsh)
         if '+' in hsh:
             for pd in hsh['+']:
-                element.add('rdate', parse(parse_dtstr(pd)))
+                element.add('rdate', pd)
         if '-' in hsh:
             for md in hsh['-']:
-                element.add('exdate', parse(parse_dtstr(md)))
+                element.add('exdate', md)
 
     element.add('summary', summary)
 
@@ -5676,14 +5679,15 @@ def export_ical_item(hsh, vcal_file):
         return False
 
     cal = Calendar()
-    cal.add('prodid', '-//etm-tk %s//dgraham.us//' % version)
+    cal.add('prodid', '-//etm_tk %s//dgraham.us//' % version)
     cal.add('version', '2.0')
 
     ok, element = hsh2ical(hsh)
     if not ok:
         return False
+    print('adding component', element)
     cal.add_component(element)
-
+    print('cal', cal)
     (name, ext) = os.path.splitext(vcal_file)
     pname = "%s.ics" % name
     try:
@@ -5714,7 +5718,7 @@ def export_ical(uuid2hash, vcal_file, calendars=None):
         return False
 
     cal = Calendar()
-    cal.add('prodid', '-//etm-tk %s//dgraham.us//' % version)
+    cal.add('prodid', '-//etm_tk %s//dgraham.us//' % version)
     cal.add('version', '2.0')
 
     cal_regex = None
