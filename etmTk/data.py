@@ -5686,9 +5686,7 @@ def export_ical_item(hsh, vcal_file):
     ok, element = hsh2ical(hsh)
     if not ok:
         return False
-    print('adding component', element)
     cal.add_component(element)
-    print('cal', cal)
     (name, ext) = os.path.splitext(vcal_file)
     pname = "%s.ics" % name
     try:
