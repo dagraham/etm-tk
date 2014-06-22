@@ -908,16 +908,20 @@ def calyear(advance=0, options=None):
     else:
         week_begin = 0
         # hack to set locale on darwin, windoz and linux
-    if mac:
-        # locale test
-        c = calendar.LocaleTextCalendar(week_begin, lcl[0])
-    elif windoz:
-        locale.setlocale(locale.LC_ALL, '')
-        lcl = locale.getlocale()
-        c = calendar.LocaleTextCalendar(week_begin, lcl)
-    else:
-        lcl = locale.getdefaultlocale()
-        c = calendar.LocaleTextCalendar(week_begin, lcl)
+    try:
+        if mac:
+            # locale test
+            c = calendar.LocaleTextCalendar(week_begin, lcl[0])
+        elif windoz:
+            locale.setlocale(locale.LC_ALL, '')
+            lcl = locale.getlocale()
+            c = calendar.LocaleTextCalendar(week_begin, lcl)
+        else:
+            lcl = locale.getdefaultlocale()
+            c = calendar.LocaleTextCalendar(week_begin, lcl)
+    except:
+        logger.exception('Could not set locale: {0}'.format(lcl))
+        c = calendar.LocaleTextCalendar(week_begin)
     cal = []
     y = int(today.strftime("%Y"))
     m = 1
@@ -1341,6 +1345,7 @@ def get_options(d=''):
 
         'current_textfile': '',
         'current_htmlfile': '',
+        'current_icsfile': '',
         'current_indent': 3,
         'current_opts': '',
         'current_width1': 48,
@@ -1362,7 +1367,6 @@ def get_options(d=''):
         'freetimes': default_freetimes,
         'icscal_file': os.path.normpath(os.path.join(etmdir, 'etmcal.ics')),
         'icsitem_file': os.path.normpath(os.path.join(etmdir, 'etmitem.ics')),
-        'icsimport_dir': etmdir,
         'idle_minutes': 10,
 
         'local_timezone': time_zone,
@@ -1395,6 +1399,7 @@ def get_options(d=''):
         'sms_subject': '!time_span!',
 
         'sundayfirst': False,
+        'sync_file': '',
         'vcs_system': default_vcs,
         'vcs_settings': {'command': '', 'commit': '', 'dir': '', 'file': '', 'history': '', 'init': '', 'limit': ''},
         'weeks_after': 52,
@@ -5511,6 +5516,9 @@ def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
         fo.writelines('<!DOCTYPE html> <html> <head> <meta charset="utf-8">\
             </head><body><pre>%s</pre></body>' % "\n".join(txt))
         fo.close()
+    if options['current_icsfile']:
+        res = export_ical(uuid2hash, options['current_icsfile'], options['calendars'])
+
     return(True)
 
 
@@ -5715,7 +5723,7 @@ def export_ical(uuid2hash, vcal_file, calendars=None):
     if not has_icalendar:
         logger.error('Could not import icalendar')
         return False
-
+    logger.debug("{0}; {1}".format(vcal_file, calendars))
     cal = Calendar()
     cal.add('prodid', '-//etm_tk %s//dgraham.us//' % version)
     cal.add('version', '2.0')
@@ -5724,11 +5732,13 @@ def export_ical(uuid2hash, vcal_file, calendars=None):
     if calendars:
         cal_pattern = r'^%s' % '|'.join([x[2] for x in calendars if x[1]])
         cal_regex = re.compile(cal_pattern)
+        logger.debug('cal_pattern: {0}'.format(cal_pattern))
     for uid, hsh in uuid2hash.items():
         if cal_regex and not cal_regex.match(hsh['fileinfo'][0]):
             continue
         else:
             ok, element = hsh2ical(hsh)
+            logger.debug('ok: {0}; element: {1}'.format(ok, element))
             if ok:
                 cal.add_component(element)
     (name, ext) = os.path.splitext(vcal_file)
@@ -5756,8 +5766,8 @@ def export_ical(uuid2hash, vcal_file, calendars=None):
     return True
 
 
-def import_ical(fname):
-    g = open(fname, 'rb')
+def import_ical(ics_name, txt_name):
+    g = open(ics_name, 'rb')
     cal = Calendar.from_ical(g.read())
     g.close()
     ilst = []
@@ -5774,11 +5784,13 @@ def import_ical(fname):
             t = '*'
             start = comp.get('dtstart')
             if start:
-                s = start.to_ical()[:16]
+                s = start.to_ical().decode()[:16]
                 # dated = True
                 end = comp.get('dtend')
                 if end:
-                    extent = parse(end.to_ical()) - parse(start.to_ical())
+                    e = end.to_ical().decode()[:16]
+                    logger.debug('start: {0}, s: {1}, end: {2}, e: {3}'.format(start, s, end, e))
+                    extent = parse(e) - parse(s)
                     e = fmt_period(extent)
                 else:
                     t = '^'
@@ -5820,14 +5832,14 @@ def import_ical(fname):
         tmp = comp.get('description')
         if tmp:
             clst.append("@d %s" % tmp)
-        rule = comp.get('rule')
+        rule = comp.get('rrule')
         if rule:
             rlst = []
             keys = rule.sorted_keys()
             for key in keys:
                 if key == 'FREQ':
-                    rlst.append(ical_freq_hsh[rule.get('FREQ')[0].to_ical()])
-                else:
+                    rlst.append(ical_freq_hsh[rule.get('FREQ')[0].to_ical().decode()])
+                elif key in ical_rrule_hsh:
                     rlst.append("&%s %s" % (
                         ical_rrule_hsh[key],
                         ", ".join(map(str, rule.get(key)))))
@@ -5842,8 +5854,52 @@ def import_ical(fname):
 
         item = u' '.join(clst)
         ilst.append(item)
-    return ilst
+    if ilst:
+        tmpfile = "{0}.tmp".format(os.path.splitext(txt_name)[0])
+        shutil.copy2(txt_name, tmpfile)
+        fo = codecs.open(txt_name, 'w', file_encoding)
+        fo.writelines(ilst)
+        fo.close()
 
+def syncTxt(uuid2hash, datadir, relfile):
+    relpath = os.path.splitext(relfile)[0]
+    fullpath = os.path.join(datadir, relpath)
+    sync_ics = "{0}.ics".format(fullpath)
+    sync_txt = "{0}.txt".format(fullpath)
+    logger.debug('{0}, {1}'.format(sync_txt, sync_ics, relfile))
+    mode = 0  # do nothing
+    if os.path.isfile(sync_txt) and not os.path.isfile(sync_ics):
+        mode = 1  # to ics
+    elif os.path.isfile(sync_ics) and not os.path.isfile(sync_txt):
+        mode = 2  # to txt
+    elif os.path.isfile(sync_ics) and os.path.isfile(sync_txt):
+        mod_ics = os.path.getmtime(sync_ics)
+        mod_txt = os.path.getmtime(sync_txt)
+        if mod_ics < mod_txt:
+            mode = 1  # to ics
+        elif mod_txt < mod_ics:
+            mode = 2  # to txt
+        else:
+            logger.debug('sync_txt and sync_ics have the same mtime: {0}'.format(mod_txt))
+    if not mode:
+        return
+
+    if mode == 1:  # to ics
+        export_ical(uuid2hash, sync_ics, calendars=[['sync', True, relfile]])
+        seconds = os.path.getmtime(sync_ics)
+
+    elif mode == 2:  # to txt
+        import_ical(sync_ics, sync_txt)
+        seconds = os.path.getmtime(sync_txt)
+
+    # update times
+    # now = get_current_time()
+    # # epoch = datetime(1970, 1, 1, 0, 0, 0, 0)
+    # epoch = datetime(1970, 1, 1, 0, 0, 0, 0, tzinfo=tzlocal())
+    # seconds = (now - epoch).total_seconds()
+    logger.debug('updating mtimes using seconds: {0}'.format(seconds))
+    os.utime(sync_ics, times=(seconds, seconds))
+    os.utime(sync_txt, times=(seconds, seconds))
 
 def ensureMonthly(options, date=None):
     """

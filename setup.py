@@ -7,7 +7,7 @@ import sys
 if sys.version_info >= (3, 2):
     REQUIRES = ["tkinter>=8.5.11", "python-dateutil>=1.5", "PyYaml>=3.10","icalendar>=3.6", "pytz"]
 else:
-    REQUIRES = ["Tkinter>=8.5.11", "python>=2.7,<3.0", "python-dateutil>=1.5", "PyYaml>=3.10", "icalendar>=3.5", "pytz"]
+    REQUIRES = ["Tkinter>=8.5.11", "python>=2.7.6,<3.0", "python-dateutil>=1.5", "PyYaml>=3.10", "icalendar>=3.5", "pytz"]
 
 APP = ['etm']
 
@@ -49,8 +49,9 @@ setup(
         'Operating System :: POSIX',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 2.7.6',
         'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
         'Topic :: Office/Business',
         'Topic :: Office/Business :: News/Diary',
         'Topic :: Office/Business :: Scheduling'],
@@ -61,10 +62,7 @@ setup(
     # package_data={'etmTk': ['etmlogo.*', 'CHANGES', 'etmtk.desktop', 'etmtk.1', 'etmtk.xpm']},
     package_data={'etmTk': ['etmtk.desktop', 'etmtk.1', 'etmtk.xpm'],
                   'etmTk/help' : ['help/UserManual.html', ]},
-    # TODO: fix man, icon, desktop, docs
     data_files=[
-        # ('share/doc/etmtk', ['CHANGES']),
-        # ('share/icons/etmtk', glob.glob('etmTk/etmlogo.*')),
         ('share/man/man1', ['etmTk/etmtk.1']),
         ('share/pixmaps', ['etmTk/etmtk.xpm']),
         ('share/applications', ['etmTk/etmtk.desktop']),

@@ -90,7 +90,7 @@ def hsv_to_rgb(h, s, v):
         return v, p, q
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, str2hsh, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical, fmt_time, TimeIt, getReportData, getFileTuples, updateCurrentFiles, FINISH, availableDates)
+    init_localization, fmt_weekday, fmt_dt, str2hsh, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical, fmt_time, TimeIt, getReportData, getFileTuples, updateCurrentFiles, FINISH, availableDates, syncTxt)
 
 # from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES, REPORTS)
 
@@ -3110,8 +3110,15 @@ or 0 to display all changes.""").format(title)
         newday = (today != self.today)
         self.today = today
 
+        if loop.options['sync_file']:
+            fullpath = os.path.join(loop.options['datadir'], loop.options['sync_file'])
+            logger.debug('syncTxt: {0}'.format(loop.options['sync_file']))
+            syncTxt(loop.uuid2hash, loop.options['datadir'], loop.options['sync_file'])
+            # if sync_txt is updated it will be reloaded below
+
         new, modified, deleted = get_changes(
             self.options, loop.file2lastmodified)
+
         if newday or new or modified or deleted:
             if newday:
                 logger.info('newday')
