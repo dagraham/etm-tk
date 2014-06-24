@@ -2,6 +2,8 @@
 
 iCalendar sync
 
+    Add an (optional) ics file path to each calendar entry. If given these will be automatically updated.
+
     Option for relative path "ics_txt" in data dir. If present, ics_txt.ics will automatically be created and updated with iCalendar export of ics_txt.txt and vice versa. 
     
     Check modification times. If ics is more recent then import to txt, else if txt is more recent, then export to ics.
