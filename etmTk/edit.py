@@ -316,7 +316,13 @@ class SimpleEditor(Toplevel):
 
     def completionSelected(self, event):
         # Put the selected completion in the text, and close the list
-        cursel = self.matches[int(self.listbox.curselection()[0])]
+        modified = False
+        if self.matches:
+            cursel = self.matches[int(self.listbox.curselection()[0])]
+        else:
+            cursel= self.filterValue.get()
+            modified = True
+
         start = "insert-{0}c".format(len(self.match))
         end = "insert-1c wordend"
         logger.debug("cursel: {0}; match: {1}; start: {2}; insert: {3}".format(
@@ -324,6 +330,20 @@ class SimpleEditor(Toplevel):
         self.text.delete(start, end)
         self.text.insert(INSERT, cursel)
         self.hideCompletions()
+        if modified:
+            file = FileChoice(self, "append completion to file", prefix=self.loop.options['etmdir'], list=self.loop.options['completion_files']).returnValue()
+            if (file and os.path.isfile(file)):
+                with codecs.open(file, 'r', self.loop.options['encoding']['file']) as fo:
+                    lines = fo.readlines()
+                lines.append(cursel)
+                lines.sort()
+                content = "\n".join([x.strip() for x in lines if x.strip()])
+                with codecs.open(file, 'w', self.loop.options['encoding']['file']) as fo:
+                    fo.write(content)
+            self.completions.append(cursel)
+            self.completions.sort()
+
+
 
     def cursorUp(self, event=None):
         cursel = int(self.listbox.curselection()[0])

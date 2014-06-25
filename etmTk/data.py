@@ -1175,6 +1175,9 @@ def setConfig(options):
     options['reports'] = []
     completions = set([])
     reports = set([])
+    completion_files = []
+    report_files = []
+    user_files = []
 
     # get info from files in datadir
     prefix, filelist = getFiles(options['datadir'], include=r'*.cfg')
@@ -1182,10 +1185,12 @@ def setConfig(options):
     for fp, rp in filelist:
         if os.path.split(rp)[0] and cal_regex and not cal_regex.match(rp):
             continue
+        np = relpath(fp, options['etmdir'])
         drive, parts = os_path_splitall(fp)
         n, e = os.path.splitext(parts[-1])
         # skip etmtk and any other .cfg files other than the following
         if n == "completions":
+            completion_files.append((np, fp, False))
             with codecs.open(fp, 'r', dfile_encoding) as fo:
                 for x in fo.readlines():
                     x = x.rstrip()
@@ -1193,6 +1198,7 @@ def setConfig(options):
                         completions.add(x)
 
         elif n == "reports":
+            report_files.append((np, fp, False))
             with codecs.open(fp, 'r', dfile_encoding) as fo:
                 for x in fo.readlines():
                     x = x.rstrip()
@@ -1200,6 +1206,7 @@ def setConfig(options):
                         reports.add(x)
 
         elif n == "users":
+            user_files.append((np, fp, False))
             fo = codecs.open(fp, 'r', dfile_encoding)
             tmp = yaml.load(fo)
             fo.close()
@@ -1213,6 +1220,7 @@ def setConfig(options):
     if 'cfg_files' in options and options['cfg_files']:
         if 'completions' in options['cfg_files'] and options['cfg_files']['completions']:
             for fp in options['cfg_files']['completions']:
+                completion_files.append((relpath(fp, options['etmdir']), fp, False))
                 with codecs.open(fp, 'r', dfile_encoding) as fo:
                     for x in fo.readlines():
                         x = x.rstrip()
@@ -1220,6 +1228,7 @@ def setConfig(options):
                             completions.add(x)
         if 'reports' in options['cfg_files'] and options['cfg_files']['reports']:
             for fp in options['cfg_files']['reports']:
+                report_files.append((relpath(fp, options['etmdir']), fp, False))
                 with codecs.open(fp, 'r', dfile_encoding) as fo:
                     for x in fo.readlines():
                         x = x.rstrip()
@@ -1227,6 +1236,7 @@ def setConfig(options):
                             reports.add(x)
         if 'users' in options['cfg_files'] and options['cfg_files']['users']:
             for fp in options['cfg_files']['users']:
+                user_files.append((relpath(fp, options['etmdir']), fp, False))
                 fo = codecs.open(fp, 'r', dfile_encoding)
                 tmp = yaml.load(fo)
                 fo.close()
@@ -1249,6 +1259,10 @@ def setConfig(options):
         options['reports'] = reports
     else:
         logger.info('no reports')
+
+    options['completion_files'] = completion_files
+    options['report_files'] = report_files
+    options['user_files'] = user_files
 
 
 # noinspection PyGlobalUndefined

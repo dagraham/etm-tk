@@ -1576,12 +1576,7 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
         self.editFile(e, file=ret, config=True)
 
     def getReportsFile(self, e=None):
-        other = []
-        if 'cfg_files' in loop.options:
-            for key in ['reports']:
-                other.extend(loop.options['cfg_files'][key])
-        prefix, tuples = getFileTuples(loop.options['datadir'], include=r'*reports.cfg', other=other)
-        ret = FileChoice(self, "append to reports file", prefix=prefix, list=tuples).returnValue()
+        ret = FileChoice(self, "append to reports file", prefix=self.loop.options['etmdir'], list=self.loop.options['report_files']).returnValue()
         if not (ret and os.path.isfile(ret)):
             return False
         return ret
@@ -3832,8 +3827,13 @@ or 0 to expand all branches completely.""")
             file = self.getReportsFile()
             if not (file and os.path.isfile(file)):
                 return
+            with codecs.open(file, 'r', loop.options['encoding']['file']) as fo:
+                lines = fo.readlines()
+            lines.extend(added)
+            lines.sort()
+            content = "\n".join([x.strip() for x in lines if x.strip()])
             with codecs.open(file, 'w', loop.options['encoding']['file']) as fo:
-                fo.write("\n".join(self.specs))
+                    fo.write(content)
             logger.debug("saved: {0}".format(file))
             self.getSpecs()
             self.custom_box['values'] = self.specs
