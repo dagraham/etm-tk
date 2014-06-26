@@ -97,9 +97,6 @@ else:
     from cStringIO import StringIO
     _ = gettext.lgettext
 
-#######################################################
-############ begin IndexableSkipList ##################
-#######################################################
 
 from random import random
 from math import log
@@ -282,9 +279,6 @@ def clear_all_data():
         "datetimes": datetimesSL
     }
 
-#######################################################
-############## end IndexableSkipList ##################
-#######################################################
 
 dayfirst = False
 yearfirst = True
@@ -695,8 +689,6 @@ def s2or3(s):
     else:
         return s
 
-############ for indexableskiplist ###############
-
 
 def term_print(s):
     if python_version2:
@@ -879,7 +871,6 @@ def get_localtz(zones=zonelist):
     # try the zone list first unless windows system
     if not windoz:
         for i in range(len(zones)):
-        # for z in zones:
             z = zones[i]
             zinfo = gettz(z)
             if zinfo and zinfo == linfo:
@@ -1359,7 +1350,7 @@ def get_options(d=''):
 
         'current_textfile': '',
         'current_htmlfile': '',
-        'current_icsfile': '',
+        'current_icsfolder': '',
         'current_indent': 3,
         'current_opts': '',
         'current_width1': 48,
@@ -1665,6 +1656,11 @@ def get_options(d=''):
             # run_cmd(command)
             subprocess.call(command, shell=True)
 
+    if options['current_icsfolder']:
+        if not os.path.isdir(options['current_icsfolder']):
+            os.makedirs(options['current_icsfolder'])
+
+
     if use_locale:
         locale.setlocale(locale.LC_ALL, map(str, use_locale[0]))
         lcl = locale.getlocale()
@@ -1953,11 +1949,10 @@ rrule_hsh = {
     'E': 'BYEASTER',  # non-negative integer number of days after easter
 }
 
-### for icalendar export we need BYDAY instead of BYWEEKDAY
+# for icalendar export we need BYDAY instead of BYWEEKDAY
 ical_hsh = deepcopy(rrule_hsh)
 ical_hsh['w'] = 'BYDAY'
 ical_hsh['f'] = 'FREQ'
-# del ical_hsh['f']
 
 ical_rrule_hsh = {
     'FREQ': 'r',  # unicode
@@ -2284,11 +2279,8 @@ def tree2Text(tree, indent=4, width1=43, width2=20, colors=0,
                         unicode(truncate(node[1][2], rmlft)),
                         col2, e_c)
                 else:
-                    # logger.debug("col2: {0}; e_c: {1}".format(col2, e_c))
                     rmlft = width1 - indent * level
-                    s = "%s%s%s %-*s %s%s" % (tab * level, s_c, unicode(t),
-                        rmlft, unicode(truncate(node[1][2], rmlft)),
-                        col2, e_c)
+                    s = "%s%s%s %-*s %s%s" % (tab * level, s_c, unicode(t), rmlft, unicode(truncate(node[1][2], rmlft)), col2, e_c)
                 text_lst.append(s)
             else:
                 aug = "%s%s" % (tab * level, node[1])
@@ -3278,7 +3270,7 @@ def get_reps(bef, hsh):
             ret.append(i)
         return passed, ret
 
-    return passed, [i.replace(tzinfo=gettz(hsh['z'])).astimezone(tzlocal()).replace(tzinfo=None) for i in tmp if i]
+    return passed, [j.replace(tzinfo=gettz(hsh['z'])).astimezone(tzlocal()).replace(tzinfo=None) for j in tmp if j]
 
 
 def get_rrulestr(hsh, key_hsh=rrule_hsh):
@@ -3679,7 +3671,7 @@ def applyFilters(file2uuids, uuid2hash, filters):
                 for g in filters['grpby']:
                     # search over the leaf summary and the branch
                     for t in ['_summary', u'c', u'k', u'f', u'u']:
-                        if not t in g:
+                        if t not in g:
                             continue
                         if t == 'f':
                             v = hsh['fileinfo'][0]
@@ -4805,7 +4797,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
             if 't' not in hsh:
                 hsh['t'] = [NONE]
 
-        #---- make task entries for day, keyword and folder view ----#
+        # make task entries for day, keyword and folder view
         if hsh['itemtype'] in [u'+', u'-', u'%']:
             done, due, following = getDoneAndTwo(hsh)
             hist_key = 'f'
@@ -5028,7 +5020,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                  hsh['_summary'], f), tuple(keywords),
                 (uid, typ, setSummary(hsh, ''), '', dt)]
             items.append(item)
-        #--------- make entry for next view ----------#
+        # make entry for next view
         if 's' not in hsh and hsh['itemtype'] in [u'+', u'-', u'%']:
             if 'f' in hsh:
                 continue
@@ -5054,7 +5046,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 (hsh['c'],), (uid, typ, hsh['_summary'], extstr)]
             items.append(item)
             continue
-        #---- make entries for day view and friends ----#
+        # make entries for day view and friends
         dates = []
         if 'rrule' in hsh:
             gotall, dates = get_reps(bef, hsh)
@@ -5306,7 +5298,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     items.append(item)
                     busytimes.append([sd, sm, em, evnt_summary, uid, f])
                     continue
-                    #--------------- other dated items ---------------#
+                    # other dated items
             if hsh['itemtype'] in ['+', '-', '%']:
                 if 'e' in hsh:
                     extstr = fmt_period(hsh['e'])
@@ -5433,9 +5425,9 @@ def updateViewData(f, bef, file2uuids=None, uuid2hash=None, options=None, file2d
                 # logger.debug('removing alert: {0}'.format(alert))
                 removeFromlist("alerts", alert)
                 # alertsSL.remove(alert)
-            for datetime in _datetimes:
+            for dt in _datetimes:
                 # logger.debug('removing datetime: {0}'.format(datetime))
-                removeFromlist("datetimes", datetime)
+                removeFromlist("datetimes", dt)
                 # datetimesSL.remove(datetime)
             for bt in _busytimes:
                 bt = list(bt)
@@ -5479,6 +5471,7 @@ def updateViewData(f, bef, file2uuids=None, uuid2hash=None, options=None, file2d
 def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
     logger.debug("updateCurrent")
     # logger.debug(('options: {0}'.format(options)))
+    res = True
     if options['current_textfile']:
         if 'current_opts' in options and options['current_opts']:
             txt, count2id = getReportData(
@@ -5530,10 +5523,10 @@ def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
         fo.writelines('<!DOCTYPE html> <html> <head> <meta charset="utf-8">\
             </head><body><pre>%s</pre></body>' % "\n".join(txt))
         fo.close()
-    if options['current_icsfile']:
-        res = export_ical(uuid2hash, options['current_icsfile'], options['calendars'])
+    if options['current_icsfolder']:
+        res = export_ical(file2uuids, uuid2hash, options['current_icsfolder'], options['calendars'])
 
-    return(True)
+    return res
 
 
 def availableDates(s):
@@ -5730,53 +5723,74 @@ def export_ical_item(hsh, vcal_file):
     return True
 
 
-def export_ical(uuid2hash, vcal_file, calendars=None):
+def export_ical(file2uuids, uuid2hash, vcal_folder, calendars=None):
     """
-        Return items in calendars as a list of icalendar items
+    Export items from each calendar to an ics file with the same name in vcal_folder.
     """
     if not has_icalendar:
         logger.error('Could not import icalendar')
         return False
-    logger.debug("{0}; {1}".format(vcal_file, calendars))
-    cal = Calendar()
-    cal.add('prodid', '-//etm_tk %s//dgraham.us//' % version)
-    cal.add('version', '2.0')
+    logger.debug("{0}; {1}".format(vcal_folder, calendars))
 
-    cal_regex = None
+    cal_tuples = []
+    calfiles = []
     if calendars:
-        cal_pattern = r'^%s' % '|'.join([x[2] for x in calendars if x[1]])
-        cal_regex = re.compile(cal_pattern)
-        logger.debug('cal_pattern: {0}'.format(cal_pattern))
-    for uid, hsh in uuid2hash.items():
-        if cal_regex and not cal_regex.match(hsh['fileinfo'][0]):
-            continue
+        for cal in calendars:
+            name = cal[0]
+            regex = re.compile(r'^{0}'.format(cal[2]))
+            calendar = Calendar()
+            calendar.add('prodid', '-//etm_tk {0}//dgraham.us//'.format(version))
+            calendar.add('version', '2.0')
+            cal_tuples.append((name, regex, calendar))
+    else:
+        all = Calendar()
+        all.add('prodid', '-//etm_tk {0}//dgraham.us//'.format(version))
+        all.add('version', '2.0')
+        calfiles = [all, os.path.join(vcal_folder, "all.ics")]
+
+    for rp in file2uuids:
+        if cal_tuples:
+            this_calendar = None
+            this_file = None
+            for name, regex, calendar in cal_tuples:
+                if regex.match(rp):
+                    this_calendar = calendar
+                    this_file = os.path.join(vcal_folder, "{0}.ics".format(name))
+                    calfiles.append([this_calendar, this_file])
+                    break
+            if not this_calendar:
+                logger.debug('skipping: {0}'.format(rp))
+                continue
         else:
+            this_calendar = all
+        for uid in file2uuids[rp]:
+            hsh = uuid2hash[uid]
             ok, element = hsh2ical(hsh)
             logger.debug('ok: {0}; element: {1}'.format(ok, element))
             if ok:
-                cal.add_component(element)
-    (name, ext) = os.path.splitext(vcal_file)
-    pname = "%s.ics" % name
-    try:
-        cal_str = cal.to_ical()
-    except Exception:
-        f = StringIO()
-        logger.exception(f)
-        logger.exception("Could not serialize the calendar")
-        return False
-    try:
-        fo = open(pname, 'wb')
-    except:
-        logger.exception("Could not open {0}".format(pname))
-        return False
-    try:
-        fo.write(cal_str)
-    except Exception:
-        f = StringIO()
-        logger.exception("Could not write to {0}" .format(pname))
-        return False
-    finally:
-        fo.close()
+                this_calendar.add_component(element)
+
+    for this_calendar, this_file in calfiles:
+        try:
+            cal_str = this_calendar.to_ical()
+        except Exception:
+            f = StringIO()
+            logger.exception(f)
+            logger.exception("Could not serialize the calendar")
+            return False
+        try:
+            fo = open(this_file, 'wb')
+        except:
+            logger.exception("Could not open {0}".format(this_file))
+            return False
+        try:
+            fo.write(cal_str)
+        except Exception:
+            f = StringIO()
+            logger.exception("Could not write to {0}" .format(this_file))
+            return False
+        finally:
+            fo.close()
     return True
 
 
@@ -5875,6 +5889,7 @@ def import_ical(ics_name, txt_name):
         fo.writelines(ilst)
         fo.close()
 
+
 def syncTxt(uuid2hash, datadir, relfile):
     relpath = os.path.splitext(relfile)[0]
     fullpath = os.path.join(datadir, relpath)
@@ -5914,6 +5929,7 @@ def syncTxt(uuid2hash, datadir, relfile):
     logger.debug('updating mtimes using seconds: {0}'.format(seconds))
     os.utime(sync_ics, times=(seconds, seconds))
     os.utime(sync_txt, times=(seconds, seconds))
+
 
 def ensureMonthly(options, date=None):
     """
