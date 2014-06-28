@@ -1413,7 +1413,7 @@ def get_options(d=''):
         'sms_subject': '!time_span!',
 
         'sundayfirst': False,
-        'sync_file': '',
+        'sync_folder': '',
         'vcs_system': default_vcs,
         'vcs_settings': {'command': '', 'commit': '', 'dir': '', 'file': '', 'history': '', 'init': '', 'limit': ''},
         'weeks_after': 52,
