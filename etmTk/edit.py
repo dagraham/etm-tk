@@ -65,7 +65,7 @@ type2Text = {
     '#': _("Hidden item")
 }
 
-from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, completion_regex, getFileTuples, fmt_shortdatetime, fmt_date, FINISH
+from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, completion_regex, getFileTuples, fmt_shortdatetime, fmt_date, FINISH, uniqueId
 
 from etmTk.dialog import BGCOLOR, OptionsDialog, ReadOnlyText, FileChoice
 
@@ -156,13 +156,14 @@ class SimpleEditor(Toplevel):
         self.completions = self.loop.options['completions']
 
         if start is not None:
-            # we have the starting text
+            # we have the starting text but will need a new uid
             text = start
             self.edithsh = {}
             self.mode = 1
             self.title = CREATENEW
         elif file is not None:
-            # we're editing a file
+            # we're editing a file - if it's a data file we will add uid's
+            # as necessary when saving
             self.mode = 'file'
             if not os.path.isfile(file):
                 logger.warn('could not open: {0}'.format(file))
@@ -179,21 +180,26 @@ class SimpleEditor(Toplevel):
             initfile = ensureMonthly(options=self.options, date=datetime.now())
             # set the mode
             if newhsh is None and rephsh is None:
-                # we are creating a new item from scratch
+                # we are creating a new item from scratch and will need
+                # a new uid
                 self.mode = 1
                 self.title = CREATENEW
                 self.edithsh = self.newhsh
+                self.edithsh['i'] = uniqueId()
                 text = ''
             elif rephsh is None:  # newhsh is not None
-                # we are creating a new item as a copy
+                # we are creating a new item as a copy and will need
+                # a new uid
                 self.mode = 1
                 self.title = CREATENEW
                 self.edithsh = self.newhsh
+                self.edithsh['i'] = uniqueId()
                 if ('fileinfo' in newhsh and newhsh['fileinfo']):
                     initfile = newhsh['fileinfo'][0]
                 text, msg = hsh2str(self.edithsh, self.options)
             elif newhsh is None:
                 # we are editing and replacing rephsh - no file prompt
+                # using existing uid
                 self.title = EDITEXISTING
                 self.mode = 2
                 # self.repinfo = rephsh['fileinfo']
@@ -202,10 +208,13 @@ class SimpleEditor(Toplevel):
             else:  # neither is None
                 # we are changing some instances of a repeating item
                 # we will be writing but not editing rephsh using its fileinfo
+                # and its existing uid
                 # we will be editing and saving newhsh using self.initfile
+                # we will need a new uid for newhsh
                 self.mode = 3
                 self.title = CREATENEW
                 self.edithsh = self.newhsh
+                self.edithsh['i'] = uniqueId()
                 if 'fileinfo' in newhsh and newhsh['fileinfo'][0]:
                     initfile = self.newhsh['fileinfo'][0]
                 text, msg = hsh2str(self.edithsh, self.options)
@@ -424,22 +433,14 @@ class SimpleEditor(Toplevel):
             if self.mode == 1:
                 if self.loop.append_item(self.edithsh, filename):
                     logger.debug('append mode: {0}'.format(self.mode))
-                # else:
-                #     ok = False
             elif self.mode == 2:
                 if self.loop.replace_item(self.edithsh):
                     logger.debug('replace mode: {0}'.format(self.mode))
-                # else:
-                #     ok = False
             else:  # self.mode == 3
                 if self.loop.append_item(self.edithsh, filename):
                     logger.debug('append mode: {0}'.format(self.mode))
-                # else:
-                #     ok = False
                 if self.loop.replace_item(self.rephsh):
                     logger.debug('replace mode: {0}'.format(self.mode))
-                # else:
-                #     ok = False
 
             # update the return value so that when it is not null then modified
             # is false and when modified is true then it is null
@@ -455,8 +456,11 @@ class SimpleEditor(Toplevel):
         logger.debug("text: {0}".format(text))
         msg = []
         reps = []
-        # error = False
-        hsh, msg = str2hsh(text, options=self.options)
+        if self.options['retain_ids']:
+            uid = self.edithsh['i']
+        else:
+            uid = None
+        hsh, msg, id_missing, id_present = str2hsh(text, options=self.options, uid=uid)
 
         if not msg:
             # we have a good hsh

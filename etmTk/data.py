@@ -13,6 +13,12 @@ import logging
 import logging.config
 logger = logging.getLogger()
 
+# from urllib import request, parse
+# url = 'https://www.google.com/calendar/ical/99ujpejsg8cil608so6jhn7b1g%40group.calendar.google.com/private-04aba66f27749c0e8838b2dd4b808739/basic.ics'
+#
+# u = request.urlopen(url)
+# resp = u.read()
+# print(resp)
 
 def setup_logging(level, etmdir=None):
     """
@@ -1372,6 +1378,7 @@ def get_options(d=''):
         'freetimes': default_freetimes,
         'icscal_file': os.path.normpath(os.path.join(etmdir, 'etmcal.ics')),
         'icsitem_file': os.path.normpath(os.path.join(etmdir, 'etmitem.ics')),
+        'ics_import': {'source': '', 'file': ''},
         'idle_minutes': 10,
 
         'local_timezone': time_zone,
@@ -1387,6 +1394,8 @@ def get_options(d=''):
         'report_indent': 3,
         'report_width1': 43,
         'report_width2': 17,
+
+        'retain_ids': False,
 
         'show_finished': 1,
 
@@ -1468,7 +1477,7 @@ def get_options(d=''):
                 # we want to allow 0 as an entry
                 options[key] = default_options[key]
                 changed = True
-        elif key in ['ampm', 'dayfirst', 'yearfirst']:
+        elif key in ['ampm', 'dayfirst', 'yearfirst', 'retain_ids']:
             if key not in user_options:
                 # we want to allow False as an entry
                 options[key] = default_options[key]
@@ -2027,6 +2036,8 @@ at_keys = [
     'm',  # memo
     'z',  # time zone
     'i',  # id',
+    'v',  # action rate key
+    'w',  # expense markupß key
 ]
 
 all_keys = at_keys + ['entry', 'fileinfo', 'itemtype', 'rrule', '_summary', '_group_summary', '_a', '_j', '_p', '_r']
@@ -2452,7 +2463,8 @@ def group_sort(row_lst):
 
 
 def uniqueId():
-    return unicode(uuid.uuid4())
+    # return unicode(thistime.strftime("%Y%m%dT%H%M%S@etmtk"))
+    return unicode("{0}etm".format(uuid.uuid4().hex))
 
 
 def nowAsUTC():
@@ -2668,7 +2680,7 @@ def lst2str(l):
     return ", ".join(tmp)
 
 
-def hsh2str(hsh, options=None):
+def hsh2str(hsh, options=None, include_uid=False):
     """
 For editing one or more, but not all, instances of an item. Needed:
 1. Add @+ datetime to orig and make copy sans all repeating info and
@@ -2689,6 +2701,8 @@ For editing one or more, but not all, instances of an item. Needed:
             hsh['i'] = hsh['i'].split(':')[0]
     else:
         sl = ["%s %s" % (hsh['itemtype'], hsh['_summary'])]
+    if 'i' not in hsh or not hsh['i']:
+        hsh['i'] = uniqueId()
     bad_keys = [x for x in hsh.keys() if x not in all_keys]
     if bad_keys:
         omitted = []
@@ -2697,7 +2711,9 @@ For editing one or more, but not all, instances of an item. Needed:
         msg.append("unrecogized entries: {0}".format(", ".join(omitted)))
     for key in at_keys:
         amp_key = None
-        if key in options['prefix_uses']:
+        if hsh['itemtype'] == "=":
+            prefix = ""
+        elif key in options['prefix_uses']:
             prefix = options['prefix']
         else:
             prefix = ""
@@ -2719,16 +2735,12 @@ For editing one or more, but not all, instances of an item. Needed:
             at_key = key
             keys = amp_keys[key]
             key = "_%s" % key
-            # prefix = "\n  "
         elif key in ['+', '-']:
             keys = []
-            # prefix = "\n  "
         elif key in ['t', 'l', 'd']:
             keys = []
-            # prefix = "\n"
         else:
             keys = []
-            # prefix = ""
 
         if key in hsh and hsh[key]:
             # since r and j can repeat, value will be a list
@@ -2780,19 +2792,24 @@ For editing one or more, but not all, instances of an item. Needed:
                             tmp.append('&%s %s' % (amp_key, v))
                 if tmp:
                     sl.append(" ".join(tmp))
-            elif key == 'i':
-                pass
             elif key == 's':
-                sl.append("@%s %s" % (
-                    key, fmt_datetime(value, options=options)))
+                try:
+                    sl.append("@%s %s" % (key, fmt_datetime(value, options=options)))
+                except:
+                    msg.append("problem with @{0}: {1}".format(key, value))
             elif key == 'e':
-                sl.append("@%s %s" % (
-                    key, fmt_period(value)))
+                try:
+                    sl.append("@%s %s" % (key, fmt_period(value)))
+                except:
+                    msg.append("problem with @{0}: {1}".format(key, value))
             elif key == 'f':
                 tmp = []
                 for pair in hsh['f']:
                     tmp.append(";".join([x.strftime(zfmt) for x in pair if x]))
-                sl.append("\n  @f %s" % (',\n     '.join(tmp)))
+                sl.append("\n@f %s" % (',\n     '.join(tmp)))
+            elif key == 'i':
+                if include_uid and hsh['itemtype'] != "=":
+                    sl.append("\n@i {0}".format(value))
             elif key == 'h':
                 tmp = []
                 for pair in hsh['h']:
@@ -2819,11 +2836,42 @@ def process_data_file_list(filelist, options=None):
     uuid2labels = {}
     for f, r in filelist:
         file2lastmodified[(f, r)] = os.path.getmtime(f)
-        msg, hashes, u2l = process_one_file(f, r, options)
+        msg, hashes, u2l, id_missing, id_present = process_one_file(f, r, options)
         uuid2labels.update(u2l)
         if msg:
             messages.append("errors loading %s:" % r)
             messages.extend(msg)
+        if options['retain_ids']:
+            if id_missing:
+                items = []
+                msgs = []
+                for hsh in hashes:
+                    s, msg = hsh2str(hsh, options, include_uid=True)
+                    items.append(s)
+                    if msg:
+                        msgs.append(msg)
+                if msgs:
+                    messages.extend(msgs)
+                    logger.debug('missing id msgs: {0}'.format(msgs))
+                else:
+                    with codecs.open(f, 'w', file_encoding) as fo:
+                        fo.writelines("\n".join(items))
+                    logger.info('updated: {0}'.format(f))
+        else:
+            if id_present:
+                items = []
+                msgs = []
+                for hsh in hashes:
+                    s, msg = hsh2str(hsh, options, include_uid=False)
+                    items.append(s)
+                    if msg:
+                        msgs.append(msg)
+                if msgs:
+                    messages.extend(msgs)
+                else:
+                    with codecs.open(f, 'w', file_encoding) as fo:
+                        fo.writelines("\n".join(items))
+                    logger.info('updated: {0}'.format(f))
         try:
             for hsh in hashes:
                 if hsh['itemtype'] == '=':
@@ -3025,12 +3073,18 @@ def items2Hashes(list_of_items, options=None):
     if not options:
         options = {}
     messages = []
+    missing_id = False
+    present_id = False
     hashes = []
     uuid2labels = {}
     defaults = {}
     # in_task_group = False
     for item, rel_name, linenums in list_of_items:
-        hsh, msg = str2hsh(item, options=options)
+        hsh, msg, id_missing, id_present = str2hsh(item, options=options)
+        if id_missing:
+            missing_id = True
+        if id_present:
+            present_id = True
         tmp_hsh = {}
         tmp_hsh.update(defaults)
         tmp_hsh.update(hsh)
@@ -3062,30 +3116,6 @@ def items2Hashes(list_of_items, options=None):
             # ('hsh:', hsh)
             hashes.append(hsh)
             continue
-
-        tooltip = [hsh['_summary']]
-        if 'l' in hsh:
-            tooltip.append("@l %s" % hsh['l'])
-        if 't' in hsh:
-            tooltip.append("@t %s" % ", ".join(hsh['t']))
-        if 'd' in hsh:
-            first_line = True
-            lines = hsh['d'].split('\n')
-            for line in lines:
-                if first_line:
-                    line = "@d %s" % line
-                    first_line = False
-                if len(line) > 60:
-                    tooltip.extend(wrap(line, 60))
-                else:
-                    tooltip.append(line)
-        for k in ['c', 'k']:
-            if k in hsh:
-                tooltip.append('@%s %s' % (k, hsh[k]))
-        if tooltip:
-            hsh["_tooltip"] = "\n".join(tooltip)
-        else:
-            hsh["_tooltip"] = ''
 
         itemtype = hsh['itemtype']
         if itemtype == '$':
@@ -3127,8 +3157,8 @@ def items2Hashes(list_of_items, options=None):
                 del group_defaults['rrule']
             prereqs = []
             last_level = 1
-            uid = hsh["i"]
-            summary = hsh["_summary"]
+            uid = hsh['i']
+            summary = hsh['_summary']
             if 'j' not in hsh:
                 continue
             job_num = 0
@@ -3208,7 +3238,7 @@ def items2Hashes(list_of_items, options=None):
                 # else:
                 #     tmp.append(' ')
             uuid2labels[hsh['i']] = "".join(tmp)
-    return messages, hashes, uuid2labels
+    return messages, hashes, uuid2labels, missing_id, present_id
 
 
 def get_reps(bef, hsh):
@@ -4072,6 +4102,8 @@ def str2hsh(s, uid=None, options=None):
     if not options:
         options = {}
     msg = []
+    id_missing = False
+    id_present = False
     try:
         hsh = {}
         alerts = []
@@ -4087,9 +4119,13 @@ def str2hsh(s, uid=None, options=None):
             summary = head
         hsh['itemtype'] = itemtype
         hsh['_summary'] = summary
+        if uid:
+            hsh['i'] = uid
         if itemtype == u'+':
             hsh['_group_summary'] = summary
-        hsh['entry'] = s
+        # drop the @i line
+        lines = [x for x in s.split('\n') if not x.startswith('@i')]
+        hsh['entry'] = "\n".join(lines)
         for at_part in at_parts:
             at_key = unicode(at_part[0])
             at_val = at_part[1:].strip()
@@ -4317,7 +4353,7 @@ def str2hsh(s, uid=None, options=None):
                 # skip one time and handle with finished, begin and pastdue
         msg.extend(checkhsh(hsh))
         if msg:
-            return hsh, msg
+            return hsh, msg, id_missing, id_present
         if 'p' in hsh:
             hsh['_p'] = hsh['p']
         else:
@@ -4341,13 +4377,19 @@ def str2hsh(s, uid=None, options=None):
                 f = StringIO()
                 msg.append("exception in get_rrule: '%s" % f.getvalue())
                 # generated, not stored
-        hsh['i'] = unicode(uuid.uuid4())
+        # hsh['i'] = unicode(uuid.uuid4())
+        if 'i' not in hsh:
+            hsh['i'] = uniqueId()
+            id_missing = True
+        else:
+            id_present = True
+
     except:
         fio = StringIO()
         logger.exception('exception procsessing "{0}"'.format(s))
         msg.append(fio.getvalue())
     # logger.debug('returning hsh: {0}; msg: {1}'.format(hsh, msg))
-    return hsh, msg
+    return hsh, msg, id_missing, id_present
 
 
 def expand_template(template, hsh, lbls=None, complain=False):
@@ -6169,13 +6211,14 @@ class ETMCmd():
         # remove the old
         logger.debug('removing the relevant entries in uuid2hash')
         for id in ids:
-            del self.uuid2hash[id]
+            if id in self.uuid2hash:
+                del self.uuid2hash[id]
             if id in self.uuid2labels:
                 logger.debug('removing uuid2label[{0}] = {1}'.format(id, self.uuid2labels[id]))
                 del self.uuid2labels[id]
         logger.debug('removing the relevant entry in file2uuids')
         self.file2uuids[rp] = []
-        msg, hashes, u2l = process_one_file(fp, rp, self.options)
+        msg, hashes, u2l, id_missing, id_present = process_one_file(fp, rp, self.options)
         logger.debug('update labels: {0}'.format(u2l))
         self.uuid2labels.update(u2l)
         loh = [x for x in hashes if x]
@@ -6213,7 +6256,7 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
                 term_print(_('canceled'))
                 return False
             item = "\n".join(lines)
-            new_hsh, msg = str2hsh(item, options=self.options)
+            new_hsh, msg, id_missing, id_present = str2hsh(item, options=self.options)
             if msg:
                 term_print('Error messages:')
                 term_print("\n".join(msg))
@@ -6437,6 +6480,8 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
 
     def replace_item(self, new_hsh):
         new_item, msg = hsh2str(new_hsh, self.options)
+        if self.options['retain_ids']:
+            new_item += "\n@i {0}".format(new_hsh['i'])
         logger.debug(new_item)
         newlines = new_item.split('\n')
         f, begline, endline = new_hsh['fileinfo']
@@ -6451,7 +6496,10 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
     def append_item(self, new_hsh, file, cli=False):
         """
         """
+        # new_item, msg = hsh2str(new_hsh, self.options, include_uid=True)
         new_item, msg = hsh2str(new_hsh, self.options)
+        if self.options['retain_ids']:
+            new_item += "\n@i {0}".format(new_hsh['i'])
         old_items = getFileItems(file, self.options['datadir'], False)
         items = [u'%s' % x[0].rstrip() for x in old_items if x[0].strip()]
         items.append(new_item)
@@ -6571,7 +6619,7 @@ Show notes grouped and sorted by keyword optionally limited to those containing 
         logger.debug('arg_str: {0}'.format(arg_str))
         if arg_str:
             new_item = s2or3(arg_str)
-            new_hsh, msg = str2hsh(new_item, options=self.options)
+            new_hsh, msg, id_missing, id_present = str2hsh(new_item, options=self.options)
             logger.debug('new_hsh: {0}'.format(new_hsh))
             if msg:
                 return "\n".join(msg)
