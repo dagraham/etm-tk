@@ -5736,6 +5736,7 @@ def export_ical(file2uuids, uuid2hash, vcal_folder, calendars=None):
     calfiles = []
     if calendars:
         for cal in calendars:
+            logger.debug('processing cal: {0}'.format(cal))
             name = cal[0]
             regex = re.compile(r'^{0}'.format(cal[2]))
             calendar = Calendar()
@@ -5752,6 +5753,7 @@ def export_ical(file2uuids, uuid2hash, vcal_folder, calendars=None):
         if cal_tuples:
             this_calendar = None
             this_file = None
+            logger.debug('cal_tuples: {0}'.format(cal_tuples))
             for name, regex, calendar in cal_tuples:
                 if regex.match(rp):
                     this_calendar = calendar
@@ -5766,7 +5768,6 @@ def export_ical(file2uuids, uuid2hash, vcal_folder, calendars=None):
         for uid in file2uuids[rp]:
             hsh = uuid2hash[uid]
             ok, element = hsh2ical(hsh)
-            logger.debug('ok: {0}; element: {1}'.format(ok, element))
             if ok:
                 this_calendar.add_component(element)
 
@@ -5890,12 +5891,13 @@ def import_ical(ics_name, txt_name):
         fo.close()
 
 
-def syncTxt(uuid2hash, datadir, relfile):
+def syncTxt(file2uuids, uuid2hash, datadir, relfile):
     relpath = os.path.splitext(relfile)[0]
     fullpath = os.path.join(datadir, relpath)
     sync_ics = "{0}.ics".format(fullpath)
     sync_txt = "{0}.txt".format(fullpath)
-    logger.debug('{0}, {1}'.format(sync_txt, sync_ics, relfile))
+    sync_folder = os.path.split(sync_txt)[0]
+    logger.debug('{0}, {1}, {2}'.format(sync_txt, sync_ics, sync_folder))
     mode = 0  # do nothing
     if os.path.isfile(sync_txt) and not os.path.isfile(sync_ics):
         mode = 1  # to ics
@@ -5914,7 +5916,7 @@ def syncTxt(uuid2hash, datadir, relfile):
         return
 
     if mode == 1:  # to ics
-        export_ical(uuid2hash, sync_ics, calendars=[['sync', True, relfile]])
+        export_ical(file2uuids, uuid2hash, sync_folder, calendars=[['sync', True, relfile]])
         seconds = os.path.getmtime(sync_ics)
 
     elif mode == 2:  # to txt
@@ -6120,6 +6122,9 @@ class ETMCmd():
         self.file2data = {}
         logger.debug('calling get_data')
         uuid2hash, uuid2labels, file2uuids, self.file2lastmodified, bad_datafiles, messages = get_data(options=self.options)
+        self.file2uuids = file2uuids
+        self.uuid2hash = uuid2hash
+        self.uuid2labels = uuid2labels
         logger.debug('calling getViewData')
         self.file2data = getViewData(bef, file2uuids, uuid2hash, self.options)
         self.rows = tuple(itemsSL)
@@ -6134,9 +6139,6 @@ class ETMCmd():
 
         updateCurrentFiles(
             self.rows, file2uuids, uuid2hash, self.options)
-        self.file2uuids = file2uuids
-        self.uuid2hash = uuid2hash
-        self.uuid2labels = uuid2labels
         self.currfile = ensureMonthly(self.options, now)
         if self.last_rep:
             logger.debug('calling mk_rep with {0}'.format(self.last_rep))

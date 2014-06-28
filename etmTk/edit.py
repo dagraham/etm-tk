@@ -97,6 +97,7 @@ class SimpleEditor(Toplevel):
         self.loop = parent.loop
         self.messages = self.loop.messages
         self.messages = []
+        self.mode = None
         self.changed = False
 
         self.scrollbar = None
@@ -132,7 +133,8 @@ class SimpleEditor(Toplevel):
 
         # finish will evaluate the item entry and, if repeating, show reps
         finish = Button(frame, text=FINISH, highlightbackground=BGCOLOR, command=self.onFinish, pady=2)
-        self.bind("<Control-w>", self.onCheck)
+        # self.bind("<Control-w>", self.onCheck)
+        self.bind("<Control-w>", self.onFinish)
 
         finish.pack(side=RIGHT, padx=4)
 

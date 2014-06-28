@@ -3105,12 +3105,6 @@ or 0 to display all changes.""").format(title)
         newday = (today != self.today)
         self.today = today
 
-        if loop.options['sync_file']:
-            fullpath = os.path.join(loop.options['datadir'], loop.options['sync_file'])
-            logger.debug('syncTxt: {0}'.format(loop.options['sync_file']))
-            syncTxt(loop.uuid2hash, loop.options['datadir'], loop.options['sync_file'])
-            # if sync_txt is updated it will be reloaded below
-
         new, modified, deleted = get_changes(
             self.options, loop.file2lastmodified)
 
@@ -3135,6 +3129,13 @@ or 0 to display all changes.""").format(title)
                 self.canvas.delete('current_time')
                 self.canvas.create_line(xy, width=2, fill=CURRENTLINE, tag='current_time')
                 self.update_idletasks()
+
+        # we now have file2uuids ...
+        if loop.options['sync_file']:
+            fullpath = os.path.join(loop.options['datadir'], loop.options['sync_file'])
+            logger.debug('syncTxt: {0}'.format(loop.options['sync_file']))
+            syncTxt(self.loop.file2uuids, self.loop.uuid2hash, loop.options['datadir'], loop.options['sync_file'])
+            # if sync_txt is updated it will be reloaded in the next cycle
 
         self.updateAlerts()
 
