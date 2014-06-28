@@ -113,7 +113,11 @@ class SimpleEditor(Toplevel):
         self.title = title
         self.edithsh = {}
         self.newhsh = newhsh
+        if newhsh and 'i' in newhsh:
+            print('newhsh', newhsh['i'])
         self.rephsh = rephsh
+        if rephsh and 'i' in rephsh:
+            print('rephsh', rephsh['i'])
         self.value = ''
         self.options = options
         self.tkfixedfont = tkFont.nametofont("TkFixedFont")

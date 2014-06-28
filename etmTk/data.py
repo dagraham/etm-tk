@@ -2843,22 +2843,40 @@ def process_data_file_list(filelist, options=None):
             messages.extend(msg)
         if options['retain_ids']:
             if id_missing:
+<<<<<<< Updated upstream
+=======
+                print('id_missing: adding')
+>>>>>>> Stashed changes
                 items = []
                 msgs = []
                 for hsh in hashes:
                     s, msg = hsh2str(hsh, options, include_uid=True)
+<<<<<<< Updated upstream
+=======
+                    print(s)
+>>>>>>> Stashed changes
                     items.append(s)
                     if msg:
                         msgs.append(msg)
                 if msgs:
                     messages.extend(msgs)
+<<<<<<< Updated upstream
                     logger.debug('missing id msgs: {0}'.format(msgs))
                 else:
+=======
+                    print('msgs', msgs)
+                else:
+                    print('writing items')
+>>>>>>> Stashed changes
                     with codecs.open(f, 'w', file_encoding) as fo:
                         fo.writelines("\n".join(items))
                     logger.info('updated: {0}'.format(f))
         else:
             if id_present:
+<<<<<<< Updated upstream
+=======
+                print('id_present: removing')
+>>>>>>> Stashed changes
                 items = []
                 msgs = []
                 for hsh in hashes:
@@ -3117,6 +3135,33 @@ def items2Hashes(list_of_items, options=None):
             hashes.append(hsh)
             continue
 
+<<<<<<< Updated upstream
+=======
+        # tooltip = [hsh['_summary']]
+        # if 'l' in hsh:
+        #     tooltip.append("@l %s" % hsh['l'])
+        # if 't' in hsh:
+        #     tooltip.append("@t %s" % ", ".join(hsh['t']))
+        # if 'd' in hsh:
+        #     first_line = True
+        #     lines = hsh['d'].split('\n')
+        #     for line in lines:
+        #         if first_line:
+        #             line = "@d %s" % line
+        #             first_line = False
+        #         if len(line) > 60:
+        #             tooltip.extend(wrap(line, 60))
+        #         else:
+        #             tooltip.append(line)
+        # for k in ['c', 'k']:
+        #     if k in hsh:
+        #         tooltip.append('@%s %s' % (k, hsh[k]))
+        # if tooltip:
+        #     hsh["_tooltip"] = "\n".join(tooltip)
+        # else:
+        #     hsh["_tooltip"] = ''
+
+>>>>>>> Stashed changes
         itemtype = hsh['itemtype']
         if itemtype == '$':
             # inbasket item
