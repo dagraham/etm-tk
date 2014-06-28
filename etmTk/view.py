@@ -1178,12 +1178,6 @@ returns:
         GetString(parent=self, title=_('available dates calculator'), prompt=prompt, opts={}, process=availableDates, font=self.tkfixedfont)
         return
 
-    def importFromIcal(self, e=None):
-        # get ics file
-
-        # get data file
-        pass
-
     def exportToIcal(self, e=None):
         if self.itemSelected:
             self._exportItemToIcal()
@@ -3140,7 +3134,6 @@ or 0 to display all changes.""").format(title)
         if loop.options['sync_folder']:
             fullpath = os.path.join(loop.options['datadir'], loop.options['sync_folder'])
             prefix, files = getFiles(fullpath, include="*")
-            print(prefix, files)
             base_files = set([])
             # file_lst = []
             for tup in files:

@@ -2843,40 +2843,16 @@ def process_data_file_list(filelist, options=None):
             messages.extend(msg)
         if options['retain_ids']:
             if id_missing:
-<<<<<<< Updated upstream
-=======
-                print('id_missing: adding')
->>>>>>> Stashed changes
                 items = []
                 msgs = []
                 for hsh in hashes:
                     s, msg = hsh2str(hsh, options, include_uid=True)
-<<<<<<< Updated upstream
-=======
-                    print(s)
->>>>>>> Stashed changes
                     items.append(s)
                     if msg:
                         msgs.append(msg)
                 if msgs:
                     messages.extend(msgs)
-<<<<<<< Updated upstream
-                    logger.debug('missing id msgs: {0}'.format(msgs))
                 else:
-=======
-                    print('msgs', msgs)
-                else:
-                    print('writing items')
->>>>>>> Stashed changes
-                    with codecs.open(f, 'w', file_encoding) as fo:
-                        fo.writelines("\n".join(items))
-                    logger.info('updated: {0}'.format(f))
-        else:
-            if id_present:
-<<<<<<< Updated upstream
-=======
-                print('id_present: removing')
->>>>>>> Stashed changes
                 items = []
                 msgs = []
                 for hsh in hashes:
@@ -3135,33 +3111,6 @@ def items2Hashes(list_of_items, options=None):
             hashes.append(hsh)
             continue
 
-<<<<<<< Updated upstream
-=======
-        # tooltip = [hsh['_summary']]
-        # if 'l' in hsh:
-        #     tooltip.append("@l %s" % hsh['l'])
-        # if 't' in hsh:
-        #     tooltip.append("@t %s" % ", ".join(hsh['t']))
-        # if 'd' in hsh:
-        #     first_line = True
-        #     lines = hsh['d'].split('\n')
-        #     for line in lines:
-        #         if first_line:
-        #             line = "@d %s" % line
-        #             first_line = False
-        #         if len(line) > 60:
-        #             tooltip.extend(wrap(line, 60))
-        #         else:
-        #             tooltip.append(line)
-        # for k in ['c', 'k']:
-        #     if k in hsh:
-        #         tooltip.append('@%s %s' % (k, hsh[k]))
-        # if tooltip:
-        #     hsh["_tooltip"] = "\n".join(tooltip)
-        # else:
-        #     hsh["_tooltip"] = ''
-
->>>>>>> Stashed changes
         itemtype = hsh['itemtype']
         if itemtype == '$':
             # inbasket item
@@ -5882,10 +5831,13 @@ def export_ical(file2uuids, uuid2hash, vcal_folder, calendars=None):
     return True
 
 
-def import_ical(ics_name, txt_name):
-    g = open(ics_name, 'rb')
-    cal = Calendar.from_ical(g.read())
-    g.close()
+def import_ical(ics="", txt="", vcal=""):
+    if vcal:
+        cal = Calendar.from_ical(vcal)
+    else:
+        g = open(ics, 'rb')
+        cal = Calendar.from_ical(g.read())
+        g.close()
     ilst = []
     for comp in cal.walk():
         clst = []
@@ -5915,19 +5867,19 @@ def import_ical(ics_name, txt_name):
             t = '-'
             tmp = comp.get('completed')
             if tmp:
-                f = tmp.to_ical()[:16]
+                f = tmp.to_ical().decode()[:16]
             due = comp.get('due')
             start = comp.get('dtstart')
             if due:
-                s = due.to_ical()
+                s = due.to_ical().decode()
             elif start:
-                s = start.to_ical()
+                s = start.to_ical().decode()
 
         elif comp.name == "VJOURNAL":
             t = u'!'
             tmp = comp.get('dtstart')
             if tmp:
-                s = tmp.to_ical()[:16]
+                s = tmp.to_ical().decode()[:16]
         else:
             continue
         summary = comp.get('summary')
@@ -5944,10 +5896,10 @@ def import_ical(ics_name, txt_name):
             clst.append("@f %s" % f)
         tzid = comp.get('tzid')
         if tzid:
-            clst.append("@z %s" % tzid)
+            clst.append("@z %s" % tzid.to_ical().decode())
         tmp = comp.get('description')
         if tmp:
-            clst.append("@d %s" % tmp)
+            clst.append("@d %s" % tmp.to_ical().decode())
         rule = comp.get('rrule')
         if rule:
             rlst = []
@@ -5961,19 +5913,26 @@ def import_ical(ics_name, txt_name):
                         ", ".join(map(str, rule.get(key)))))
             clst.append("@r %s" % " ".join(rlst))
 
-        tmp = comp.get('categories')
-        if tmp:
-            clst.append("@t %s" % u', '.join(tmp))
+        tags = comp.get('categories')
+        if tags:
+            if type(tags) is list:
+                tags = [x.to_ical().decode() for x in tags]
+                clst.append("@t %s" % u', '.join(tags))
+            else:
+                clst.append("@t %s" % tags)
         tmp = comp.get('organizer')
         if tmp:
-            clst.append("@u %s" % tmp)
+            clst.append("@u %s" % tmp.to_ical().decode())
 
         item = u' '.join(clst)
         ilst.append(item)
     if ilst:
-        tmpfile = "{0}.tmp".format(os.path.splitext(txt_name)[0])
-        shutil.copy2(txt_name, tmpfile)
-        fo = codecs.open(txt_name, 'w', file_encoding)
+        if vcal:
+            return "\n".join(ilst)
+
+        tmpfile = "{0}.tmp".format(os.path.splitext(txt)[0])
+        shutil.copy2(txt, tmpfile)
+        fo = codecs.open(txt, 'w', file_encoding)
         fo.writelines(ilst)
         fo.close()
 
@@ -6007,7 +5966,7 @@ def syncTxt(file2uuids, uuid2hash, datadir, relfile):
         seconds = os.path.getmtime(sync_ics)
 
     elif mode == 2:  # to txt
-        import_ical(sync_ics, sync_txt)
+        import_ical(ics=sync_ics, txt=sync_txt)
         seconds = os.path.getmtime(sync_txt)
 
     # update times

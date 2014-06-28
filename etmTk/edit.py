@@ -65,7 +65,7 @@ type2Text = {
     '#': _("Hidden item")
 }
 
-from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, completion_regex, getFileTuples, fmt_shortdatetime, fmt_date, FINISH, uniqueId
+from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, completion_regex, getFileTuples, fmt_shortdatetime, fmt_date, FINISH, uniqueId, import_ical
 
 from etmTk.dialog import BGCOLOR, OptionsDialog, ReadOnlyText, FileChoice
 
@@ -113,11 +113,7 @@ class SimpleEditor(Toplevel):
         self.title = title
         self.edithsh = {}
         self.newhsh = newhsh
-        if newhsh and 'i' in newhsh:
-            print('newhsh', newhsh['i'])
         self.rephsh = rephsh
-        if rephsh and 'i' in rephsh:
-            print('rephsh', rephsh['i'])
         self.value = ''
         self.options = options
         self.tkfixedfont = tkFont.nametofont("TkFixedFont")
@@ -457,10 +453,12 @@ class SimpleEditor(Toplevel):
         # only called when editing an item and finish is pressed
         self.loop.messages = []
         text = self.gettext()
-        logger.debug("text: {0}".format(text))
         msg = []
         reps = []
-        if self.options['retain_ids']:
+        if text.startswith("BEGIN:VCALENDAR"):
+            text = import_ical(vcal=text)
+        logger.debug("text: {0} '{01}'".format(type(text), text))
+        if self.options['retain_ids'] and self.edithsh:
             uid = self.edithsh['i']
         else:
             uid = None
@@ -502,8 +500,6 @@ class SimpleEditor(Toplevel):
             return False
 
         logger.debug("back from hsh2str with: {0}".format(str))
-        if str != text:
-            self.settext(str)
         if 'r' in hsh:
             showing_all, reps = get_reps(self.loop.options['bef'], hsh)
             if reps:
@@ -530,6 +526,8 @@ class SimpleEditor(Toplevel):
         else:
             prompt += "\n\n{0}".format(UNCHANGEDEXIT)
 
+        if str != text:
+            self.settext(str)
         ans, value = OptionsDialog(parent=self, title=self.title, prompt=prompt, yesno=False, list=True).getValue()
         if ans:
             self.onSave(v=value)
