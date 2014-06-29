@@ -2703,10 +2703,8 @@ For editing one or more, but not all, instances of an item. Needed:
         sl = ["%s %s" % (hsh['itemtype'], hsh['_summary'])]
     if 'i' not in hsh or not hsh['i']:
         hsh['i'] = uniqueId()
-    print('hsh keys', hsh.keys())
     bad_keys = [x for x in hsh.keys() if x not in all_keys]
     if bad_keys:
-        print(hsh)
         omitted = []
         for key in bad_keys:
             omitted.append('@{0} {1}'.format(key, hsh[key]))
@@ -2839,43 +2837,11 @@ def process_data_file_list(filelist, options=None):
     skipped = []
     for f, r in filelist:
         file2lastmodified[(f, r)] = os.path.getmtime(f)
-        msg, hashes, u2l, id_missing, id_present = process_one_file(f, r, options)
+        msg, hashes, u2l = process_one_file(f, r, options)
         uuid2labels.update(u2l)
         if msg:
             messages.append("errors loading %s:" % r)
             messages.extend(msg)
-        if options['retain_ids']:
-            if id_missing:
-                items = []
-                msgs = []
-                for hsh in hashes:
-                    s, msg = hsh2str(hsh, options, include_uid=True)
-                    items.append(s)
-                    if msg:
-                        msgs.append(msg)
-                if msgs:
-                    skipped.append((r, msgs))
-                    messages.extend(msgs)
-                    logger.debug('missing id msgs: {0}'.format(msgs))
-                else:
-                    with codecs.open(f, 'w', file_encoding) as fo:
-                        fo.writelines("\n".join(items))
-                    logger.info('updated: {0}'.format(f))
-        else:
-            if id_present:
-                items = []
-                msgs = []
-                for hsh in hashes:
-                    s, msg = hsh2str(hsh, options, include_uid=False)
-                    items.append(s)
-                    if msg:
-                        msgs.append(msg)
-                if msgs:
-                    messages.extend(msgs)
-                else:
-                    with codecs.open(f, 'w', file_encoding) as fo:
-                        fo.writelines("\n".join(items))
-                    logger.info('updated: {0}'.format(f))
         try:
             for hsh in hashes:
                 if hsh['itemtype'] == '=':
@@ -2888,8 +2854,6 @@ def process_data_file_list(filelist, options=None):
             msg = fio.getvalue()
             bad_datafiles[r] = msg
             logger.error('Error processing: {0}\n{1}'.format(r, msg))
-    if skipped:
-        print(skipped)
     return uuid2hashes, uuid2labels, file2uuids, file2lastmodified, bad_datafiles, messages
 
 
@@ -3086,11 +3050,7 @@ def items2Hashes(list_of_items, options=None):
     defaults = {}
     # in_task_group = False
     for item, rel_name, linenums in list_of_items:
-        hsh, msg, id_missing, id_present = str2hsh(item, options=options)
-        if id_missing:
-            missing_id = True
-        if id_present:
-            present_id = True
+        hsh, msg = str2hsh(item, options=options)
         tmp_hsh = {}
         tmp_hsh.update(defaults)
         tmp_hsh.update(hsh)
@@ -3221,11 +3181,8 @@ def items2Hashes(list_of_items, options=None):
                     job['fileinfo'] = (rel_name, linenums[0], linenums[-1])
                 except:
                     logger.exception("fileinfo: {0}.{1}".format(rel_name, linenums))
-                # FIXME: one group hash or many job hashes?
-                # logger.debug('appending job: {0}'.format(job))
-                # hashes.append(job)
-                # print('job', job)
-            hashes.append(tmp_hsh)
+                logger.debug('appending job: {0}'.format(job))
+                hashes.append(job)
         else:
             tmp_hsh = {}
             tmp_hsh.update(defaults)
@@ -3247,7 +3204,7 @@ def items2Hashes(list_of_items, options=None):
                 # else:
                 #     tmp.append(' ')
             uuid2labels[hsh['i']] = "".join(tmp)
-    return messages, hashes, uuid2labels, missing_id, present_id
+    return messages, hashes, uuid2labels
 
 
 def get_reps(bef, hsh):
@@ -4111,8 +4068,6 @@ def str2hsh(s, uid=None, options=None):
     if not options:
         options = {}
     msg = []
-    id_missing = False
-    id_present = False
     try:
         hsh = {}
         alerts = []
@@ -4362,7 +4317,7 @@ def str2hsh(s, uid=None, options=None):
                 # skip one time and handle with finished, begin and pastdue
         msg.extend(checkhsh(hsh))
         if msg:
-            return hsh, msg, id_missing, id_present
+            return hsh, msg
         if 'p' in hsh:
             hsh['_p'] = hsh['p']
         else:
@@ -4389,16 +4344,13 @@ def str2hsh(s, uid=None, options=None):
         # hsh['i'] = unicode(uuid.uuid4())
         if 'i' not in hsh:
             hsh['i'] = uniqueId()
-            id_missing = True
-        else:
-            id_present = True
 
     except:
         fio = StringIO()
         logger.exception('exception procsessing "{0}"'.format(s))
         msg.append(fio.getvalue())
     # logger.debug('returning hsh: {0}; msg: {1}'.format(hsh, msg))
-    return hsh, msg, id_missing, id_present
+    return hsh, msg
 
 
 def expand_template(template, hsh, lbls=None, complain=False):
@@ -5945,8 +5897,9 @@ def import_ical(ics="", txt="", vcal=""):
         if vcal:
             return "\n".join(ilst)
 
-        tmpfile = "{0}.tmp".format(os.path.splitext(txt)[0])
-        shutil.copy2(txt, tmpfile)
+        if os.path.isfile(txt):
+            tmpfile = "{0}.tmp".format(os.path.splitext(txt)[0])
+            shutil.copy2(txt, tmpfile)
         fo = codecs.open(txt, 'w', file_encoding)
         fo.writelines(ilst)
         fo.close()
@@ -6237,7 +6190,7 @@ class ETMCmd():
                 del self.uuid2labels[id]
         logger.debug('removing the relevant entry in file2uuids')
         self.file2uuids[rp] = []
-        msg, hashes, u2l, id_missing, id_present = process_one_file(fp, rp, self.options)
+        msg, hashes, u2l = process_one_file(fp, rp, self.options)
         logger.debug('update labels: {0}'.format(u2l))
         self.uuid2labels.update(u2l)
         loh = [x for x in hashes if x]
@@ -6275,7 +6228,7 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
                 term_print(_('canceled'))
                 return False
             item = "\n".join(lines)
-            new_hsh, msg, id_missing, id_present = str2hsh(item, options=self.options)
+            new_hsh, msg = str2hsh(item, options=self.options)
             if msg:
                 term_print('Error messages:')
                 term_print("\n".join(msg))
@@ -6638,7 +6591,7 @@ Show notes grouped and sorted by keyword optionally limited to those containing 
         logger.debug('arg_str: {0}'.format(arg_str))
         if arg_str:
             new_item = s2or3(arg_str)
-            new_hsh, msg, id_missing, id_present = str2hsh(new_item, options=self.options)
+            new_hsh, msg = str2hsh(new_item, options=self.options)
             logger.debug('new_hsh: {0}'.format(new_hsh))
             if msg:
                 return "\n".join(msg)
