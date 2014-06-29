@@ -1378,7 +1378,7 @@ def get_options(d=''):
         'freetimes': default_freetimes,
         'icscal_file': os.path.normpath(os.path.join(etmdir, 'etmcal.ics')),
         'icsitem_file': os.path.normpath(os.path.join(etmdir, 'etmitem.ics')),
-        'ics_import': {'source': '', 'file': ''},
+        'icssync_folder': '',
         'idle_minutes': 10,
 
         'local_timezone': time_zone,
@@ -1394,8 +1394,6 @@ def get_options(d=''):
         'report_indent': 3,
         'report_width1': 43,
         'report_width2': 17,
-
-        'retain_ids': False,
 
         'show_finished': 1,
 
@@ -1413,7 +1411,6 @@ def get_options(d=''):
         'sms_subject': '!time_span!',
 
         'sundayfirst': False,
-        'sync_folder': '',
         'vcs_system': default_vcs,
         'vcs_settings': {'command': '', 'commit': '', 'dir': '', 'file': '', 'history': '', 'init': '', 'limit': ''},
         'weeks_after': 52,
@@ -5910,8 +5907,8 @@ def syncTxt(file2uuids, uuid2hash, datadir, relfile):
     fullpath = os.path.join(datadir, relpath)
     sync_ics = "{0}.ics".format(fullpath)
     sync_txt = "{0}.txt".format(fullpath)
-    sync_folder = os.path.split(sync_txt)[0]
-    logger.debug('{0}, {1}, {2}'.format(sync_txt, sync_ics, sync_folder))
+    icssync_folder = os.path.split(sync_txt)[0]
+    logger.debug('{0}, {1}, {2}'.format(sync_txt, sync_ics, icssync_folder))
     mode = 0  # do nothing
     if os.path.isfile(sync_txt) and not os.path.isfile(sync_ics):
         mode = 1  # to ics
@@ -5930,7 +5927,7 @@ def syncTxt(file2uuids, uuid2hash, datadir, relfile):
         return
 
     if mode == 1:  # to ics
-        export_ical(file2uuids, uuid2hash, sync_folder, calendars=[['sync', True, relfile]])
+        export_ical(file2uuids, uuid2hash, icssync_folder, calendars=[['sync', True, relfile]])
         seconds = os.path.getmtime(sync_ics)
 
     elif mode == 2:  # to txt
@@ -6452,8 +6449,6 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
 
     def replace_item(self, new_hsh):
         new_item, msg = hsh2str(new_hsh, self.options)
-        if self.options['retain_ids']:
-            new_item += "\n@i {0}".format(new_hsh['i'])
         logger.debug(new_item)
         newlines = new_item.split('\n')
         f, begline, endline = new_hsh['fileinfo']
@@ -6470,8 +6465,6 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
         """
         # new_item, msg = hsh2str(new_hsh, self.options, include_uid=True)
         new_item, msg = hsh2str(new_hsh, self.options)
-        if self.options['retain_ids']:
-            new_item += "\n@i {0}".format(new_hsh['i'])
         old_items = getFileItems(file, self.options['datadir'], False)
         items = [u'%s' % x[0].rstrip() for x in old_items if x[0].strip()]
         items.append(new_item)

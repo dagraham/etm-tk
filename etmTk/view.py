@@ -3131,8 +3131,8 @@ or 0 to display all changes.""").format(title)
                 self.update_idletasks()
 
         # we now have file2uuids ...
-        if loop.options['sync_folder']:
-            fullpath = os.path.join(loop.options['datadir'], loop.options['sync_folder'])
+        if loop.options['icssync_folder']:
+            fullpath = os.path.join(loop.options['datadir'], loop.options['icssync_folder'])
             prefix, files = getFiles(fullpath, include="*")
             base_files = set([])
             # file_lst = []
@@ -3141,7 +3141,7 @@ or 0 to display all changes.""").format(title)
                 if ext in [".txt", ".ics"]:
                     base_files.add(base)
             file_lst = list(base_files)
-            logger.debug('syncTxt: {0}'.format(loop.options['sync_folder'], prefix, file_lst))
+            logger.debug('syncTxt: {0}'.format(loop.options['icssync_folder'], prefix, file_lst))
             for file in file_lst:
                 syncTxt(self.loop.file2uuids, self.loop.uuid2hash, prefix, file)
             # if sync_txt is updated it will be reloaded in the next cycle
