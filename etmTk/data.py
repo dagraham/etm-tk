@@ -2037,10 +2037,10 @@ at_keys = [
     'z',  # time zone
     'i',  # id',
     'v',  # action rate key
-    'w',  # expense markupß key
+    'w',  # expense markup key
 ]
 
-all_keys = at_keys + ['entry', 'fileinfo', 'itemtype', 'rrule', '_summary', '_group_summary', '_a', '_j', '_p', '_r']
+all_keys = at_keys + ['entry', 'fileinfo', 'itemtype', 'rrule', '_summary', '_group_summary', '_a', '_j', '_p', '_r', 'prereqs']
 
 label_keys = [
     # 'f',  # finish date
@@ -2703,8 +2703,10 @@ For editing one or more, but not all, instances of an item. Needed:
         sl = ["%s %s" % (hsh['itemtype'], hsh['_summary'])]
     if 'i' not in hsh or not hsh['i']:
         hsh['i'] = uniqueId()
+    print('hsh keys', hsh.keys())
     bad_keys = [x for x in hsh.keys() if x not in all_keys]
     if bad_keys:
+        print(hsh)
         omitted = []
         for key in bad_keys:
             omitted.append('@{0} {1}'.format(key, hsh[key]))
@@ -2834,6 +2836,7 @@ def process_data_file_list(filelist, options=None):
     file2uuids = {}
     uuid2hashes = {}
     uuid2labels = {}
+    skipped = []
     for f, r in filelist:
         file2lastmodified[(f, r)] = os.path.getmtime(f)
         msg, hashes, u2l, id_missing, id_present = process_one_file(f, r, options)
@@ -2851,8 +2854,15 @@ def process_data_file_list(filelist, options=None):
                     if msg:
                         msgs.append(msg)
                 if msgs:
+                    skipped.append((r, msgs))
                     messages.extend(msgs)
+                    logger.debug('missing id msgs: {0}'.format(msgs))
                 else:
+                    with codecs.open(f, 'w', file_encoding) as fo:
+                        fo.writelines("\n".join(items))
+                    logger.info('updated: {0}'.format(f))
+        else:
+            if id_present:
                 items = []
                 msgs = []
                 for hsh in hashes:
@@ -2878,6 +2888,8 @@ def process_data_file_list(filelist, options=None):
             msg = fio.getvalue()
             bad_datafiles[r] = msg
             logger.error('Error processing: {0}\n{1}'.format(r, msg))
+    if skipped:
+        print(skipped)
     return uuid2hashes, uuid2labels, file2uuids, file2lastmodified, bad_datafiles, messages
 
 
@@ -3209,8 +3221,11 @@ def items2Hashes(list_of_items, options=None):
                     job['fileinfo'] = (rel_name, linenums[0], linenums[-1])
                 except:
                     logger.exception("fileinfo: {0}.{1}".format(rel_name, linenums))
+                # FIXME: one group hash or many job hashes?
                 # logger.debug('appending job: {0}'.format(job))
-                hashes.append(job)
+                # hashes.append(job)
+                # print('job', job)
+            hashes.append(tmp_hsh)
         else:
             tmp_hsh = {}
             tmp_hsh.update(defaults)
