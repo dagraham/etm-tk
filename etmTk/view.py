@@ -90,7 +90,7 @@ def hsv_to_rgb(h, s, v):
         return v, p, q
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, str2hsh, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical, fmt_time, TimeIt, getReportData, getFileTuples, getFiles, updateCurrentFiles, FINISH, availableDates, syncTxt)
+    init_localization, fmt_weekday, fmt_dt, str2hsh, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical, fmt_time, TimeIt, getReportData, getFileTuples, getFiles, getAllFiles, updateCurrentFiles, FINISH, availableDates, syncTxt, relpath)
 
 # from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES, REPORTS)
 
@@ -3133,17 +3133,19 @@ or 0 to display all changes.""").format(title)
         # we now have file2uuids ...
         if loop.options['icssync_folder']:
             fullpath = os.path.join(loop.options['datadir'], loop.options['icssync_folder'])
-            prefix, files = getFiles(fullpath, include="*")
+            prefix, files = getAllFiles(fullpath, include="*")
             base_files = set([])
             # file_lst = []
             for tup in files:
-                base, ext = os.path.splitext(tup[1])
+                base, ext = os.path.splitext(tup[0])
                 if ext in [".txt", ".ics"]:
                     base_files.add(base)
             file_lst = list(base_files)
-            logger.debug('syncTxt: {0}'.format(loop.options['icssync_folder'], prefix, file_lst))
+            datadir = loop.options['datadir']
             for file in file_lst:
-                syncTxt(self.loop.file2uuids, self.loop.uuid2hash, prefix, file)
+                relfile = relpath(file, datadir)
+                logger.debug('calling syncTxt: {0}; {1}'.format(datadir, relfile))
+                syncTxt(self.loop.file2uuids, self.loop.uuid2hash, datadir, relfile)
             # if sync_txt is updated it will be reloaded in the next cycle
 
         self.updateAlerts()

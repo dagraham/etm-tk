@@ -5730,7 +5730,7 @@ def export_ical(file2uuids, uuid2hash, vcal_folder, calendars=None):
     if not has_icalendar:
         logger.error('Could not import icalendar')
         return False
-    logger.debug("{0}; {1}".format(vcal_folder, calendars))
+    logger.debug("vcal_folder: {0}; calendars: {1}".format(vcal_folder, calendars))
 
     cal_tuples = []
     calfiles = []
@@ -5792,6 +5792,48 @@ def export_ical(file2uuids, uuid2hash, vcal_folder, calendars=None):
             return False
         finally:
             fo.close()
+    return True
+
+def txt2ical(file2uuids, uuid2hash, datadir, txt_rp, ics_rp):
+    """
+    Export items from txtfile to icsfile.
+    """
+    if not has_icalendar:
+        logger.error('Could not import icalendar')
+        return False
+
+    if not txt_rp in file2uuids:
+        return
+
+    cal = Calendar()
+    cal.add('prodid', '-//etm_tk {0}//dgraham.us//'.format(version))
+    cal.add('version', '2.0')
+
+    for uid in file2uuids[txt_rp]:
+        hsh = uuid2hash[uid]
+        ok, element = hsh2ical(hsh)
+        if ok:
+            cal.add_component(element)
+
+    try:
+        cal_str = cal.to_ical()
+    except Exception:
+        logger.exception("Could not serialize the calendar")
+        return False
+    ics = os.path.join(datadir, ics_rp)
+    try:
+        fo = open(ics, 'wb')
+    except:
+        logger.exception("Could not open {0}".format(ics))
+        return False
+    try:
+        fo.write(cal_str)
+    except Exception:
+        f = StringIO()
+        logger.exception("Could not write to {0}" .format(ics))
+        return False
+    finally:
+        fo.close()
     return True
 
 
@@ -5900,15 +5942,18 @@ def import_ical(ics="", txt="", vcal=""):
         fo = codecs.open(txt, 'w', file_encoding)
         fo.writelines(ilst)
         fo.close()
+        return True
 
 
-def syncTxt(file2uuids, uuid2hash, datadir, relfile):
-    relpath = os.path.splitext(relfile)[0]
-    fullpath = os.path.join(datadir, relpath)
-    sync_ics = "{0}.ics".format(fullpath)
-    sync_txt = "{0}.txt".format(fullpath)
+def syncTxt(file2uuids, uuid2hash, datadir, relpath):
+    root = os.path.splitext(relpath)[0]
+    ics_rp = "{0}.ics".format(root)
+    txt_rp = "{0}.txt".format(root)
+    logger.debug('txt_rp: {0}, ics_rp: {1}'.format(txt_rp, ics_rp))
+    sync_ics = os.path.join(datadir, ics_rp)
+    sync_txt = os.path.join(datadir, txt_rp)
     icssync_folder = os.path.split(sync_txt)[0]
-    logger.debug('{0}, {1}, {2}'.format(sync_txt, sync_ics, icssync_folder))
+    logger.debug('sync_txt: {0}, sync_ics: {1}'.format(sync_txt, sync_ics))
     mode = 0  # do nothing
     if os.path.isfile(sync_txt) and not os.path.isfile(sync_ics):
         mode = 1  # to ics
@@ -5918,8 +5963,10 @@ def syncTxt(file2uuids, uuid2hash, datadir, relfile):
         mod_ics = os.path.getmtime(sync_ics)
         mod_txt = os.path.getmtime(sync_txt)
         if mod_ics < mod_txt:
+            logger.debug('mode 1, to ics: {0} < {1}'.format(mod_ics, mod_txt))
             mode = 1  # to ics
         elif mod_txt < mod_ics:
+            logger.debug('mode 2, to txt: {0} > {1}'.format(mod_ics, mod_txt))
             mode = 2  # to txt
         else:
             logger.debug('sync_txt and sync_ics have the same mtime: {0}'.format(mod_txt))
@@ -5927,18 +5974,19 @@ def syncTxt(file2uuids, uuid2hash, datadir, relfile):
         return
 
     if mode == 1:  # to ics
-        export_ical(file2uuids, uuid2hash, icssync_folder, calendars=[['sync', True, relfile]])
-        seconds = os.path.getmtime(sync_ics)
-
-    elif mode == 2:  # to txt
-        import_ical(ics=sync_ics, txt=sync_txt)
+        logger.debug('calling txt2ical: {0}, {1}, {2}'.format(datadir, txt_rp, ics_rp))
+        res = txt2ical(file2uuids, uuid2hash, datadir, txt_rp, ics_rp)
+        if not res:
+            return
         seconds = os.path.getmtime(sync_txt)
 
+    elif mode == 2:  # to txt
+        res = import_ical(ics=sync_ics, txt=sync_txt)
+        if not res:
+            return
+        seconds = os.path.getmtime(sync_ics)
+
     # update times
-    # now = get_current_time()
-    # # epoch = datetime(1970, 1, 1, 0, 0, 0, 0)
-    # epoch = datetime(1970, 1, 1, 0, 0, 0, 0, tzinfo=tzlocal())
-    # seconds = (now - epoch).total_seconds()
     logger.debug('updating mtimes using seconds: {0}'.format(seconds))
     os.utime(sync_ics, times=(seconds, seconds))
     os.utime(sync_txt, times=(seconds, seconds))
