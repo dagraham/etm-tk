@@ -13,6 +13,12 @@ import logging
 import logging.config
 logger = logging.getLogger()
 
+# from urllib import request, parse
+# url = 'https://www.google.com/calendar/ical/99ujpejsg8cil608so6jhn7b1g%40group.calendar.google.com/private-04aba66f27749c0e8838b2dd4b808739/basic.ics'
+#
+# u = request.urlopen(url)
+# resp = u.read()
+# print(resp)
 
 def setup_logging(level, etmdir=None):
     """
@@ -1372,6 +1378,7 @@ def get_options(d=''):
         'freetimes': default_freetimes,
         'icscal_file': os.path.normpath(os.path.join(etmdir, 'etmcal.ics')),
         'icsitem_file': os.path.normpath(os.path.join(etmdir, 'etmitem.ics')),
+        'icssync_folder': '',
         'idle_minutes': 10,
 
         'local_timezone': time_zone,
@@ -1404,7 +1411,6 @@ def get_options(d=''):
         'sms_subject': '!time_span!',
 
         'sundayfirst': False,
-        'sync_file': '',
         'vcs_system': default_vcs,
         'vcs_settings': {'command': '', 'commit': '', 'dir': '', 'file': '', 'history': '', 'init': '', 'limit': ''},
         'weeks_after': 52,
@@ -1468,7 +1474,7 @@ def get_options(d=''):
                 # we want to allow 0 as an entry
                 options[key] = default_options[key]
                 changed = True
-        elif key in ['ampm', 'dayfirst', 'yearfirst']:
+        elif key in ['ampm', 'dayfirst', 'yearfirst', 'retain_ids']:
             if key not in user_options:
                 # we want to allow False as an entry
                 options[key] = default_options[key]
@@ -2027,9 +2033,11 @@ at_keys = [
     'm',  # memo
     'z',  # time zone
     'i',  # id',
+    'v',  # action rate key
+    'w',  # expense markup key
 ]
 
-all_keys = at_keys + ['entry', 'fileinfo', 'itemtype', 'rrule', '_summary', '_group_summary', '_a', '_j', '_p', '_r']
+all_keys = at_keys + ['entry', 'fileinfo', 'itemtype', 'rrule', '_summary', '_group_summary', '_a', '_j', '_p', '_r', 'prereqs']
 
 label_keys = [
     # 'f',  # finish date
@@ -2452,7 +2460,8 @@ def group_sort(row_lst):
 
 
 def uniqueId():
-    return unicode(uuid.uuid4())
+    # return unicode(thistime.strftime("%Y%m%dT%H%M%S@etmtk"))
+    return unicode("{0}etm".format(uuid.uuid4().hex))
 
 
 def nowAsUTC():
@@ -2668,7 +2677,7 @@ def lst2str(l):
     return ", ".join(tmp)
 
 
-def hsh2str(hsh, options=None):
+def hsh2str(hsh, options=None, include_uid=False):
     """
 For editing one or more, but not all, instances of an item. Needed:
 1. Add @+ datetime to orig and make copy sans all repeating info and
@@ -2689,6 +2698,8 @@ For editing one or more, but not all, instances of an item. Needed:
             hsh['i'] = hsh['i'].split(':')[0]
     else:
         sl = ["%s %s" % (hsh['itemtype'], hsh['_summary'])]
+    if 'i' not in hsh or not hsh['i']:
+        hsh['i'] = uniqueId()
     bad_keys = [x for x in hsh.keys() if x not in all_keys]
     if bad_keys:
         omitted = []
@@ -2697,7 +2708,9 @@ For editing one or more, but not all, instances of an item. Needed:
         msg.append("unrecogized entries: {0}".format(", ".join(omitted)))
     for key in at_keys:
         amp_key = None
-        if key in options['prefix_uses']:
+        if hsh['itemtype'] == "=":
+            prefix = ""
+        elif key in options['prefix_uses']:
             prefix = options['prefix']
         else:
             prefix = ""
@@ -2719,16 +2732,12 @@ For editing one or more, but not all, instances of an item. Needed:
             at_key = key
             keys = amp_keys[key]
             key = "_%s" % key
-            # prefix = "\n  "
         elif key in ['+', '-']:
             keys = []
-            # prefix = "\n  "
         elif key in ['t', 'l', 'd']:
             keys = []
-            # prefix = "\n"
         else:
             keys = []
-            # prefix = ""
 
         if key in hsh and hsh[key]:
             # since r and j can repeat, value will be a list
@@ -2780,19 +2789,24 @@ For editing one or more, but not all, instances of an item. Needed:
                             tmp.append('&%s %s' % (amp_key, v))
                 if tmp:
                     sl.append(" ".join(tmp))
-            elif key == 'i':
-                pass
             elif key == 's':
-                sl.append("@%s %s" % (
-                    key, fmt_datetime(value, options=options)))
+                try:
+                    sl.append("@%s %s" % (key, fmt_datetime(value, options=options)))
+                except:
+                    msg.append("problem with @{0}: {1}".format(key, value))
             elif key == 'e':
-                sl.append("@%s %s" % (
-                    key, fmt_period(value)))
+                try:
+                    sl.append("@%s %s" % (key, fmt_period(value)))
+                except:
+                    msg.append("problem with @{0}: {1}".format(key, value))
             elif key == 'f':
                 tmp = []
                 for pair in hsh['f']:
                     tmp.append(";".join([x.strftime(zfmt) for x in pair if x]))
-                sl.append("\n  @f %s" % (',\n     '.join(tmp)))
+                sl.append("\n@f %s" % (',\n     '.join(tmp)))
+            elif key == 'i':
+                if include_uid and hsh['itemtype'] != "=":
+                    sl.append("\n@i {0}".format(value))
             elif key == 'h':
                 tmp = []
                 for pair in hsh['h']:
@@ -2817,6 +2831,7 @@ def process_data_file_list(filelist, options=None):
     file2uuids = {}
     uuid2hashes = {}
     uuid2labels = {}
+    skipped = []
     for f, r in filelist:
         file2lastmodified[(f, r)] = os.path.getmtime(f)
         msg, hashes, u2l = process_one_file(f, r, options)
@@ -3025,6 +3040,8 @@ def items2Hashes(list_of_items, options=None):
     if not options:
         options = {}
     messages = []
+    missing_id = False
+    present_id = False
     hashes = []
     uuid2labels = {}
     defaults = {}
@@ -3062,30 +3079,6 @@ def items2Hashes(list_of_items, options=None):
             # ('hsh:', hsh)
             hashes.append(hsh)
             continue
-
-        tooltip = [hsh['_summary']]
-        if 'l' in hsh:
-            tooltip.append("@l %s" % hsh['l'])
-        if 't' in hsh:
-            tooltip.append("@t %s" % ", ".join(hsh['t']))
-        if 'd' in hsh:
-            first_line = True
-            lines = hsh['d'].split('\n')
-            for line in lines:
-                if first_line:
-                    line = "@d %s" % line
-                    first_line = False
-                if len(line) > 60:
-                    tooltip.extend(wrap(line, 60))
-                else:
-                    tooltip.append(line)
-        for k in ['c', 'k']:
-            if k in hsh:
-                tooltip.append('@%s %s' % (k, hsh[k]))
-        if tooltip:
-            hsh["_tooltip"] = "\n".join(tooltip)
-        else:
-            hsh["_tooltip"] = ''
 
         itemtype = hsh['itemtype']
         if itemtype == '$':
@@ -3127,8 +3120,8 @@ def items2Hashes(list_of_items, options=None):
                 del group_defaults['rrule']
             prereqs = []
             last_level = 1
-            uid = hsh["i"]
-            summary = hsh["_summary"]
+            uid = hsh['i']
+            summary = hsh['_summary']
             if 'j' not in hsh:
                 continue
             job_num = 0
@@ -3185,7 +3178,7 @@ def items2Hashes(list_of_items, options=None):
                     job['fileinfo'] = (rel_name, linenums[0], linenums[-1])
                 except:
                     logger.exception("fileinfo: {0}.{1}".format(rel_name, linenums))
-                # logger.debug('appending job: {0}'.format(job))
+                logger.debug('appending job: {0}'.format(job))
                 hashes.append(job)
         else:
             tmp_hsh = {}
@@ -4087,9 +4080,13 @@ def str2hsh(s, uid=None, options=None):
             summary = head
         hsh['itemtype'] = itemtype
         hsh['_summary'] = summary
+        if uid:
+            hsh['i'] = uid
         if itemtype == u'+':
             hsh['_group_summary'] = summary
-        hsh['entry'] = s
+        # drop the @i line
+        lines = [x for x in s.split('\n') if not x.startswith('@i')]
+        hsh['entry'] = "\n".join(lines)
         for at_part in at_parts:
             at_key = unicode(at_part[0])
             at_val = at_part[1:].strip()
@@ -4341,7 +4338,10 @@ def str2hsh(s, uid=None, options=None):
                 f = StringIO()
                 msg.append("exception in get_rrule: '%s" % f.getvalue())
                 # generated, not stored
-        hsh['i'] = unicode(uuid.uuid4())
+        # hsh['i'] = unicode(uuid.uuid4())
+        if 'i' not in hsh:
+            hsh['i'] = uniqueId()
+
     except:
         fio = StringIO()
         logger.exception('exception procsessing "{0}"'.format(s))
@@ -5795,10 +5795,13 @@ def export_ical(file2uuids, uuid2hash, vcal_folder, calendars=None):
     return True
 
 
-def import_ical(ics_name, txt_name):
-    g = open(ics_name, 'rb')
-    cal = Calendar.from_ical(g.read())
-    g.close()
+def import_ical(ics="", txt="", vcal=""):
+    if vcal:
+        cal = Calendar.from_ical(vcal)
+    else:
+        g = open(ics, 'rb')
+        cal = Calendar.from_ical(g.read())
+        g.close()
     ilst = []
     for comp in cal.walk():
         clst = []
@@ -5828,19 +5831,19 @@ def import_ical(ics_name, txt_name):
             t = '-'
             tmp = comp.get('completed')
             if tmp:
-                f = tmp.to_ical()[:16]
+                f = tmp.to_ical().decode()[:16]
             due = comp.get('due')
             start = comp.get('dtstart')
             if due:
-                s = due.to_ical()
+                s = due.to_ical().decode()
             elif start:
-                s = start.to_ical()
+                s = start.to_ical().decode()
 
         elif comp.name == "VJOURNAL":
             t = u'!'
             tmp = comp.get('dtstart')
             if tmp:
-                s = tmp.to_ical()[:16]
+                s = tmp.to_ical().decode()[:16]
         else:
             continue
         summary = comp.get('summary')
@@ -5857,10 +5860,10 @@ def import_ical(ics_name, txt_name):
             clst.append("@f %s" % f)
         tzid = comp.get('tzid')
         if tzid:
-            clst.append("@z %s" % tzid)
+            clst.append("@z %s" % tzid.to_ical().decode())
         tmp = comp.get('description')
         if tmp:
-            clst.append("@d %s" % tmp)
+            clst.append("@d %s" % tmp.to_ical().decode())
         rule = comp.get('rrule')
         if rule:
             rlst = []
@@ -5874,19 +5877,27 @@ def import_ical(ics_name, txt_name):
                         ", ".join(map(str, rule.get(key)))))
             clst.append("@r %s" % " ".join(rlst))
 
-        tmp = comp.get('categories')
-        if tmp:
-            clst.append("@t %s" % u', '.join(tmp))
+        tags = comp.get('categories')
+        if tags:
+            if type(tags) is list:
+                tags = [x.to_ical().decode() for x in tags]
+                clst.append("@t %s" % u', '.join(tags))
+            else:
+                clst.append("@t %s" % tags)
         tmp = comp.get('organizer')
         if tmp:
-            clst.append("@u %s" % tmp)
+            clst.append("@u %s" % tmp.to_ical().decode())
 
         item = u' '.join(clst)
         ilst.append(item)
     if ilst:
-        tmpfile = "{0}.tmp".format(os.path.splitext(txt_name)[0])
-        shutil.copy2(txt_name, tmpfile)
-        fo = codecs.open(txt_name, 'w', file_encoding)
+        if vcal:
+            return "\n".join(ilst)
+
+        if os.path.isfile(txt):
+            tmpfile = "{0}.tmp".format(os.path.splitext(txt)[0])
+            shutil.copy2(txt, tmpfile)
+        fo = codecs.open(txt, 'w', file_encoding)
         fo.writelines(ilst)
         fo.close()
 
@@ -5896,8 +5907,8 @@ def syncTxt(file2uuids, uuid2hash, datadir, relfile):
     fullpath = os.path.join(datadir, relpath)
     sync_ics = "{0}.ics".format(fullpath)
     sync_txt = "{0}.txt".format(fullpath)
-    sync_folder = os.path.split(sync_txt)[0]
-    logger.debug('{0}, {1}, {2}'.format(sync_txt, sync_ics, sync_folder))
+    icssync_folder = os.path.split(sync_txt)[0]
+    logger.debug('{0}, {1}, {2}'.format(sync_txt, sync_ics, icssync_folder))
     mode = 0  # do nothing
     if os.path.isfile(sync_txt) and not os.path.isfile(sync_ics):
         mode = 1  # to ics
@@ -5916,11 +5927,11 @@ def syncTxt(file2uuids, uuid2hash, datadir, relfile):
         return
 
     if mode == 1:  # to ics
-        export_ical(file2uuids, uuid2hash, sync_folder, calendars=[['sync', True, relfile]])
+        export_ical(file2uuids, uuid2hash, icssync_folder, calendars=[['sync', True, relfile]])
         seconds = os.path.getmtime(sync_ics)
 
     elif mode == 2:  # to txt
-        import_ical(sync_ics, sync_txt)
+        import_ical(ics=sync_ics, txt=sync_txt)
         seconds = os.path.getmtime(sync_txt)
 
     # update times
@@ -6169,7 +6180,8 @@ class ETMCmd():
         # remove the old
         logger.debug('removing the relevant entries in uuid2hash')
         for id in ids:
-            del self.uuid2hash[id]
+            if id in self.uuid2hash:
+                del self.uuid2hash[id]
             if id in self.uuid2labels:
                 logger.debug('removing uuid2label[{0}] = {1}'.format(id, self.uuid2labels[id]))
                 del self.uuid2labels[id]
@@ -6451,6 +6463,7 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
     def append_item(self, new_hsh, file, cli=False):
         """
         """
+        # new_item, msg = hsh2str(new_hsh, self.options, include_uid=True)
         new_item, msg = hsh2str(new_hsh, self.options)
         old_items = getFileItems(file, self.options['datadir'], False)
         items = [u'%s' % x[0].rstrip() for x in old_items if x[0].strip()]
