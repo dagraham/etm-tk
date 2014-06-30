@@ -458,11 +458,11 @@ class SimpleEditor(Toplevel):
         if text.startswith("BEGIN:VCALENDAR"):
             text = import_ical(vcal=text)
         logger.debug("text: {0} '{01}'".format(type(text), text))
-        if self.options['retain_ids'] and self.edithsh:
+        if self.edithsh and 'i' in self.edithsh:
             uid = self.edithsh['i']
         else:
             uid = None
-        hsh, msg, id_missing, id_present = str2hsh(text, options=self.options, uid=uid)
+        hsh, msg = str2hsh(text, options=self.options, uid=uid)
 
         if not msg:
             # we have a good hsh

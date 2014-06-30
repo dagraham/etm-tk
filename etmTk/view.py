@@ -3417,7 +3417,7 @@ Relative dates and fuzzy parsing are supported.""")
 
             if value:
                 self.timerItem = None
-                hsh, msg, id_missing, id_present = str2hsh(value, options=loop.options)
+                hsh, msg = str2hsh(value, options=loop.options)
             elif nullok:
                 self.timerItem = self.uuidSelected
                 # Based on item, 'entry' will be in hsh
