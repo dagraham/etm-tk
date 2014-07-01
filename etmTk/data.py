@@ -13,12 +13,6 @@ import logging
 import logging.config
 logger = logging.getLogger()
 
-from urllib import request, parse
-# url = 'https://www.google.com/calendar/ical/99ujpejsg8cil608so6jhn7b1g%40group.calendar.google.com/private-04aba66f27749c0e8838b2dd4b808739/basic.ics'
-# u = request.urlopen(url)
-# resp = u.read()
-# print(resp)
-
 
 def setup_logging(level, etmdir=None):
     """
@@ -718,7 +712,12 @@ def setup_parse(day_first, year_first):
 
     # noinspection PyRedeclaration
     def parse(s):
-        return dparse(str(s), dayfirst=day_first, yearfirst=year_first)
+        try:
+            res = dparse(str(s), dayfirst=day_first, yearfirst=year_first)
+        except:
+            logger.exception('Could not parse: {0}, {1}, {2}'.format(s, day_first, year_first))
+            return False
+        return res
 
 
 try:
@@ -2542,6 +2541,7 @@ def parse_dtstr(dtstr, timezone="", f=rfmt):
                 dt = parse(dtstr)
             except:
                 msg = _("Could not parse: {0}".format(dtstr))
+                logger.exception(msg)
                 return msg
     elif dtstr.utcoffset() is None:
         dt = dtstr.replace(tzinfo=tzlocal())
@@ -4273,13 +4273,14 @@ def str2hsh(s, uid=None, options=None):
                         pairs = job['h'].split(',')
                     else:
                         pairs = job['h']
-                    logger.debug('pairs: {0}'.format(pairs))
+                    logger.debug('starting pairs: {0}, {1}'.format(pairs, type(pairs)))
                     job['h'] = []
-                    logger.debug('pairs: {0}'.format(pairs))
+                    if type(pairs) is not "list":
+                        pairs = [pairs]
                     for pair in pairs:
-                        logger.debug('processing pair: {0}'.format(pair))
+                        logger.debug('splitting pair: {0}'.format(pair))
                         pair = pair.split(';')
-                        logger.debug('parsing done: {0}, {1}'.format(pair[0], type(pair[0])))
+                        logger.debug('processing done, due: {0}'.format(pair))
                         done = parse(
                             parse_datetime(
                                 pair[0], hsh['z'])).replace(tzinfo=None)
@@ -4324,26 +4325,20 @@ def str2hsh(s, uid=None, options=None):
             hsh['_r'] = hsh['r']
             try:
                 hsh['r'] = get_rrulestr(hsh)
-            except Exception:
+            except:
                 msg.append("exception processing rulestring: %s" % hsh['_r'])
             try:
                 hsh['r'], hsh['rrule'], warn = get_rrule(hsh)
                 if warn:
                     msg.extend(warn)
-            except Exception:
-                msg.append("could not process rrule: %s" % hsh['_r'])
-                f = StringIO()
-                msg.append("exception in get_rrule: '%s" % f.getvalue())
-                # generated, not stored
-        # hsh['i'] = unicode(uuid.uuid4())
+            except:
+                logger.exception("exception processing rrule: {0}".format(hsh['_r']))
         if 'i' not in hsh:
             hsh['i'] = uniqueId()
 
     except:
-        fio = StringIO()
-        logger.exception('exception procsessing "{0}"'.format(s))
-        msg.append(fio.getvalue())
-    # logger.debug('returning hsh: {0}; msg: {1}'.format(hsh, msg))
+        logger.exception('exception processing "{0}"'.format(s))
+        msg.append('exception processing "{0}"'.format(s))
     return hsh, msg
 
 
@@ -5836,10 +5831,14 @@ def txt2ical(file2uuids, uuid2hash, datadir, txt_rp, ics_rp):
     return True
 
 def update_subscription(url, txt):
+    if python_version2:
+        import urllib2 as request
+    else:
+        from urllib import request
+
     res = False
     u = request.urlopen(url)
     vcal = u.read()
-    print(vcal)
     if vcal:
         res = import_ical(vcal=vcal, txt=txt)
     return res
