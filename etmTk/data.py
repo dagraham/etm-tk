@@ -4275,7 +4275,8 @@ def str2hsh(s, uid=None, options=None):
                         pairs = job['h']
                     logger.debug('starting pairs: {0}, {1}'.format(pairs, type(pairs)))
                     job['h'] = []
-                    if type(pairs) is not "list":
+                    # if type(pairs) in [unicode, str]:
+                    if type(pairs) not in [list]:
                         pairs = [pairs]
                     for pair in pairs:
                         logger.debug('splitting pair: {0}'.format(pair))
