@@ -22,7 +22,6 @@ import platform
 if platform.python_version() >= '3':
     import tkinter
     from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, PanedWindow, OptionMenu, StringVar, IntVar, Menu, X, Canvas, CURRENT, Scrollbar
-    #, PhotoImage
     from tkinter import ttk
     from tkinter import font as tkFont
     utf8 = lambda x: x
@@ -32,9 +31,6 @@ else:
     from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, PanedWindow, OptionMenu, StringVar, IntVar, Menu, X, Canvas, CURRENT, Scrollbar
     import ttk
     import tkFont
-    # from tkMessageBox import askokcancel
-    # from tkFileDialog import askopenfilename, asksaveasfilename
-    # from tkFileDialog import asksaveasfilename
 
     def utf8(s):
         return s
@@ -90,7 +86,7 @@ def hsv_to_rgb(h, s, v):
         return v, p, q
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, str2hsh, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical, fmt_time, TimeIt, getReportData, getFileTuples, getFiles, getAllFiles, updateCurrentFiles, FINISH, availableDates, syncTxt, relpath)
+    init_localization, fmt_weekday, fmt_dt, str2hsh, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical, fmt_time, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, FINISH, availableDates, syncTxt, update_subscription)
 
 # from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES, REPORTS)
 
@@ -114,17 +110,17 @@ ETM = "etm"
 FILTER = _("filter")
 FILTERCOLOR = "gray"
 
-## Views ##
+# Views #
 AGENDA = _('Agenda')
-#----
+
 DAY = _('Day')
 WEEK = _("Week")
 MONTH = _("Month")
-#----
+
 PATH = _('Path')
 KEYWORD = _('Keyword')
 TAG = _('Tag')
-#----
+
 NOTE = _('Note')
 CUSTOM = _("Custom")
 
@@ -352,7 +348,7 @@ class App(Tk):
         filemenu.add_separator()
         self.add2menu(path, (SEP, ))
 
-        ## quit
+        # quit
         l, c = commandShortcut('q')
         label = _("Quit")
         filemenu.add_command(label=label, underline=0,
@@ -376,7 +372,7 @@ class App(Tk):
         self.add2menu(path, (label, l))
         self.bindTop('<space>', self.goHome)
 
-        ## show alerts
+        # show alerts
         l = "A"
         c = "a"
         label = _("Show remaining alerts for today")
@@ -631,7 +627,7 @@ class App(Tk):
             toolsmenu.entryconfig(4, accelerator=l)
             self.add2menu(path, (label, l))
 
-        ## export
+        # export
         l = "Shift-X"
         c = "X"
         label = _("Export to iCal")
@@ -641,7 +637,17 @@ class App(Tk):
         toolsmenu.entryconfig(5, accelerator=l)
         self.add2menu(path, (label, l))
 
-        ## load data
+        # update subscriptions
+        l = "Shift-M"
+        c = "M"
+        label = _("Update calendar subscriptions")
+        toolsmenu.add_command(label=label, underline=1, command=self.updateSubscriptions)
+        self.bind(c, self.updateSubscriptions)
+
+        toolsmenu.entryconfig(5, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        # load data
         l = "Shift-L"
         c = "L"
         label = _("Reload data from files")
@@ -2415,7 +2421,7 @@ Enter the shortest time period you want displayed in minutes.""")
                 p = int(l + x_ / 2 + x_ * i), int(t + y_ * j + y_ / 2)
                 thisdate = weeks[j][i]
                 isokey = thisdate.isocalendar()
-                month, day = thisdate.month, thisdate.day
+                month = thisdate.month
                 fill = None
                 tags = []
                 if (month != self.year_month[1]):
@@ -3891,6 +3897,28 @@ or 0 to expand all branches completely.""")
         for line in data:
             c.writerow(line)
         MessageWindow(self, "etm", "Exported CSV to {0}".format(filename))
+
+    def updateSubscriptions(self, e=None):
+        if not self.loop.options['ics_subscriptions']:
+            MessageWindow(self, 'etm', "A configuration setting for 'ics_subscriptions' is required but missing.")
+            return
+        good = []
+        bad = []
+        msg = []
+        for url, rp in self.loop.options['ics_subscriptions']:
+            fp = os.path.join(self.loop.options['datadir'], rp)
+            logger.debug('updating: {0}, {1}'.format(rp, fp))
+            res = update_subscription(url, fp)
+            if res:
+                good.append(rp)
+            else:
+                bad.append(rp)
+
+        if good:
+            msg.append(_("Succesfully updated:\n  {0}").format("\n  ".join(good)))
+        if bad:
+            msg.append(_("Not updated:\n  {0}").format("\n  ".join(bad)))
+        MessageWindow(self, "etm", "\n".join(msg))
 
     def newselection(self, event=None):
         self.value_of_combo = self.custom_box.get()

@@ -331,7 +331,7 @@ class SimpleEditor(Toplevel):
         if self.matches:
             cursel = self.matches[int(self.listbox.curselection()[0])]
         else:
-            cursel= self.filterValue.get()
+            cursel = self.filterValue.get()
             modified = True
 
         start = "insert-{0}c".format(len(self.match))
@@ -353,8 +353,6 @@ class SimpleEditor(Toplevel):
                     fo.write(content)
             self.completions.append(cursel)
             self.completions.sort()
-
-
 
     def cursorUp(self, event=None):
         cursel = int(self.listbox.curselection()[0])

@@ -13,12 +13,12 @@ import logging
 import logging.config
 logger = logging.getLogger()
 
-# from urllib import request, parse
+from urllib import request, parse
 # url = 'https://www.google.com/calendar/ical/99ujpejsg8cil608so6jhn7b1g%40group.calendar.google.com/private-04aba66f27749c0e8838b2dd4b808739/basic.ics'
-#
 # u = request.urlopen(url)
 # resp = u.read()
 # print(resp)
+
 
 def setup_logging(level, etmdir=None):
     """
@@ -1379,6 +1379,7 @@ def get_options(d=''):
         'icscal_file': os.path.normpath(os.path.join(etmdir, 'etmcal.ics')),
         'icsitem_file': os.path.normpath(os.path.join(etmdir, 'etmitem.ics')),
         'icssync_folder': '',
+        'ics_subscriptions': [],
         'idle_minutes': 10,
 
         'local_timezone': time_zone,
@@ -1665,7 +1666,6 @@ def get_options(d=''):
     if options['current_icsfolder']:
         if not os.path.isdir(options['current_icsfolder']):
             os.makedirs(options['current_icsfolder'])
-
 
     if use_locale:
         locale.setlocale(locale.LC_ALL, map(str, use_locale[0]))
@@ -2831,7 +2831,6 @@ def process_data_file_list(filelist, options=None):
     file2uuids = {}
     uuid2hashes = {}
     uuid2labels = {}
-    skipped = []
     for f, r in filelist:
         file2lastmodified[(f, r)] = os.path.getmtime(f)
         msg, hashes, u2l = process_one_file(f, r, options)
@@ -3040,8 +3039,6 @@ def items2Hashes(list_of_items, options=None):
     if not options:
         options = {}
     messages = []
-    missing_id = False
-    present_id = False
     hashes = []
     uuid2labels = {}
     defaults = {}
@@ -5744,27 +5741,29 @@ def export_ical(file2uuids, uuid2hash, vcal_folder, calendars=None):
             calendar.add('version', '2.0')
             cal_tuples.append((name, regex, calendar))
     else:
+        logger.debug('processing cal: all')
         all = Calendar()
         all.add('prodid', '-//etm_tk {0}//dgraham.us//'.format(version))
         all.add('version', '2.0')
-        calfiles = [all, os.path.join(vcal_folder, "all.ics")]
+        regex = re.compile(r'^.*')
+        cal_tuples.append(('all', regex, all))
 
+    if not cal_tuples:
+        return
+
+    logger.debug('using cal_tuples: {0}'.format(cal_tuples))
     for rp in file2uuids:
-        if cal_tuples:
-            this_calendar = None
-            this_file = None
-            logger.debug('cal_tuples: {0}'.format(cal_tuples))
-            for name, regex, calendar in cal_tuples:
-                if regex.match(rp):
-                    this_calendar = calendar
-                    this_file = os.path.join(vcal_folder, "{0}.ics".format(name))
-                    calfiles.append([this_calendar, this_file])
-                    break
-            if not this_calendar:
-                logger.debug('skipping: {0}'.format(rp))
-                continue
-        else:
-            this_calendar = all
+        this_calendar = None
+        this_file = None
+        for name, regex, calendar in cal_tuples:
+            if regex.match(rp):
+                this_calendar = calendar
+                this_file = os.path.join(vcal_folder, "{0}.ics".format(name))
+                calfiles.append([this_calendar, this_file])
+                break
+        if not this_calendar:
+            logger.debug('skipping: {0}'.format(rp))
+            continue
         for uid in file2uuids[rp]:
             hsh = uuid2hash[uid]
             ok, element = hsh2ical(hsh)
@@ -5794,6 +5793,7 @@ def export_ical(file2uuids, uuid2hash, vcal_folder, calendars=None):
             fo.close()
     return True
 
+
 def txt2ical(file2uuids, uuid2hash, datadir, txt_rp, ics_rp):
     """
     Export items from txtfile to icsfile.
@@ -5802,7 +5802,7 @@ def txt2ical(file2uuids, uuid2hash, datadir, txt_rp, ics_rp):
         logger.error('Could not import icalendar')
         return False
 
-    if not txt_rp in file2uuids:
+    if txt_rp not in file2uuids:
         return
 
     cal = Calendar()
@@ -5829,15 +5829,23 @@ def txt2ical(file2uuids, uuid2hash, datadir, txt_rp, ics_rp):
     try:
         fo.write(cal_str)
     except Exception:
-        f = StringIO()
         logger.exception("Could not write to {0}" .format(ics))
         return False
     finally:
         fo.close()
     return True
 
+def update_subscription(url, txt):
+    res = False
+    u = request.urlopen(url)
+    vcal = u.read()
+    print(vcal)
+    if vcal:
+        res = import_ical(vcal=vcal, txt=txt)
+    return res
 
 def import_ical(ics="", txt="", vcal=""):
+    logger.debug("ics: {0}, txt: {1}, vcal:{2}".format(ics, txt, vcal))
     if vcal:
         cal = Calendar.from_ical(vcal)
     else:
@@ -5933,15 +5941,15 @@ def import_ical(ics="", txt="", vcal=""):
         item = u' '.join(clst)
         ilst.append(item)
     if ilst:
-        if vcal:
+        if txt:
+            if os.path.isfile(txt):
+                tmpfile = "{0}.tmp".format(os.path.splitext(txt)[0])
+                shutil.copy2(txt, tmpfile)
+            fo = codecs.open(txt, 'w', file_encoding)
+            fo.write("\n".join(ilst))
+            fo.close()
+        elif vcal:
             return "\n".join(ilst)
-
-        if os.path.isfile(txt):
-            tmpfile = "{0}.tmp".format(os.path.splitext(txt)[0])
-            shutil.copy2(txt, tmpfile)
-        fo = codecs.open(txt, 'w', file_encoding)
-        fo.writelines(ilst)
-        fo.close()
         return True
 
 
@@ -5952,7 +5960,6 @@ def syncTxt(file2uuids, uuid2hash, datadir, relpath):
     logger.debug('txt_rp: {0}, ics_rp: {1}'.format(txt_rp, ics_rp))
     sync_ics = os.path.join(datadir, ics_rp)
     sync_txt = os.path.join(datadir, txt_rp)
-    icssync_folder = os.path.split(sync_txt)[0]
     logger.debug('sync_txt: {0}, sync_ics: {1}'.format(sync_txt, sync_ics))
     mode = 0  # do nothing
     if os.path.isfile(sync_txt) and not os.path.isfile(sync_ics):
