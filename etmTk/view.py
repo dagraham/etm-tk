@@ -88,8 +88,6 @@ def hsv_to_rgb(h, s, v):
 from etmTk.data import (
     init_localization, fmt_weekday, fmt_dt, str2hsh, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical, fmt_time, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, FINISH, availableDates, syncTxt, update_subscription)
 
-# from etmTk.help import (ATKEYS, DATES, ITEMTYPES,  OVERVIEW, PREFERENCES, REPORTS)
-
 from etmTk.dialog import MenuTree, Timer, ReadOnlyText, MessageWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, FileChoice, STOPPED, PAUSED, RUNNING, BGCOLOR, ONEDAY, ONEMINUTE
 
 from etmTk.edit import SimpleEditor
@@ -1242,7 +1240,7 @@ returns:
             changed = SimpleEditor(parent=self, master=master, options=loop.options).changed
         if changed:
             logger.debug('changed, reloading data')
-            updateCurrentFiles(loop.rows, loop.file2uuids, loop.uuid2hash, loop.options)
+            loop.do_update = True
             self.updateAlerts()
             if self.weekly:
                 self.showWeek()
@@ -1503,7 +1501,7 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
 
         if changed:
             logger.debug("starting if changed")
-            updateCurrentFiles(loop.rows, loop.file2uuids, loop.uuid2hash, loop.options)
+            loop.do_update = True
             self.updateAlerts()
             if self.weekly:
                 self.canvas.focus_set()
@@ -1551,7 +1549,7 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
                 loop.options = options
                 if options['calendars'] != current_options['calendars']:
                     self.updateCalendars()
-            updateCurrentFiles(loop.rows, loop.file2uuids, loop.uuid2hash, loop.options)
+            loop.do_update = True
 
             logger.debug("changed - calling updateAlerts")
             self.updateAlerts()
@@ -3098,6 +3096,7 @@ or 0 to display all changes.""").format(title)
         tt = TimeIt(loglevel=2, label="updateClock")
         self.now = get_current_time()
         self.current_minutes = self.now.hour * 60 + self.now.minute
+        # print('do_update', loop.do_update, self.now.minute, loop.options['update_minutes'])
         nxt = (60 - self.now.second) * 1000 - self.now.microsecond // 1000
         logger.debug('next update in {0} milliseconds.'.format(nxt))
         self.after(nxt, self.updateClock)
@@ -3120,6 +3119,8 @@ or 0 to display all changes.""").format(title)
             logger.info("new: {0}; modified: {1}; deleted: {2}".format(len(new), len(modified), len(deleted)))
             logger.debug('calling loadData')
             loop.loadData()
+            # we now have file2uuids ...
+
             if self.weekly:
                 logger.debug('calling showWeek')
                 self.showWeek()
@@ -3136,23 +3137,27 @@ or 0 to display all changes.""").format(title)
                 self.canvas.create_line(xy, width=2, fill=CURRENTLINE, tag='current_time')
                 self.update_idletasks()
 
-        # we now have file2uuids ...
-        if loop.options['icssync_folder']:
-            fullpath = os.path.join(loop.options['datadir'], loop.options['icssync_folder'])
-            prefix, files = getAllFiles(fullpath, include="*")
-            base_files = set([])
-            # file_lst = []
-            for tup in files:
-                base, ext = os.path.splitext(tup[0])
-                if ext in [".txt", ".ics"]:
-                    base_files.add(base)
-            file_lst = list(base_files)
-            datadir = loop.options['datadir']
-            for file in file_lst:
-                relfile = relpath(file, datadir)
-                logger.debug('calling syncTxt: {0}; {1}'.format(datadir, relfile))
-                syncTxt(self.loop.file2uuids, self.loop.uuid2hash, datadir, relfile)
-            # if sync_txt is updated it will be reloaded in the next cycle
+        if self.current_minutes % loop.options['update_minutes'] == 0:
+            if loop.do_update:
+                updateCurrentFiles(loop.rows, loop.file2uuids, loop.uuid2hash, loop.options)
+                loop.do_update = False
+
+            if loop.options['icssync_folder']:
+                fullpath = os.path.join(loop.options['datadir'], loop.options['icssync_folder'])
+                prefix, files = getAllFiles(fullpath, include="*")
+                base_files = set([])
+                # file_lst = []
+                for tup in files:
+                    base, ext = os.path.splitext(tup[0])
+                    if ext in [".txt", ".ics"]:
+                        base_files.add(base)
+                file_lst = list(base_files)
+                datadir = loop.options['datadir']
+                for file in file_lst:
+                    relfile = relpath(file, datadir)
+                    logger.debug('calling syncTxt: {0}; {1}'.format(datadir, relfile))
+                    syncTxt(self.loop.file2uuids, self.loop.uuid2hash, datadir, relfile)
+                # if sync_txt is updated it will be reloaded in the next cycle
 
         self.updateAlerts()
 

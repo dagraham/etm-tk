@@ -1177,6 +1177,10 @@ def setConfig(options):
 
     # get info from files in datadir
     prefix, filelist = getFiles(options['datadir'], include=r'*.cfg')
+    for rp in ['completions.cfg', 'users.cfg', 'reports.cfg']:
+        fp = os.path.join(options['etmdir'], rp)
+        if os.path.isfile(fp):
+            filelist.append((fp, rp))
     logger.info('prefix: {0}; files: {1}'.format(prefix, filelist))
     for fp, rp in filelist:
         if os.path.split(rp)[0] and cal_regex and not cal_regex.match(rp):
@@ -1411,6 +1415,7 @@ def get_options(d=''):
         'sms_subject': '!time_span!',
 
         'sundayfirst': False,
+        'update_minutes': 15,
         'vcs_system': default_vcs,
         'vcs_settings': {'command': '', 'commit': '', 'dir': '', 'file': '', 'history': '', 'init': '', 'limit': ''},
         'weeks_after': 52,
@@ -1469,7 +1474,7 @@ def get_options(d=''):
     # logger.debug("user_options: {0}".format(user_options))
 
     for key in default_options:
-        if key in ['show_finished', 'fontsize_fixed', 'fontsize_tree', 'outline_depth', 'prefix']:
+        if key in ['show_finished', 'fontsize_fixed', 'fontsize_tree', 'outline_depth', 'prefix', 'icssyc_folder', 'ics_subscriptions']:
             if key not in user_options:
                 # we want to allow 0 as an entry
                 options[key] = default_options[key]
@@ -1483,6 +1488,9 @@ def get_options(d=''):
         elif default_options[key] and (key not in user_options or not user_options[key]):
             options[key] = default_options[key]
             changed = True
+
+    if type(options['update_minutes']) is not int or options['update_minutes'] <= 0 or options['update_minutes'] > 59:
+        options['update_minutes'] = default_options['update_minutes']
 
     remove_keys = []
     for key in options:
@@ -3407,7 +3415,6 @@ def str2opts(s, options=None, cli=True):
     groupbystr = head[1:].strip()
     if not report or report not in ['c', 'a'] or not groupbystr:
         return {}
-
     grpby = {'report': report}
     filters['dates'] = False
     dated = {'grpby': False}
@@ -3599,7 +3606,7 @@ def str2opts(s, options=None, cli=True):
     if 'width2' not in grpby:
         grpby['width2'] = options['report_width2']
     grpby['lst'].append(u'summary')
-
+    logger.debug('grpby: {0}; dated: {1}; filters: {2}'.format(grpby, dated, filters))
     return grpby, dated, filters
 
 
@@ -3953,8 +3960,9 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
     try:
         grpby, dated, filters = str2opts(s, options, cli)
     except:
-        return _("Could not process: {0}").format(s)
-    logger.debug("grpby: {0}\ndated: {1}\nfilters: {2}".format(grpby, dated, filters))
+        e = _("Could not process: {0}").format(s)
+        logger.exception(e)
+        return e
     if not grpby:
         return [str(_('invalid grpby setting'))]
     uuids = applyFilters(file2uuids, uuid2hash, filters)
@@ -5831,6 +5839,7 @@ def txt2ical(file2uuids, uuid2hash, datadir, txt_rp, ics_rp):
         fo.close()
     return True
 
+
 def update_subscription(url, txt):
     if python_version2:
         import urllib2 as request
@@ -5843,6 +5852,7 @@ def update_subscription(url, txt):
     if vcal:
         res = import_ical(vcal=vcal, txt=txt)
     return res
+
 
 def import_ical(ics="", txt="", vcal=""):
     logger.debug("ics: {0}, txt: {1}, vcal:{2}".format(ics, txt, vcal))
@@ -6069,6 +6079,7 @@ class ETMCmd():
             't': self.help_t,
             'v': self.help_v,
         }
+        self.do_update = False
         self.ruler = '-'
         # self.rows = []
         self.file2uuids = {}
@@ -6203,8 +6214,7 @@ class ETMCmd():
         for key in occasionsSL:
             self.occasions[key] = list(occasionsSL[key])
 
-        updateCurrentFiles(
-            self.rows, file2uuids, uuid2hash, self.options)
+        self.do_update = True
         self.currfile = ensureMonthly(self.options, now)
         if self.last_rep:
             logger.debug('calling mk_rep with {0}'.format(self.last_rep))
