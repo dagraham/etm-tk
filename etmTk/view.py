@@ -3067,18 +3067,6 @@ or 0 to display all changes.""").format(title)
         self.itemmenu.focus_set()
         return "break"
 
-    # def OnDoubleClick(self, event):
-    #     """
-    #     Double click on tree row
-    #     """
-    #     self.update_idletasks()
-    #
-    #     item = self.tree.identify('item', event.x, event.y)
-    #     uuid, dt, hsh = self.getInstance(item)
-    #     if uuid is not None:
-    #         self.editItem()
-    #     return "break"
-
     def getInstance(self, item):
         instance = self.count2id[item]
         logger.debug('starting getInstance: {0}; {1}'.format(item, instance))
@@ -3096,7 +3084,6 @@ or 0 to display all changes.""").format(title)
         tt = TimeIt(loglevel=2, label="updateClock")
         self.now = get_current_time()
         self.current_minutes = self.now.hour * 60 + self.now.minute
-        # print('do_update', loop.do_update, self.now.minute, loop.options['update_minutes'])
         nxt = (60 - self.now.second) * 1000 - self.now.microsecond // 1000
         logger.debug('next update in {0} milliseconds.'.format(nxt))
         self.after(nxt, self.updateClock)
@@ -3157,7 +3144,7 @@ or 0 to display all changes.""").format(title)
                     relfile = relpath(file, datadir)
                     logger.debug('calling syncTxt: {0}; {1}'.format(datadir, relfile))
                     syncTxt(self.loop.file2uuids, self.loop.uuid2hash, datadir, relfile)
-                # if sync_txt is updated it will be reloaded in the next cycle
+                # any updated txt files will be reloaded in the next update
 
         self.updateAlerts()
 
