@@ -64,6 +64,7 @@ setup(
                   'etmTk/help' : ['help/UserManual.html', ]},
     data_files=[
         ('share/man/man1', ['etmTk/etmtk.1']),
+        ('share/doc/etmtk', ['etmTk/CHANGES']),
         ('share/pixmaps', ['etmTk/etmtk.xpm']),
         ('share/applications', ['etmTk/etmtk.desktop']),
     ]
