@@ -65,7 +65,7 @@ setup(
     data_files=[
         ('share/man/man1', ['etmTk/etm.1']),
         ('share/doc/etm', ['etmTk/CHANGES']),
-        ('share/pixmaps', ['etmTk/etmtk.xpm']),
+        ('share/pixmaps', ['etmTk/etm.xpm']),
         ('share/applications', ['etmTk/etm.desktop']),
         ('share/appdata', ['etmTk/etm.appdata.xml']),
     ]
