@@ -66,6 +66,7 @@ setup(
         ('share/man/man1', ['etmTk/etmtk.1']),
         ('share/doc/etmtk', ['etmTk/CHANGES']),
         ('share/pixmaps', ['etmTk/etmtk.xpm']),
-        ('share/applications', ['etmTk/etmtk.desktop']),
+        ('share/applications', ['etmTk/etm.desktop']),
+        ('share/appdata', ['etmTk/etm.appdata.xml']),
     ]
 )

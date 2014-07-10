@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=etmtk
+Name=Event and task manager
 Comment=Manage events and tasks using simple text files
 Exec=etm
 Icon=etmtk
