@@ -1,2 +1,4 @@
 include etmTk/CHANGES
+include etmTk/etm.desktop
+include etmTk/etm.appdata.xml
 include etmTk/help/UserManual.html

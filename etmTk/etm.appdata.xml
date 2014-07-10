@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2014 Daniel Graham <daniel.graham@duke.edu> -->
+<application>
+ <id type="desktop">etm.desktop</id>
+ <metadata_license>CC0-1.0</metadata_license>
+ <project_license>GPL-2.0+ and GFDL-1.3</project_license>
+ <name>Event and task manager</name>
+ <summary>Manage events and tasks using simple text files
+</summary>
+ <description>
+  <p>Examples:</p>
+  <ul>
+   <li>A sales meeting (an event) [s]tarting seven days from today at 9:00am and [e]xtending for one hour with a default [a]lert 5 minutes before the start:
+   <pre>* sales meeting @s +7 9a @e 1h @a 5</pre>
+   </li>
+   <li>Get a haircut (a task) on the 24th of the current month and then [r]epeatedly at (d)aily [i]ntervals of (14) days and, [o]n completion, (r)estart from the completion date:
+    <pre>- get haircut @s 24 @r d &amp;i 14 @o r</pre>
+   </li>
+   <li>Presidential election day (an occasion) every four years on the first Tuesday after a Monday in November:
+    <pre>^ Presidential Election Day @s 2012-11-06
+@r y &amp;i 4 &amp;M 11 &amp;m 2, 3, 4, 5, 6, 7, 8 &amp;w TU</pre>
+   </li>
+  </ul>
+ </description>
+ <screenshots>
+  <screenshot type="default" width="800" height="600">http://people.duke.edu/~dgraham/etmtk/images/agenda.gif</screenshot>
+  <screenshot type="default" width="800" height="600">http://people.duke.edu/~dgraham/etmtk/images/day.gif</screenshot>
+  <screenshot type="default" width="800" height="600">http://people.duke.edu/~dgraham/etmtk/images/week.gif</screenshot>
+  <screenshot type="default" width="800" height="600">http://people.duke.edu/~dgraham/etmtk/images/monthly.gif</screenshot>
+ </screenshots>
+ <url type="homepage">http://people.duke.edu/~dgraham/etmtk/</url>
+ <updatecontact>daniel.graham_at_duke.edu</updatecontact>
+</application>
