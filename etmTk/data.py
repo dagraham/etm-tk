@@ -662,7 +662,8 @@ import calendar
 
 import yaml
 from itertools import groupby
-from dateutil.rrule import *
+# from dateutil.rrule import *
+from dateutil.rrule import (DAILY, rrule)
 
 import bisect
 import uuid
@@ -699,8 +700,9 @@ def term_print(s):
     else:
         print(s)
 
+parse = None
 
-# noinspection PyGlobalUndefined
+
 def setup_parse(day_first, year_first):
     """
 
@@ -1210,11 +1212,14 @@ def setConfig(options):
             fo = codecs.open(fp, 'r', dfile_encoding)
             tmp = yaml.load(fo)
             fo.close()
-            # if a key already exists, use this value
-            options['user_data'].update(tmp)
-            for x in tmp.keys():
-                completions.add("@u {0}".format(x))
-                completions.add("&u {0}".format(x))
+            try:
+                # if a key already exists, use the tmp value
+                options['user_data'].update(tmp)
+                for x in tmp.keys():
+                    completions.add("@u {0}".format(x))
+                    completions.add("&u {0}".format(x))
+            except:
+                logger.exception("Error loading {0}".format(fp))
 
     # get info from cfg_files
     if 'cfg_files' in options and options['cfg_files']:
@@ -1266,11 +1271,16 @@ def setConfig(options):
 
 
 # noinspection PyGlobalUndefined
+term_encoding = None
+file_encoding = None
+local_timezone = None
+
+
 def get_options(d=''):
     """
     """
     logger.debug('starting get_options with directory: "{0}"'.format(d))
-    global parse, s2or3, term_encoding, file_encoding
+    global parse, s2or3, term_encoding, file_encoding, local_timezone
     from locale import getpreferredencoding
     from sys import stdout
     try:
@@ -1687,6 +1697,7 @@ def get_options(d=''):
     setup_parse(options['dayfirst'], options['yearfirst'])
     term_encoding = options['encoding']['term']
     file_encoding = options['encoding']['file']
+    local_timezone = options['local_timezone']
     logger.debug("ending get_options")
     return user_options, options, use_locale
 
@@ -3242,12 +3253,10 @@ def get_reps(bef, hsh):
 
     if passed:
         # finite, get instances after start
-        # rrr = [x for x in hsh['rrule']]
-        # if rrr:
         try:
             tmp.extend([x for x in hsh['rrule'] if x >= start])
         except:
-            logger.exception('done: {0}; due: {1}; following: {2}; start: {3}; rrule: {4}'.format(done, due, following, start, rrr))
+            logger.exception('done: {0}; due: {1}; following: {2}; start: {3}; rrule: {4}'.format(done, due, following, start, hsh['rrule']))
     else:
         tmp.extend(list(hsh['rrule'].between(start, bef, inc=True)))
         tmp.append(hsh['rrule'].after(bef, inc=False))
@@ -6892,7 +6901,7 @@ def main(etmdir='', argv=[]):
                 try:
                     tmp = str2opts(" ".join(args[1:]), options)
                 except:
-                    term_print('Could not process" {0}'.format(s))
+                    logger.exception('Could not process" {0}'.format(args[1:]))
                     return
                 if len(tmp) == 3:
                     opts = str2opts(" ".join(args[1:]), options)[0]

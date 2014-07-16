@@ -184,7 +184,7 @@ class SimpleEditor(Toplevel):
                 # a new uid
                 self.mode = 1
                 self.title = CREATENEW
-                self.edithsh = self.newhsh
+                self.edithsh = {}
                 self.edithsh['i'] = uniqueId()
                 text = ''
             elif rephsh is None:  # newhsh is not None
