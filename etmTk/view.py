@@ -1201,7 +1201,7 @@ returns:
 
     def _exportActiveToIcal(self, event=None):
         if 'icscal_file' in loop.options:
-            res = export_ical(loop.uuid2hash, loop.options['icscal_file'], loop.calendars)
+            res = export_ical(loop.uuid2hash, loop.options['icscal_file'], loop.options['current_icsfolder'], loop.calendars)
             if res:
                 prompt = _("Active calendars successfully exported to {0}".format(loop.options['icscal_file']))
             else:
@@ -1231,10 +1231,16 @@ returns:
             text = " @s {0}".format(self.active_date)
             changed = SimpleEditor(parent=self, master=master, start=text, options=loop.options).changed
         elif self.view in [KEYWORD, NOTE] and self.itemSelected:
-            text = " @k {0}".format(self.itemSelected['k'])
+            if self.itemSelected and 'k' in self.itemSelected:
+                text = " @k {0}".format(self.itemSelected['k'])
+            else:
+                text = ""
             changed = SimpleEditor(parent=self, master=master, start=text, options=loop.options).changed
-        elif self.view in [TAG] and self.itemSelected:
-            text = " @t {0}".format(", ".join(self.itemSelected['t']))
+        elif self.view in [TAG]:
+            if self.itemSelected and 't' in self.itemSelected:
+                text = " @t {0}".format(", ".join(self.itemSelected['t']))
+            else:
+                text = ""
             changed = SimpleEditor(parent=self, master=master, start=text, options=loop.options).changed
         else:
             changed = SimpleEditor(parent=self, master=master, options=loop.options).changed
@@ -1423,7 +1429,12 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
         logger.debug('starting editItem: {0}; {1}, {2}'.format(self.itemSelected['_summary'], self.dtSelected, type(self.dtSelected)))
         choice = 3
         title = ETM
-        if 'r' in self.itemSelected:
+        start_text = None
+        filename = None
+        if self.itemSelected['itemtype'] == '$':
+            start_text = self.itemSelected['entry']
+            hsh_rev = deepcopy(self.itemSelected)
+        elif 'r' in self.itemSelected:
             # repeating
             choice, value = self.which(EDIT, self.dtSelected)
             logger.debug("{0}: {1}".format(choice, value))
@@ -1497,7 +1508,7 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
             hsh_rev = deepcopy(self.itemSelected)
 
         logger.debug("mode: {0}; newhsh: {1}; rephsh: {2}".format(self.mode, hsh_cpy is not None, hsh_rev is not None))
-        changed = SimpleEditor(parent=self, newhsh=hsh_cpy, rephsh=hsh_rev, options=loop.options, title=title).changed
+        changed = SimpleEditor(parent=self, file=filename, newhsh=hsh_cpy, rephsh=hsh_rev, options=loop.options, title=title, start=start_text).changed
 
         if changed:
             logger.debug("starting if changed")

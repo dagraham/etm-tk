@@ -158,9 +158,15 @@ class SimpleEditor(Toplevel):
         if start is not None:
             # we have the starting text but will need a new uid
             text = start
-            self.edithsh = {}
-            self.mode = 1
-            self.title = CREATENEW
+            if self.rephsh is None:
+                self.edithsh = {}
+                self.mode = 1
+                self.title = CREATENEW
+            else:
+                self.edithsh = self.rephsh
+                self.mode = 2
+                self.title = EDITEXISTING
+
         elif file is not None:
             # we're editing a file - if it's a data file we will add uid's
             # as necessary when saving

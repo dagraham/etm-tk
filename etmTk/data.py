@@ -4139,8 +4139,11 @@ def str2hsh(s, uid=None, options=None):
                 for amp_part in amp_parts:
                     amp_key = unicode(amp_part[0])
                     amp_val = amp_part[1:].strip()
-                    if amp_key == 'q':
-                        part_hsh[amp_key] = int(amp_val)
+                    if amp_key in ['q', 'i', 't']:
+                        try:
+                            part_hsh[amp_key] = int(amp_val)
+                        except:
+                            msg.append('Bad entry "{0}" given for "&{1}". An integer is required.'.format(amp_val, amp_key))
                     elif amp_key == 'e':
                         part_hsh['e'] = parse_period(amp_val)
                     else:
@@ -5768,28 +5771,27 @@ def export_ical(file2uuids, uuid2hash, vcal_folder, calendars=None):
     for rp in file2uuids:
         this_calendar = None
         this_file = None
+        this_lst = []  # for error logging
         for name, regex, calendar in cal_tuples:
             if regex.match(rp):
                 this_calendar = calendar
                 this_file = os.path.join(vcal_folder, "{0}.ics".format(name))
-                calfiles.append([this_calendar, this_file])
+                for uid in file2uuids[rp]:
+                    this_hsh = uuid2hash[uid]
+                    ok, element = hsh2ical(this_hsh)
+                    if ok:
+                        this_lst.append(element)
+                        this_calendar.add_component(element)
+                calfiles.append([this_calendar, this_file, this_hsh, this_lst])
                 break
         if not this_calendar:
-            logger.debug('skipping: {0}'.format(rp))
-            continue
-        for uid in file2uuids[rp]:
-            hsh = uuid2hash[uid]
-            ok, element = hsh2ical(hsh)
-            if ok:
-                this_calendar.add_component(element)
+            logger.debug('skipping {0} - no match in calendars'.format(rp))
 
-    for this_calendar, this_file in calfiles:
+    for this_calendar, this_file, this_hsh, this_lst in calfiles:
         try:
             cal_str = this_calendar.to_ical()
         except Exception:
-            f = StringIO()
-            logger.exception(f)
-            logger.exception("Could not serialize the calendar")
+            logger.exception("Could not serialize the calendar: {0}; {1}\n  {2}\n  {3}".format(this_calendar, this_file, this_lst, this_hsh))
             return False
         try:
             fo = open(this_file, 'wb')
