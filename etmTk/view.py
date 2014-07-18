@@ -86,7 +86,7 @@ def hsv_to_rgb(h, s, v):
         return v, p, q
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, str2hsh, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical, fmt_time, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, FINISH, availableDates, syncTxt, update_subscription)
+    init_localization, fmt_weekday, fmt_dt, str2hsh, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical_active, fmt_time, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, FINISH, availableDates, syncTxt, update_subscription)
 
 from etmTk.dialog import MenuTree, Timer, ReadOnlyText, MessageWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, FileChoice, STOPPED, PAUSED, RUNNING, BGCOLOR, ONEDAY, ONEMINUTE
 
@@ -1201,7 +1201,7 @@ returns:
 
     def _exportActiveToIcal(self, event=None):
         if 'icscal_file' in loop.options:
-            res = export_ical(loop.uuid2hash, loop.options['icscal_file'], loop.options['current_icsfolder'], loop.calendars)
+            res = export_ical_active(loop.file2uuids, loop.uuid2hash, loop.options['icscal_file'], loop.calendars)
             if res:
                 prompt = _("Active calendars successfully exported to {0}".format(loop.options['icscal_file']))
             else:

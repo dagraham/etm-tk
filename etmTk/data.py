@@ -5538,7 +5538,6 @@ def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
         fo.close()
     if options['current_icsfolder']:
         res = export_ical(file2uuids, uuid2hash, options['current_icsfolder'], options['calendars'])
-
     return res
 
 
@@ -5736,6 +5735,71 @@ def export_ical_item(hsh, vcal_file):
     return True
 
 
+def export_ical_active(file2uuids, uuid2hash, vcal_file, calendars=None):
+    """
+    Export items from active calendars to an ics file with the same name in vcal_folder.
+    """
+    if not has_icalendar:
+        logger.error('Could not import icalendar')
+        return False
+    logger.debug("vcal_file: {0}; calendars: {1}".format(vcal_file, calendars))
+
+    calendar = Calendar()
+    calendar.add('prodid', '-//etm_tk {0}//dgraham.us//'.format(version))
+    calendar.add('version', '2.0')
+
+    cal_tuples = []
+    calfiles = []
+    if calendars:
+        for cal in calendars:
+            logger.debug('processing cal: {0}'.format(cal))
+            if not cal[1]:
+                continue
+            name = cal[0]
+            regex = re.compile(r'^{0}'.format(cal[2]))
+            cal_tuples.append((name, regex))
+    else:
+        logger.debug('processing cal: all')
+        regex = re.compile(r'^.*')
+        cal_tuples.append(('all', regex))
+
+    if not cal_tuples:
+        return
+
+    logger.debug('using cal_tuples: {0}'.format(cal_tuples))
+    for rp in file2uuids:
+        match = False
+        for name, regex in cal_tuples:
+            if regex.match(rp):
+                for uid in file2uuids[rp]:
+                    this_hsh = uuid2hash[uid]
+                    ok, element = hsh2ical(this_hsh)
+                    if ok:
+                        calendar.add_component(element)
+                break
+        if not match:
+            logger.debug('skipping {0} - no match in calendars'.format(rp))
+
+    try:
+        cal_str = calendar.to_ical()
+    except Exception:
+        logger.exception("Could not serialize the calendar: {0}".format(calendar))
+        return False
+    try:
+        fo = open(vcal_file, 'wb')
+    except:
+        logger.exception("Could not open {0}".format(vcal_file))
+        return False
+    try:
+        fo.write(cal_str)
+    except Exception:
+        logger.exception("Could not write to {0}" .format(vcal_file))
+        return False
+    finally:
+        fo.close()
+    return True
+
+
 def export_ical(file2uuids, uuid2hash, vcal_folder, calendars=None):
     """
     Export items from each calendar to an ics file with the same name in vcal_folder.
@@ -5801,7 +5865,6 @@ def export_ical(file2uuids, uuid2hash, vcal_folder, calendars=None):
         try:
             fo.write(cal_str)
         except Exception:
-            f = StringIO()
             logger.exception("Could not write to {0}" .format(this_file))
             return False
         finally:
