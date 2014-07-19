@@ -1541,7 +1541,8 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
         self.editFile(e, file=os.path.join(loop.options['datadir'], self.itemSelected['fileinfo'][0]), line=self.itemSelected['fileinfo'][1])
 
     def editFile(self, e=None, file=None, line=None, config=False):
-        if e and e.char not in ["F", "E", "C", "S", "P"]:
+        if e and e.char and e.char not in ["F", "E", "C", "S", "P"]:
+            logger.debug('e.char: "{0}"'.format(e.char))
             return
         titlefile = os.path.normpath(relpath(file, loop.options['datadir']))
         logger.debug('file: {0}; config: {1}'.format(file, config))
@@ -3349,7 +3350,7 @@ Relative dates and fuzzy parsing are supported.""")
         return
 
     def setFilter(self, *args):
-        if self.weekly or self.monthly:
+        if self.view in [WEEK, MONTH, CUSTOM]:
             return
         self.filter_active = True
         self.viewmenu.entryconfig(6, state="disabled")
@@ -3358,6 +3359,8 @@ Relative dates and fuzzy parsing are supported.""")
         self.fltr.focus_set()
 
     def clearFilter(self, e=None):
+        if self.view in [WEEK, MONTH, CUSTOM]:
+            return
         self.filter_active = False
         self.viewmenu.entryconfig(6, state="normal")
         self.viewmenu.entryconfig(7, state="disabled")
