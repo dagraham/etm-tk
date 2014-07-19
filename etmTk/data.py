@@ -5749,7 +5749,6 @@ def export_ical_active(file2uuids, uuid2hash, vcal_file, calendars=None):
     calendar.add('version', '2.0')
 
     cal_tuples = []
-    calfiles = []
     if calendars:
         for cal in calendars:
             logger.debug('processing cal: {0}'.format(cal))
