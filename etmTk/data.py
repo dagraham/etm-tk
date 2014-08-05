@@ -1401,7 +1401,7 @@ def get_options(d=''):
         'monthly': os.path.join('personal', 'monthly'),
         'outline_depth': 0,
         'prefix': "\n  ",
-        'prefix_uses': 'djlmrtz+-',
+        'prefix_uses': 'dfjlmrtz+-',
         'report_begin': '1',
         'report_end': '+1/1',
         'report_colors': 2,
@@ -2810,27 +2810,27 @@ For editing one or more, but not all, instances of an item. Needed:
                     sl.append(" ".join(tmp))
             elif key == 's':
                 try:
-                    sl.append("@%s %s" % (key, fmt_datetime(value, options=options)))
+                    sl.append("%s@%s %s" % (prefix, key, fmt_datetime(value, options=options)))
                 except:
                     msg.append("problem with @{0}: {1}".format(key, value))
             elif key == 'e':
                 try:
-                    sl.append("@%s %s" % (key, fmt_period(value)))
+                    sl.append("%s@%s %s" % (prefix, key, fmt_period(value)))
                 except:
                     msg.append("problem with @{0}: {1}".format(key, value))
             elif key == 'f':
                 tmp = []
                 for pair in hsh['f']:
                     tmp.append(";".join([x.strftime(zfmt) for x in pair if x]))
-                sl.append("\n@f %s" % (',\n     '.join(tmp)))
+                sl.append("%s@f %s" % (prefix, prefix.join(tmp)))
             elif key == 'i':
                 if include_uid and hsh['itemtype'] != "=":
-                    sl.append("\n@i {0}".format(value))
+                    sl.append("prefix@i {0}".format(prefix, value))
             elif key == 'h':
                 tmp = []
                 for pair in hsh['h']:
                     tmp.append(";".join([x.strftime(zfmt) for x in pair if x]))
-                sl.append("\n  @h %s" % (',\n     '.join(tmp)))
+                sl.append("%s@h %s" % (prefix, prefix.join(tmp)))
             else:
                 sl.append("%s@%s %s" % (prefix, key, lst2str(value)))
     return " ".join(sl), msg
@@ -4144,6 +4144,7 @@ def str2hsh(s, uid=None, options=None):
                             part_hsh[amp_key] = int(amp_val)
                         except:
                             msg.append('Bad entry "{0}" given for "&{1}". An integer is required.'.format(amp_val, amp_key))
+                            logger.exception('Bad entry "{0}" given for "&{1}" in "{2}". An integer is required.'.format(amp_val, amp_key, hsh['entry']))
                     elif amp_key == 'e':
                         part_hsh['e'] = parse_period(amp_val)
                     else:
