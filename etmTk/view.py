@@ -3193,16 +3193,18 @@ or 0 to display all changes.""").format(title)
         if alerts:
             curr_minutes = datetime2minutes(self.now)
             td = -1
+            # pop old alerts
             while td < 0 and alerts:
                 td = alerts[0][0] - curr_minutes
                 if td < 0:
-                    alerts.pop(0)
-            if td == 0:
+                    a = alerts.pop(0)
+            # alerts for this minute will have td's < 1.0
+            if td < 1.0:
                 if ('alert_wakecmd' in loop.options and
                         loop.options['alert_wakecmd']):
                     cmd = s2or3(loop.options['alert_wakecmd'])
                     subprocess.call(cmd, shell=True)
-                while td == 0:
+                while td < 1.0 and alerts:
                     hsh = alerts[0][2]
                     alerts.pop(0)
                     actions = hsh['_alert_action']
