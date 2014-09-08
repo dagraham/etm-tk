@@ -47,19 +47,66 @@ from decimal import Decimal
 
 
 def getDayColor(num_minutes):
-    red = 10 / 355.0
-    hue = red
-    saturation = 1
-    min_b = .3
-    max_b = 1  # must be <= 1
-    max_minutes = 480
-    lightness = min(
-        max_b, min_b + (max_b - min_b) * num_minutes / float(max_minutes))
-    r, g, b = hsv_to_rgb(
-        hue, saturation, lightness)
-    r = int(r * 255)
-    g = int(g * 255)
-    b = int(b * 255)
+    # red = 10 / 355.0
+    # hue = red
+    # saturation = 1
+    # min_b = .3
+    # max_b = 1  # must be <= 1
+    # max_minutes = 480
+    # lightness = min(
+    #     max_b, min_b + (max_b - min_b) * num_minutes / float(max_minutes))
+    # r, g, b = hsv_to_rgb(
+    #     hue, saturation, lightness)
+    # r = int(r * 255)
+    # g = int(g * 255)
+    # b = int(b * 255)
+    # return "#%02x%02x%02x" % (r, g, b)
+
+    if num_minutes < 60: # blue +
+        r = g = 0
+        b = int(float(num_minutes / 60) * 255)
+    elif num_minutes < 120: # green +
+        r = 0
+        b = 255
+        g = int(float((num_minutes - 60) / 60) * 255)
+    elif num_minutes < 180: # blue -
+        r = 0
+        g = 255
+        b = int(float((180 - num_minutes) / 60) * 255)
+    elif num_minutes < 240: # red +
+        b = 0
+        g = 255
+        r = int(float((num_minutes - 180) / 60) * 255)
+    elif num_minutes < 300: # green -
+        r = 255
+        b = 0
+        g = int(float((300 - num_minutes) / 60) * 255)
+    else:
+        r = 255
+        b = g = 0
+
+    if num_minutes < 60: # blue +
+        r = g = 0
+        b = int(float(num_minutes / 60) * 255)
+    elif num_minutes < 120: # green +
+        r = 0
+        b = 255
+        g = int(float((num_minutes - 60) / 60) * 255)
+    elif num_minutes < 180: # blue -
+        r = 0
+        g = 255
+        b = int(float((180 - num_minutes) / 60) * 255)
+    elif num_minutes < 240: # red +
+        b = 0
+        g = 255
+        r = int(float((num_minutes - 180) / 60) * 255)
+    # if num_minutes < 300: # green -
+    #     r = 255
+    #     b = 0
+    #     g = int(float((300 - num_minutes) / 300) * 255)
+    # else:
+    #     r = 255
+    #     b = g = 0
     return "#%02x%02x%02x" % (r, g, b)
 
 
@@ -740,10 +787,21 @@ class App(Tk):
         self.tkfixedfont = tkfixedfont
 
         tktreefont = tkFont.nametofont("TkDefaultFont")
+        treefontfamily = tktreefont['family']
         if 'fontsize_tree' in self.options and self.options['fontsize_tree']:
             tktreefont.configure(size=self.options['fontsize_tree'])
         logger.info("using treefont size: {0}".format(tktreefont.actual()['size']))
         self.tktreefont = tktreefont
+        # self.monthfont = tkFont.nametofont("TkDefaultFont")
+        # monthdetailfont = tkFont.nametofont("TkDefaultFont").copy()
+        self.detail_font = None
+        if 'fontsize_busy' in self.options:
+            if self.options['fontsize_busy'] > 0:
+                self.detail_font = (treefontfamily, self.options['fontsize_busy'])
+            elif self.options['fontsize_busy'] == 0:
+                size = tktreefont['size']
+                self.detail_font = (treefontfamily, size-4)
+            print('detail_font', self.detail_font)
 
         self.popup = ''
         self.value = ''
@@ -876,6 +934,7 @@ class App(Tk):
         self.fltr.pack(side="left", padx=0, expand=1, fill=X)
         self.fltr.bind("<FocusIn>", self.setFilter)
         self.fltr.bind("<Escape>", self.clearFilter)
+        self.fltr.bind('<Tab>', self.leaveFilter)
         self.bind("<Shift-Control-F>", self.clearFilter)
         self.filter_active = False
         self.viewmenu.entryconfig(6, state="normal")
@@ -2409,7 +2468,7 @@ Enter the shortest time period you want displayed in minutes.""")
         logger.debug("x: {0}, y: {1}".format(x_, y_))
 
         # month
-        p = l + (w - 1 - l - r) / 2, 20
+        p = l + int((w - 1 - l - r) / 2), 20
         self.canvas.create_text(p, text="{0}".format(themonth))
         self.busyHsh = {}
 
@@ -2429,6 +2488,11 @@ Enter the shortest time period you want displayed in minutes.""")
                 end_y = start_y + y_
                 xy = start_x, start_y, end_x, end_y
                 p = int(l + x_ / 2 + x_ * i), int(t + y_ * j + y_ / 2)
+                pp = int(l +  x_ + x_ * i), int(t + y_ * j + y_ )
+                b_x = int(l + x_ * i)
+                b_y = int(t + y_ * j + y_ - 3)
+                e_y = int(t + y_ * j + y_ - 3)
+
                 thisdate = weeks[j][i]
                 isokey = thisdate.isocalendar()
                 month = thisdate.month
@@ -2484,6 +2548,12 @@ Enter the shortest time period you want displayed in minutes.""")
                         busy_lst.append(bt)
                         busy_dates.append(thisdate.strftime("%a %d"))
                         if bt:
+                            print('bt', bt)
+                            # each side 240 minutes plus 2 times bar width
+                            # 420 - 660 top: tl+(5,-3) -> tr+(-5,-3)
+                            # 660 - 900 right: tr+(-3,-5) -> br+(-3,+5)
+                            # 900 - 1140 bottom: br+(-5,+3) -> bl+(+5,+3)
+                            # 1140 - 1380 left: bl+(+3,+5) -> tl+(+3, -5)
                             for pts in bt:
                                 busytimes += pts[1] - pts[0]
                                 self.busyHsh.setdefault(id, []).append("* {0}".format(pts[2]))
@@ -2498,10 +2568,26 @@ Enter the shortest time period you want displayed in minutes.""")
                     self.canvas.itemconfig(id, tag='occasion', fill=OCCASIONFILL)
                 elif 'busy' in tags:
                     self.canvas.itemconfig(id, tag='busy', fill="white")
-                if fill:
-                    self.canvas.create_text(p, text="{0}".format(weeks[j][i].day), fill=fill)
-                else:
-                    self.canvas.create_text(p, text="{0}".format(weeks[j][i].day))
+                self.canvas.create_text(p, text="{0}".format(weeks[j][i].day))
+
+
+                if busytimes:
+                    if self.detail_font:
+                        # self.canvas.create_text(pp, text="{0}-{1}".format(len(self.busyHsh[id]), busytimes),
+                        #        font=self.detail_font, anchor="se")
+                        try:
+                            if busytimes >= 480:
+                                e_x = b_x  + x_
+                            else:
+                                e_x = b_x  + int(Decimal(busytimes/480) * x_)
+                            self.canvas.create_line((b_x, b_y, e_x, e_y), fill="PaleGreen3", width=5, tag="busy")
+                            print(b_x, int(Decimal(busytimes/480) * x_), x_)
+                        except:
+                            print(b_x, Decimal(busytimes/480), x_)
+
+                    elif fill:
+                        self.canvas.create_text(p, text="{0}".format(weeks[j][i].day), fill=fill)
+
         busy_ids = list(busy_ids)
         for id in busy_ids:
             self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
@@ -3374,6 +3460,13 @@ Relative dates and fuzzy parsing are supported.""")
             self.tree.selection_set(self.rowSelected)
             self.tree.see(self.rowSelected)
 
+    def leaveFilter(self, e=None):
+        self.tree.focus_set()
+        if self.rowSelected:
+            self.tree.focus(self.rowSelected)
+            self.tree.selection_set(self.rowSelected)
+            self.tree.see(self.rowSelected)
+
     def startIdleTimer(self, e=None):
         if self.actionTimer.timer_status != STOPPED:
             prompt = "The active action timer must be stopped before starting the idle timer."
@@ -3657,7 +3750,10 @@ or 0 to expand all branches completely.""")
                 self.scrollToDate(self.active_date)
             else:
                 if self.view in [AGENDA, DAY, TAG, KEYWORD, NOTE, PATH]:
-                    depth = self.outline_depths[self.view]
+                    if self.filter_active:
+                        depth = 0
+                    else:
+                        depth = self.outline_depths[self.view]
                     if depth == 0:
                         # expand all
                         for k in self.depth2id:

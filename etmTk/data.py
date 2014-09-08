@@ -1386,6 +1386,7 @@ def get_options(d=''):
         'encoding': {'file': dfile_encoding, 'gui': dgui_encoding,
                      'term': dterm_encoding},
         'filechange_alert': '',
+        'fontsize_busy': -1,
         'fontsize_fixed': 0,
         'fontsize_tree': 0,
         'freetimes': default_freetimes,
@@ -1483,7 +1484,7 @@ def get_options(d=''):
     # logger.debug("user_options: {0}".format(user_options))
 
     for key in default_options:
-        if key in ['show_finished', 'fontsize_fixed', 'fontsize_tree', 'outline_depth', 'prefix', 'prefix_uses', 'icssyc_folder', 'ics_subscriptions']:
+        if key in ['show_finished', 'fontsize_busy', 'fontsize_fixed', 'fontsize_tree', 'outline_depth', 'prefix', 'prefix_uses', 'icssyc_folder', 'ics_subscriptions']:
             if key not in user_options:
                 # we want to allow 0 as an entry
                 options[key] = default_options[key]
