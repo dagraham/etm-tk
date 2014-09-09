@@ -2135,7 +2135,7 @@ Enter the shortest time period you want displayed in minutes.""")
         logger.debug("x: {0}, y: {1}".format(x, y))
 
         # week
-        p = l + (w - 1 - l - r) / 2, 20
+        p = int(l + (w - 1 - l - r) / 2), 20
         self.canvas.create_text(p, text=theweek)
         self.busyHsh = {}
 
@@ -2412,7 +2412,7 @@ Enter the shortest time period you want displayed in minutes.""")
                 end_x = start_x + x_
                 start_y = int(t + y_ * j)
                 end_y = start_y + y_
-                xy = start_x, start_y, end_x, end_y
+                xy = int(start_x), int(start_y), int(end_x), int(end_y)
                 p = int(l + x_ / 2 + x_ * i), int(t + y_ * j + y_ / 2)
                 pp = int(l +  x_ + x_ * i), int(t + y_ * j + y_ )
 
