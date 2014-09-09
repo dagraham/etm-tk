@@ -1386,7 +1386,6 @@ def get_options(d=''):
         'encoding': {'file': dfile_encoding, 'gui': dgui_encoding,
                      'term': dterm_encoding},
         'filechange_alert': '',
-        'fontsize_busy': -1,
         'fontsize_fixed': 0,
         'fontsize_tree': 0,
         'freetimes': default_freetimes,

@@ -116,7 +116,9 @@ BUSYOUTLINE = ""
 
 CONFLICTFILL = "#C1C4C9"
 CURRENTFILL = "#FCF2F0"
-CURRENTLINE = "#E0535C"
+# CURRENTLINE = "#D053E0"
+CURRENTLINE = "#3C3FDE"
+OUTSIDELINE = "#E0535C"
 LASTLTR = re.compile(r'([a-z])$')
 LINECOLOR = "gray80"
 
@@ -705,16 +707,6 @@ class App(Tk):
             tktreefont.configure(size=self.options['fontsize_tree'])
         logger.info("using treefont size: {0}".format(tktreefont.actual()['size']))
         self.tktreefont = tktreefont
-        # self.monthfont = tkFont.nametofont("TkDefaultFont")
-        # monthdetailfont = tkFont.nametofont("TkDefaultFont").copy()
-        self.detail_font = None
-        if 'fontsize_busy' in self.options:
-            if self.options['fontsize_busy'] > 0:
-                self.detail_font = (treefontfamily, self.options['fontsize_busy'])
-            elif self.options['fontsize_busy'] == 0:
-                size = tktreefont['size']
-                self.detail_font = (treefontfamily, size-4)
-            print('detail_font', self.detail_font)
 
         self.popup = ''
         self.value = ''
@@ -765,7 +757,6 @@ class App(Tk):
         topbar.pack(side="top", fill="x", expand=0, padx=0, pady=0)
 
         # report
-        # self.reportbar = reportbar = Frame(self, padx=4, bd=2, relief="sunken", highlightbackground=BGCOLOR, background=BGCOLOR)
         self.box_value = StringVar()
         self.custom_box = ttk.Combobox(self, textvariable=self.box_value, font=self.tkfixedfont)
         self.custom_box.bind("<<ComboboxSelected>>", self.newselection)
@@ -779,7 +770,6 @@ class App(Tk):
             self.custom_box.current(0)
             self.saved_specs = deepcopy(self.specs)
         self.custom_box.configure(width=30, background=BGCOLOR, takefocus=False)
-        # self.report_box.pack(side="left", padx=3, bd=2, relief="sunken", fill=X, expand=1)
 
         self.vm_options = [[AGENDA, 'a'],
                            ['-', ''],
@@ -2193,9 +2183,22 @@ Enter the shortest time period you want displayed in minutes.""")
                     busyColor = OTHERFILL
                     ttag = 'other'
                 daytime = day + tup[0] * ONEMINUTE
+
+                if (tup[0] < 420):
+                    # early
+                    xy = int(start_x), int(t - 1), int(end_x), int(t - 1)
+                    self.canvas.create_line(xy, fill=OUTSIDELINE, width=2, tag='default')
+                if (tup[1] > 1380):
+                    # late
+                    xy = int(start_x), int(t + y * 16 + 2), int(end_x), int(t + y * 16 + 2)
+                    self.canvas.create_line(xy, fill=OUTSIDELINE, width=2, tag='default')
+
+                if tup[0] > 1380 or tup[1] < 420:
+                    continue
+
                 t1 = t + (max(7 * 60, tup[0]) - 7 * 60) * y_per_minute
 
-                t2 = t + min(23 * 60, max(7 * 60, tup[1]) - 7 * 60) * y_per_minute
+                t2 = t + min(16 * 60, max(7 * 60, tup[1]) - 7 * 60) * y_per_minute
 
                 xy = int(start_x), int(max(t, t1)), int(end_x), int(min(t2, t + y * 16))
                 conf = self.canvas.find_overlapping(*xy)
@@ -2489,13 +2492,21 @@ Enter the shortest time period you want displayed in minutes.""")
                             # 1140 - 1380 left: bl+(+3,+5) -> tl+(+3, -5)
 
                             for pts in bt:
+                                if (pts[0] < 420 or pts[1] > 1380):
+                                    # busy time outside display interval
+                                    by = tl_y + 3
+                                    ey = tl_y + 8
+                                    bx = tl_x + 3
+                                    ex = tl_x + 8
+                                    self.canvas.create_rectangle((bx, by, ex, ey), fill="red", outline="red", tag="busy")
+
                                 pt1 = max(420, pts[0]) - 420
                                 pt2 = min(pts[1], 1380) - 420
                                 if pt1 >= 960 or pt2 <= 0:
                                     continue
                                 tmp = [[], [], [], []]
 
-                                for ii in range(0, 3):
+                                for ii in range(0, 4):
                                     if pt1 >= intervals[ii]:
                                         continue
                                     tmp[ii].append(pt1)
@@ -2511,6 +2522,7 @@ Enter the shortest time period you want displayed in minutes.""")
                                 for ii in range(4):
                                     if tmp[ii]:
                                         busylines[ii].append(tmp[ii])
+
 
                             if busylines:
                                 for side in range(4):
