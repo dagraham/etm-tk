@@ -45,93 +45,6 @@ from calendar import Calendar
 
 from decimal import Decimal
 
-
-def getDayColor(num_minutes):
-    # red = 10 / 355.0
-    # hue = red
-    # saturation = 1
-    # min_b = .3
-    # max_b = 1  # must be <= 1
-    # max_minutes = 480
-    # lightness = min(
-    #     max_b, min_b + (max_b - min_b) * num_minutes / float(max_minutes))
-    # r, g, b = hsv_to_rgb(
-    #     hue, saturation, lightness)
-    # r = int(r * 255)
-    # g = int(g * 255)
-    # b = int(b * 255)
-    # return "#%02x%02x%02x" % (r, g, b)
-
-    if num_minutes < 60: # blue +
-        r = g = 0
-        b = int(float(num_minutes / 60) * 255)
-    elif num_minutes < 120: # green +
-        r = 0
-        b = 255
-        g = int(float((num_minutes - 60) / 60) * 255)
-    elif num_minutes < 180: # blue -
-        r = 0
-        g = 255
-        b = int(float((180 - num_minutes) / 60) * 255)
-    elif num_minutes < 240: # red +
-        b = 0
-        g = 255
-        r = int(float((num_minutes - 180) / 60) * 255)
-    elif num_minutes < 300: # green -
-        r = 255
-        b = 0
-        g = int(float((300 - num_minutes) / 60) * 255)
-    else:
-        r = 255
-        b = g = 0
-
-    if num_minutes < 60: # blue +
-        r = g = 0
-        b = int(float(num_minutes / 60) * 255)
-    elif num_minutes < 120: # green +
-        r = 0
-        b = 255
-        g = int(float((num_minutes - 60) / 60) * 255)
-    elif num_minutes < 180: # blue -
-        r = 0
-        g = 255
-        b = int(float((180 - num_minutes) / 60) * 255)
-    elif num_minutes < 240: # red +
-        b = 0
-        g = 255
-        r = int(float((num_minutes - 180) / 60) * 255)
-    # if num_minutes < 300: # green -
-    #     r = 255
-    #     b = 0
-    #     g = int(float((300 - num_minutes) / 300) * 255)
-    # else:
-    #     r = 255
-    #     b = g = 0
-    return "#%02x%02x%02x" % (r, g, b)
-
-
-def hsv_to_rgb(h, s, v):
-    if s == 0.0:
-        return v, v, v
-    i = int(h * 6.0)  # XXX assume int() truncates!
-    f = (h * 6.0) - i
-    p = v * (1.0 - s)
-    q = v * (1.0 - s * f)
-    t = v * (1.0 - s * (1.0 - f))
-    i = i % 6
-    if i == 0:
-        return v, t, p
-    if i == 1:
-        return q, v, p
-    if i == 2:
-        return p, v, t
-    if i == 3:
-        return p, q, v
-    if i == 4:
-        return t, p, v
-    if i == 5:
-        return v, p, q
-
 from etmTk.data import (
     init_localization, fmt_weekday, fmt_dt, str2hsh, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical_active, fmt_time, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, FINISH, availableDates, syncTxt, update_subscription)
 
@@ -2479,6 +2392,16 @@ Enter the shortest time period you want displayed in minutes.""")
         self.canvas.bind('<Escape>', self.on_clear_item)
 
         # monthdays
+        intervals = [240, 480, 720, 960]
+        busywidth = 2
+        offset = 6
+        indent = 7
+        # barcolor = "PaleGreen3"
+        # barcolor = "SkyBlue3"
+        # barcolor = "SlateBlue4"
+        # barcolor = "SlateGray3"
+        barcolor = "SteelBlue3"
+
         for j in range(num_weeks):
             for i in range(7):
                 busytimes = 0
@@ -2489,9 +2412,13 @@ Enter the shortest time period you want displayed in minutes.""")
                 xy = start_x, start_y, end_x, end_y
                 p = int(l + x_ / 2 + x_ * i), int(t + y_ * j + y_ / 2)
                 pp = int(l +  x_ + x_ * i), int(t + y_ * j + y_ )
-                b_x = int(l + x_ * i)
-                b_y = int(t + y_ * j + y_ - 3)
-                e_y = int(t + y_ * j + y_ - 3)
+
+                tl_x = bl_x = int(l + x_ * i)
+                tl_y = tr_y = int(t + y_ *j)
+                tr_x = br_x = int(tl_x + x_)
+                bl_y = br_y = int(tl_y + y_)
+                w_ = x_ - 12
+                h_ = y_ - 12
 
                 thisdate = weeks[j][i]
                 isokey = thisdate.isocalendar()
@@ -2499,8 +2426,9 @@ Enter the shortest time period you want displayed in minutes.""")
                 fill = None
                 tags = []
                 if (month != self.year_month[1]):
-                    fill = "gray75"
+                    fill = "gray70"
                 else:
+                    fill = "SteelBlue4"
                     id = self.canvas.create_rectangle(xy, outline="", width=0)
                     busy_ids.add(id)
                     monthid2date[id] = thisdate
@@ -2548,46 +2476,82 @@ Enter the shortest time period you want displayed in minutes.""")
                         busy_lst.append(bt)
                         busy_dates.append(thisdate.strftime("%a %d"))
                         if bt:
-                            print('bt', bt)
+                            for pts in bt:
+                                busytimes += pts[1] - pts[0]
+                                self.busyHsh.setdefault(id, []).append("* {0}".format(pts[2]))
+                            tags.append('busy')
+
+                            busylines = [[], [], [], []]
                             # each side 240 minutes plus 2 times bar width
                             # 420 - 660 top: tl+(5,-3) -> tr+(-5,-3)
                             # 660 - 900 right: tr+(-3,-5) -> br+(-3,+5)
                             # 900 - 1140 bottom: br+(-5,+3) -> bl+(+5,+3)
                             # 1140 - 1380 left: bl+(+3,+5) -> tl+(+3, -5)
+
                             for pts in bt:
-                                busytimes += pts[1] - pts[0]
-                                self.busyHsh.setdefault(id, []).append("* {0}".format(pts[2]))
-                            tags.append('busy')
+                                pt1 = max(420, pts[0]) - 420
+                                pt2 = min(pts[1], 1380) - 420
+                                if pt1 >= 960 or pt2 <= 0:
+                                    continue
+                                tmp = [[], [], [], []]
+
+                                for ii in range(0, 3):
+                                    if pt1 >= intervals[ii]:
+                                        continue
+                                    tmp[ii].append(pt1)
+                                    for jj in range(ii, 4):
+                                        if jj > ii:
+                                            tmp[jj].append(intervals[jj-1])
+                                        if pt2 <= intervals[jj]:
+                                            tmp[jj].append(pt2)
+                                            break
+                                        else:
+                                            tmp[jj].append(intervals[jj])
+                                    break
+                                for ii in range(4):
+                                    if tmp[ii]:
+                                        busylines[ii].append(tmp[ii])
+
+                            if busylines:
+                                for side in range(4):
+                                    lines = busylines[side]
+                                    if lines:
+                                        if side == 0: # top
+                                            for line in lines:
+                                                by = ey = tl_y + offset
+                                                bx = tl_x + indent + int(Decimal(line[0]/240) * w_)
+                                                ex = tl_x + indent + int(Decimal(line[1]/240) * w_)
+                                                self.canvas.create_line((bx, by, ex, ey), fill=barcolor, width=busywidth, tag="busy")
+                                        elif side == 1: # right
+                                            for line in lines:
+                                                bx = ex = tr_x - offset
+                                                by = tr_y + indent + int(Decimal((line[0]-240)/240) * h_)
+                                                ey = tr_y + indent + int(Decimal((line[1]-240)/240) * h_)
+                                                self.canvas.create_line((bx, by, ex, ey), fill=barcolor, width=busywidth, tag="busy")
+                                        elif side == 2: # bottom
+                                            for line in lines:
+                                                by = ey = br_y - offset
+                                                bx = br_x - indent - int(Decimal((line[0]-480)/240) * w_)
+                                                ex = br_x - indent - int(Decimal((line[1]-480)/240) * w_)
+                                                self.canvas.create_line((bx, by, ex, ey), fill=barcolor, width=busywidth, tag="busy")
+                                        elif side == 3: # left
+                                            for line in lines:
+                                                bx = ex = bl_x + offset
+                                                by = bl_y - indent - int(Decimal((line[0]-720)/240) * h_)
+                                                ey = bl_y - indent - int(Decimal((line[1]-720)/240) * h_)
+                                                self.canvas.create_line((bx, by, ex, ey), fill=barcolor, width=busywidth, tag="busy")
                     else:
                         busy_lst.append([])
                         busy_dates.append(thisdate.strftime("%a %d"))
-                    fill = getDayColor(busytimes)
                 if 'current_day' in tags:
                     self.canvas.itemconfig(id, tag='current_day', fill=CURRENTFILL)
                 elif 'occasion' in tags:
                     self.canvas.itemconfig(id, tag='occasion', fill=OCCASIONFILL)
                 elif 'busy' in tags:
                     self.canvas.itemconfig(id, tag='busy', fill="white")
-                self.canvas.create_text(p, text="{0}".format(weeks[j][i].day))
 
-
-                if busytimes:
-                    if self.detail_font:
-                        # self.canvas.create_text(pp, text="{0}-{1}".format(len(self.busyHsh[id]), busytimes),
-                        #        font=self.detail_font, anchor="se")
-                        try:
-                            if busytimes >= 480:
-                                e_x = b_x  + x_
-                            else:
-                                e_x = b_x  + int(Decimal(busytimes/480) * x_)
-                            self.canvas.create_line((b_x, b_y, e_x, e_y), fill="PaleGreen3", width=5, tag="busy")
-                            print(b_x, int(Decimal(busytimes/480) * x_), x_)
-                        except:
-                            print(b_x, Decimal(busytimes/480), x_)
-
-                    elif fill:
-                        self.canvas.create_text(p, text="{0}".format(weeks[j][i].day), fill=fill)
-
+                if fill:
+                    self.canvas.create_text(p, text="{0}".format(weeks[j][i].day), fill=fill)
         busy_ids = list(busy_ids)
         for id in busy_ids:
             self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
@@ -3308,7 +3272,7 @@ A sound alert failed. The setting for 'alert_soundcmd' is missing from  your etm
                                 self.options['alert_displaycmd']):
                             dcmd = s2or3(expand_template(
                                 self.options['alert_displaycmd'], hsh))
-                            subprocess.call(dcmd, shell=True)
+                            subprocess.call(dcmd.encode(loop.options['encoding']['gui']), shell=True)
                         else:
                             self.textWindow(parent=self, title="etm", prompt=_("""\
 A display alert failed. The setting for 'alert_displaycmd' is missing \
