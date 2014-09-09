@@ -508,7 +508,10 @@ class SimpleEditor(Toplevel):
             showing_all, reps = get_reps(self.loop.options['bef'], hsh)
             if reps:
                 if showreps:
-                    repsfmt = [x.strftime(rrulefmt) for x in reps]
+                    try:
+                        repsfmt = [unicode(x.strftime(rrulefmt)) for x in reps]
+                    except:
+                        repsfmt = [unicode(x.strftime("%X %x")) for x in reps]
                     logger.debug("{0}: {1}".format(showing_all, repsfmt))
                     if showing_all:
                         reps = ALLREPS

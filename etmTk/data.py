@@ -1933,10 +1933,18 @@ def fmt_shortdatetime(dt, options=None):
     if dt.date() == tdy.date():
         dt_fmt = "%s %s" % (fmt_time(dt, options=options), _('today'))
     elif dt.year == tdy.year:
-        dt_fmt = "%s %s" % (fmt_time(dt, options=options), dt.strftime(shortyearlessfmt))
+        try:
+            x1 = unicode(fmt_time(dt, options=options))
+            x2 = unicode(dt.strftime(shortyearlessfmt))
+            dt_fmt = "%s %s" % (x1, x2)
+        except:
+            dt_fmt = dt.strftime("%X %x")
     else:
-        dt_fmt = dt.strftime(shortdatefmt)
-    dt_fmt = leadingzero.sub('', dt_fmt)
+        try:
+            dt_fmt = dt.strftime(shortdatefmt)
+            dt_fmt = leadingzero.sub('', dt_fmt)
+        except:
+            dt_fmt = dt.strftime("%X %x")
     return s2or3(dt_fmt)
 
 
