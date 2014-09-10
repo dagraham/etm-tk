@@ -3329,13 +3329,6 @@ from your etmtk.cfg: %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
                                     smtp_server=self.options['smtp_server'],
                                     smtp_id=self.options['smtp_id'],
                                     smtp_pw=self.options['smtp_pw'])
-                    if 'm' in actions:
-                        MessageWindow(
-                            self,
-                            title=expand_template('!summary!', hsh),
-                            prompt=expand_template(
-                                self.options['alert_template'], hsh))
-
                     if 't' in actions:
                         missing = []
                         for field in ['sms_from', 'sms_message', 'sms_phone', 'sms_pw', 'sms_server', 'sms_subject']:
@@ -3369,6 +3362,13 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
                         proc = str(arguments[0][0]).strip()
                         cmd = s2or3(expand_template(proc, hsh))
                         subprocess.call(cmd, shell=True)
+                    if 'm' in actions:
+                        # put this last since the internal message window is modal and thus blocking
+                        MessageWindow(
+                            self,
+                            title=expand_template('!summary!', hsh),
+                            prompt=expand_template(
+                                self.options['alert_template'], hsh))
 
                     if not alerts:
                         break
@@ -3647,7 +3647,16 @@ Relative dates and fuzzy parsing are supported.""")
             self.textWindow(self, title='etm', prompt=res, opts=self.options)
             return 0
 
+    def getDepths(self, e=None):
+        for k in self.depth2id:
+            print(k)
+            for item in self.depth2id[k]:
+                print(item, self.tree.item(item))
+
+
     def expand2Depth(self, e=None):
+        self.getDepths()
+
         if e and e.char != "o":
             return
         prompt = _("""\
