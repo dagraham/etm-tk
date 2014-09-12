@@ -16,6 +16,7 @@ if platform.python_version() >= '3':
     from tkinter import ttk
     # from ttk import Button, Style
     from tkinter import font as tkFont
+    unicode = str
 else:
     import Tkinter as tkinter
     from Tkinter import Entry, INSERT, END, Toplevel, Frame, LEFT, RIGHT, Text, StringVar, X, BOTH, Button, FLAT, Listbox

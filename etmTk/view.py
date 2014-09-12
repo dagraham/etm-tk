@@ -25,6 +25,7 @@ if platform.python_version() >= '3':
     from tkinter import ttk
     from tkinter import font as tkFont
     utf8 = lambda x: x
+    unicode = str
 
 else:
     import Tkinter as tkinter

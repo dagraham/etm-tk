@@ -87,7 +87,6 @@ if platform.python_version() >= '3':
     python_version2 = False
     from io import StringIO
     from gettext import gettext as _
-
     unicode = str
     u = lambda x: x
     raw_input = input
