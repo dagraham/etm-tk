@@ -5990,6 +5990,7 @@ def import_ical(ics="", txt="", vcal=""):
         clst = [t, summary]
         if start:
             if 'TZID' in start.params:
+                logger.debug("TZID: {0}".format(start.params['TZID']))
                 clst.append('@z %s' % start.params['TZID'])
 
         if s:
@@ -6001,6 +6002,11 @@ def import_ical(ics="", txt="", vcal=""):
         tzid = comp.get('tzid')
         if tzid:
             clst.append("@z %s" % tzid.to_ical().decode())
+            logger.debug("Using tzid: {0}".format(tzid.to_ical().decode()))
+        else:
+            logger.debug("Using tzid: UTC")
+            clst.append("@z UTC")
+
         tmp = comp.get('description')
         if tmp:
             clst.append("@d %s" % tmp.to_ical().decode())
