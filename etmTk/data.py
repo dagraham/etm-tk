@@ -3385,8 +3385,10 @@ def get_rrule(hsh):
     rulestr = "\n".join(rlst)
     try:
         rule = dtR.rrulestr(rulestr)
-    except:
-        raise ValueError("could not create rule from", rulestr)
+    except ValueError as e:
+        rule = None
+        warn.append("{0}".format(e))
+        # raise ValueError("could not create rule from", rulestr)
     return rulestr, rule, warn
 
 # checks
