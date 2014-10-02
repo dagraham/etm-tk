@@ -3,6 +3,6 @@ Type=Application
 Name=Event and task manager
 Comment=Manage events and tasks using simple text files
 Exec=etm
-Icon=etmtk
+Icon=etm
 Categories=Office;Calendar;Clock;
 Keywords=Calendar;Task;Event;Alarm;Reminder;Todo;Time;Note;
