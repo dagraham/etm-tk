@@ -5932,7 +5932,7 @@ def update_subscription(url, txt):
     u = request.urlopen(url)
     vcal = u.read()
     if vcal:
-        res = import_ical(vcal=vcal, txt=txt)
+        res = import_ical(vcal=vcal.decode('utf-8'), txt=txt.decode('utf-8'))
     return res
 
 
@@ -6011,7 +6011,7 @@ def import_ical(ics="", txt="", vcal=""):
 
         tmp = comp.get('description')
         if tmp:
-            clst.append("@d %s" % tmp.to_ical().decode())
+            clst.append("@d %s" % tmp.to_ical().decode('utf-8'))
         rule = comp.get('rrule')
         if rule:
             rlst = []
