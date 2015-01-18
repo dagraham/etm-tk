@@ -6512,8 +6512,6 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
                         if d < dtn:
                             tmp_rev.append(d)
                     hsh_rev['-'] = tmp_rev
-                hsh_rev['s'] = dtn
-                # rev_str = hsh2str(hsh_rev, self.options)
                 self.replace_item(hsh_rev)
 
             elif choice == 4:
