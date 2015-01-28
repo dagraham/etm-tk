@@ -3979,7 +3979,7 @@ or 0 to expand all branches completely.""")
             self.loop.options,
             export=True)
         prefix, tuples = getFileTuples(loop.options['etmdir'], include=r'*.csv', all=True)
-        filename = FileChoice(self, "cvs file", prefix=prefix, list=tuples, ext="csv", new=False).returnValue()
+        filename = FileChoice(self, "csv file", prefix=prefix, list=tuples, ext="csv", new=False).returnValue()
         if not filename:
             return
         import csv as CSV
