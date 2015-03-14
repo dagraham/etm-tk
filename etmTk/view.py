@@ -3960,7 +3960,7 @@ or 0 to expand all branches completely.""")
             export=False)
         text = "\n".join([x for x in tree2Text(tree)[0]])
         prefix, tuples = getFileTuples(loop.options['etmdir'], include=r'*.text', all=True)
-        filename = FileChoice(self, "cvs file", prefix=prefix, list=tuples, ext="text", new=False).returnValue()
+        filename = FileChoice(self, "text file", prefix=prefix, list=tuples, ext="text", new=False).returnValue()
         if not filename:
             return False
         fo = codecs.open(filename, 'w', self.options['encoding']['file'])
@@ -3979,11 +3979,11 @@ or 0 to expand all branches completely.""")
             self.loop.options,
             export=True)
         prefix, tuples = getFileTuples(loop.options['etmdir'], include=r'*.csv', all=True)
-        filename = FileChoice(self, "cvs file", prefix=prefix, list=tuples, ext="csv", new=False).returnValue()
+        filename = FileChoice(self, "csv file", prefix=prefix, list=tuples, ext="csv", new=False).returnValue()
         if not filename:
             return
         import csv as CSV
-        c = CSV.writer(open(filename, "w"), delimiter=",")
+        c = CSV.writer(open(filename, "w"), delimiter=",", lineterminator="\n")
         for line in data:
             c.writerow(line)
         MessageWindow(self, "etm", "Exported CSV to {0}".format(filename))
