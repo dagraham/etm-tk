@@ -1382,6 +1382,7 @@ def get_options(d=''):
         'edit_cmd': '',
         'email_template': "!time_span!\n!l!\n\n!d!",
         'etmdir': etmdir,
+        'exportdir': etmdir,
         'encoding': {'file': dfile_encoding, 'gui': dgui_encoding,
                      'term': dterm_encoding},
         'filechange_alert': '',
@@ -5937,6 +5938,9 @@ def update_subscription(url, txt):
 
 
 def import_ical(ics="", txt="", vcal=""):
+    if not has_icalendar:
+        logger.error("Could not import icalendar")
+        return False
     logger.debug("ics: {0}, txt: {1}, vcal:{2}".format(ics, txt, vcal))
     if vcal:
         cal = Calendar.from_ical(vcal)

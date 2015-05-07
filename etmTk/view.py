@@ -1187,7 +1187,9 @@ returns:
                     text = " @s {0}".format(self.active_date)
                 elif 'c' in self.itemSelected:
                     text = " @c {0}".format(self.itemSelected['c'])
-            else:
+                else:
+                    text = " "
+            elif self.active_date:
                 text = " @s {0}".format(self.active_date)
             changed = SimpleEditor(parent=self, master=master, start=text, options=loop.options).changed
         elif self.view in [DAY, WEEK, MONTH] and self.active_date:
@@ -3979,7 +3981,7 @@ or 0 to expand all branches completely.""")
             self.loop.options,
             export=True)
         prefix, tuples = getFileTuples(loop.options['etmdir'], include=r'*.csv', all=True)
-        filename = FileChoice(self, "csv file", prefix=prefix, list=tuples, ext="csv", new=False).returnValue()
+        filename = FileChoice(self, "csv file", prefix=prefix, list=tuples, ext="csv", new=True).returnValue()
         if not filename:
             return
         import csv as CSV
