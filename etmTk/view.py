@@ -3980,7 +3980,7 @@ or 0 to expand all branches completely.""")
             self.loop.uuid2hash,
             self.loop.options,
             export=True)
-        prefix, tuples = getFileTuples(loop.options['etmdir'], include=r'*.csv', all=True)
+        prefix, tuples = getFileTuples(loop.options['exportdir'], include=r'*.csv', all=True)
         filename = FileChoice(self, "csv file", prefix=prefix, list=tuples, ext="csv", new=True).returnValue()
         if not filename:
             return
