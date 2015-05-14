@@ -2275,6 +2275,7 @@ def tree2Rst(tree, indent=2, width1=54, width2=14, colors=0,
 def tree2Text(tree, indent=4, width1=43, width2=20, colors=0,
               number=False, count=0, count2id=None, depth=0):
     global text_lst
+    logger.debug("data.tree2Text: width1={0}, width2={1}, colors={2}".format(width1, width2, colors))
     args = [count, count2id]
     text_lst = []
     if colors:
@@ -6989,26 +6990,34 @@ def main(etmdir='', argv=[]):
             tt = TimeIt(loglevel=2, label="cmd '{0}'".format(argstr))
             c.loadData()
             res = c.do_command(argstr)
-            if opts and 'width1' in opts:
-                width1 = opts['width1']
-            elif options and 'report_width1' in options:
-                width1 = options['report_width1']
-            else:
-                width1 = 43
-            if opts and 'width2' in opts:
-                width2 = opts['width2']
-            elif options and 'report_width2' in options:
-                width2 = options['report_width2']
-            else:
-                width2 = 20
+            width1 = 43
+            width2 = 20
+            indent = 4
+            colors = 0
+            if options:
+                if 'agenda_width1' in options:
+                    width1 = options['agenda_width1']
+                elif 'report_width1' in options:
+                    width1 = options['report_width1']
 
-            if options and 'report_indent' in options:
+                if 'agenda_width2' in options:
+                    width2 = options['agenda_width2']
+                elif 'report_width2' in options:
+                    width2 = options['report_width2']
+
+                if 'agenda_indent' in options:
+                    indent = options['agenda_indent']
+                elif 'report_indent' in options:
                     indent = options['report_indent']
-            else:
-                indent = 4
+
+                if 'agenda_colors' in options:
+                    colors = options['agenda_colors']
+                elif 'report_colors' in options:
+                    colors = options['report_colors']
 
             if type(res) is dict:
-                lines = tree2Text(res, indent=indent, width1=width1, width2=width2)[0]
+                logger.debug("data.main res is dict; calling tree2Text width1={0}, width2={1}".format(width1, width2))
+                lines = tree2Text(res, indent=indent, width1=width1, width2=width2, colors=colors)[0]
                 if lines and not lines[0]:
                     lines.pop(0)
                 res = "\n".join(lines)
