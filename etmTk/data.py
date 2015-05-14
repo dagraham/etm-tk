@@ -136,7 +136,7 @@ class End(object):
 NIL = Node(End(), [], [])
 
 # default for items without a tag or keyword entry
-NONE = '~~~'
+NONE = ''
 
 
 class IndexableSkiplist:
@@ -3001,8 +3001,8 @@ def lines2Items(lines):
         linenum += 1
         # preserve new lines and leading whitespace within logical lines
         stripped = line.rstrip()
-        m = item_regex.match(stripped)
-        if m:
+        m = item_regex.match(stripped) # this requires item char to be followed by a whitespace char
+        if m or stripped=='=':
             if logical_line:
                 yield (''.join(logical_line))
             logical_line = []
@@ -3041,7 +3041,7 @@ def getFileItems(full_name, rel_name, append_newline=True):
         # preserve new lines and leading whitespace within logical lines
         stripped = line.rstrip()
         m = item_regex.match(stripped)
-        if m:
+        if m is not None or stripped == '=':
             if logical_line:
                 yield (''.join(logical_line), rel_name, linenums)
             logical_line = []
@@ -3072,6 +3072,12 @@ def items2Hashes(list_of_items, options=None):
     # in_task_group = False
     for item, rel_name, linenums in list_of_items:
         hsh, msg = str2hsh(item, options=options)
+        logger.debug("items2Hashes:\n  item='{0}'  hsh={1}\n  msg={2}".format(item, hsh, msg))
+
+        if item.strip() == "=":
+            # reset defaults
+            defaults = {}
+
         tmp_hsh = {}
         tmp_hsh.update(defaults)
         tmp_hsh.update(hsh)
@@ -3115,6 +3121,7 @@ def items2Hashes(list_of_items, options=None):
         elif itemtype == '=':
             # set group defaults
             # hashes.append(this so that default entries are in file2uuids
+            logger.debug("items2Hashes defaults: {0}".format(hsh))
             defaults = hsh
             hashes.append(hsh)
         elif itemtype == '+':
