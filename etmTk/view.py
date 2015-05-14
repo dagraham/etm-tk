@@ -133,7 +133,7 @@ class App(Tk):
     def __init__(self, path=None):
         Tk.__init__(self)
 
-        self.minsize(460, 460)
+        self.minsize(380, 460)
         self.uuidSelected = None
         self.timerItem = None
         self.loop = loop
