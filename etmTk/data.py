@@ -5331,7 +5331,10 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     continue
                     # other dated items
             if hsh['itemtype'] in ['+', '-', '%']:
-                if 'e' in hsh:
+                if 's' in hsh and hsh['s'].strftime("%H:%M") != "00:00":
+                    # show due time in column 2
+                    extstr = fmt_time(hsh['s'], options=options) # hsh['s'].strftime("H:M")
+                elif 'e' in hsh:
                     extstr = fmt_period(hsh['e'])
                 else:
                     extstr = ''
