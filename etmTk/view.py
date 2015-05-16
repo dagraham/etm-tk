@@ -2356,8 +2356,7 @@ Enter the shortest time period you want displayed in minutes.""")
         logger.debug('month active_date: {0}'.format(self.active_date))
         weeks = self.monthly_calendar.monthdatescalendar(*self.year_month)
         num_weeks = len(weeks)
-        weekdays = [x.strftime("%a") for x in weeks[0]]
-        # weeknumbers = [x[0].strftime("%W") for x in weeks]
+        weekdays = [s2or3(x.strftime("%a")) for x in weeks[0]]
         weeknumbers = [x[0].isocalendar()[1] for x in weeks]
         themonth = weeks[1][0].strftime("%B %Y")
         self.canvas.delete("all")
