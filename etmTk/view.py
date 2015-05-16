@@ -860,7 +860,9 @@ class App(Tk):
         self.tree.bind('<Return>', self.OnActivate)
         self.tree.bind('<Control-Down>', self.nextItem)
         self.tree.bind('<Control-Up>', self.prevItem)
+
         # self.tree.bind('<space>', self.goHome)
+        self.tree.bind('<Home>', self.goHome)
 
         for t in tstr2SCI:
             self.tree.tag_configure(t, foreground=tstr2SCI[t][1])
@@ -888,15 +890,16 @@ class App(Tk):
 
         self.pendingAlerts = IntVar(self)
         self.pendingAlerts.set(0)
-        self.pending = Button(self.statusbar, padx=8, pady=2,
+        self.pending = Button(self.statusbar,
+                              textvariable=self.pendingAlerts,
+                              command=self.showAlerts,
+                              highlightbackground=BGCOLOR,
+                              bg=BGCOLOR,
+                              highlightthickness=0,
+                              width=3,
+                            )
 
-                              takefocus=False, textvariable=self.pendingAlerts, command=self.showAlerts, anchor="center")
         self.pending.pack(side="right", padx=0, pady=0)
-        self.pending.configure(highlightbackground=BGCOLOR,
-                               background=BGCOLOR,
-                               highlightthickness=0,
-                               state="disabled")
-        self.showPending = True
 
         self.currentTime = StringVar(self)
         currenttime = Label(self.statusbar, textvariable=self.currentTime, bd=1, relief="flat", anchor="e", padx=4, pady=0)
@@ -2893,7 +2896,7 @@ Enter the shortest time period you want displayed in minutes.""")
                          takefocus=False)
         win.bind('<Left>', (lambda e: showYear(-1)))
         win.bind('<Right>', (lambda e: showYear(1)))
-        win.bind('<space>', (lambda e: showYear()))
+        win.bind('<Home>', (lambda e: showYear()))
         showYear()
         t.pack(side='left', fill=tkinter.BOTH, expand=1, padx=0, pady=0)
         ysb = Scrollbar(f, orient='vertical', command=t.yview, width=8)
@@ -2990,18 +2993,22 @@ or 0 to display all changes.""").format(title)
         return "break"
 
     def goHome(self, event=None):
+        print('goHome1')
         if self.weekly:
             self.showWeek(week=0)
         elif self.monthly:
             self.showMonth(month=0)
         elif self.view == DAY:
+            print('goHome day')
             today = get_current_time().date()
             self.scrollToDate(today)
         else:
+            print('goHome tree')
             self.tree.focus_set()
             self.tree.focus(1)
             self.tree.selection_set(1)
             self.tree.yview(0)
+        return
 
     def nextItem(self, e=None):
         item = self.tree.selection()[0]
@@ -3377,21 +3384,17 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
                     td = alerts[0][0] - curr_minutes
         if alerts and len(alerts) > 0:
             self.pendingAlerts.set(len(alerts))
-            self.pending.configure(state="normal")
+            # self.pending.configure(state="normal")
             self.activeAlerts = alerts
         else:
             self.pendingAlerts.set(0)
             self.activeAlerts = []
-            self.pending.configure(state="disabled")
+            # self.pending.configure(state="disabled")
 
     def textWindow(self, parent, title=None, prompt=None, opts=None, modal=True):
         TextDialog(parent, title=title, prompt=prompt, opts=opts, modal=modal)
 
     def goToDate(self, e=None):
-        """
-        :param e:
-        :return:
-        """
         if e and e.char != "j":
             return
         prompt = _("""\
