@@ -136,7 +136,8 @@ class End(object):
 NIL = Node(End(), [], [])
 
 # default for items without a tag or keyword entry
-NONE = ''
+# the leading ~ makes them sort last
+NONE = '~ {0} ~'.format(_("None"))
 
 
 class IndexableSkiplist:
@@ -3986,11 +3987,11 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
     try:
         grpby, dated, filters = str2opts(s, options, cli)
     except:
-        e = _("Could not process: {0}").format(s)
+        e = "{0}: {1}".format(_("Could not process"), s)
         logger.exception(e)
         return e
     if not grpby:
-        return [str(_('invalid grpby setting'))]
+        return ["{0}: grpby".format(_('invalid setting'))]
     uuids = applyFilters(file2uuids, uuid2hash, filters)
     tups = makeReportTuples(uuids, uuid2hash, grpby, dated, options)
     items = []
