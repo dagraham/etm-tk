@@ -133,7 +133,7 @@ class App(Tk):
     def __init__(self, path=None):
         Tk.__init__(self)
 
-        self.minsize(380, 460)
+        self.minsize(400, 460)
         self.uuidSelected = None
         self.timerItem = None
         self.loop = loop
@@ -3001,7 +3001,6 @@ or 0 to display all changes.""").format(title)
             today = get_current_time().date()
             self.scrollToDate(today)
         else:
-            print('goHome tree')
             self.tree.focus_set()
             self.tree.focus(1)
             self.tree.selection_set(1)
