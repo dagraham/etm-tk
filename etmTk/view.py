@@ -2993,13 +2993,11 @@ or 0 to display all changes.""").format(title)
         return "break"
 
     def goHome(self, event=None):
-        print('goHome1')
         if self.weekly:
             self.showWeek(week=0)
         elif self.monthly:
             self.showMonth(month=0)
         elif self.view == DAY:
-            print('goHome day')
             today = get_current_time().date()
             self.scrollToDate(today)
         else:
