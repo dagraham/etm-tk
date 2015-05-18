@@ -3455,7 +3455,7 @@ def str2opts(s, options=None, cli=True):
         if groupdate_regex.search(part):
             dated['grpby'] = True
             filters['dates'] = True
-        elif part not in ['c', 'u'] and part[0] not in ['k', 'f', 't']:
+        elif part not in ['c', 'u', 'l'] and part[0] not in ['k', 'f', 't']:
             term_print(
                 str(_('Ignoring invalid grpby part: "{0}"'.format(part))))
             groupbylst.remove(part)
@@ -3466,6 +3466,7 @@ def str2opts(s, options=None, cli=True):
     grpby['fmts'] = []
     grpby['tuples'] = []
     filters['grpby'] = ['_summary']
+    filters['missing'] = False
     # include = {'y', 'm', 'w', 'd'}
     include = {'y', 'm', 'd'}
     for group in groupbylst:
@@ -3556,6 +3557,11 @@ def str2opts(s, options=None, cli=True):
         if key in ['b', 'e']:
             dt = parse_date_period(part[1:])
             dated[key] = dt.replace(tzinfo=None)
+
+        elif key == 'm':
+            value = unicode(part[1:].strip())
+            if value == '1':
+                filters['missing'] = True
 
         elif key == 'f':
             value = unicode(part[1:].strip())
@@ -3722,11 +3728,14 @@ def applyFilters(file2uuids, uuid2hash, filters):
                     skip = True
                 if not tf and res:
                     skip = True
-            for t in ['c', 'k', 'u']:
+            for t in ['c', 'k', 'u', 'l']:
                 if t in filters['grpby'] and t not in hsh:
-                    # t is missing from hsh
-                    skip = True
-                    break
+                    if filters['missing']:
+                        hsh[t] = NONE
+                    else:
+                        # t is missing from hsh
+                        skip = True
+                        break
             if skip:
                 # try the next uid
                 continue

@@ -325,7 +325,7 @@ class App(Tk):
         self.add2menu(menu, (path, ))
 
         # go home
-        l = "Space"
+        l = "Home"
         label = _("Home")
         viewmenu.add_command(label=label, command=self.goHome)
 
