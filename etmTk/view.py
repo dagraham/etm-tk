@@ -331,7 +331,7 @@ class App(Tk):
 
         viewmenu.entryconfig(0, accelerator=l)
         self.add2menu(path, (label, l))
-        self.bindTop('<space>', self.goHome)
+        self.bindTop('<Home>', self.goHome)
 
         # show alerts
         l = "A"
@@ -861,8 +861,7 @@ class App(Tk):
         self.tree.bind('<Control-Down>', self.nextItem)
         self.tree.bind('<Control-Up>', self.prevItem)
 
-        # self.tree.bind('<space>', self.goHome)
-        self.tree.bind('<Home>', self.goHome)
+        # self.tree.bind('<Home>', self.goHome)
 
         for t in tstr2SCI:
             self.tree.tag_configure(t, foreground=tstr2SCI[t][1])

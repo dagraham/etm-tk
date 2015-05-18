@@ -3652,7 +3652,8 @@ def applyFilters(file2uuids, uuid2hash, filters):
         'g': '+',
         'o': '^',
         'n': '!',
-        't': '-'
+        't': '-',
+        's': '?',
     }
     uuids = []
 
@@ -3674,7 +3675,7 @@ def applyFilters(file2uuids, uuid2hash, filters):
             hsh = uuid2hash[uid]
             skip = False
             type_char = hsh['itemtype']
-            if type_char in ['=', '#', '$', '?']:
+            if type_char in ['=', '#', '$']:
                 # omit defaults, hidden, inbox and someday
                 continue
             if filters['dates'] and 's' not in hsh:
