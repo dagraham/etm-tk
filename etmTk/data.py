@@ -3729,13 +3729,17 @@ def applyFilters(file2uuids, uuid2hash, filters):
                 if not tf and res:
                     skip = True
             for t in ['c', 'k', 'u', 'l']:
-                if t in filters['grpby'] and t not in hsh:
+                if t in filters['grpby']:
                     if filters['missing']:
-                        hsh[t] = NONE
+                        if t not in hsh:
+                            hsh[t] = NONE
                     else:
-                        # t is missing from hsh
-                        skip = True
-                        break
+                        if t in hsh and hsh[t] == NONE:
+                            # we added this on an earlier report
+                            del hsh[t]
+                        if t not in hsh:
+                            skip = True
+                            break
             if skip:
                 # try the next uid
                 continue
