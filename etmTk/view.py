@@ -1735,7 +1735,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
                         ", ".join(x[2]['_alert_action']),
                         utf8(x[2]['summary'][:26])) for x in self.activeAlerts]))
         else:
-            s = _("none")
+            s = _("None                                 ")
         self.textWindow(self, t, s, opts=self.options)
 
     def agendaView(self, e=None):
