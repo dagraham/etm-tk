@@ -1077,11 +1077,13 @@ class App(Tk):
     def openWithDefault(self, e=None):
         if not self.itemSelected or 'g' not in self.itemSelected:
             return(False)
-        path = self.itemSelected['g']
+        # path = self.itemSelected['g']
+        path = expand_template(self.itemSelected['g'], self.itemSelected)
 
         if windoz:
             os.startfile(path)
             return()
+
         if mac:
             cmd = 'open' + " {0}".format(path)
         else:

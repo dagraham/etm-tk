@@ -90,12 +90,13 @@ if platform.python_version() >= '3':
     unicode = str
     u = lambda x: x
     raw_input = input
+    from urllib.parse import quote
 else:
     python_version = 2
     python_version2 = True
     from cStringIO import StringIO
     _ = gettext.lgettext
-
+    from urllib2 import quote
 
 from random import random
 from math import log
@@ -4400,6 +4401,8 @@ def expand_template(template, hsh, lbls=None, complain=False):
     if not lbls:
         lbls = {}
     marker = '!'
+    if hsh and "_summary" in hsh and "summary" not in hsh:
+        hsh["summary"] = hsh["_summary"]
 
     def lookup(w):
         if w == '':
@@ -4412,7 +4415,7 @@ def expand_template(template, hsh, lbls=None, complain=False):
             else:
                 return ''
         if type(v) in [str, unicode]:
-            return "%s%s%s" % (l1, v, l2)
+            return "%s%s%s" % (l1, quote(v), l2)
         if type(v) == datetime:
             return "%s%s%s" % (l1, v.strftime("%a %b %d, %Y %H:%M"), l2)
         return "%s%s%s" % (l1, repr(v), l2)
