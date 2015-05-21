@@ -1915,9 +1915,15 @@ def fmt_date(dt, short=False):
         return unicode(dt)
     if short:
         tdy = datetime.today()
-        if dt.date() == tdy.date():
-            dt_fmt = "%s" % _('today')
-        elif dt.year == tdy.year:
+        if type(dt) == datetime:
+            dt = dt.date()
+        if dt == tdy.date():
+            dt_fmt = "%s" % _('Today')
+        elif dt == tdy.date() - oneday:
+            dt_fmt = "%s" % _('Yesterday')
+        elif dt == tdy.date() + oneday:
+            dt_fmt = "%s" % _('Tomorrow')
+        elif dt == tdy.year:
             dt_fmt = dt.strftime(shortyearlessfmt)
         else:
             dt_fmt = dt.strftime(shortdatefmt)
@@ -1933,7 +1939,11 @@ def fmt_shortdatetime(dt, options=None):
         return unicode(dt)
     tdy = datetime.today()
     if dt.date() == tdy.date():
-        dt_fmt = "%s %s" % (fmt_time(dt, options=options), _('today'))
+        dt_fmt = "%s %s" % (fmt_time(dt, options=options), _('Today'))
+    elif dt.date() == tdy.date() - oneday:
+        dt_fmt = "%s %s" % (fmt_time(dt, options=options), _('Yesterday'))
+    elif dt.date() == tdy.date() + oneday:
+        dt_fmt = "%s %s" % (fmt_time(dt, options=options), _('Tomorrow'))
     elif dt.year == tdy.year:
         try:
             x1 = unicode(fmt_time(dt, options=options))
@@ -5237,7 +5247,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                              time_diff,
                              hsh['_p'],
                              f),
-                            (fmt_date(today_datetime),),
+                            (fmt_date(today_datetime, short=True),),
                             (uid, 'by', summary, extstr, dtl)]
                     items.append(item)
 
@@ -5255,7 +5265,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 item = [
                     ('day', sd.strftime(sortdatefmt),
                      tstr2SCI[typ][0], hsh['_p'], '', f),
-                    (fmt_date(dt),),
+                    (fmt_date(dt, short=True),),
                     (uid, typ, summary, '', dtl)]
                 items.append(item)
                 occasions.append([sd, summary, uid, f])
@@ -5269,7 +5279,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 item = [
                     ('day', sd.strftime(sortdatefmt),
                      tstr2SCI[typ][0], hsh['_p'], '', f),
-                    (fmt_date(dt),),
+                    (fmt_date(dt, short=True),),
                     (uid, 'ac', summary,
                      sdt, dtl)]
                 items.append(item)
@@ -5293,7 +5303,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         ('day', sd.strftime(sortdatefmt),
                          tstr2SCI[typ][0], hsh['_p'],
                          st.strftime(sorttimefmt), f),
-                        (fmt_date(sd),),
+                        (fmt_date(sd, short=True),),
                         (uid, typ, summary, '%s ~ %s' %
                                             (st_fmt,
                                              options['dayend_fmt']), dtl)]
@@ -5342,7 +5352,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         ('day', sd.strftime(sortdatefmt),
                          tstr2SCI[typ][0], hsh['_p'],
                          st.strftime(sorttimefmt), f),
-                        (fmt_date(sd),),
+                        (fmt_date(sd, short=True),),
                         (uid, typ, summary, '%s%s' % (
                             st_fmt,
                             et_fmt), dtl)]
@@ -5373,7 +5383,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 item = [
                     ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
                      hsh['_p'], '', f),
-                    (fmt_date(dt),),
+                    (fmt_date(dt, short=True),),
                     (uid, typ, summary, extstr, dtl)]
                 items.append(item)
                 continue
@@ -5385,7 +5395,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 item = [
                     ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
                      hsh['_p'], '', f),
-                    (fmt_date(dt),),
+                    (fmt_date(dt, short=True),),
                     (uid, typ, summary, extstr, dtl)]
                 items.append(item)
                 continue
@@ -5400,7 +5410,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 item = [
                     ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
                      hsh['_p'], '', f),
-                    (fmt_date(dt),),
+                    (fmt_date(dt, short=True),),
                     (uid, typ, summary, extstr, dtl)]
                 items.append(item)
                 continue
