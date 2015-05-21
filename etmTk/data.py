@@ -140,6 +140,9 @@ NIL = Node(End(), [], [])
 # the leading ~ makes them sort last
 NONE = '~ {0} ~'.format(_("None"))
 
+YESTERDAY = _('Yesterday')
+TODAY = _('Today')
+TOMORROW = _('Tomorrow')
 
 class IndexableSkiplist:
     """Sorted collection supporting O(lg n) insertion, removal, and lookup by rank."""
@@ -1918,11 +1921,11 @@ def fmt_date(dt, short=False):
         if type(dt) == datetime:
             dt = dt.date()
         if dt == tdy.date():
-            dt_fmt = "%s" % _('Today')
+            dt_fmt = "%s" % TODAY
         elif dt == tdy.date() - oneday:
-            dt_fmt = "%s" % _('Yesterday')
+            dt_fmt = "%s" % YESTERDAY
         elif dt == tdy.date() + oneday:
-            dt_fmt = "%s" % _('Tomorrow')
+            dt_fmt = "%s" % TOMORROW
         elif dt == tdy.year:
             dt_fmt = dt.strftime(shortyearlessfmt)
         else:
@@ -1939,11 +1942,11 @@ def fmt_shortdatetime(dt, options=None):
         return unicode(dt)
     tdy = datetime.today()
     if dt.date() == tdy.date():
-        dt_fmt = "%s %s" % (fmt_time(dt, options=options), _('Today'))
+        dt_fmt = "%s %s" % (fmt_time(dt, options=options), TODAY)
     elif dt.date() == tdy.date() - oneday:
-        dt_fmt = "%s %s" % (fmt_time(dt, options=options), _('Yesterday'))
+        dt_fmt = "%s %s" % (fmt_time(dt, options=options), YESTERDAY)
     elif dt.date() == tdy.date() + oneday:
-        dt_fmt = "%s %s" % (fmt_time(dt, options=options), _('Tomorrow'))
+        dt_fmt = "%s %s" % (fmt_time(dt, options=options), TOMORROW)
     elif dt.year == tdy.year:
         try:
             x1 = unicode(fmt_time(dt, options=options))
@@ -3969,6 +3972,10 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
                     last_day = item[0][1]
                     day_count += 1
                 if day_count <= days:
+                    if day_count == 1:
+                        item[1] = TODAY
+                    elif day_count == 2:
+                        item[1] = TOMORROW
                     day.append(item)
         elif item[0][0] == 'inbasket':
             item.insert(1, "%sIn Basket%s" % (bb, eb))
@@ -5247,7 +5254,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                              time_diff,
                              hsh['_p'],
                              f),
-                            (fmt_date(today_datetime, short=True),),
+                            (fmt_date(today_datetime, ),),
                             (uid, 'by', summary, extstr, dtl)]
                     items.append(item)
 
@@ -5265,7 +5272,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 item = [
                     ('day', sd.strftime(sortdatefmt),
                      tstr2SCI[typ][0], hsh['_p'], '', f),
-                    (fmt_date(dt, short=True),),
+                    (fmt_date(dt, ),),
                     (uid, typ, summary, '', dtl)]
                 items.append(item)
                 occasions.append([sd, summary, uid, f])
@@ -5279,7 +5286,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 item = [
                     ('day', sd.strftime(sortdatefmt),
                      tstr2SCI[typ][0], hsh['_p'], '', f),
-                    (fmt_date(dt, short=True),),
+                    (fmt_date(dt, ),),
                     (uid, 'ac', summary,
                      sdt, dtl)]
                 items.append(item)
@@ -5303,7 +5310,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         ('day', sd.strftime(sortdatefmt),
                          tstr2SCI[typ][0], hsh['_p'],
                          st.strftime(sorttimefmt), f),
-                        (fmt_date(sd, short=True),),
+                        (fmt_date(sd, ),),
                         (uid, typ, summary, '%s ~ %s' %
                                             (st_fmt,
                                              options['dayend_fmt']), dtl)]
@@ -5352,7 +5359,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         ('day', sd.strftime(sortdatefmt),
                          tstr2SCI[typ][0], hsh['_p'],
                          st.strftime(sorttimefmt), f),
-                        (fmt_date(sd, short=True),),
+                        (fmt_date(sd, ),),
                         (uid, typ, summary, '%s%s' % (
                             st_fmt,
                             et_fmt), dtl)]
@@ -5383,7 +5390,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 item = [
                     ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
                      hsh['_p'], '', f),
-                    (fmt_date(dt, short=True),),
+                    (fmt_date(dt, ),),
                     (uid, typ, summary, extstr, dtl)]
                 items.append(item)
                 continue
@@ -5395,7 +5402,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 item = [
                     ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
                      hsh['_p'], '', f),
-                    (fmt_date(dt, short=True),),
+                    (fmt_date(dt, ),),
                     (uid, typ, summary, extstr, dtl)]
                 items.append(item)
                 continue
@@ -5410,7 +5417,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 item = [
                     ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
                      hsh['_p'], '', f),
-                    (fmt_date(dt, short=True),),
+                    (fmt_date(dt, ),),
                     (uid, typ, summary, extstr, dtl)]
                 items.append(item)
                 continue

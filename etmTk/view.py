@@ -3650,16 +3650,7 @@ Relative dates and fuzzy parsing are supported.""")
             self.textWindow(self, title='etm', prompt=res, opts=self.options)
             return 0
 
-    def getDepths(self, e=None):
-        for k in self.depth2id:
-            print(k)
-            for item in self.depth2id[k]:
-                print(item, self.tree.item(item))
-
-
     def expand2Depth(self, e=None):
-        self.getDepths()
-
         if e and e.char != "o":
             return
         prompt = _("""\
