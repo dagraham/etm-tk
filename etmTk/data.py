@@ -1349,7 +1349,7 @@ def get_options(d=''):
         'action_template': '!hours!h $!value!) !label! (!count!)',
 
         'agenda_colors': 2,
-        'agenda_days': 4,
+        'agenda_days': 2,
         'agenda_indent': 3,
         'agenda_width1': 32,
         'agenda_width2': 18,
@@ -1485,7 +1485,7 @@ def get_options(d=''):
     # logger.debug("user_options: {0}".format(user_options))
 
     for key in default_options:
-        if key in ['show_finished', 'fontsize_busy', 'fontsize_fixed', 'fontsize_tree', 'outline_depth', 'prefix', 'prefix_uses', 'icssyc_folder', 'ics_subscriptions']:
+        if key in ['show_finished', 'fontsize_busy', 'fontsize_fixed', 'fontsize_tree', 'outline_depth', 'prefix', 'prefix_uses', 'icssyc_folder', 'ics_subscriptions', 'agenda_days']:
             if key not in user_options:
                 # we want to allow 0 as an entry
                 options[key] = default_options[key]
@@ -4409,13 +4409,15 @@ def expand_template(template, hsh, lbls=None, complain=False):
             return marker
         l1, l2 = lbls.get(w, ('', ''))
         v = hsh.get(w, None)
+        if template.startswith("mailto"):
+            v = quote(v)
         if v is None:
             if complain:
                 return w
             else:
                 return ''
         if type(v) in [str, unicode]:
-            return "%s%s%s" % (l1, quote(v), l2)
+            return "%s%s%s" % (l1, v, l2)
         if type(v) == datetime:
             return "%s%s%s" % (l1, v.strftime("%a %b %d, %Y %H:%M"), l2)
         return "%s%s%s" % (l1, repr(v), l2)
