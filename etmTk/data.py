@@ -140,6 +140,9 @@ NIL = Node(End(), [], [])
 # the leading ~ makes them sort last
 NONE = '~ {0} ~'.format(_("None"))
 
+YESTERDAY = _('Yesterday')
+TODAY = _('Today')
+TOMORROW = _('Tomorrow')
 
 class IndexableSkiplist:
     """Sorted collection supporting O(lg n) insertion, removal, and lookup by rank."""
@@ -1349,7 +1352,7 @@ def get_options(d=''):
         'action_template': '!hours!h $!value!) !label! (!count!)',
 
         'agenda_colors': 2,
-        'agenda_days': 4,
+        'agenda_days': 2,
         'agenda_indent': 3,
         'agenda_width1': 32,
         'agenda_width2': 18,
@@ -1485,7 +1488,7 @@ def get_options(d=''):
     # logger.debug("user_options: {0}".format(user_options))
 
     for key in default_options:
-        if key in ['show_finished', 'fontsize_busy', 'fontsize_fixed', 'fontsize_tree', 'outline_depth', 'prefix', 'prefix_uses', 'icssyc_folder', 'ics_subscriptions']:
+        if key in ['show_finished', 'fontsize_busy', 'fontsize_fixed', 'fontsize_tree', 'outline_depth', 'prefix', 'prefix_uses', 'icssyc_folder', 'ics_subscriptions', 'agenda_days']:
             if key not in user_options:
                 # we want to allow 0 as an entry
                 options[key] = default_options[key]
@@ -1915,9 +1918,15 @@ def fmt_date(dt, short=False):
         return unicode(dt)
     if short:
         tdy = datetime.today()
-        if dt.date() == tdy.date():
-            dt_fmt = "%s" % _('today')
-        elif dt.year == tdy.year:
+        if type(dt) == datetime:
+            dt = dt.date()
+        if dt == tdy.date():
+            dt_fmt = "%s" % TODAY
+        elif dt == tdy.date() - oneday:
+            dt_fmt = "%s" % YESTERDAY
+        elif dt == tdy.date() + oneday:
+            dt_fmt = "%s" % TOMORROW
+        elif dt == tdy.year:
             dt_fmt = dt.strftime(shortyearlessfmt)
         else:
             dt_fmt = dt.strftime(shortdatefmt)
@@ -1933,7 +1942,11 @@ def fmt_shortdatetime(dt, options=None):
         return unicode(dt)
     tdy = datetime.today()
     if dt.date() == tdy.date():
-        dt_fmt = "%s %s" % (fmt_time(dt, options=options), _('today'))
+        dt_fmt = "%s %s" % (fmt_time(dt, options=options), TODAY)
+    elif dt.date() == tdy.date() - oneday:
+        dt_fmt = "%s %s" % (fmt_time(dt, options=options), YESTERDAY)
+    elif dt.date() == tdy.date() + oneday:
+        dt_fmt = "%s %s" % (fmt_time(dt, options=options), TOMORROW)
     elif dt.year == tdy.year:
         try:
             x1 = unicode(fmt_time(dt, options=options))
@@ -1969,7 +1982,7 @@ def fmt_dt(dt, f):
 
 rrule_hsh = {
     'f': 'FREQUENCY',  # unicode
-    'i': 'INTERVAL',  # positive integer
+    'I': 'INTERVAL',  # positive integer
     't': 'COUNT',  # total count positive integer
     's': 'BYSETPOS',  # integer
     'u': 'UNTIL',  # unicode
@@ -1989,7 +2002,7 @@ ical_hsh['f'] = 'FREQ'
 
 ical_rrule_hsh = {
     'FREQ': 'r',  # unicode
-    'INTERVAL': 'i',  # positive integer
+    'INTERVAL': 'I',  # positive integer
     'COUNT': 't',  # total count positive integer
     'BYSETPOS': 's',  # integer
     'UNTIL': 'u',  # unicode
@@ -2004,8 +2017,8 @@ ical_rrule_hsh = {
 }
 
 # don't add f and u - they require special processing in get_rrulestr
-rrule_keys = ['i', 'm', 'M', 'w', 'W', 'h', 'n', 't', 's', 'E']
-ical_rrule_keys = ['f', 'i', 'm', 'M', 'w', 'W', 'h', 'n', 't', 's', 'u']
+rrule_keys = ['I', 'm', 'M', 'w', 'W', 'h', 'n', 't', 's', 'E']
+ical_rrule_keys = ['f', 'I', 'm', 'M', 'w', 'W', 'h', 'n', 't', 's', 'u']
 
 # ^ Presidential election day @s 2004-11-01 12am
 #   @r y &i 4 &m 2, 3, 4, 5, 6, 7, 8 &M 11 &w TU
@@ -2049,6 +2062,7 @@ at_keys = [
     'u',  # user
     'f',  # finish date
     'h',  # history (task group)
+    'i',  # invitees
     'g',  # goto
     'j',  # job
     'p',  # priority
@@ -2059,7 +2073,7 @@ at_keys = [
     'd',  # description
     'm',  # memo
     'z',  # time zone
-    'i',  # id',
+    'I',  # id',
     'v',  # action rate key
     'w',  # expense markup key
 ]
@@ -2073,6 +2087,7 @@ label_keys = [
     'c',  # context
     'd',  # description
     'g',  # goto
+    'i',  # invitees
     'k',  # keyword
     'l',  # location
     'm',  # memo
@@ -2085,7 +2100,7 @@ label_keys = [
 amp_keys = {
     'r': [
         u'f',   # r frequency
-        u'i',   # r interval
+        u'I',   # r interval
         u'm',   # r monthday
         u'M',   # r month
         u'w',   # r weekday
@@ -2722,13 +2737,13 @@ For editing one or more, but not all, instances of an item. Needed:
         hsh['_summary'] = ''
     if '_group_summary' in hsh:
         sl = ["%s %s" % (hsh['itemtype'], hsh['_group_summary'])]
-        if 'i' in hsh:
+        if 'I' in hsh:
             # fix the item index
-            hsh['i'] = hsh['i'].split(':')[0]
+            hsh['I'] = hsh['I'].split(':')[0]
     else:
         sl = ["%s %s" % (hsh['itemtype'], hsh['_summary'])]
-    if 'i' not in hsh or not hsh['i']:
-        hsh['i'] = uniqueId()
+    if 'I' not in hsh or not hsh['I']:
+        hsh['I'] = uniqueId()
     bad_keys = [x for x in hsh.keys() if x not in all_keys]
     if bad_keys:
         omitted = []
@@ -2833,7 +2848,7 @@ For editing one or more, but not all, instances of an item. Needed:
                 for pair in hsh['f']:
                     tmp.append(";".join([x.strftime(zfmt) for x in pair if x]))
                 sl.append("%s@f %s" % (prefix, ", {0}".format(prefix).join(tmp)))
-            elif key == 'i':
+            elif key == 'I':
                 if include_uid and hsh['itemtype'] != "=":
                     sl.append("prefix@i {0}".format(prefix, value))
             elif key == 'h':
@@ -2871,7 +2886,7 @@ def process_data_file_list(filelist, options=None):
             for hsh in hashes:
                 if hsh['itemtype'] == '=':
                     continue
-                uid = hsh['i']
+                uid = hsh['I']
                 uuid2hashes[uid] = hsh
                 file2uuids.setdefault(r, []).append(uid)
         except Exception:
@@ -3104,7 +3119,7 @@ def items2Hashes(list_of_items, options=None):
             # put the bad item in the inbox for repairs
             hsh['_summary'] = "{0} {1}".format(hsh['itemtype'], hsh['_summary'])
             hsh['itemtype'] = "$"
-            hsh['i'] = uniqueId()
+            hsh['I'] = uniqueId()
             hsh['errors'] = "\n".join(msg)
             logger.warn("hsh errors: {0}".format(hsh['errors']))
             # no more processing
@@ -3153,7 +3168,7 @@ def items2Hashes(list_of_items, options=None):
                 del group_defaults['rrule']
             prereqs = []
             last_level = 1
-            uid = hsh['i']
+            uid = hsh['I']
             summary = hsh['_summary']
             if 'j' not in hsh:
                 continue
@@ -3192,7 +3207,7 @@ def items2Hashes(list_of_items, options=None):
                 except:
                     logger.warn('error: bad value for q', job['q'])
                     continue
-                job['i'] = current_id
+                job['I'] = current_id
 
                 queue_hsh.setdefault(current_level, set([])).add(current_id)
 
@@ -3233,7 +3248,7 @@ def items2Hashes(list_of_items, options=None):
                     tmp.append(key)
                 # else:
                 #     tmp.append(' ')
-            uuid2labels[hsh['i']] = "".join(tmp)
+            uuid2labels[hsh['I']] = "".join(tmp)
     return messages, hashes, uuid2labels
 
 
@@ -3940,26 +3955,26 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
     else:
         bb = ""
         eb = ""
+    # show day items starting with beg and ending with lst
     beg = datetime.today()
+    tom = beg + oneday
+    lst = beg + (days - 1)*oneday
     beg_fmt = beg.strftime("%Y%m%d")
-    beg + days * oneday
-    day_count = 0
-    last_day = ''
+    tom_fmt = tom.strftime("%Y%m%d")
+    lst_fmt = lst.strftime("%Y%m%d")
     if not items:
         return "no output"
     for item in items:
         if item[0][0] == 'day':
-            if item[0][1] >= beg_fmt and day_count <= days + 1:
-                # process day items until we get to days+1 so that all items
-                # from days are included
+            if item[0][1] >= beg_fmt and item[0][1] <= lst_fmt:
                 if item[2][1] in ['fn', 'ac', 'ns']:
                     # skip finished tasks, actions and notes
                     continue
-                if item[0][1] != last_day:
-                    last_day = item[0][1]
-                    day_count += 1
-                if day_count <= days:
-                    day.append(item)
+                if item[0][1] == beg_fmt:
+                    item[1] = TODAY
+                elif item[0][1] == tom_fmt:
+                    item[1] = TOMORROW
+                day.append(item)
         elif item[0][0] == 'inbasket':
             item.insert(1, "%sIn Basket%s" % (bb, eb))
             inbasket.append(item)
@@ -4128,7 +4143,7 @@ def str2hsh(s, uid=None, options=None):
         hsh['itemtype'] = itemtype
         hsh['_summary'] = summary
         if uid:
-            hsh['i'] = uid
+            hsh['I'] = uid
         if itemtype == u'+':
             hsh['_group_summary'] = summary
         # drop the @i line
@@ -4172,7 +4187,7 @@ def str2hsh(s, uid=None, options=None):
                 for amp_part in amp_parts:
                     amp_key = unicode(amp_part[0])
                     amp_val = amp_part[1:].strip()
-                    if amp_key in ['q', 'i', 't']:
+                    if amp_key in ['q', 'I', 't']:
                         try:
                             part_hsh[amp_key] = int(amp_val)
                         except:
@@ -4388,8 +4403,8 @@ def str2hsh(s, uid=None, options=None):
                     msg.extend(warn)
             except:
                 logger.exception("exception processing rrule: {0}".format(hsh['_r']))
-        if 'i' not in hsh:
-            hsh['i'] = uniqueId()
+        if 'I' not in hsh:
+            hsh['I'] = uniqueId()
 
     except:
         logger.exception('exception processing "{0}"'.format(s))
@@ -4409,13 +4424,15 @@ def expand_template(template, hsh, lbls=None, complain=False):
             return marker
         l1, l2 = lbls.get(w, ('', ''))
         v = hsh.get(w, None)
+        if template.startswith("mailto"):
+            v = quote(v)
         if v is None:
             if complain:
                 return w
             else:
                 return ''
         if type(v) in [str, unicode]:
-            return "%s%s%s" % (l1, quote(v), l2)
+            return "%s%s%s" % (l1, v, l2)
         if type(v) == datetime:
             return "%s%s%s" % (l1, v.strftime("%a %b %d, %Y %H:%M"), l2)
         return "%s%s%s" % (l1, repr(v), l2)
@@ -5120,7 +5137,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
             else:
                 st_fmt = fmt_time(st, options=options)
             summary = setSummary(hsh, dtl)
-            tmpl_hsh = {'i': uid, 'summary': summary,
+            tmpl_hsh = {'I': uid, 'summary': summary,
                         'start_date': fmt_date(dtl, True),
                         'start_time': fmt_time(dtl, True, options=options)}
             if 't' in hsh:
@@ -5174,9 +5191,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                                 alert_minutes[amn] += .1
                             else:
                                 alert_minutes[amn] = amn
-                            # add2list(alerts, (amn, this_hsh, f), False)
-                            # add2list("alerts", (alert_minutes[amn], this_hsh['i'], this_hsh, f), False)
-                            alerts.append((alert_minutes[amn], this_hsh['i'], this_hsh, f))
+                            alerts.append((alert_minutes[amn], this_hsh['I'], this_hsh, f))
             if (hsh['itemtype'] in ['+', '-', '%'] and dtl < today_datetime):
                 time_diff = (dtl - today_datetime).days
                 if time_diff == 0:
@@ -5235,7 +5250,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                              time_diff,
                              hsh['_p'],
                              f),
-                            (fmt_date(today_datetime),),
+                            (fmt_date(today_datetime, ),),
                             (uid, 'by', summary, extstr, dtl)]
                     items.append(item)
 
@@ -5253,7 +5268,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 item = [
                     ('day', sd.strftime(sortdatefmt),
                      tstr2SCI[typ][0], hsh['_p'], '', f),
-                    (fmt_date(dt),),
+                    (fmt_date(dt, ),),
                     (uid, typ, summary, '', dtl)]
                 items.append(item)
                 occasions.append([sd, summary, uid, f])
@@ -5267,7 +5282,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 item = [
                     ('day', sd.strftime(sortdatefmt),
                      tstr2SCI[typ][0], hsh['_p'], '', f),
-                    (fmt_date(dt),),
+                    (fmt_date(dt, ),),
                     (uid, 'ac', summary,
                      sdt, dtl)]
                 items.append(item)
@@ -5291,7 +5306,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         ('day', sd.strftime(sortdatefmt),
                          tstr2SCI[typ][0], hsh['_p'],
                          st.strftime(sorttimefmt), f),
-                        (fmt_date(sd),),
+                        (fmt_date(sd, ),),
                         (uid, typ, summary, '%s ~ %s' %
                                             (st_fmt,
                                              options['dayend_fmt']), dtl)]
@@ -5340,7 +5355,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         ('day', sd.strftime(sortdatefmt),
                          tstr2SCI[typ][0], hsh['_p'],
                          st.strftime(sorttimefmt), f),
-                        (fmt_date(sd),),
+                        (fmt_date(sd, ),),
                         (uid, typ, summary, '%s%s' % (
                             st_fmt,
                             et_fmt), dtl)]
@@ -5371,7 +5386,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 item = [
                     ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
                      hsh['_p'], '', f),
-                    (fmt_date(dt),),
+                    (fmt_date(dt, ),),
                     (uid, typ, summary, extstr, dtl)]
                 items.append(item)
                 continue
@@ -5383,7 +5398,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 item = [
                     ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
                      hsh['_p'], '', f),
-                    (fmt_date(dt),),
+                    (fmt_date(dt, ),),
                     (uid, typ, summary, extstr, dtl)]
                 items.append(item)
                 continue
@@ -5398,7 +5413,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 item = [
                     ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
                      hsh['_p'], '', f),
-                    (fmt_date(dt),),
+                    (fmt_date(dt, ),),
                     (uid, typ, summary, extstr, dtl)]
                 items.append(item)
                 continue
@@ -5627,7 +5642,7 @@ def hsh2ical(hsh):
     else:
         return False, 'Cannot export item type "%s"' % hsh['itemtype']
 
-    element.add('uid', hsh[u'i'])
+    element.add('uid', hsh[u'I'])
     if 'z' in hsh:
         # pytz is required to get the proper tzid into datetimes
         tz = pytz.timezone(hsh['z'])
@@ -6380,8 +6395,8 @@ class ETMCmd():
         for hsh in loh:
             if hsh['itemtype'] == '=':
                 continue
-            logger.debug('adding: {0}, {1}'.format(hsh['i'], hsh['_summary']))
-            id = hsh['i']
+            logger.debug('adding: {0}, {1}'.format(hsh['I'], hsh['_summary']))
+            id = hsh['I']
             self.uuid2hash[id] = hsh
             self.file2uuids.setdefault(rp, []).append(id)
         mtime = os.path.getmtime(fp)
