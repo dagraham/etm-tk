@@ -4217,7 +4217,7 @@ def str2hsh(s, uid=None, options=None):
                                (part_hsh, at_key))
             else:
                 # value will be a scalar or list
-                if at_key in ['a', 't']:
+                if at_key in ['a', 'i', 't']:
                     if comma_regex.search(at_val):
                         hsh[at_key] = [
                             x for x in comma_regex.split(at_val) if x]
@@ -5716,6 +5716,10 @@ def hsh2ical(hsh):
         element.add('comment', hsh['m'])
     if 'u' in hsh:
         element.add('organizer', hsh['u'])
+    if 'i' in hsh:
+        for x in hsh['i']:
+            element.add('attendee', "MAILTO:{0}".format(x))
+
 
     if hsh['itemtype'] in ['-', '+', '%']:
         done, due, following = getDoneAndTwo(hsh)
@@ -6054,8 +6058,8 @@ def import_ical(ics="", txt="", vcal=""):
             clst.append("@z %s" % tzid.to_ical().decode())
             logger.debug("Using tzid: {0}".format(tzid.to_ical().decode()))
         else:
-            logger.debug("Using tzid: UTC")
-            clst.append("@z UTC")
+            logger.debug("Using tzid: {0}".format(local_timezone))
+            clst.append("@z {0}".format(local_timezone))
 
         tmp = comp.get('description')
         if tmp:
@@ -6080,6 +6084,20 @@ def import_ical(ics="", txt="", vcal=""):
                 clst.append("@t %s" % u', '.join(tags))
             else:
                 clst.append("@t %s" % tags)
+
+        invitees = comp.get('attendee')
+        if invitees:
+            if type(invitees) is list:
+                invitees = [x.to_ical().decode() for x in invitees]
+                ilst = []
+                for x in invitees:
+                    if x.startswith("MAILTO:"):
+                        x = x[7:]
+                    ilst.append(x)
+                clst.append("@i %s" % u', '.join(ilst))
+            else:
+                clst.append("@i %s" % invitee)
+
         tmp = comp.get('organizer')
         if tmp:
             clst.append("@u %s" % tmp.to_ical().decode())
