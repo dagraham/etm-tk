@@ -1982,7 +1982,7 @@ def fmt_dt(dt, f):
 
 rrule_hsh = {
     'f': 'FREQUENCY',  # unicode
-    'I': 'INTERVAL',  # positive integer
+    'i': 'INTERVAL',  # positive integer
     't': 'COUNT',  # total count positive integer
     's': 'BYSETPOS',  # integer
     'u': 'UNTIL',  # unicode
@@ -2002,7 +2002,7 @@ ical_hsh['f'] = 'FREQ'
 
 ical_rrule_hsh = {
     'FREQ': 'r',  # unicode
-    'INTERVAL': 'I',  # positive integer
+    'INTERVAL': 'i',  # positive integer
     'COUNT': 't',  # total count positive integer
     'BYSETPOS': 's',  # integer
     'UNTIL': 'u',  # unicode
@@ -2017,8 +2017,8 @@ ical_rrule_hsh = {
 }
 
 # don't add f and u - they require special processing in get_rrulestr
-rrule_keys = ['I', 'm', 'M', 'w', 'W', 'h', 'n', 't', 's', 'E']
-ical_rrule_keys = ['f', 'I', 'm', 'M', 'w', 'W', 'h', 'n', 't', 's', 'u']
+rrule_keys = ['i', 'm', 'M', 'w', 'W', 'h', 'n', 't', 's', 'E']
+ical_rrule_keys = ['f', 'i', 'm', 'M', 'w', 'W', 'h', 'n', 't', 's', 'u']
 
 # ^ Presidential election day @s 2004-11-01 12am
 #   @r y &i 4 &m 2, 3, 4, 5, 6, 7, 8 &M 11 &w TU
@@ -2100,7 +2100,7 @@ label_keys = [
 amp_keys = {
     'r': [
         u'f',   # r frequency
-        u'I',   # r interval
+        u'i',   # r interval
         u'm',   # r monthday
         u'M',   # r month
         u'w',   # r weekday
@@ -4187,7 +4187,7 @@ def str2hsh(s, uid=None, options=None):
                 for amp_part in amp_parts:
                     amp_key = unicode(amp_part[0])
                     amp_val = amp_part[1:].strip()
-                    if amp_key in ['q', 'I', 't']:
+                    if amp_key in ['q', 'i', 't']:
                         try:
                             part_hsh[amp_key] = int(amp_val)
                         except:
