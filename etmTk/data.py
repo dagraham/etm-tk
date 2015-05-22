@@ -4172,7 +4172,7 @@ def str2hsh(s, uid=None, options=None):
                             tmp = action_part.split(',')
                             arguments.append(tmp)
                 alerts.append([triggers, actns, arguments])
-            elif at_key in ['+', '-']:
+            elif at_key in ['+', '-', 'i']:
                 parts = comma_regex.split(at_val)
                 tmp = []
                 for part in parts:
@@ -4217,7 +4217,7 @@ def str2hsh(s, uid=None, options=None):
                                (part_hsh, at_key))
             else:
                 # value will be a scalar or list
-                if at_key in ['a', 'i', 't']:
+                if at_key in ['a', 't']:
                     if comma_regex.search(at_val):
                         hsh[at_key] = [
                             x for x in comma_regex.split(at_val) if x]
