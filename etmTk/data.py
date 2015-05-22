@@ -2080,6 +2080,40 @@ at_keys = [
 
 all_keys = at_keys + ['entry', 'fileinfo', 'itemtype', 'rrule', '_summary', '_group_summary', '_a', '_j', '_p', '_r', 'prereqs']
 
+all_types = [u'=', u'^', u'*', u'-', u'+', u'%', u'~', u'$',  u'?', u'!',  u'#']
+job_types = [u'-', u'+', u'%', u'$', u'?', u'#']
+any_types = [u'=', u'$', u'?', u'#']
+
+# @key to item types
+key2type = {
+    u'+': all_types,
+    u'-': all_types,
+    u'a': all_types,
+    u'b': all_types,
+    u'c': all_types,
+    u'd': all_types,
+    u'e': all_types,
+    u'f': job_types + any_types,
+    u'g': all_types + any_types,
+    u'h': [u'+'] + any_types,
+    u'i': [u'*', u'^'] + any_types,
+    u'I': all_types,
+    u'j': [u'+'] + any_types,
+    u'k': all_types,
+    u'l': all_types,
+    u'm': all_types,
+    u'o': job_types + any_types,
+    u'p': job_types + any_types,
+    u'r': all_types,
+    u's': all_types,
+    u't': all_types,
+    u'u': all_types,
+    u'v': [u'~'] + any_types,
+    u'w': [u'~'] + any_types,
+    u'x': [u'~'] + any_types,
+    u'z': all_types,
+}
+
 label_keys = [
     # 'f',  # finish date
     '_a',  # alert
@@ -4152,6 +4186,10 @@ def str2hsh(s, uid=None, options=None):
         for at_part in at_parts:
             at_key = unicode(at_part[0])
             at_val = at_part[1:].strip()
+            if itemtype not in key2type[at_key]:
+                msg.append("An entry for @{0} is not allowed in items of type '{1}'.".format(at_key, itemtype))
+                continue
+                # print('bad key', at_key, itemtype)
             if at_key == 'a':
                 actns = options['alert_default']
                 arguments = []
