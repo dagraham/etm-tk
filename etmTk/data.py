@@ -3190,7 +3190,11 @@ def items2Hashes(list_of_items, options=None):
             # Here we assume that one or more jobs are unfinished.
             queue_hsh = {}
             tmp_hsh = {}
-            tmp_hsh.update(defaults)
+            for at_key in defaults:
+                if at_key in key2type and itemtype in key2type[at_key]:
+                    tmp_hsh[at_key] = defaults[at_key]
+
+            # tmp_hsh.update(defaults)
             tmp_hsh.update(hsh)
             group_defaults = tmp_hsh
             group_task = deepcopy(group_defaults)
@@ -3264,7 +3268,11 @@ def items2Hashes(list_of_items, options=None):
                 hashes.append(job)
         else:
             tmp_hsh = {}
-            tmp_hsh.update(defaults)
+            for at_key in defaults:
+                if at_key in key2type and itemtype in key2type[at_key]:
+                    tmp_hsh[at_key] = defaults[at_key]
+
+            # tmp_hsh.update(defaults)
             tmp_hsh.update(hsh)
             hsh = tmp_hsh
             try:
@@ -3298,8 +3306,11 @@ def get_reps(bef, hsh):
             start = due
         else:
             start = done
+        hours = hsh['s'].hour
+        minutes = hsh['s'].minute
+        start.replace(hour=hours, minute=minutes, second=0, microsecond=0)
     else:
-        start = parse(parse_dtstr(hsh['s'])).replace(tzinfo=None)
+        start = hsh['s'].replace(tzinfo=None)
     tmp = []
     if not start:
         return False, []

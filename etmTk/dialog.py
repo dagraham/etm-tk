@@ -1106,7 +1106,8 @@ class GetDateTime(DialogWindow):
         logger.debug('res: {0}'.format(res))
         ok = False
         if not res.strip():
-            # return the current time if ok is pressed with no entry
+            # return the current date if ok is pressed with no entry
+            # val = get_current_time().replace(hour=0, minute=0, second=0, microsecond=0)
             val = get_current_time()
             ok = True
         else:
