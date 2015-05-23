@@ -5477,7 +5477,6 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                             # add2list("items", item_copy[i])
                             items.append(item_copy[i])
                             busytimes.append([sd, 0, em, evnt_summary, uid, f])
-                        print(busytimes[-1])
                     else:
                         # single day task
                         item = [
@@ -5490,7 +5489,6 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                                 et_fmt), dtl)]
                         items.append(item)
                         busytimes.append([sd, sm, em, evnt_summary, uid, f])
-                        print(busytimes[-1])
                         continue
                 else: # sm == 0
                     # midnight task - show extent only
