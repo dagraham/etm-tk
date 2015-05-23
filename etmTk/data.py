@@ -3306,9 +3306,10 @@ def get_reps(bef, hsh):
             start = due
         else:
             start = done
-        hours = hsh['s'].hour
-        minutes = hsh['s'].minute
-        start.replace(hour=hours, minute=minutes, second=0, microsecond=0)
+        if start:
+            hours = hsh['s'].hour
+            minutes = hsh['s'].minute
+            start.replace(hour=hours, minute=minutes, second=0, microsecond=0)
     else:
         start = hsh['s'].replace(tzinfo=None)
     tmp = []
