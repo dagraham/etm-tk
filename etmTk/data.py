@@ -2084,7 +2084,7 @@ all_types = [u'=', u'^', u'*', u'-', u'+', u'%', u'~', u'$',  u'?', u'!',  u'#']
 job_types = [u'-', u'+', u'%', u'$', u'?', u'#']
 any_types = [u'=', u'$', u'?', u'#']
 
-# @key to item types
+# @key to item types - used to check for valid key usage
 key2type = {
     u'+': all_types,
     u'-': all_types,
@@ -5048,9 +5048,6 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
 
             if dt:
                 if hsh['itemtype'] == '*':
-                    # sdt = "%s %s" % (
-                    #     fmt_time(dt, True, options=options),
-                    #     fmt_date(dt, True))
                     sdt = fmt_shortdatetime(dt, options=options)
                 elif hsh['itemtype'] == '~':
                     if 'e' in hsh:
@@ -5402,13 +5399,6 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     continue
                     # other dated items
             if hsh['itemtype'] in ['+', '-', '%']:
-                if 's' in hsh and hsh['s'].strftime("%H:%M") != "00:00":
-                    # show due time in column 2
-                    extstr = fmt_time(hsh['s'], options=options) # hsh['s'].strftime("H:M")
-                elif 'e' in hsh:
-                    extstr = fmt_period(hsh['e'])
-                else:
-                    extstr = ''
                 if 'f' in hsh and hsh['f'][-1][1] == dtl:
                     typ = 'fn'
                 else:
@@ -5421,40 +5411,98 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                             typ = 'cs'
                     else:
                         typ = 'av'
-                item = [
-                    ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
-                     hsh['_p'], '', f),
-                    (fmt_date(dt, ),),
-                    (uid, typ, summary, extstr, dtl)]
-                items.append(item)
-                continue
-            if hsh['itemtype'] == '%':
-                if 'f' in hsh:
-                    typ = 'fn'
-                else:
-                    typ = 'ds'
-                item = [
-                    ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
-                     hsh['_p'], '', f),
-                    (fmt_date(dt, ),),
-                    (uid, typ, summary, extstr, dtl)]
-                items.append(item)
-                continue
-            if hsh['itemtype'] == '+':
-                if 'prereqs' in hsh and hsh['prereqs']:
-                    typ = 'cu'
-                else:
-                    if 'f' in hsh and hsh['f'][-1][1] == dtl:
-                        typ = 'fn'
+                sm = st.hour * 60 + st.minute
+                if sm != 0:
+                    ed = etl.date()
+                    et = etl.time()
+                    em = et.hour * 60 + et.minute
+
+                    # make tasks with set starting times highest priority
+                    hsh['_p'] = 0
+
+                    evnt_summary = "%s: %s" % (tmpl_hsh['summary'], tmpl_hsh['busy_span'])
+                    if et != st:
+                        et_fmt = " ~ %s" % fmt_time(et, options=options)
                     else:
-                        typ = 'cs'
-                item = [
-                    ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
-                     hsh['_p'], '', f),
-                    (fmt_date(dt, ),),
-                    (uid, typ, summary, extstr, dtl)]
-                items.append(item)
-                continue
+                        et_fmt = ''
+                    if ed > sd:
+                        # this task overlaps more than one day
+                        # first_min = 24*60 - sm
+                        # last_min = em
+                        # the first day tuple
+                        item = [
+                            ('day', sd.strftime(sortdatefmt),
+                             tstr2SCI[typ][0], hsh['_p'],
+                             st.strftime(sorttimefmt), f),
+                            (fmt_date(sd, ),),
+                            (uid, typ, summary, '%s ~ %s' %
+                                                (st_fmt,
+                                                 options['dayend_fmt']), dtl)]
+                        items.append(item)
+                        busytimes.append([sd, sm, day_end_minutes, evnt_summary, uid, f])
+                        sd += oneday
+                        i = 0
+                        item_copy = []
+                        while sd < ed:
+                            item_copy.append([x for x in item])
+                            item_copy[i][0] = list(item_copy[i][0])
+                            item_copy[i][1] = list(item_copy[i][1])
+                            item_copy[i][2] = list(item_copy[i][2])
+                            item_copy[i][0][1] = sd.strftime(sortdatefmt)
+                            item_copy[i][1][0] = fmt_date(sd)
+                            item_copy[i][2][3] = '%s ~ %s' % (
+                                options['daybegin_fmt'],
+                                options['dayend_fmt'])
+                            item_copy[i][0] = tuple(item_copy[i][0])
+                            item_copy[i][1] = tuple(item_copy[i][1])
+                            item_copy[i][2] = tuple(item_copy[i][2])
+                            # add2list("items", item_copy[i])
+                            items.append(item_copy[i])
+                            busytimes.append([sd, 0, day_end_minutes, evnt_summary, uid, f])
+                            sd += oneday
+                            i += 1
+                            # the last day tuple
+                        if em:
+                            item_copy.append([x for x in item])
+                            item_copy[i][0] = list(item_copy[i][0])
+                            item_copy[i][1] = list(item_copy[i][1])
+                            item_copy[i][2] = list(item_copy[i][2])
+                            item_copy[i][0][1] = sd.strftime(sortdatefmt)
+                            item_copy[i][1][0] = fmt_date(sd)
+                            item_copy[i][2][3] = '%s%s' % (
+                                options['daybegin_fmt'], et_fmt)
+                            item_copy[i][0] = tuple(item_copy[i][0])
+                            item_copy[i][1] = tuple(item_copy[i][1])
+                            item_copy[i][2] = tuple(item_copy[i][2])
+                            # add2list("items", item_copy[i])
+                            items.append(item_copy[i])
+                            busytimes.append([sd, 0, em, evnt_summary, uid, f])
+                        print(busytimes[-1])
+                    else:
+                        # single day task
+                        item = [
+                            ('day', sd.strftime(sortdatefmt),
+                             tstr2SCI[typ][0], hsh['_p'],
+                             st.strftime(sorttimefmt), f),
+                            (fmt_date(sd, ),),
+                            (uid, typ, summary, '%s%s' % (
+                                st_fmt,
+                                et_fmt), dtl)]
+                        items.append(item)
+                        busytimes.append([sd, sm, em, evnt_summary, uid, f])
+                        print(busytimes[-1])
+                        continue
+                else: # sm == 0
+                    # midnight task - show extent only
+                    # use 11:59pm as the sorting datetime
+                    dtl = dtl + 1439 * oneminute
+                    item = [
+                        ('day', dtl.strftime(sortdatefmt), tstr2SCI[typ][0],
+                         hsh['_p'], '', f),
+                        (fmt_date(dt, ),),
+                        (uid, typ, summary, tmpl_hsh['e'], dtl)]
+                    items.append(item)
+                    continue
     file2data[f] = [items, alerts, busytimes, datetimes, occasions]
 
 

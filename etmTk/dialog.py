@@ -196,6 +196,9 @@ class Node:
 
 
 class MenuTree:
+    """
+    Used for the shortcuts menu
+    """
 
     def __init__(self):
         self.nodes = []

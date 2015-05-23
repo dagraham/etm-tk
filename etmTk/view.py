@@ -3046,8 +3046,7 @@ or 0 to display all changes.""").format(title)
             self.rowSelected = int(item)
             logger.debug('rowSelected: {0}'.format(self.rowSelected))
             # type_chr is the actual type, e.g., "-"
-            # show_chr is what's displayed in the tree, e.g., "X"
-            type_chr = show_chr = self.tree.item(item)['text'][0]
+            type_chr = self.tree.item(item)['text'][0]
             uuid, dt, hsh = self.getInstance(item)
             logger.debug('tree rowSelected: {0}; {1}; {2}'.format(self.rowSelected, self.tree.item(item)['text'], dt))
             if self.view in [AGENDA, DAY]:
@@ -3082,9 +3081,8 @@ or 0 to display all changes.""").format(title)
                 self.itemmenu.entryconfig(1, label=self.em_opts[1])
                 self.itemmenu.entryconfig(2, label=self.em_opts[2])
                 item = _('selected')
-            isUnfinished = (type_chr in ['-', '+', '%'] and show_chr != 'X')
+            isUnfinished = (type_chr in ['-', '+', '%'])
             hasLink = ('g' in hsh and hsh['g'])
-            # hasUser = ('u' in hsh and hsh['u'] and hsh['u'] in loop.options['user_data'])
             hasUser = ('u' in hsh and hsh['u'])
             l1 = hsh['fileinfo'][1]
             l2 = hsh['fileinfo'][2]
