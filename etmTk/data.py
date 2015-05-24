@@ -3306,10 +3306,6 @@ def get_reps(bef, hsh):
             start = due
         else:
             start = done
-        if start:
-            hours = hsh['s'].hour
-            minutes = hsh['s'].minute
-            start.replace(hour=hours, minute=minutes, second=0, microsecond=0)
     else:
         start = hsh['s'].replace(tzinfo=None)
     tmp = []
@@ -3418,7 +3414,6 @@ def get_rrule(hsh):
     if 'z' not in hsh:
         hsh['z'] = local_timezone
     if 'o' in hsh and hsh['o'] == 'r' and 'f' in hsh:
-        # restart
         dtstart = hsh['f'][-1][0].replace(tzinfo=gettz(hsh['z']))
     elif 's' in hsh:
         dtstart = parse(parse_dtstr(
@@ -5053,6 +5048,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 else:
                     dt = parse(parse_dtstr(hsh['s'],
                                            hsh['z'])).replace(tzinfo=None)
+                    # dt = hsh['s'].replace(tzinfo=None)
             else:
                 dt = None
                 # dts = "none"
@@ -6803,6 +6799,10 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
                 gettz(hsh['z'])).replace(tzinfo=None)
         else:
             ddn = ''
+        if 's' in hsh and 'o' in hsh and hsh['o'] == 'r':
+            hours = hsh['s'].hour
+            minutes = hsh['s'].minute
+            dt = dt.replace(hour=hours, minute=minutes, second=0, microsecond=0)
         if hsh['itemtype'] == u'+':
             m = group_regex.match(hsh['_summary'])
             if m:
