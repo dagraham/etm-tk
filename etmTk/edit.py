@@ -192,7 +192,7 @@ class SimpleEditor(Toplevel):
                 self.mode = 1
                 self.title = CREATENEW
                 self.edithsh = {}
-                self.edithsh['i'] = uniqueId()
+                self.edithsh['I'] = uniqueId()
                 text = ''
             elif rephsh is None:  # newhsh is not None
                 # we are creating a new item as a copy and will need
@@ -200,7 +200,7 @@ class SimpleEditor(Toplevel):
                 self.mode = 1
                 self.title = CREATENEW
                 self.edithsh = self.newhsh
-                self.edithsh['i'] = uniqueId()
+                self.edithsh['I'] = uniqueId()
                 if ('fileinfo' in newhsh and newhsh['fileinfo']):
                     initfile = newhsh['fileinfo'][0]
                 text, msg = hsh2str(self.edithsh, self.options)
@@ -221,7 +221,7 @@ class SimpleEditor(Toplevel):
                 self.mode = 3
                 self.title = CREATENEW
                 self.edithsh = self.newhsh
-                self.edithsh['i'] = uniqueId()
+                self.edithsh['I'] = uniqueId()
                 if 'fileinfo' in newhsh and newhsh['fileinfo'][0]:
                     initfile = self.newhsh['fileinfo'][0]
                 text, msg = hsh2str(self.edithsh, self.options)
