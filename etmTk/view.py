@@ -2477,6 +2477,10 @@ Enter the shortest time period you want displayed in minutes.""")
                         occasion_lst.append([])
 
                     if isokey in loop.busytimes:
+                        if isokey in loop.conflicts:
+                            flagcolor = "red"
+                        else:
+                            flagcolor = "white"
                         bt = []
                         for item in loop.busytimes[isokey]:
                             it = list(item)
@@ -2558,13 +2562,12 @@ Enter the shortest time period you want displayed in minutes.""")
                                                 bx = br_x - indent - int(Decimal((line[0]-1080)/360) * w_)
                                                 ex = br_x - indent - int(Decimal((line[1]-1080)/360) * w_)
                                                 self.canvas.create_line((bx, by, ex, ey), fill=eveningcolor, width=busywidth, tag="busy")
-                                bx = bl_x + offset - .5 * busywidth
+
+                                bx = bl_x + offset - 1.5 * busywidth
                                 ex = bl_x + offset + .5 * busywidth
-                                by = bl_y - indent + .5 * busywidth
+                                by = bl_y - indent + 1.5 * busywidth
                                 ey = bl_y - indent - .5 * busywidth
-                                self.canvas.create_rectangle((bx, by, ex, ey), fill="White", outline="White", tag="busy")
-
-
+                                self.canvas.create_rectangle((bx, by, ex, ey), fill=flagcolor, outline=flagcolor, tag="busy")
                     else:
                         busy_lst.append([])
                         busy_dates.append(thisdate.strftime("%a %d"))

@@ -6341,6 +6341,7 @@ class ETMCmd():
         self.tkversion = ''
         self.rows = None
         self.busytimes = None
+        self.conflicts = []
         self.busydays = None
         self.alerts = None
         self.occasions = None
@@ -6456,6 +6457,13 @@ class ETMCmd():
         self.busytimes = {}
         for key in busytimesSL:
             self.busytimes[key] = list(busytimesSL[key])
+            lm = 0
+            for x in self.busytimes[key]:
+                if x[0] < lm:
+                    self.conflicts.append(key)
+                    continue
+                lm = x[1]
+
         self.occasions = {}
         for key in occasionsSL:
             self.occasions[key] = list(occasionsSL[key])
