@@ -2401,7 +2401,7 @@ Enter the shortest time period you want displayed in minutes.""")
         self.canvas.bind('<Escape>', self.on_clear_item)
 
         # monthdays
-        intervals = [240, 480, 720, 960]
+        intervals = [360, 720, 1080, 1440]
         busywidth = 2
         offset = 6
         indent = 7
@@ -2409,7 +2409,17 @@ Enter the shortest time period you want displayed in minutes.""")
         # barcolor = "SkyBlue3"
         # barcolor = "SlateBlue4"
         # barcolor = "SlateGray3"
+
+        # nightcolor = "indianred1"
+        # morningcolor = "khaki3"
+        # afternooncolor = "PaleGreen3"
+        # eveningcolor = "SteelBlue3"
+
         barcolor = "SteelBlue3"
+        nightcolor = barcolor
+        morningcolor = barcolor
+        afternooncolor = barcolor
+        eveningcolor = barcolor
 
         for j in range(num_weeks):
             for i in range(7):
@@ -2498,18 +2508,8 @@ Enter the shortest time period you want displayed in minutes.""")
                             # 1140 - 1380 left: bl+(+3,+5) -> tl+(+3, -5)
 
                             for pts in bt:
-                                if (pts[0] < 420 or pts[1] > 1380):
-                                    # busy time outside display interval
-                                    by = tl_y + 3
-                                    ey = tl_y + 8
-                                    bx = tl_x + 3
-                                    ex = tl_x + 8
-                                    self.canvas.create_rectangle((bx, by, ex, ey), fill="red", outline="red", tag="busy")
-
-                                pt1 = max(420, pts[0]) - 420
-                                pt2 = min(pts[1], 1380) - 420
-                                if pt1 >= 960 or pt2 <= 0:
-                                    continue
+                                pt1 = max(0, pts[0])
+                                pt2 = min(pts[1], 1440)
                                 tmp = [[], [], [], []]
 
                                 for ii in range(0, 4):
@@ -2534,30 +2534,37 @@ Enter the shortest time period you want displayed in minutes.""")
                                 for side in range(4):
                                     lines = busylines[side]
                                     if lines:
-                                        if side == 0: # top
-                                            for line in lines:
-                                                by = ey = tl_y + offset
-                                                bx = tl_x + indent + int(Decimal(line[0]/240) * w_)
-                                                ex = tl_x + indent + int(Decimal(line[1]/240) * w_)
-                                                self.canvas.create_line((bx, by, ex, ey), fill=barcolor, width=busywidth, tag="busy")
-                                        elif side == 1: # right
-                                            for line in lines:
-                                                bx = ex = tr_x - offset
-                                                by = tr_y + indent + int(Decimal((line[0]-240)/240) * h_)
-                                                ey = tr_y + indent + int(Decimal((line[1]-240)/240) * h_)
-                                                self.canvas.create_line((bx, by, ex, ey), fill=barcolor, width=busywidth, tag="busy")
-                                        elif side == 2: # bottom
-                                            for line in lines:
-                                                by = ey = br_y - offset
-                                                bx = br_x - indent - int(Decimal((line[0]-480)/240) * w_)
-                                                ex = br_x - indent - int(Decimal((line[1]-480)/240) * w_)
-                                                self.canvas.create_line((bx, by, ex, ey), fill=barcolor, width=busywidth, tag="busy")
-                                        elif side == 3: # left
+                                        if side == 0: # left
                                             for line in lines:
                                                 bx = ex = bl_x + offset
-                                                by = bl_y - indent - int(Decimal((line[0]-720)/240) * h_)
-                                                ey = bl_y - indent - int(Decimal((line[1]-720)/240) * h_)
-                                                self.canvas.create_line((bx, by, ex, ey), fill=barcolor, width=busywidth, tag="busy")
+                                                by = bl_y - indent - int(Decimal((line[0])/360) * h_)
+                                                ey = bl_y - indent - int(Decimal((line[1])/360) * h_)
+                                                self.canvas.create_line((bx, by, ex, ey), fill=nightcolor, width=busywidth, tag="busy")
+                                        elif side == 1: # top
+                                            for line in lines:
+                                                by = ey = tl_y + offset
+                                                bx = tl_x + indent + int(Decimal((line[0]-360)/360) * w_)
+                                                ex = tl_x + indent + int(Decimal((line[1]-360)/360) * w_)
+                                                self.canvas.create_line((bx, by, ex, ey), fill=morningcolor, width=busywidth, tag="busy")
+                                        elif side == 2: # right
+                                            for line in lines:
+                                                bx = ex = tr_x - offset
+                                                by = tr_y + indent + int(Decimal((line[0]-720)/360) * h_)
+                                                ey = tr_y + indent + int(Decimal((line[1]-720)/360) * h_)
+                                                self.canvas.create_line((bx, by, ex, ey), fill=afternooncolor, width=busywidth, tag="busy")
+                                        elif side == 3: # bottom
+                                            for line in lines:
+                                                by = ey = br_y - offset
+                                                bx = br_x - indent - int(Decimal((line[0]-1080)/360) * w_)
+                                                ex = br_x - indent - int(Decimal((line[1]-1080)/360) * w_)
+                                                self.canvas.create_line((bx, by, ex, ey), fill=eveningcolor, width=busywidth, tag="busy")
+                                bx = bl_x + offset - .5 * busywidth
+                                ex = bl_x + offset + .5 * busywidth
+                                by = bl_y - indent + .5 * busywidth
+                                ey = bl_y - indent - .5 * busywidth
+                                self.canvas.create_rectangle((bx, by, ex, ey), fill="White", outline="White", tag="busy")
+
+
                     else:
                         busy_lst.append([])
                         busy_dates.append(thisdate.strftime("%a %d"))
