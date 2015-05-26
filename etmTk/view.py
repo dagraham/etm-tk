@@ -824,9 +824,15 @@ class App(Tk):
         # self.vm.configure(background=BGCOLOR, takefocus=False)
 
         self.settingsIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_settings.gif')
-        self.settingsbutton = Button(topbar, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0)
-        self.settingsbutton.config(image=self.settingsIcon, width="18", height="18")
+        self.settingsbutton = Button(
+            topbar, command=self.selectCalendars,
+            highlightbackground=BGCOLOR,
+            bg=BGCOLOR, pady=0, bd=0,
+            highlightthickness=0,
+            )
+        self.settingsbutton.config(image=self.settingsIcon, width="24", height="24")
         self.settingsbutton.pack(side="left", padx=6, pady=2)
+
 
         self.checkIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_check.gif')
         self.checkbutton = Button(topbar, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0)
@@ -862,7 +868,7 @@ class App(Tk):
         windowtitle = Label(topbar, textvariable=self.windowTitle, bd=1, relief="flat",  justify=CENTER, padx=4, pady=0)
         windowtitle.pack(side="left", fill=X, expand=1)
         windowtitle.configure(background=BGCOLOR)
-        self.windowTitle.set("May 2015")
+        self.windowTitle.set("Agenda")
 
 
         # filter
@@ -942,10 +948,12 @@ class App(Tk):
         self.pending = Button(self.statusbar,
                               command=self.showAlerts,
                               highlightbackground=BGCOLOR,
-                              bg=BGCOLOR, pady=0,
+                              bg=BGCOLOR, pady=0, bd=0,
                               highlightthickness=0,
                             )
-        self.pending.config(image=self.pendingIcon, width="18", height="18")
+        self.pending.config(image=self.pendingIcon,
+                            width="24", height="24"
+        )
 
 
         self.pending.pack(side="right", padx=4, pady=2)
