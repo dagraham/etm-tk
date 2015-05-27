@@ -21,7 +21,7 @@ import platform
 
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, PanedWindow, OptionMenu, StringVar, IntVar, Menu, X, Canvas, CURRENT, Scrollbar, PhotoImage, CENTER
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, PanedWindow, OptionMenu, StringVar, IntVar, Menu, X, Canvas, CURRENT, Scrollbar, PhotoImage, CENTER, FLAT, RAISED
     from tkinter import ttk
     from tkinter import font as tkFont
     utf8 = lambda x: x
@@ -29,7 +29,7 @@ if platform.python_version() >= '3':
 
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, PanedWindow, OptionMenu, StringVar, IntVar, Menu, X, Canvas, CURRENT, Scrollbar, PhotoImage, CENTER
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, PanedWindow, OptionMenu, StringVar, IntVar, Menu, X, Canvas, CURRENT, Scrollbar, PhotoImage, CENTER, FLAT, RAISED
     import ttk
     import tkFont
 
@@ -755,7 +755,7 @@ class App(Tk):
         self.rowconfigure(1, weight=2)
 
         topbar = Frame(self, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR)
-        topbar.pack(side="top", fill="x", expand=0, padx=0, pady=0)
+        # topbar.pack(side="top", fill="x", expand=0, padx=0, pady=0)
 
         # report
         self.box_value = StringVar()
@@ -823,6 +823,7 @@ class App(Tk):
         # self.vm.pack(side="left", padx=2)
         # self.vm.configure(background=BGCOLOR, takefocus=False)
 
+        iconsize = "22"
         self.settingsIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_settings.gif')
         self.settingsbutton = Button(
             topbar, command=self.selectCalendars,
@@ -830,37 +831,31 @@ class App(Tk):
             bg=BGCOLOR, pady=0, bd=0,
             highlightthickness=0,
             )
-        self.settingsbutton.config(image=self.settingsIcon, width="24", height="24")
+        self.settingsbutton.config(image=self.settingsIcon, width=iconsize, height=iconsize)
         self.settingsbutton.pack(side="left", padx=6, pady=2)
 
 
         self.checkIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_check.gif')
         self.checkbutton = Button(topbar, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0)
-        self.checkbutton.config(image=self.checkIcon, width="18", height="18")
+        self.checkbutton.config(image=self.checkIcon, width=iconsize, height=iconsize)
         self.checkbutton.pack(side="left", padx=6, pady=2)
 
 
-        # self.windowTitle = StringVar(self)
-        # windowtitle = Label(topbar, textvariable=self.windowTitle, bd=1, relief="flat", anchor="w", justify=CENTER, padx=4, pady=0)
-        # windowtitle.pack(side="left")
-        # windowtitle.configure(background=BGCOLOR)
-        # self.windowTitle.set("May 2015")
-        #
         # calendars
         # self.calbutton = Button(topbar, text=CALENDARS, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, width=8, pady=2)
-        self.newIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_add.gif')
+        self.newIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_plus.gif')
         self.newbutton = Button(topbar, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0)
-        self.newbutton.config(image=self.newIcon, width="18", height="18")
+        self.newbutton.config(image=self.newIcon, width=iconsize, height=iconsize)
         # self.calbutton.config(image=self.plusIcon)
-        self.newbutton.pack(side="right", padx=4, pady=2)
+        self.newbutton.pack(side="right", padx=6, pady=2)
         # if not self.default_calendars:
         #     self.calbutton.configure(state="disabled")
 
         self.searchIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_search.gif')
         self.searchbutton = Button(topbar, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0)
-        self.searchbutton.config(image=self.searchIcon, width="18", height="18")
+        self.searchbutton.config(image=self.searchIcon, width=iconsize, height=iconsize)
         # self.calbutton.config(image=self.plusIcon)
-        self.searchbutton.pack(side="right", padx=4, pady=2)
+        self.searchbutton.pack(side="right", padx=6, pady=2)
         # if not self.default_calendars:
         #     self.calbutton.configure(state="disabled")
 
@@ -935,35 +930,36 @@ class App(Tk):
         # self.calbutton.config(image=self.plusIcon)
         # self.searchbutton.pack(side="right", padx=4, pady=2)
 
+        topbar.pack(side="top", fill="x", expand=0, padx=0, pady=0)
+
         self.pendingAlerts = IntVar(self)
         self.pendingAlerts.set(0)
-        # self.pending = Button(self.statusbar,
-        #                       textvariable=self.pendingAlerts,
-        #                       command=self.showAlerts,
-        #                       highlightbackground=BGCOLOR,
-        #                       bg=BGCOLOR,
-        #                       highlightthickness=0,
-        #                       width=3,
-        #                     )
         self.pending = Button(self.statusbar,
+                              textvariable=self.pendingAlerts,
                               command=self.showAlerts,
                               highlightbackground=BGCOLOR,
-                              bg=BGCOLOR, pady=0, bd=0,
-                              highlightthickness=0,
+                              bg=BGCOLOR,
+                              # highlightthickness=0,
+                              width=4, pady=2,
                             )
-        self.pending.config(image=self.pendingIcon,
-                            width="24", height="24"
-        )
+        # self.pending = Button(self.statusbar,
+        #                       command=self.showAlerts,
+        #                       highlightbackground=BGCOLOR,
+        #                       bg=BGCOLOR, padx=2, pady=2,
+        #                       highlightthickness=0,
+        #                     )
+        # self.pending.config(image=self.pendingIcon,
+        #                     width=24, height=24
+        # )
 
-
-        self.pending.pack(side="right", padx=4, pady=2)
+        self.pending.pack(side="right", padx=2, pady=2)
 
         self.currentTime = StringVar(self)
         currenttime = Label(self.statusbar, textvariable=self.currentTime, bd=1, relief="flat", anchor="e", padx=4, pady=0)
-        currenttime.pack(side="right")
+        currenttime.pack(side="right", padx=6, pady=2)
         currenttime.configure(background=BGCOLOR)
 
-        self.statusbar.pack(side="bottom", fill="x", expand=0, padx=6, pady=0)
+        self.statusbar.pack(side="bottom", fill="x", expand=0, padx=6, pady=2)
         self.statusbar.configure(background=BGCOLOR)
 
         panedwindow.pack(side="top", fill="both", expand=1, padx=2, pady=0)
