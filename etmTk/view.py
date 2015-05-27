@@ -835,7 +835,7 @@ class App(Tk):
         self.settingsbutton.pack(side="left", padx=6, pady=2)
 
 
-        self.checkIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_check.gif')
+        self.checkIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_check_green.gif')
         self.checkbutton = Button(topbar, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0)
         self.checkbutton.config(image=self.checkIcon, width=iconsize, height=iconsize)
         self.checkbutton.pack(side="left", padx=6, pady=2)
