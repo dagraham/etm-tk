@@ -138,7 +138,7 @@ NIL = Node(End(), [], [])
 
 # default for items without a tag or keyword entry
 # the leading ~ makes them sort last
-NONE = '~ {0} ~'.format(_("None"))
+NONE = '~ {0} ~'.format(_("none"))
 
 YESTERDAY = _('Yesterday')
 TODAY = _('Today')

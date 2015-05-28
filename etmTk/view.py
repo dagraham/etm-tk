@@ -166,7 +166,6 @@ class App(Tk):
         self.menutree.create_node(root, root)
 
         # leaf: (parent, (option, [accelerator])
-
         self.outline_depths = {}
         for view in DAY, TAG, KEYWORD, NOTE, PATH:
             # set all to the default
@@ -727,34 +726,8 @@ class App(Tk):
         self.currentTime = StringVar(self)
         self.currentTime.set("")
 
-        self.title(ETM)
-
-        # self.etmlogo = PhotoImage(file='etmTk/icons/icon_check.gif')
-        # self.wm_iconbitmap(bitmap = self.etmlogo)
-        # self.iconphoto(True, self.etmlogo)
-
-        # self.wm_iconbitmap(bitmap='etmlogo.gif')
-        # self.wm_iconbitmap('etmlogo-4.xbm')
-        # self.call('wm', 'iconbitmap', self._w, '/Users/dag/etm-tk/etmTk/etmlogo.gif')
-
-        # self.call('wm', 'iconphoto', self._w, self.etmlogo)
-        # if not mac:
-        #     img = PhotoImage(file='etmlogo.gif')
-        #     self.call('wm', 'iconphoto', self._w, img)
-
-        # if sys_platform == 'Linux':
-        #     logger.debug('using linux icon')
-        #     self.wm_iconbitmap('@' + 'etmlogo.gif')
-        #     # self.wm_iconbitmap('etmlogo-4.xbm')
-        #     # self.call('wm', 'iconbitmap', self._w, '/Users/dag/etm-tk/etmlogo_128x128x32.ico')
-        #     # self.iconbitmap(ICON_PATH)
-        # elif sys_platform == 'Darwin':
-        #     logger.debug('using darwin icon')
-        # self.iconbitmap('/Users/dag/etm-tk/etmTk/etmlogo.ico')
-        # self.wm_iconbitmap('etmlogo.icns')
-        # else:
-        #     logger.debug('using windows icon')
-        #     self.wm_iconbitmap('etmlogo.ico')
+        # self.title(ETM)
+        self.title(self.currentTime.get())
 
         self.columnconfigure(0, minsize=300, weight=1)
         self.rowconfigure(1, weight=2)
@@ -814,19 +787,19 @@ class App(Tk):
 
         self.vm_opts = [x[0] for x in self.vm_options]
         # self.vm = OptionMenu(topbar, self.currentView, *self.vm_opts)
-        self.vm = OptionMenu(topbar, self.currentView, [])
-        self.vm["menu"].delete(0, END)
-        self.vm.configure(pady=2)
+        # self.vm = OptionMenu(topbar, self.currentView, [])
+        # self.vm["menu"].delete(0, END)
+        # self.vm.configure(pady=2)
         for i in range(len(self.vm_options)):
             label = self.vm_options[i][0]
             k = self.vm_options[i][1]
             if label == "-":
-                self.vm["menu"].add_separator()
+                # self.vm["menu"].add_separator()
                 self.add2menu(VIEWS, (SEP, ))
             else:
                 self.viewname2cmd[label] = self.view2cmd[k]
                 l, c = commandShortcut(k)
-                self.vm["menu"].add_command(label=label, command=self.view2cmd[k], accelerator=l)
+                # self.vm["menu"].add_command(label=label, command=self.view2cmd[k], accelerator=l)
                 self.bind(c, lambda e, x=k: self.after(AFTER, self.view2cmd[x]))
                 self.add2menu(VIEWS, (self.vm_opts[i], l))
         # self.vm.pack(side="left", padx=2)
@@ -844,10 +817,10 @@ class App(Tk):
         self.settingsbutton.pack(side="left", padx=6, pady=2)
 
 
-        self.checkIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_check_green.gif')
-        self.checkbutton = Button(topbar, command=self.toggleActiveView, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0)
-        self.checkbutton.config(image=self.checkIcon, width=iconsize, height=iconsize)
-        self.checkbutton.pack(side="left", padx=6, pady=2)
+        self.toggleIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_refresh.gif')
+        self.toggleActiveButton = Button(topbar, command=self.toggleActiveView, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0)
+        self.toggleActiveButton.config(image=self.toggleIcon, width=iconsize, height=iconsize)
+        self.toggleActiveButton.pack(side="left", padx=6, pady=2)
 
 
         # calendars
@@ -868,12 +841,12 @@ class App(Tk):
         # if not self.default_calendars:
         #     self.calbutton.configure(state="disabled")
 
-        self.windowTitle = StringVar(self)
-        windowtitle = Label(topbar, textvariable=self.windowTitle, bd=1, relief="flat",  padx=4, pady=0)
+        # self.windowTitle = StringVar(self)
+        windowtitle = Label(topbar, textvariable=self.currentView, bd=1, relief="flat",  padx=4, pady=0)
         # windowtitle.pack(side="left", fill=X, expand=1)
         windowtitle.pack(side="left")
         windowtitle.configure(background=BGCOLOR)
-        self.windowTitle.set("Agenda")
+        self.currentView.set("Agenda")
 
 
         # filter
@@ -965,9 +938,9 @@ class App(Tk):
 
         self.pending.pack(side="right", padx=2, pady=2)
 
-        currenttime = Label(self.statusbar, textvariable=self.currentTime, bd=1, relief="flat", anchor="e", padx=4, pady=0)
-        currenttime.pack(side="right", padx=6, pady=2)
-        currenttime.configure(background=BGCOLOR)
+        # currenttime = Label(self.statusbar, textvariable=self.currentTime, bd=1, relief="flat", anchor="e", padx=4, pady=0)
+        # currenttime.pack(side="right", padx=6, pady=2)
+        # currenttime.configure(background=BGCOLOR)
 
         self.statusbar.pack(side="bottom", fill="x", expand=0, padx=6, pady=2)
         self.statusbar.configure(background=BGCOLOR)
@@ -2190,11 +2163,13 @@ Enter the shortest time period you want displayed in minutes.""")
             return
         logger.debug('week active_date: {0}'.format(self.active_date))
         theweek, weekdays, busy_lst, occasion_lst = self.setWeek(day)
+        self.currentView.set(theweek)
         self.OnSelect()
         self.canvas.delete("all")
         l = 50
         r = 8
-        t = 56
+        # t = 56
+        t = 32
         b = 8
         if event:
             logger.debug('event: {0}'.format(event))
@@ -2216,7 +2191,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
         # week
         p = int(l + (w - 1 - l - r) / 2), 20
-        self.canvas.create_text(p, text=theweek)
+        # self.canvas.create_text(p, text=theweek)
         self.busyHsh = {}
 
         # occasions
@@ -2439,7 +2414,8 @@ Enter the shortest time period you want displayed in minutes.""")
         self.canvas.delete("all")
         l = 36
         r = 8
-        t = 56
+        # t = 56
+        t = 32
         b = 8
         if event:
             logger.debug('event: {0}'.format(event))
@@ -2464,7 +2440,8 @@ Enter the shortest time period you want displayed in minutes.""")
 
         # month
         p = l + int((w - 1 - l - r) / 2), 20
-        self.canvas.create_text(p, text="{0}".format(themonth))
+        # self.canvas.create_text(p, text="{0}".format(themonth))
+        self.currentView.set(themonth)
         self.busyHsh = {}
 
         # occasions
@@ -3247,15 +3224,16 @@ or 0 to display all changes.""").format(title)
         self.now = get_current_time()
         self.current_minutes = self.now.hour * 60 + self.now.minute
         nxt = (60 - self.now.second) * 1000 - self.now.microsecond // 1000
+        nowfmt = "{0} {1}".format(
+            s2or3(self.now.strftime("%a %b %d")),
+            s2or3(self.now.strftime(loop.options['reprtimefmt']).lower()),
+        )
         logger.debug('next update in {0} milliseconds.'.format(nxt))
         self.after(nxt, self.updateClock)
-        nowfmt = "{0} {1}".format(
-            s2or3(self.now.strftime(loop.options['reprtimefmt']).lower()),
-            s2or3(self.now.strftime("%a %b %d")))
 
         nowfmt = leadingzero.sub("", nowfmt)
         self.currentTime.set("{0}".format(nowfmt))
-        # self.title(self.currentTime.get())
+        self.title(self.currentTime.get())
         today = self.now.date()
         newday = (today != self.today)
         self.today = today
