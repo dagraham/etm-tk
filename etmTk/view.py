@@ -47,15 +47,15 @@ from calendar import Calendar
 from decimal import Decimal
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, str2hsh, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical_active, fmt_time, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, FINISH, availableDates, syncTxt, update_subscription)
+    init_localization, fmt_weekday, fmt_dt, str2hsh, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical_active, fmt_time, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, FINISH, availableDates, syncTxt, update_subscription, _)
 
 from etmTk.dialog import MenuTree, Timer, ReadOnlyText, MessageWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, FileChoice, STOPPED, PAUSED, RUNNING, BGCOLOR, ONEDAY, ONEMINUTE
 
 from etmTk.edit import SimpleEditor
 
-import gettext
+# import gettext
 
-_ = gettext.gettext
+# _ = gettext.gettext
 
 
 from datetime import datetime, time
@@ -2054,7 +2054,7 @@ Enter the shortest time period you want displayed in minutes.""")
             header = "{0} - {1}".format(
                 fmt_dt(weekbeg, '%b %d, %Y'), fmt_dt(weekend, '%b %d, %Y'))
         header = leadingzero.sub('', header)
-        theweek = _("Week {0}: {1}").format(wn, header)
+        theweek = _("{0} {1}: {2}").format(_("Week"), wn, header)
         self.busy_info = (theweek, weekdays, busy_lst, occasion_lst)
         return self.busy_info
 

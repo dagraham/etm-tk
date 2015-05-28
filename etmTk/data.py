@@ -81,12 +81,14 @@ def setup_logging(level, etmdir=None):
 import subprocess
 
 import gettext
+t = gettext.translation('etm', 'locale', fallback=True)
 
 if platform.python_version() >= '3':
     python_version = 3
     python_version2 = False
     from io import StringIO
-    from gettext import gettext as _
+    _ = t.gettext
+    # from gettext import gettext as _
     unicode = str
     u = lambda x: x
     raw_input = input
@@ -95,7 +97,7 @@ else:
     python_version = 2
     python_version2 = True
     from cStringIO import StringIO
-    _ = gettext.lgettext
+    _ = t.ugettext
     from urllib2 import quote
 
 from random import random
@@ -286,8 +288,6 @@ def clear_all_data():
 
 dayfirst = False
 yearfirst = True
-# bgclr = "#e9e9e9"
-# BGCOLOR = "#ebebeb"
 
 FINISH = _("Finish ...")
 
@@ -556,7 +556,7 @@ def get_week(dt):
         header = "{0} - {1}".format(
             fmt_dt(weekbeg, '%b %d, %Y'), fmt_dt(weekend, '%b %d, %Y'))
     header = leadingzero.sub('', header)
-    theweek = "{0} {1}: {2}".format(_("{0} Week".format(yn)), "{0:02d}".format(wn), header)
+    theweek = "{0} {1}: {2}".format(_("Week"), "{0:02d}".format(wn), header)
     return theweek
 
 
@@ -977,7 +977,7 @@ def date_calculator(s, options=None):
     if ny:
         y, yzs = ny.groups()
         yz = gettz(yzs)
-    windoz_epoch = _("Warning: under Windows with dates prior to 1970,\nany timezone information is ignored.")
+    windoz_epoch = _("Warning: any timezone information in dates prior to 1970 is ignored under Windows.")
     warn = ""
     try:
         dt_x = parse(parse_dtstr(x, timezone=xzs))
