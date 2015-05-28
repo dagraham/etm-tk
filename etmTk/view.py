@@ -724,15 +724,20 @@ class App(Tk):
         self.dtSelected = None
         self.rowSelected = None
 
+        self.currentTime = StringVar(self)
+        self.currentTime.set("")
+
         self.title(ETM)
+
+        # self.etmlogo = PhotoImage(file='etmTk/icons/icon_check.gif')
+        # self.wm_iconbitmap(bitmap = self.etmlogo)
+        # self.iconphoto(True, self.etmlogo)
 
         # self.wm_iconbitmap(bitmap='etmlogo.gif')
         # self.wm_iconbitmap('etmlogo-4.xbm')
         # self.call('wm', 'iconbitmap', self._w, '/Users/dag/etm-tk/etmTk/etmlogo.gif')
 
-        # root = Tk()
-        # img = PhotoImage(file='/Users/dag/etm-tk/etmTk/etmlogo.icns')
-        # self.tk.call('wm', 'iconphoto', self._w, img)
+        # self.call('wm', 'iconphoto', self._w, self.etmlogo)
         # if not mac:
         #     img = PhotoImage(file='etmlogo.gif')
         #     self.call('wm', 'iconphoto', self._w, img)
@@ -795,7 +800,10 @@ class App(Tk):
                          'c': self.customView,
                          'w': self.showWeekly}
 
+        self.viewname2cmd = {}
+
         self.view = self.vm_options[0][0]
+        self.activeview = self.vm_options[2][0]
         self.currentView = StringVar(self)
         self.currentView.set(self.view)
 
@@ -816,6 +824,7 @@ class App(Tk):
                 self.vm["menu"].add_separator()
                 self.add2menu(VIEWS, (SEP, ))
             else:
+                self.viewname2cmd[label] = self.view2cmd[k]
                 l, c = commandShortcut(k)
                 self.vm["menu"].add_command(label=label, command=self.view2cmd[k], accelerator=l)
                 self.bind(c, lambda e, x=k: self.after(AFTER, self.view2cmd[x]))
@@ -836,7 +845,7 @@ class App(Tk):
 
 
         self.checkIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_check_green.gif')
-        self.checkbutton = Button(topbar, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0)
+        self.checkbutton = Button(topbar, command=self.toggleActiveView, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0)
         self.checkbutton.config(image=self.checkIcon, width=iconsize, height=iconsize)
         self.checkbutton.pack(side="left", padx=6, pady=2)
 
@@ -860,8 +869,9 @@ class App(Tk):
         #     self.calbutton.configure(state="disabled")
 
         self.windowTitle = StringVar(self)
-        windowtitle = Label(topbar, textvariable=self.windowTitle, bd=1, relief="flat",  justify=CENTER, padx=4, pady=0)
-        windowtitle.pack(side="left", fill=X, expand=1)
+        windowtitle = Label(topbar, textvariable=self.windowTitle, bd=1, relief="flat",  padx=4, pady=0)
+        # windowtitle.pack(side="left", fill=X, expand=1)
+        windowtitle.pack(side="left")
         windowtitle.configure(background=BGCOLOR)
         self.windowTitle.set("Agenda")
 
@@ -924,7 +934,8 @@ class App(Tk):
         timer_status.pack(side="left", expand=0, padx=2)
         timer_status.configure(background=BGCOLOR, highlightthickness=0)
 
-        self.pendingIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_clock.gif')
+        # self.pendingIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_clock.gif')
+        self.pendingIcon = PhotoImage(file='etmTk/icons/icon_clock.gif')
         # self.searchbutton = Button(topbar, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0)
         # self.searchbutton.config(image=self.searchIcon, width="18", height="18")
         # self.calbutton.config(image=self.plusIcon)
@@ -954,7 +965,6 @@ class App(Tk):
 
         self.pending.pack(side="right", padx=2, pady=2)
 
-        self.currentTime = StringVar(self)
         currenttime = Label(self.statusbar, textvariable=self.currentTime, bd=1, relief="flat", anchor="e", padx=4, pady=0)
         currenttime.pack(side="right", padx=6, pady=2)
         currenttime.configure(background=BGCOLOR)
@@ -1812,7 +1822,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
     def customView(self, e=None):
         # TODO: finish this
         self.content.delete("1.0", END)
-        self.fltr.forget()
+        # self.fltr.forget()
         self.clearTree()
         self.setView(CUSTOM)
         pass
@@ -1820,12 +1830,22 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
     def noteView(self, e=None):
         self.setView(NOTE)
 
+    def toggleActiveView(self, e=None):
+        logger.debug("toggleActiveView. self.view: {0}, self.activeview: {1}".format(self.view, self.activeview))
+        if self.view == AGENDA:
+            self.viewname2cmd[self.activeview]()
+            # self.setView(self.activeview)
+        else:
+            self.agendaView()
+
     def setView(self, view, row=None):
         self.rowSelected = None
         if view != WEEK and self.weekly:
             self.closeWeekly()
         if view != MONTH and self.monthly:
             self.closeMonthly()
+        if self.view and self.view != AGENDA:
+            self.activeview = self.view
         if view == CUSTOM:
             # self.reportbar.pack(side="top")
             logger.debug('showing custom_box')
@@ -1841,7 +1861,6 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
                 for i in range(len(self.rm_options)):
                     self.custommenu.entryconfig(i, state="disabled")
                 self.saveSpecs()
-                self.fltr.pack(side="left", padx=0, expand=1, fill=X)
         self.view = view
         logger.debug("setView view: {0}. Calling showView.".format(view))
         self.showView(row=row)
@@ -2080,7 +2099,7 @@ Enter the shortest time period you want displayed in minutes.""")
             self.viewmenu.entryconfig(i, state="disabled")
         self.canvas.pack_forget()
         self.weekly = False
-        self.fltr.pack(side=LEFT, padx=8, pady=0, fill="x", expand=1)
+        # self.fltr.pack(side=LEFT, padx=8, pady=0, fill="x", expand=1)
         self.tree.pack(fill="both", expand=1, padx=4, pady=0)
         self.update_idletasks()
         if self.filter_active:
@@ -2109,7 +2128,7 @@ Enter the shortest time period you want displayed in minutes.""")
         self.content.delete("1.0", END)
         self.weekly = True
         self.tree.pack_forget()
-        self.fltr.pack_forget()
+        # self.fltr.pack_forget()
         for i in range(4, 13):
             self.viewmenu.entryconfig(i, state="disabled")
 
@@ -2329,7 +2348,7 @@ Enter the shortest time period you want displayed in minutes.""")
             self.viewmenu.entryconfig(i, state="disabled")
         self.canvas.pack_forget()
         self.monthly = False
-        self.fltr.pack(side=LEFT, padx=8, pady=0, fill="x", expand=1)
+        # self.fltr.pack(side=LEFT, padx=8, pady=0, fill="x", expand=1)
         self.tree.pack(fill="both", expand=1, padx=4, pady=0)
         self.update_idletasks()
         if self.filter_active:
@@ -2358,7 +2377,7 @@ Enter the shortest time period you want displayed in minutes.""")
         self.content.delete("1.0", END)
         self.monthly = True
         self.tree.pack_forget()
-        self.fltr.pack_forget()
+        # self.fltr.pack_forget()
         for i in range(4, 13):
             self.viewmenu.entryconfig(i, state="disabled")
 
@@ -3236,6 +3255,7 @@ or 0 to display all changes.""").format(title)
 
         nowfmt = leadingzero.sub("", nowfmt)
         self.currentTime.set("{0}".format(nowfmt))
+        # self.title(self.currentTime.get())
         today = self.now.date()
         newday = (today != self.today)
         self.today = today
@@ -3484,7 +3504,7 @@ Relative dates and fuzzy parsing are supported.""")
         self.filter_active = True
         self.viewmenu.entryconfig(6, state="disabled")
         self.viewmenu.entryconfig(7, state="normal")
-        self.fltr.configure(bg="white", state="normal")
+        # self.fltr.configure(bg="white", state="normal")
         self.fltr.focus_set()
 
     def clearFilter(self, e=None):
@@ -3494,7 +3514,7 @@ Relative dates and fuzzy parsing are supported.""")
         self.viewmenu.entryconfig(6, state="normal")
         self.viewmenu.entryconfig(7, state="disabled")
         self.filterValue.set('')
-        self.fltr.configure(bg=BGCOLOR)
+        # self.fltr.configure(bg=BGCOLOR)
         self.tree.focus_set()
         if self.rowSelected:
             self.tree.focus(self.rowSelected)
