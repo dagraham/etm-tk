@@ -2166,10 +2166,9 @@ Enter the shortest time period you want displayed in minutes.""")
         self.currentView.set(theweek)
         self.OnSelect()
         self.canvas.delete("all")
-        l = 50
+        l = 44
         r = 8
-        # t = 56
-        t = 32
+        t = 28
         b = 8
         if event:
             logger.debug('event: {0}'.format(event))
@@ -2412,10 +2411,10 @@ Enter the shortest time period you want displayed in minutes.""")
         weeknumbers = [x[0].isocalendar()[1] for x in weeks]
         themonth = weeks[1][0].strftime("%B %Y")
         self.canvas.delete("all")
-        l = 36
+        l = 8
         r = 8
         # t = 56
-        t = 32
+        t = 28
         b = 8
         if event:
             logger.debug('event: {0}'.format(event))
@@ -2649,9 +2648,9 @@ Enter the shortest time period you want displayed in minutes.""")
             self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
 
         # week numbers
-        for j in range(num_weeks):
-            p = int(l - 5), int(t + y_ * j + y_ / 2)
-            self.canvas.create_text(p, text=weeknumbers[j], anchor="e")
+        # for j in range(num_weeks):
+        #     p = int(l - 5), int(t + y_ * j + y_ / 2)
+        #     self.canvas.create_text(p, text=weeknumbers[j], anchor="e")
         # days
         for i in range(7):
 
