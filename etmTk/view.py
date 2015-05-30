@@ -2100,12 +2100,9 @@ Enter the shortest time period you want displayed in minutes.""")
         self.today_col = None
         for i in range(14, 20):
             self.viewmenu.entryconfig(i, state="disabled")
-        # self.canvas.pack_forget()
         self.week_height = self.topwindow.panecget(self.toppane, "height")
-        print('set week_height', self.week_height)
         self.topwindow.forget(self.toppane)
         self.weekly = False
-        # self.fltr.pack(side=LEFT, padx=8, pady=0, fill="x", expand=1)
         self.tree.pack(fill="both", expand=1, padx=4, pady=0)
         self.update_idletasks()
         if self.filter_active:
@@ -2170,13 +2167,8 @@ Enter the shortest time period you want displayed in minutes.""")
             self.showMonth(event, month=1)
 
     def showWeek(self, event=None, week=None):
-        print('showWeek')
         self.canvas.focus_set()
         self.selectedId = None
-        # thisheight = self.topwindow.panecget(self.toppane, 'height')
-        # print("thisheight", thisheight)
-        # self.panedwindow.paneconfig(self.toppane, height=".5in")
-        # self.toppane.configure(height=".5in")
 
         matching = self.cal_regex is not None and self.default_regex is not None
         busy_lst = []
@@ -2204,13 +2196,9 @@ Enter the shortest time period you want displayed in minutes.""")
             return
         logger.debug('week active_date: {0}'.format(self.active_date))
         theweek, weekdays, weekdates, busy_lst, occasion_lst = self.setWeek(day)
-        # print(day.isocalendar())
-        # print(theweek, weekdays, weekdates)
-        # print(busy_lst)
-        # print(occasion_lst)
-        year, weeknum, weekdaynum = day.isocalendar()
-        weeks = self.monthly_calendar.monthdatescalendar(*self.year_month)
-        # weekdays = [s2or3(x.strftime("%a")) for x in weeks[0]]
+        weekdaynum = day.isocalendar()[2]
+        # reset day to Monday of the current week
+        day = day - (weekdaynum - 1) * ONEDAY
         self.currentView.set(theweek)
         self.OnSelect()
         self.canvas.delete("all")
@@ -2230,8 +2218,6 @@ Enter the shortest time period you want displayed in minutes.""")
         else:
             w = self.canvas.winfo_width()
             h = self.canvas.winfo_height()
-        # print(h)
-        # h = .2 * h
         logger.debug("w: {0}, h: {1}, l: {2}, t: {3}".format(w, h, l, t))
         self.margins = (w, h, l, r, t, b)
         self.week_x = x = Decimal(w - 1 - l - r) / Decimal(7)
@@ -2239,12 +2225,9 @@ Enter the shortest time period you want displayed in minutes.""")
         logger.debug("x: {0}, y: {1}".format(x, y))
 
         # week
-        # p = int(l + (w - 1 - l - r) / 2), 20
-        # self.canvas.create_text(p, text=theweek)
         self.busyHsh = {}
 
         # occasions
-        occasion_ids = []
         busy_ids = set([])
         monthid2date = {}
 
@@ -2274,13 +2257,10 @@ Enter the shortest time period you want displayed in minutes.""")
             busytimes = 0
             start_x = l + i * x_
             end_x = start_x + x_
-            start_y = int(t + y_)
+            start_y = int(t)
             end_y = start_y + y_
             xy = int(start_x), int(start_y), int(end_x), int(end_y)
-            # p = int(l + x_ / 2 + x_ * i), int(t + y_ * j + y_ / 2)
-            p = int(l + x_ / 2 + x_ * i), int(t + y_ * j + y_ / 2)
-            # pp = int(l +  x_ + x_ * i), int(t + y_ * j + y_ )
-
+            p = int(l + x_ / 2 + x_ * i), int(t + y_ / 2)
             tl_x = bl_x = int(l + x_ * i)
             tl_y = tr_y = int(t)
             tr_x = br_x = int(tl_x + x_)
@@ -2290,7 +2270,6 @@ Enter the shortest time period you want displayed in minutes.""")
 
             thisdate = (day + i * ONEDAY).date()
             isokey = thisdate.isocalendar()
-            # print(thisdate, isokey, month)
             tags = []
             id = self.canvas.create_rectangle(xy, outline="", width=0)
             busy_ids.add(id)
@@ -2298,7 +2277,6 @@ Enter the shortest time period you want displayed in minutes.""")
             today = (thisdate == self.current_day.date())
             if today:
                 tags.append('current_day')
-            bt = []
             if isokey in loop.occasions:
                 bt = []
                 for item in loop.occasions[isokey]:
@@ -2321,7 +2299,6 @@ Enter the shortest time period you want displayed in minutes.""")
                 occasion_lst.append([])
 
             if isokey in loop.busytimes:
-            # if busy_lst[i]:
                 if isokey in loop.conflicts:
                     flagcolor = "red"
                 else:
@@ -2417,37 +2394,28 @@ Enter the shortest time period you want displayed in minutes.""")
                     busy_lst.append([])
                     busy_dates.append(thisdate.strftime("%a %d"))
 
-            print('id:', id)
             if 'current_day' in tags:
-                print('current day', CURRENTFILL)
                 self.canvas.itemconfig(id, tag='current_day', fill=CURRENTFILL)
             elif 'occasion' in tags:
-                print('occasion')
                 self.canvas.itemconfig(id, tag='occasion', fill=OCCASIONFILL)
             elif 'busy' in tags:
                 self.canvas.itemconfig(id, tag='busy', fill="white")
 
-            # print('setting', weekdates[i])
-            # print('printing', p, weekdates[i], fill)
             self.canvas.create_text(p, text="{0}".format(weekdates[i]), fill=fill)
 
-        busy_ids = list(busy_ids)
+        # busy_ids = list(busy_ids)
         self.conf_ids = conf_ids
-        for id in occasion_ids + busy_ids + conf_ids:  # + conf_ids:
-            self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
-
-        self.canvas.bind('<Escape>', self.on_clear_item)
 
         self.canvas_ids = [z for z in self.busyHsh.keys()]
         self.canvas_ids.sort()
         self.canvas_idpos = None
+
         # border
         xy = int(l), int(t), int(l + x * 7), int(t + y)
         self.canvas.create_rectangle(xy, tag="grid")
 
         # verticals
         for i in range(1, 7):
-
             xy = int(l + x * i), int(t), int(l + x * i), int(t + y)
             self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
         for i in range(7):
@@ -2463,12 +2431,9 @@ Enter the shortest time period you want displayed in minutes.""")
         self.today_col = None
         for i in range(14, 20):
             self.viewmenu.entryconfig(i, state="disabled")
-        # self.canvas.pack_forget()
         self.month_height = self.topwindow.panecget(self.toppane, "height")
-        print('set month_height', self.month_height)
         self.topwindow.forget(self.toppane)
         self.monthly = False
-        # self.fltr.pack(side=LEFT, padx=8, pady=0, fill="x", expand=1)
         self.tree.pack(fill="both", expand=1, padx=4, pady=0)
         self.update_idletasks()
         if self.filter_active:
@@ -2516,7 +2481,6 @@ Enter the shortest time period you want displayed in minutes.""")
         tt.stop()
 
     def showMonth(self, event=None, month=None):
-        print("showMonth")
         self.canvas.focus_set()
         self.selectedId = None
         matching = self.cal_regex is not None and self.default_regex is not None
