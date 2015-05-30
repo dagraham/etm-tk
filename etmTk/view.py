@@ -21,7 +21,7 @@ import platform
 
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, PanedWindow, OptionMenu, StringVar, IntVar, Menu, X, Canvas, CURRENT, Scrollbar, PhotoImage, CENTER, FLAT, RAISED
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, PanedWindow, OptionMenu, StringVar, IntVar, Menu, X, Canvas, CURRENT, Scrollbar, PhotoImage, CENTER, FLAT, RAISED, BOTH, TOP
     from tkinter import ttk
     from tkinter import font as tkFont
     utf8 = lambda x: x
@@ -29,7 +29,7 @@ if platform.python_version() >= '3':
 
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, PanedWindow, OptionMenu, StringVar, IntVar, Menu, X, Canvas, CURRENT, Scrollbar, PhotoImage, CENTER, FLAT, RAISED
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, PanedWindow, OptionMenu, StringVar, IntVar, Menu, X, Canvas, CURRENT, Scrollbar, PhotoImage, CENTER, FLAT, RAISED, BOTH, TOP
     import ttk
     import tkFont
 
@@ -175,10 +175,29 @@ class App(Tk):
         self.outline_depths[AGENDA] = 0
         self.outline_depths[CUSTOM] = 0
 
-        self.panedwindow = panedwindow = PanedWindow(self, orient="vertical", sashwidth=8, sashrelief='flat')
-        self.toppane = toppane = Frame(panedwindow, bd=0, highlightthickness=0, background=BGCOLOR)
-        self.tree = ttk.Treeview(toppane, show='tree', columns=["#1", "#2"], selectmode='browse')
-        self.canvas = Canvas(self.toppane, background="white", bd=2, relief="sunken")
+        self.topbar = topbar = Frame(self, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR)
+        topbar.pack(side="top", fill="x", expand=0, padx=0, pady=0)
+
+        self.topwindow = topwindow = PanedWindow(self, orient="vertical", sashwidth=8, sashrelief='flat')
+        self.topwindow.pack(side="top", fill=BOTH, expand=1)
+
+
+        self.toppane = toppane = Frame(topwindow, bd=0, highlightthickness=0, background=BGCOLOR)
+        # topwindow.add(toppane, padx=0, pady=0)
+
+        self.canvas = Canvas(self.toppane, background="white", bd=2, relief="sunken", highlightthickness=0)
+        self.canvas.pack(fill="both", expand=1, padx=4, pady=0)
+
+
+        self.botwindow = botwindow = PanedWindow(topwindow, orient="vertical", sashwidth=8, sashrelief='flat')
+        topwindow.add(botwindow)
+
+        self.treepane = treepane = Frame(botwindow, bd=0, highlightthickness=0, background=BGCOLOR)
+        botwindow.add(treepane)
+
+        self.tree = ttk.Treeview(treepane, show='tree', columns=["#1", "#2"], selectmode='browse')
+        self.tree.pack(fill="both", expand=1, padx=4, pady=0)
+
 
         self.canvas.bind("<Control-Button-1>", self.on_select_item)
         self.canvas.bind("<Double-1>", self.on_select_item)
@@ -732,8 +751,6 @@ class App(Tk):
         self.columnconfigure(0, minsize=300, weight=1)
         self.rowconfigure(1, weight=2)
 
-        topbar = Frame(self, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR)
-        # topbar.pack(side="top", fill="x", expand=0, padx=0, pady=0)
 
         # report
         self.box_value = StringVar()
@@ -889,15 +906,18 @@ class App(Tk):
         self.date2id = {}
         self.root = ('', '_')
 
-        self.tree.pack(fill="both", expand=1, padx=4, pady=0)
-        panedwindow.add(self.toppane, padx=0, pady=0, stretch="first")
 
-        self.content = ReadOnlyText(panedwindow, wrap="word", padx=3, bd=2, relief="sunken", font=tkfixedfont, height=loop.options['details_rows'], width=46, takefocus=False)
+        # treewindow.add(self.treepane, padx=0, pady=0, stretch="first")
+        # panedwindow.add(self.toppane, padx=0, pady=0)
+
+        self.content = ReadOnlyText(botwindow, wrap="word", padx=3, bd=2, relief="sunken", font=tkfixedfont,
+                                    height=loop.options['details_rows'],
+                                    width=46, takefocus=False)
         self.content.bind('<Escape>', self.cleartext)
         self.content.bind('<Tab>', self.focus_next_window)
         self.content.bind("<FocusIn>", self.editItem)
 
-        panedwindow.add(self.content, padx=3, pady=0, stretch="never")
+        botwindow.add(self.content, padx=3, pady=0, stretch="last")
 
         self.statusbar = Frame(self)
 
@@ -914,7 +934,6 @@ class App(Tk):
         # self.calbutton.config(image=self.plusIcon)
         # self.searchbutton.pack(side="right", padx=4, pady=2)
 
-        topbar.pack(side="top", fill="x", expand=0, padx=0, pady=0)
 
         self.pendingAlerts = IntVar(self)
         self.pendingAlerts.set(0)
@@ -944,10 +963,6 @@ class App(Tk):
 
         self.statusbar.pack(side="bottom", fill="x", expand=0, padx=6, pady=2)
         self.statusbar.configure(background=BGCOLOR)
-
-        panedwindow.pack(side="top", fill="both", expand=1, padx=2, pady=0)
-        panedwindow.configure(background=BGCOLOR)
-        self.panedwindow = panedwindow
 
         # set cal_regex here and update it in updateCalendars
         self.cal_regex = None
@@ -1990,6 +2005,7 @@ Enter the shortest time period you want displayed in minutes.""")
         logger.debug('week_beg: {0}'.format(self.week_beg))
         weekend = chosen_day + (6 - days) * ONEDAY
         weekdays = []
+        weekdates = []
 
         day = weekbeg
         self.active_date = weekbeg.date()
@@ -1997,7 +2013,9 @@ Enter the shortest time period you want displayed in minutes.""")
         occasion_lst = []
         matching = self.cal_regex is not None and self.default_regex is not None
         while day <= weekend:
-            weekdays.append(fmt_weekday(day))
+            # weekdays.append(fmt_weekday(day))
+            weekdays.append(s2or3(day.strftime("%a")))
+            weekdates.append(day.strftime("%d"))
             isokey = day.isocalendar()
 
             if isokey in loop.occasions:
@@ -2055,7 +2073,7 @@ Enter the shortest time period you want displayed in minutes.""")
                 fmt_dt(weekbeg, '%b %d, %Y'), fmt_dt(weekend, '%b %d, %Y'))
         header = leadingzero.sub('', header)
         theweek = _("{0} {1}: {2}").format(_("Week"), wn, header)
-        self.busy_info = (theweek, weekdays, busy_lst, occasion_lst)
+        self.busy_info = (theweek, weekdays, weekdates, busy_lst, occasion_lst)
         return self.busy_info
 
     def configureCanvas(self, e=None):
@@ -2070,7 +2088,8 @@ Enter the shortest time period you want displayed in minutes.""")
         self.today_col = None
         for i in range(14, 20):
             self.viewmenu.entryconfig(i, state="disabled")
-        self.canvas.pack_forget()
+        # self.canvas.pack_forget()
+        self.topwindow.forget(self.toppane)
         self.weekly = False
         # self.fltr.pack(side=LEFT, padx=8, pady=0, fill="x", expand=1)
         self.tree.pack(fill="both", expand=1, padx=4, pady=0)
@@ -2100,8 +2119,6 @@ Enter the shortest time period you want displayed in minutes.""")
             self.closeMonthly()
         self.content.delete("1.0", END)
         self.weekly = True
-        self.tree.pack_forget()
-        # self.fltr.pack_forget()
         for i in range(4, 13):
             self.viewmenu.entryconfig(i, state="disabled")
 
@@ -2115,8 +2132,7 @@ Enter the shortest time period you want displayed in minutes.""")
         else:
             self.chosen_day = get_current_time()
 
-        self.canvas.configure(highlightthickness=0)
-        self.canvas.pack(side="top", fill="both", expand=1, padx=4, pady=0)
+        self.topwindow.add(self.toppane, padx=0, pady=0, before=self.botwindow, height="1.25i")
 
         if self.options['ampm']:
             self.hours = ["{0}am".format(i) for i in range(7, 12)] + ['12pm'] + ["{0}pm".format(i) for i in range(1, 12)]
@@ -2125,7 +2141,6 @@ Enter the shortest time period you want displayed in minutes.""")
         for i in range(14, 20):
             self.viewmenu.entryconfig(i, state="normal")
         self.canvas.focus_set()
-        self.showWeek()
         tt.stop()
 
     def priorWeekMonth(self, event=None):
@@ -2141,8 +2156,19 @@ Enter the shortest time period you want displayed in minutes.""")
             self.showMonth(event, month=1)
 
     def showWeek(self, event=None, week=None):
+        print('showWeek')
         self.canvas.focus_set()
         self.selectedId = None
+        # thisheight = self.topwindow.panecget(self.toppane, 'height')
+        # print("thisheight", thisheight)
+        # self.panedwindow.paneconfig(self.toppane, height=".5in")
+        # self.toppane.configure(height=".5in")
+
+        matching = self.cal_regex is not None and self.default_regex is not None
+        busy_lst = []
+        busy_dates = []
+        occasion_lst = []
+
         self.current_day = get_current_time().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
         logger.debug('self.current_day: {0}, minutes: {1}'.format(self.current_day, self.current_minutes))
         self.x_win = self.canvas.winfo_width()
@@ -2158,15 +2184,23 @@ Enter the shortest time period you want displayed in minutes.""")
                 day = self.prev_week
             self.chosen_day = day
         elif self.chosen_day:
+            self.year_month = [self.chosen_day.year, self.chosen_day.month]
             day = self.chosen_day
         else:
             return
         logger.debug('week active_date: {0}'.format(self.active_date))
-        theweek, weekdays, busy_lst, occasion_lst = self.setWeek(day)
+        theweek, weekdays, weekdates, busy_lst, occasion_lst = self.setWeek(day)
+        # print(day.isocalendar())
+        # print(theweek, weekdays, weekdates)
+        # print(busy_lst)
+        # print(occasion_lst)
+        year, weeknum, weekdaynum = day.isocalendar()
+        weeks = self.monthly_calendar.monthdatescalendar(*self.year_month)
+        # weekdays = [s2or3(x.strftime("%a")) for x in weeks[0]]
         self.currentView.set(theweek)
         self.OnSelect()
         self.canvas.delete("all")
-        l = 44
+        l = 8
         r = 8
         t = 28
         b = 8
@@ -2182,103 +2216,206 @@ Enter the shortest time period you want displayed in minutes.""")
         else:
             w = self.canvas.winfo_width()
             h = self.canvas.winfo_height()
+        # print(h)
+        # h = .2 * h
         logger.debug("w: {0}, h: {1}, l: {2}, t: {3}".format(w, h, l, t))
         self.margins = (w, h, l, r, t, b)
         self.week_x = x = Decimal(w - 1 - l - r) / Decimal(7)
-        self.week_y = y = Decimal(h - 1 - t - b) / Decimal(16)
+        self.week_y = y = Decimal(h - 1 - t - b) / Decimal(1)
         logger.debug("x: {0}, y: {1}".format(x, y))
 
         # week
-        p = int(l + (w - 1 - l - r) / 2), 20
+        # p = int(l + (w - 1 - l - r) / 2), 20
         # self.canvas.create_text(p, text=theweek)
         self.busyHsh = {}
 
         # occasions
         occasion_ids = []
-        for i in range(7):
-            day = (self.week_beg + i * ONEDAY).replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
-            if not occasion_lst[i]:
-                continue
-            occasions = occasion_lst[i]
-            start_x = l + i * x
-            end_x = start_x + x
-            for tup in occasions:
-                xy = int(start_x), int(t), int(end_x), int(t + y * 16)
-                id = self.canvas.create_rectangle(xy, fill=OCCASIONFILL, outline="", width=0, tag='occasion')
-                tmp = list(tup)
-                tmp.append(day)
-                self.busyHsh[id] = tmp
-                occasion_ids.append(id)
-        self.y_per_minute = y_per_minute = y / Decimal(60)
-        busy_ids = []
+        busy_ids = set([])
+        monthid2date = {}
+
+        intervals = [360, 720, 1080, 1440]
+        busywidth = 2
+        offset = 6
+        indent = 7
+
+        barcolor = "SteelBlue3"
+        nightcolor = barcolor
+        morningcolor = barcolor
+        afternooncolor = barcolor
+        eveningcolor = barcolor
+
         conf_ids = []
         self.today_id = None
         self.today_col = None
         self.timeline = None
         self.last_minutes = None
+
+        x_ = x
+        y_ = y
+        j = 0
+
         for i in range(7):
-            day = (self.week_beg + i * ONEDAY).replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
-            busy_times = busy_lst[i]
-            start_x = l + i * x
-            end_x = start_x + x
-            if day == self.current_day:
-                self.today_col = i
-                xy = int(start_x), int(t), int(end_x), int(t + y * 16)
-                self.canvas.create_rectangle(xy, fill=CURRENTFILL, outline="", width=0, tag='current_day')
-            if not busy_times and self.today_col is None:
-                continue
-            for tup in busy_times:
-                conf = None
-                mtch = tup[5]
-                if mtch:
-                    busyColor = DEFAULTFILL
-                    ttag = 'default'
+            fill = "SteelBlue4"
+            busytimes = 0
+            start_x = l + i * x_
+            end_x = start_x + x_
+            start_y = int(t + y_)
+            end_y = start_y + y_
+            xy = int(start_x), int(start_y), int(end_x), int(end_y)
+            # p = int(l + x_ / 2 + x_ * i), int(t + y_ * j + y_ / 2)
+            p = int(l + x_ / 2 + x_ * i), int(t + y_ * j + y_ / 2)
+            # pp = int(l +  x_ + x_ * i), int(t + y_ * j + y_ )
+
+            tl_x = bl_x = int(l + x_ * i)
+            tl_y = tr_y = int(t)
+            tr_x = br_x = int(tl_x + x_)
+            bl_y = br_y = int(tl_y + y_)
+            w_ = x_ - 12
+            h_ = y_ - 12
+
+            thisdate = (day + i * ONEDAY).date()
+            isokey = thisdate.isocalendar()
+            # print(thisdate, isokey, month)
+            tags = []
+            id = self.canvas.create_rectangle(xy, outline="", width=0)
+            busy_ids.add(id)
+            monthid2date[id] = thisdate
+            today = (thisdate == self.current_day.date())
+            if today:
+                tags.append('current_day')
+            bt = []
+            if isokey in loop.occasions:
+                bt = []
+                for item in loop.occasions[isokey]:
+                    it = list(item)
+                    if matching:
+                        if not self.cal_regex.match(it[-1]):
+                            continue
+                        mtch = (self.default_regex.match(it[-1]) is not None)
+                    else:
+                        mtch = True
+                    it.append(mtch)
+                    item = tuple(it)
+                    bt.append(item)
+                occasion_lst.append(bt)
+                if bt:
+                    if not today:
+                        tags.append('occasion')
+                    self.busyHsh.setdefault(id, []).extend(["^ {0}".format(x[0]) for x in bt])
+            else:
+                occasion_lst.append([])
+
+            if isokey in loop.busytimes:
+            # if busy_lst[i]:
+                if isokey in loop.conflicts:
+                    flagcolor = "red"
                 else:
-                    busyColor = OTHERFILL
-                    ttag = 'other'
-                daytime = day + tup[0] * ONEMINUTE
+                    flagcolor = "white"
+                bt = []
+                for item in loop.busytimes[isokey]:
+                    it = list(item)
+                    if it[0] == it[1]:
+                        # skip reminders
+                        continue
+                    if matching:
+                        if not self.cal_regex.match(it[-1]):
+                            continue
+                        mtch = (self.default_regex.match(it[-1]) is not None)
+                    else:
+                        mtch = True
+                    it.append(mtch)
+                    item = tuple(it)
+                    bt.append(item)
+                busy_lst.append(bt)
+                busy_dates.append(thisdate.strftime("%a %d"))
+                if bt:
+                    for pts in bt:
+                        busytimes += pts[1] - pts[0]
+                        self.busyHsh.setdefault(id, []).append("* {0}".format(pts[2]))
+                    tags.append('busy')
 
-                if (tup[0] < 420):
-                    # early
-                    xy = int(start_x), int(t - 1), int(end_x), int(t - 1)
-                    self.canvas.create_line(xy, fill=OUTSIDELINE, width=2, tag='default')
-                if (tup[1] > 1380):
-                    # late
-                    xy = int(start_x), int(t + y * 16 + 2), int(end_x), int(t + y * 16 + 2)
-                    self.canvas.create_line(xy, fill=OUTSIDELINE, width=2, tag='default')
+                    busylines = [[], [], [], []]
+                    # each side 240 minutes plus 2 times bar width
+                    # 420 - 660 top: tl+(5,-3) -> tr+(-5,-3)
+                    # 660 - 900 right: tr+(-3,-5) -> br+(-3,+5)
+                    # 900 - 1140 bottom: br+(-5,+3) -> bl+(+5,+3)
+                    # 1140 - 1380 left: bl+(+3,+5) -> tl+(+3, -5)
 
-                if tup[0] > 1380 or tup[1] < 420:
-                    continue
+                    for pts in bt:
+                        pt1 = max(0, pts[0])
+                        pt2 = min(pts[1], 1440)
+                        tmp = [[], [], [], []]
 
-                t1 = t + (max(7 * 60, tup[0]) - 7 * 60) * y_per_minute
+                        for ii in range(0, 4):
+                            if pt1 >= intervals[ii]:
+                                continue
+                            tmp[ii].append(pt1)
+                            for jj in range(ii, 4):
+                                if jj > ii:
+                                    tmp[jj].append(intervals[jj-1])
+                                if pt2 <= intervals[jj]:
+                                    tmp[jj].append(pt2)
+                                    break
+                                else:
+                                    tmp[jj].append(intervals[jj])
+                            break
+                        for ii in range(4):
+                            if tmp[ii]:
+                                busylines[ii].append(tmp[ii])
 
-                t2 = t + min(16 * 60, max(7 * 60, tup[1]) - 7 * 60) * y_per_minute
 
-                xy = int(start_x), int(max(t, t1)), int(end_x), int(min(t2, t + y * 16))
-                conf = self.canvas.find_overlapping(*xy)
-                id = self.canvas.create_rectangle(xy, fill=busyColor, width=0, tag=ttag)
-                conf = [z for z in conf if z in busy_ids]
-                busy_ids.append(id)
-                conf_ids.extend(conf)
-                if conf:
-                    bb1 = self.canvas.bbox(id)
-                    bb2 = self.canvas.bbox(*conf)
+                    if busylines:
+                        for side in range(4):
+                            lines = busylines[side]
+                            if lines:
+                                if side == 0: # left
+                                    for line in lines:
+                                        bx = ex = bl_x + offset
+                                        by = bl_y - indent - int(Decimal((line[0])/360) * h_)
+                                        ey = bl_y - indent - int(Decimal((line[1])/360) * h_)
+                                        self.canvas.create_line((bx, by, ex, ey), fill=nightcolor, width=busywidth, tag="busy")
+                                elif side == 1: # top
+                                    for line in lines:
+                                        by = ey = tl_y + offset
+                                        bx = tl_x + indent + int(Decimal((line[0]-360)/360) * w_)
+                                        ex = tl_x + indent + int(Decimal((line[1]-360)/360) * w_)
+                                        self.canvas.create_line((bx, by, ex, ey), fill=morningcolor, width=busywidth, tag="busy")
+                                elif side == 2: # right
+                                    for line in lines:
+                                        bx = ex = tr_x - offset
+                                        by = tr_y + indent + int(Decimal((line[0]-720)/360) * h_)
+                                        ey = tr_y + indent + int(Decimal((line[1]-720)/360) * h_)
+                                        self.canvas.create_line((bx, by, ex, ey), fill=afternooncolor, width=busywidth, tag="busy")
+                                elif side == 3: # bottom
+                                    for line in lines:
+                                        by = ey = br_y - offset
+                                        bx = br_x - indent - int(Decimal((line[0]-1080)/360) * w_)
+                                        ex = br_x - indent - int(Decimal((line[1]-1080)/360) * w_)
+                                        self.canvas.create_line((bx, by, ex, ey), fill=eveningcolor, width=busywidth, tag="busy")
 
-                    # we want the max of bb1[1], bb2[1]
-                    # and the min of bb1[4], bb2[4]
-                    ol = bb1[0], max(bb1[1], bb2[1]), bb1[2], min(bb1[3], bb2[3])
-                    self.canvas.create_rectangle(ol, fill=CONFLICTFILL, outline="", width=0, tag="conflict")
+                        bx = bl_x + offset - 1.5 * busywidth
+                        ex = bl_x + offset + .5 * busywidth
+                        by = bl_y - indent + 1.5 * busywidth
+                        ey = bl_y - indent - .5 * busywidth
+                        self.canvas.create_rectangle((bx, by, ex, ey), fill=flagcolor, outline=flagcolor, tag="busy")
+                else:
+                    busy_lst.append([])
+                    busy_dates.append(thisdate.strftime("%a %d"))
 
-                tmp = list(tup[2:])  # id, time str, summary and file info
-                tmp.append(daytime)
-                self.busyHsh[id] = tmp
-            if self.today_col is not None:
-                xy = self.get_timeline()
-                if xy:
-                    self.canvas.delete('current_time')
-                    self.canvas.create_line(xy, width=2, fill=CURRENTLINE, tag='current_time')
 
-        self.busy_ids = busy_ids
+            if 'current_day' in tags:
+                self.canvas.itemconfig(id, tag='current_day', fill=CURRENTFILL)
+            elif 'occasion' in tags:
+                self.canvas.itemconfig(id, tag='occasion', fill=OCCASIONFILL)
+            elif 'busy' in tags:
+                self.canvas.itemconfig(id, tag='busy', fill="white")
+
+            # print('setting', weekdates[i])
+            # print('printing', p, weekdates[i], fill)
+            self.canvas.create_text(p, text="{0}".format(weekdates[i]), fill=fill)
+
+        busy_ids = list(busy_ids)
         self.conf_ids = conf_ids
         for id in occasion_ids + busy_ids + conf_ids:  # + conf_ids:
             self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
@@ -2289,24 +2426,14 @@ Enter the shortest time period you want displayed in minutes.""")
         self.canvas_ids.sort()
         self.canvas_idpos = None
         # border
-        xy = int(l), int(t), int(l + x * 7), int(t + y * 16)
+        xy = int(l), int(t), int(l + x * 7), int(t + y)
         self.canvas.create_rectangle(xy, tag="grid")
 
         # verticals
         for i in range(1, 7):
 
-            xy = int(l + x * i), int(t), int(l + x * i), int(t + y * 16)
+            xy = int(l + x * i), int(t), int(l + x * i), int(t + y)
             self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
-        # horizontals
-        for j in range(1, 16):
-            xy = int(l), int(t + y * j), int(l + x * 7), int(t + y * j)
-            self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
-        # hours
-        for j in range(17):
-            if j % 2:
-                p = int(l - 5), int(t + y * j)
-                self.canvas.create_text(p, text=self.hours[j], anchor="e")
-        # days
         for i in range(7):
 
             p = int(l + x / 2 + x * i), int(t - 13)
@@ -2320,7 +2447,8 @@ Enter the shortest time period you want displayed in minutes.""")
         self.today_col = None
         for i in range(14, 20):
             self.viewmenu.entryconfig(i, state="disabled")
-        self.canvas.pack_forget()
+        # self.canvas.pack_forget()
+        self.topwindow.forget(self.toppane)
         self.monthly = False
         # self.fltr.pack(side=LEFT, padx=8, pady=0, fill="x", expand=1)
         self.tree.pack(fill="both", expand=1, padx=4, pady=0)
@@ -2350,8 +2478,6 @@ Enter the shortest time period you want displayed in minutes.""")
             self.closeWeekly()
         self.content.delete("1.0", END)
         self.monthly = True
-        self.tree.pack_forget()
-        # self.fltr.pack_forget()
         for i in range(4, 13):
             self.viewmenu.entryconfig(i, state="disabled")
 
@@ -2365,16 +2491,15 @@ Enter the shortest time period you want displayed in minutes.""")
         else:
             self.chosen_day = get_current_time()
 
-        self.canvas.configure(highlightthickness=0)
-        self.canvas.pack(side="top", fill="both", expand=1, padx=4, pady=0)
+        self.topwindow.add(self.toppane, padx=0, pady=0, before=self.botwindow, height="3.5i")
 
         for i in range(14, 20):
             self.viewmenu.entryconfig(i, state="normal")
         self.canvas.focus_set()
-        self.showMonth()
         tt.stop()
 
     def showMonth(self, event=None, month=None):
+        print("showMonth")
         self.canvas.focus_set()
         self.selectedId = None
         matching = self.cal_regex is not None and self.default_regex is not None
@@ -2479,7 +2604,7 @@ Enter the shortest time period you want displayed in minutes.""")
                 end_y = start_y + y_
                 xy = int(start_x), int(start_y), int(end_x), int(end_y)
                 p = int(l + x_ / 2 + x_ * i), int(t + y_ * j + y_ / 2)
-                pp = int(l +  x_ + x_ * i), int(t + y_ * j + y_ )
+                # pp = int(l +  x_ + x_ * i), int(t + y_ * j + y_ )
 
                 tl_x = bl_x = int(l + x_ * i)
                 tl_y = tr_y = int(t + y_ *j)
@@ -2491,7 +2616,6 @@ Enter the shortest time period you want displayed in minutes.""")
                 thisdate = weeks[j][i]
                 isokey = thisdate.isocalendar()
                 month = thisdate.month
-                fill = None
                 tags = []
                 if (month != self.year_month[1]):
                     fill = "gray70"
@@ -2755,6 +2879,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
     def on_enter_item(self, e):
         if self.weekly:
+            return
             old_id = None
             if self.canvas_idpos is not None:
                 old_id = self.canvas_ids[self.canvas_idpos]
