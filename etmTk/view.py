@@ -154,6 +154,24 @@ class App(Tk):
         self.active_tree = {}
         root = "_"
 
+        self.week_height = "1.1i"
+        self.month_height = "3.5i"
+
+        self.options = loop.options
+
+        tkfixedfont = tkFont.nametofont("TkFixedFont")
+        if 'fontsize_fixed' in self.options and self.options['fontsize_fixed']:
+            tkfixedfont.configure(size=self.options['fontsize_fixed'])
+        logger.info("using fixedfont size: {0}".format(tkfixedfont.actual()['size']))
+        self.tkfixedfont = tkfixedfont
+
+        tktreefont = tkFont.nametofont("TkDefaultFont")
+        treefontfamily = tktreefont['family']
+        if 'fontsize_tree' in self.options and self.options['fontsize_tree']:
+            tktreefont.configure(size=self.options['fontsize_tree'])
+        logger.info("using treefont size: {0}".format(tktreefont.actual()['size']))
+        self.tktreefont = tktreefont
+
         ef = "%a %b %d"
         if 'ampm' in loop.options and loop.options['ampm']:
             self.efmt = "%I:%M%p {0}".format(ef)
@@ -178,22 +196,38 @@ class App(Tk):
         self.topbar = topbar = Frame(self, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR)
         topbar.pack(side="top", fill="x", expand=0, padx=0, pady=0)
 
-        self.topwindow = topwindow = PanedWindow(self, orient="vertical", sashwidth=8, sashrelief='flat')
+        self.statusbar = Frame(self, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR)
+        self.statusbar.pack(side="bottom", fill="x", expand=0, padx=0, pady=0)
+
+        self.topwindow = topwindow = PanedWindow(self, orient="vertical", sashwidth=4, sashrelief='flat')
         self.topwindow.pack(side="top", fill=BOTH, expand=1)
 
 
-        self.toppane = toppane = Frame(topwindow, bd=0, highlightthickness=0, background=BGCOLOR)
-        # topwindow.add(toppane, padx=0, pady=0)
+        self.toppane = toppane = Frame(
+            topwindow, bd=0, relief="flat",
+            highlightthickness=0,
+            highlightbackground=BGCOLOR, background=BGCOLOR)
 
-        self.canvas = Canvas(self.toppane, background="white", bd=2, relief="sunken", highlightthickness=0)
+        self.canvas = Canvas(self.toppane, background="white", bd=0, relief="flat", highlightthickness=0)
         self.canvas.pack(fill="both", expand=1, padx=4, pady=0)
 
 
-        self.botwindow = botwindow = PanedWindow(topwindow, orient="vertical", sashwidth=8, sashrelief='flat')
+        self.botwindow = botwindow = PanedWindow(topwindow, orient="vertical", sashwidth=4, sashrelief='flat')
         topwindow.add(botwindow)
 
-        self.treepane = treepane = Frame(botwindow, bd=0, highlightthickness=0, background=BGCOLOR)
-        botwindow.add(treepane)
+        self.treepane = treepane = Frame(
+            botwindow, bd=0, relief="flat",
+            highlightthickness=0,
+            highlightbackground=BGCOLOR, background=BGCOLOR)
+        botwindow.add(treepane, padx=0, pady=0, stretch="first")
+
+        self.content = ReadOnlyText(
+            botwindow, font=self.tkfixedfont,
+            wrap="word", padx=3, bd=2, relief="sunken",
+            height=loop.options['details_rows'],
+            width=46, takefocus=False)
+        botwindow.add(self.content, padx=3, pady=0, stretch="never")
+
 
         self.tree = ttk.Treeview(treepane, show='tree', columns=["#1", "#2"], selectmode='browse')
         self.tree.pack(fill="both", expand=1, padx=4, pady=0)
@@ -712,20 +746,6 @@ class App(Tk):
         self.count2id = {}
         self.now = get_current_time()
         self.today = self.now.date()
-        self.options = loop.options
-
-        tkfixedfont = tkFont.nametofont("TkFixedFont")
-        if 'fontsize_fixed' in self.options and self.options['fontsize_fixed']:
-            tkfixedfont.configure(size=self.options['fontsize_fixed'])
-        logger.info("using fixedfont size: {0}".format(tkfixedfont.actual()['size']))
-        self.tkfixedfont = tkfixedfont
-
-        tktreefont = tkFont.nametofont("TkDefaultFont")
-        treefontfamily = tktreefont['family']
-        if 'fontsize_tree' in self.options and self.options['fontsize_tree']:
-            tktreefont.configure(size=self.options['fontsize_tree'])
-        logger.info("using treefont size: {0}".format(tktreefont.actual()['size']))
-        self.tktreefont = tktreefont
 
         self.popup = ''
         self.value = ''
@@ -910,16 +930,10 @@ class App(Tk):
         # treewindow.add(self.treepane, padx=0, pady=0, stretch="first")
         # panedwindow.add(self.toppane, padx=0, pady=0)
 
-        self.content = ReadOnlyText(botwindow, wrap="word", padx=3, bd=2, relief="sunken", font=tkfixedfont,
-                                    height=loop.options['details_rows'],
-                                    width=46, takefocus=False)
         self.content.bind('<Escape>', self.cleartext)
         self.content.bind('<Tab>', self.focus_next_window)
         self.content.bind("<FocusIn>", self.editItem)
 
-        botwindow.add(self.content, padx=3, pady=0, stretch="last")
-
-        self.statusbar = Frame(self)
 
         self.timerStatus = StringVar(self)
         self.timerStatus.set("")
@@ -961,8 +975,6 @@ class App(Tk):
         # currenttime.pack(side="right", padx=6, pady=2)
         # currenttime.configure(background=BGCOLOR)
 
-        self.statusbar.pack(side="bottom", fill="x", expand=0, padx=6, pady=2)
-        self.statusbar.configure(background=BGCOLOR)
 
         # set cal_regex here and update it in updateCalendars
         self.cal_regex = None
@@ -2015,7 +2027,7 @@ Enter the shortest time period you want displayed in minutes.""")
         while day <= weekend:
             # weekdays.append(fmt_weekday(day))
             weekdays.append(s2or3(day.strftime("%a")))
-            weekdates.append(day.strftime("%d"))
+            weekdates.append(leadingzero.sub("", day.strftime("%d")))
             isokey = day.isocalendar()
 
             if isokey in loop.occasions:
@@ -2089,6 +2101,8 @@ Enter the shortest time period you want displayed in minutes.""")
         for i in range(14, 20):
             self.viewmenu.entryconfig(i, state="disabled")
         # self.canvas.pack_forget()
+        self.week_height = self.topwindow.panecget(self.toppane, "height")
+        print('set week_height', self.week_height)
         self.topwindow.forget(self.toppane)
         self.weekly = False
         # self.fltr.pack(side=LEFT, padx=8, pady=0, fill="x", expand=1)
@@ -2132,7 +2146,7 @@ Enter the shortest time period you want displayed in minutes.""")
         else:
             self.chosen_day = get_current_time()
 
-        self.topwindow.add(self.toppane, padx=0, pady=0, before=self.botwindow, height="1.25i")
+        self.topwindow.add(self.toppane, padx=0, pady=0, before=self.botwindow, height=self.week_height)
 
         if self.options['ampm']:
             self.hours = ["{0}am".format(i) for i in range(7, 12)] + ['12pm'] + ["{0}pm".format(i) for i in range(1, 12)]
@@ -2200,10 +2214,10 @@ Enter the shortest time period you want displayed in minutes.""")
         self.currentView.set(theweek)
         self.OnSelect()
         self.canvas.delete("all")
-        l = 8
-        r = 8
-        t = 28
-        b = 8
+        l = 4
+        r = 4
+        t = 22
+        b = 4
         if event:
             logger.debug('event: {0}'.format(event))
             w, h = event.width, event.height
@@ -2403,10 +2417,12 @@ Enter the shortest time period you want displayed in minutes.""")
                     busy_lst.append([])
                     busy_dates.append(thisdate.strftime("%a %d"))
 
-
+            print('id:', id)
             if 'current_day' in tags:
+                print('current day', CURRENTFILL)
                 self.canvas.itemconfig(id, tag='current_day', fill=CURRENTFILL)
             elif 'occasion' in tags:
+                print('occasion')
                 self.canvas.itemconfig(id, tag='occasion', fill=OCCASIONFILL)
             elif 'busy' in tags:
                 self.canvas.itemconfig(id, tag='busy', fill="white")
@@ -2436,18 +2452,20 @@ Enter the shortest time period you want displayed in minutes.""")
             self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
         for i in range(7):
 
-            p = int(l + x / 2 + x * i), int(t - 13)
+            p = int(l + x / 2 + x * i), int(t - 10)
 
             if self.today_col is not None and i == self.today_col:
                 self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=CURRENTLINE)
             else:
-                self.canvas.create_text(p, text="{0}".format(weekdays[i]))
+                self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=fill)
 
     def closeMonthly(self, event=None):
         self.today_col = None
         for i in range(14, 20):
             self.viewmenu.entryconfig(i, state="disabled")
         # self.canvas.pack_forget()
+        self.month_height = self.topwindow.panecget(self.toppane, "height")
+        print('set month_height', self.month_height)
         self.topwindow.forget(self.toppane)
         self.monthly = False
         # self.fltr.pack(side=LEFT, padx=8, pady=0, fill="x", expand=1)
@@ -2491,11 +2509,10 @@ Enter the shortest time period you want displayed in minutes.""")
         else:
             self.chosen_day = get_current_time()
 
-        self.topwindow.add(self.toppane, padx=0, pady=0, before=self.botwindow, height="3.5i")
+        self.topwindow.add(self.toppane, padx=0, pady=0, before=self.botwindow, height=self.month_height)
 
         for i in range(14, 20):
             self.viewmenu.entryconfig(i, state="normal")
-        self.canvas.focus_set()
         tt.stop()
 
     def showMonth(self, event=None, month=None):
@@ -2536,11 +2553,10 @@ Enter the shortest time period you want displayed in minutes.""")
         weeknumbers = [x[0].isocalendar()[1] for x in weeks]
         themonth = weeks[1][0].strftime("%B %Y")
         self.canvas.delete("all")
-        l = 8
-        r = 8
-        # t = 56
-        t = 28
-        b = 8
+        l = 4
+        r = 4
+        t = 22
+        b = 4
         if event:
             logger.debug('event: {0}'.format(event))
             w, h = event.width, event.height
@@ -2778,12 +2794,12 @@ Enter the shortest time period you want displayed in minutes.""")
         # days
         for i in range(7):
 
-            p = int(l + x_ / 2 + x_ * i), int(t - 13)
+            p = int(l + x_ / 2 + x_ * i), int(t - 10)
 
             if self.today_col is not None and i == self.today_col:
                 self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=CURRENTLINE)
             else:
-                self.canvas.create_text(p, text="{0}".format(weekdays[i]))
+                self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=fill)
 
         self.busy_info = (themonth, busy_dates, busy_lst, occasion_lst)
         self.busy_ids = busy_ids
