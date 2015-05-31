@@ -800,7 +800,7 @@ class App(Tk):
                            [NOTE, 'n'],
                            [CUSTOM, 'c']]
 
-        self.view2cmd = {'a': self.agendaView,
+        self.view2cmd = {'a': self.toggleActiveView,
                          'd': self.dayView,
                          'm': self.showMonthly,
                          'p': self.pathView,
@@ -813,7 +813,7 @@ class App(Tk):
         self.viewname2cmd = {}
 
         self.view = self.vm_options[0][0]
-        self.activeview = self.vm_options[2][0]
+        self.activeview = self.vm_options[3][0]
         self.currentView = StringVar(self)
         self.currentView.set(self.view)
 
@@ -823,24 +823,23 @@ class App(Tk):
         self.add2menu(MAIN, (VIEWS, ))
 
         self.vm_opts = [x[0] for x in self.vm_options]
-        # self.vm = OptionMenu(topbar, self.currentView, *self.vm_opts)
-        # self.vm = OptionMenu(topbar, self.currentView, [])
-        # self.vm["menu"].delete(0, END)
-        # self.vm.configure(pady=2)
         for i in range(len(self.vm_options)):
             label = self.vm_options[i][0]
             k = self.vm_options[i][1]
-            if label == "-":
+            if label == DAY:
+                pass
+            elif label == AGENDA:
+                l, c = commandShortcut(k)
+                self.add2menu(VIEWS, (_("Toggle Agenda/Active"), l))
+                self.bind(c, lambda e, x=k: self.after(AFTER, self.view2cmd[x]))
+            elif label == "-":
                 # self.vm["menu"].add_separator()
                 self.add2menu(VIEWS, (SEP, ))
             else:
                 self.viewname2cmd[label] = self.view2cmd[k]
                 l, c = commandShortcut(k)
-                # self.vm["menu"].add_command(label=label, command=self.view2cmd[k], accelerator=l)
                 self.bind(c, lambda e, x=k: self.after(AFTER, self.view2cmd[x]))
                 self.add2menu(VIEWS, (self.vm_opts[i], l))
-        # self.vm.pack(side="left", padx=2)
-        # self.vm.configure(background=BGCOLOR, takefocus=False)
 
         iconsize = "22"
         self.settingsIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_settings.gif')
@@ -2180,6 +2179,7 @@ Enter the shortest time period you want displayed in minutes.""")
         self.selectedId = None
 
         matching = self.cal_regex is not None and self.default_regex is not None
+
         busy_lst = []
         busy_dates = []
         occasion_lst = []
@@ -2413,14 +2413,16 @@ Enter the shortest time period you want displayed in minutes.""")
             elif 'busy' in tags:
                 self.canvas.itemconfig(id, tag='busy', fill="white")
 
-            self.canvas.create_text(p, text="{0}".format(weekdates[i]), fill=fill)
+            if fill:
+                self.canvas.create_text(p, text="{0}".format(weekdates[i]), fill=fill)
 
-        # busy_ids = list(busy_ids)
+        busy_ids = list(busy_ids)
+        for id in busy_ids:
+            self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
+            self.canvas.tag_bind(id, '<Any-Leave>', self.on_leave_item)
+
         self.conf_ids = conf_ids
 
-        self.canvas_ids = [z for z in self.busyHsh.keys()]
-        self.canvas_ids.sort()
-        self.canvas_idpos = None
 
         # border
         xy = int(l), int(t), int(l + x * 7), int(t + y)
@@ -2430,14 +2432,20 @@ Enter the shortest time period you want displayed in minutes.""")
         for i in range(1, 7):
             xy = int(l + x * i), int(t), int(l + x * i), int(t + y)
             self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
+
         for i in range(7):
-
             p = int(l + x / 2 + x * i), int(t - 10)
-
             if self.today_col is not None and i == self.today_col:
                 self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=CURRENTLINE)
             else:
                 self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=fill)
+
+        self.busy_ids = busy_ids
+        self.busy_ids.sort()
+        self.canvas_ids = self.busy_ids
+        self.monthid2date = monthid2date
+        self.canvas_idpos = None
+
 
     def closeMonthly(self, event=None):
         self.today_col = None
@@ -2753,6 +2761,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
                 if fill:
                     self.canvas.create_text(p, text="{0}".format(weeks[j][i].day), fill=fill)
+
         busy_ids = list(busy_ids)
         for id in busy_ids:
             self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
@@ -2771,10 +2780,6 @@ Enter the shortest time period you want displayed in minutes.""")
             xy = int(l), int(t + y_ * j), int(l + x_ * 7), int(t + y_ * j)
             self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
 
-        # week numbers
-        # for j in range(num_weeks):
-        #     p = int(l - 5), int(t + y_ * j + y_ / 2)
-        #     self.canvas.create_text(p, text=weeknumbers[j], anchor="e")
         # days
         for i in range(7):
 
@@ -2838,40 +2843,30 @@ Enter the shortest time period you want displayed in minutes.""")
                 self.canvas_idpos += 1
                 if self.canvas_idpos > len(self.canvas_ids) - 1:
                     self.canvas_idpos = 0
-        if self.weekly:
-            self.selectedId = id = self.canvas_ids[self.canvas_idpos]
-            self.canvas.itemconfig(id, fill=ACTIVEFILL)
-            self.canvas.tag_raise('conflict')
-            self.canvas.tag_raise(id)
-            self.canvas.tag_lower('occasion')
-            self.canvas.tag_lower('current_day')
-            self.canvas.tag_raise('current_time')
-            if id in self.busyHsh:
-                self.OnSelect(uuid=self.busyHsh[id][-4], dt=self.busyHsh[id][-1])
-                self.active_date = self.busyHsh[id][-1].date()
 
-        elif self.monthly:
-            if old_id is not None and old_id in self.busy_ids:
-                tags = self.canvas.gettags(old_id)
-                if 'current_day' in tags:
-                    self.canvas.itemconfig(old_id, fill=CURRENTFILL)
-                elif 'occasion' in tags:
-                    self.canvas.itemconfig(old_id, fill=OCCASIONFILL)
-                elif 'busy' in tags:
-                    self.canvas.itemconfig(old_id, fill="white")
-                else:
-                    self.canvas.itemconfig(old_id, fill="white")
-            self.selectedId = id = self.canvas_ids[self.canvas_idpos]
-            self.active_date = self.monthid2date[id]
-            self.canvas_idpos = self.canvas_ids.index(id)
-            if id in self.busy_ids:
-                self.canvas.itemconfig(id, fill=ACTIVEFILL)
-            if id in self.busyHsh:
-                txt = "\n".join(self.busyHsh[id])
-                self.content.delete("1.0", END)
-                self.content.insert("1.0", txt)
+        if old_id is not None and old_id in self.busy_ids:
+            tags = self.canvas.gettags(old_id)
+            if 'current_day' in tags:
+                self.canvas.itemconfig(old_id, fill=CURRENTFILL)
+            elif 'occasion' in tags:
+                self.canvas.itemconfig(old_id, fill=OCCASIONFILL)
+            elif 'busy' in tags:
+                self.canvas.itemconfig(old_id, fill="white")
             else:
-                self.content.delete("1.0", END)
+                self.canvas.itemconfig(old_id, fill="white")
+
+        self.selectedId = id = self.canvas_ids[self.canvas_idpos]
+        self.active_date = self.monthid2date[id]
+        self.scrollToDate(self.active_date)
+        self.canvas_idpos = self.canvas_ids.index(id)
+        if id in self.busy_ids:
+            self.canvas.itemconfig(id, fill=ACTIVEFILL)
+        if id in self.busyHsh:
+            txt = "\n".join(self.busyHsh[id])
+            self.content.delete("1.0", END)
+            self.content.insert("1.0", txt)
+        else:
+            self.content.delete("1.0", END)
 
     def setFocus(self, e):
         self.canvas.focus()
