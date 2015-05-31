@@ -58,7 +58,7 @@ from etmTk.edit import SimpleEditor
 # _ = gettext.gettext
 
 
-from datetime import datetime, time
+from datetime import datetime, time, date
 
 ETM = "etm"
 
@@ -1833,16 +1833,21 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
     def toggleActiveView(self, e=None):
         logger.debug("toggleActiveView. self.view: {0}, self.activeview: {1}".format(self.view, self.activeview))
         if self.view == AGENDA:
-            self.viewname2cmd[self.activeview]()
+            if self.activeview == WEEK:
+                self.showWeekly(event=e)
+            elif self.activeview == MONTH:
+                self.showMonthly(event=e)
+            if self.activeview not in [WEEK, MONTH]:
+                self.viewname2cmd[self.activeview]()
             # self.setView(self.activeview)
         else:
             self.agendaView()
 
     def setView(self, view, row=None):
         self.rowSelected = None
-        if view != WEEK and self.weekly:
+        if view not in [DAY, WEEK] and self.weekly:
             self.closeWeekly()
-        if view != MONTH and self.monthly:
+        if view not in [DAY, MONTH] and self.monthly:
             self.closeMonthly()
         if self.view and self.view != AGENDA:
             self.activeview = self.view
@@ -1866,8 +1871,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.showView(row=row)
 
     def filterView(self, e, *args):
-        if self.weekly or self.monthly:
-            return
+        # if self.weekly or self.monthly:
+        #     return
         self.depth2id = {}
         fltr = self.filterValue.get()
         cmd = "{0} {1}".format(
@@ -1877,8 +1882,8 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
 
     def showView(self, e=None, row=None):
         tt = TimeIt(loglevel=2, label="{0} view".format(self.view))
-        if self.weekly or self.monthly:
-            return
+        # if self.weekly or self.monthly:
+        #     return
         self.depth2id = {}
         self.currentView.set(self.view)
         fltr = self.filterValue.get()
@@ -2133,8 +2138,11 @@ Enter the shortest time period you want displayed in minutes.""")
         for i in range(4, 13):
             self.viewmenu.entryconfig(i, state="disabled")
 
+        self.setView(DAY)
+
         self.view = WEEK
-        self.currentView.set(WEEK)
+        self.activeview = WEEK
+        # self.currentView.set(WEEK)
 
         if chosen_day is not None:
             self.chosen_day = chosen_day
@@ -2151,7 +2159,8 @@ Enter the shortest time period you want displayed in minutes.""")
             self.hours = ["{0}:00".format(i) for i in range(7, 24)]
         for i in range(14, 20):
             self.viewmenu.entryconfig(i, state="normal")
-        self.canvas.focus_set()
+        # self.canvas.focus_set()
+        self.showWeek(event=event)
         tt.stop()
 
     def priorWeekMonth(self, event=None):
@@ -2199,6 +2208,7 @@ Enter the shortest time period you want displayed in minutes.""")
         weekdaynum = day.isocalendar()[2]
         # reset day to Monday of the current week
         day = day - (weekdaynum - 1) * ONEDAY
+        self.scrollToDate(self.active_date)
         self.currentView.set(theweek)
         self.OnSelect()
         self.canvas.delete("all")
@@ -2457,7 +2467,7 @@ Enter the shortest time period you want displayed in minutes.""")
         tt = TimeIt(loglevel=2, label="month view")
         logger.debug("chosen_day: {0}; active_date: {1}".format(chosen_day, self.active_date))
         if self.monthly:
-            # we're in weekview already
+            # we're in month view already
             return
         if self.weekly:
             self.closeWeekly()
@@ -2465,6 +2475,8 @@ Enter the shortest time period you want displayed in minutes.""")
         self.monthly = True
         for i in range(4, 13):
             self.viewmenu.entryconfig(i, state="disabled")
+
+        self.setView(DAY)
 
         self.view = MONTH
         self.currentView.set(MONTH)
@@ -2480,6 +2492,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
         for i in range(14, 20):
             self.viewmenu.entryconfig(i, state="normal")
+        self.showMonth(event=event)
         tt.stop()
 
     def showMonth(self, event=None, month=None):
@@ -2513,6 +2526,9 @@ Enter the shortest time period you want displayed in minutes.""")
         else:
             return
         logger.debug('month active_date: {0}'.format(self.active_date))
+        day = date(self.year_month[0], self.year_month[1], 1)
+        self.scrollToDate(day)
+
         weeks = self.monthly_calendar.monthdatescalendar(*self.year_month)
         num_weeks = len(weeks)
         weekdays = [s2or3(x.strftime("%a")) for x in weeks[0]]
@@ -3566,22 +3582,21 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
         prompt = _("""\
 Return an empty string for the current date or a date to be parsed.
 Relative dates and fuzzy parsing are supported.""")
-        if self.view not in [DAY, WEEK]:
-            self.view = DAY
-            self.showView()
+        if self.view not in [DAY, WEEK, MONTH]:
+            return
         d = GetDateTime(parent=self, title=_('date'), prompt=prompt)
         day = d.value
 
         logger.debug('day: {0}'.format(day))
-        if day is not None:
-            self.chosen_day = day
+        if day is None:
+            return
+        self.chosen_day = day
 
-            if self.weekly:
-                self.showWeek(event=e, week=None)
-            elif self.monthly:
-                self.showMonth(event=e, month=None)
-            else:
-                self.scrollToDate(day.date())
+        if self.weekly:
+            self.showWeek(event=e, week=None)
+        elif self.monthly:
+            self.showMonth(event=e, month=None)
+        self.scrollToDate(day.date())
         return
 
     def setFilter(self, *args):
@@ -3594,7 +3609,7 @@ Relative dates and fuzzy parsing are supported.""")
         self.fltr.focus_set()
 
     def clearFilter(self, e=None):
-        if self.view in [WEEK, MONTH, CUSTOM]:
+        if self.view in [CUSTOM]:
             return
         self.filter_active = False
         self.viewmenu.entryconfig(6, state="normal")
@@ -3861,8 +3876,9 @@ or 0 to expand all branches completely.""")
     def scrollToDate(self, date):
         # only makes sense for schedule
         logger.debug("DAY: {0}; date: {1}".format(self.view == DAY, date))
-        if self.view != DAY or date not in loop.prevnext:
+        if self.view not in [DAY, WEEK, MONTH] or date not in loop.prevnext:
             return
+        # new: go to the first date on or **after**, i.e., prevnext last
         active_date = loop.prevnext[date][1]
         if active_date not in self.date2id:
             return
@@ -3872,7 +3888,7 @@ or 0 to expand all branches completely.""")
 
     def scrollToId(self, uid):
         self.update_idletasks()
-        self.tree.focus_set()
+        # self.tree.focus_set()
         self.tree.focus(uid)
         self.tree.selection_set(uid)
         self.tree.yview(int(uid) - 1)
@@ -3893,10 +3909,10 @@ or 0 to expand all branches completely.""")
 
         if event is None:
 
-            if self.view == DAY and self.active_date:
+            if self.view in [DAY, WEEK, MONTH] and self.active_date:
                 self.scrollToDate(self.active_date)
             else:
-                if self.view in [AGENDA, DAY, TAG, KEYWORD, NOTE, PATH]:
+                if self.view in [AGENDA, TAG, KEYWORD, NOTE, PATH]:
                     if self.filter_active:
                         depth = 0
                     else:

@@ -1932,6 +1932,7 @@ def fmt_date(dt, short=False):
             dt_fmt = dt.strftime(shortdatefmt)
     else:
         dt_fmt = dt.strftime(reprdatefmt)
+        dt_fmt = leadingzero.sub('', dt_fmt)
     return s2or3(dt_fmt)
 
 
@@ -5165,8 +5166,8 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
 
         elif 's' in hsh and hsh['s'] and 'f' not in hsh:
             thisdate = parse(
-                parse_dtstr(
-                    hsh['s'], hsh['z'])).astimezone(
+                        parse_dtstr(
+                        hsh['s'], hsh['z'])).astimezone(
                 tzlocal()).replace(tzinfo=None)
             dates.append(thisdate)
             # add2list("datetimes", (thisdate, f))
@@ -6382,7 +6383,7 @@ class ETMCmd():
         cmd = arg_str[0]
         ret = []
         views = {
-            # everything but agenda and week
+            # everything but agenda, week and month
             'd': 'day',
             'p': 'folder',
             't': 'tag',
