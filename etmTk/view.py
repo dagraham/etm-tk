@@ -154,8 +154,8 @@ class App(Tk):
         self.active_tree = {}
         root = "_"
 
-        self.week_height = "1.1i"
-        self.month_height = "3.5i"
+        self.week_height = "80p"
+        self.month_height = "260p"
 
         self.options = loop.options
 
@@ -2302,7 +2302,7 @@ Enter the shortest time period you want displayed in minutes.""")
                 if isokey in loop.conflicts:
                     flagcolor = "red"
                 else:
-                    flagcolor = "white"
+                    flagcolor = None
                 bt = []
                 for item in loop.busytimes[isokey]:
                     it = list(item)
@@ -2389,7 +2389,8 @@ Enter the shortest time period you want displayed in minutes.""")
                         ex = bl_x + offset + .5 * busywidth
                         by = bl_y - indent + 1.5 * busywidth
                         ey = bl_y - indent - .5 * busywidth
-                        self.canvas.create_rectangle((bx, by, ex, ey), fill=flagcolor, outline=flagcolor, tag="busy")
+                        if flagcolor:
+                            self.canvas.create_rectangle((bx, by, ex, ey), fill=flagcolor, outline=flagcolor, tag="busy")
                 else:
                     busy_lst.append([])
                     busy_dates.append(thisdate.strftime("%a %d"))
