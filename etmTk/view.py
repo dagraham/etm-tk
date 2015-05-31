@@ -2254,6 +2254,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
         for i in range(7):
             fill = "SteelBlue4"
+            flagcolor = "white"
             busytimes = 0
             start_x = l + i * x_
             end_x = start_x + x_
@@ -2276,6 +2277,7 @@ Enter the shortest time period you want displayed in minutes.""")
             monthid2date[id] = thisdate
             today = (thisdate == self.current_day.date())
             if today:
+                flagcolor = CURRENTFILL
                 tags.append('current_day')
             if isokey in loop.occasions:
                 bt = []
@@ -2293,6 +2295,7 @@ Enter the shortest time period you want displayed in minutes.""")
                 occasion_lst.append(bt)
                 if bt:
                     if not today:
+                        flagcolor = OCCASIONFILL
                         tags.append('occasion')
                     self.busyHsh.setdefault(id, []).extend(["^ {0}".format(x[0]) for x in bt])
             else:
@@ -2301,8 +2304,6 @@ Enter the shortest time period you want displayed in minutes.""")
             if isokey in loop.busytimes:
                 if isokey in loop.conflicts:
                     flagcolor = "red"
-                else:
-                    flagcolor = None
                 bt = []
                 for item in loop.busytimes[isokey]:
                     it = list(item)
@@ -2579,6 +2580,7 @@ Enter the shortest time period you want displayed in minutes.""")
         for j in range(num_weeks):
             for i in range(7):
                 busytimes = 0
+                flagcolor = "white"
                 start_x = l + i * x_
                 end_x = start_x + x_
                 start_y = int(t + y_ * j)
@@ -2608,6 +2610,7 @@ Enter the shortest time period you want displayed in minutes.""")
                     today = (thisdate == self.current_day.date())
                     bt = []
                     if today:
+                        flagcolor = CURRENTFILL
                         tags.append('current_day')
                     if isokey in loop.occasions:
                         bt = []
@@ -2625,6 +2628,7 @@ Enter the shortest time period you want displayed in minutes.""")
                         occasion_lst.append(bt)
                         if bt:
                             if not today:
+                                flagcolor = OCCASIONFILL
                                 tags.append('occasion')
                             self.busyHsh.setdefault(id, []).extend(["^ {0}".format(x[0]) for x in bt])
                     else:
@@ -2633,8 +2637,6 @@ Enter the shortest time period you want displayed in minutes.""")
                     if isokey in loop.busytimes:
                         if isokey in loop.conflicts:
                             flagcolor = "red"
-                        else:
-                            flagcolor = "white"
                         bt = []
                         for item in loop.busytimes[isokey]:
                             it = list(item)
@@ -2721,7 +2723,8 @@ Enter the shortest time period you want displayed in minutes.""")
                                 ex = bl_x + offset + .5 * busywidth
                                 by = bl_y - indent + 1.5 * busywidth
                                 ey = bl_y - indent - .5 * busywidth
-                                self.canvas.create_rectangle((bx, by, ex, ey), fill=flagcolor, outline=flagcolor, tag="busy")
+                                if flagcolor:
+                                    self.canvas.create_rectangle((bx, by, ex, ey), fill=flagcolor, outline=flagcolor, tag="busy")
                     else:
                         busy_lst.append([])
                         busy_dates.append(thisdate.strftime("%a %d"))
