@@ -3188,12 +3188,7 @@ or 0 to display all changes.""").format(title)
         """
         logger.debug("starting OnSelect with uuid: {0}".format(uuid))
         self.content.delete("1.0", END)
-        if self.weekly:  # week view
-            if uuid:
-                # an item is selected, enable clear selection
-                hsh = loop.uuid2hash[uuid]
-                type_chr = hsh['itemtype']
-        elif uuid is None:  # tree view
+        if uuid is None:  # tree view
             item = self.tree.selection()[0]
             self.rowSelected = int(item)
             logger.debug('rowSelected: {0}'.format(self.rowSelected))
