@@ -236,6 +236,7 @@ class App(Tk):
         self.tree.pack(fill="both", expand=1, padx=4, pady=0)
 
 
+        self.canvas.bind('<Button-1>', (lambda e: self.selectId(event=e, d=0)))
         self.canvas.bind("<Control-Button-1>", self.on_select_item)
         self.canvas.bind("<Double-1>", self.on_select_item)
         self.canvas.bind("<Configure>", self.configureCanvas)
@@ -2143,7 +2144,6 @@ Enter the shortest time period you want displayed in minutes.""")
 
         self.view = WEEK
         self.activeview = WEEK
-        # self.currentView.set(WEEK)
 
         if chosen_day is not None:
             self.chosen_day = chosen_day
@@ -2160,8 +2160,7 @@ Enter the shortest time period you want displayed in minutes.""")
             self.hours = ["{0}:00".format(i) for i in range(7, 24)]
         for i in range(14, 20):
             self.viewmenu.entryconfig(i, state="normal")
-        # self.canvas.focus_set()
-        self.showWeek(event=event)
+        # self.showWeek(event=event)
         tt.stop()
 
     def priorWeekMonth(self, event=None):
@@ -2211,7 +2210,6 @@ Enter the shortest time period you want displayed in minutes.""")
         # reset day to Monday of the current week
         day = day - (weekdaynum - 1) * ONEDAY
         self.scrollToDate(self.active_date)
-        self.currentView.set(theweek)
         self.OnSelect()
         self.canvas.delete("all")
         l = 4
@@ -2237,12 +2235,16 @@ Enter the shortest time period you want displayed in minutes.""")
         logger.debug("x: {0}, y: {1}".format(x, y))
 
         # week
+        self.currentView.set(theweek)
         self.busyHsh = {}
 
         # occasions
         busy_ids = set([])
         monthid2date = {}
 
+        self.canvas.bind('<Escape>', self.on_clear_item)
+
+        # weekdays
         intervals = [360, 720, 1080, 1440]
         busywidth = 2
         offset = 6
@@ -2262,7 +2264,6 @@ Enter the shortest time period you want displayed in minutes.""")
 
         x_ = x
         y_ = y
-        j = 0
 
         for i in range(7):
             fill = "SteelBlue4"
@@ -2442,8 +2443,10 @@ Enter the shortest time period you want displayed in minutes.""")
             else:
                 self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=fill)
 
+        self.busy_info = (theweek, busy_dates, busy_lst, occasion_lst)
         self.busy_ids = busy_ids
         self.busy_ids.sort()
+        # print("week", self.busy_ids)
         self.canvas_ids = self.busy_ids
         self.monthid2date = monthid2date
         self.canvas_idpos = None
@@ -2502,7 +2505,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
         for i in range(14, 20):
             self.viewmenu.entryconfig(i, state="normal")
-        self.showMonth(event=event)
+        # self.showMonth(event=event)
         tt.stop()
 
     def showMonth(self, event=None, month=None):
@@ -2715,7 +2718,6 @@ Enter the shortest time period you want displayed in minutes.""")
                                     if tmp[ii]:
                                         busylines[ii].append(tmp[ii])
 
-
                             if busylines:
                                 for side in range(4):
                                     lines = busylines[side]
@@ -2795,6 +2797,7 @@ Enter the shortest time period you want displayed in minutes.""")
         self.busy_info = (themonth, busy_dates, busy_lst, occasion_lst)
         self.busy_ids = busy_ids
         self.busy_ids.sort()
+        # print("month", self.busy_ids)
         self.canvas_ids = self.busy_ids
         self.monthid2date = monthid2date
         self.canvas_idpos = None
@@ -2875,59 +2878,27 @@ Enter the shortest time period you want displayed in minutes.""")
         self.canvas.focus_set()
 
     def on_enter_item(self, e):
-        if self.weekly:
-            return
-            old_id = None
-            if self.canvas_idpos is not None:
-                old_id = self.canvas_ids[self.canvas_idpos]
-                if old_id in self.busy_ids:
-                    tags = self.canvas.gettags(old_id)
-                    if 'other' in tags:
-                        self.canvas.itemconfig(old_id, fill=OTHERFILL)
-                    else:
-                        self.canvas.itemconfig(old_id, fill=DEFAULTFILL)
-                else:
+        if self.canvas_idpos is not None:
+            old_id = self.canvas_ids[self.canvas_idpos]
+            if old_id in self.busy_ids:
+                tags = self.canvas.gettags(old_id)
+                if 'current_day' in tags:
+                    self.canvas.itemconfig(old_id, fill=CURRENTFILL)
+                elif 'occasion' in tags:
                     self.canvas.itemconfig(old_id, fill=OCCASIONFILL)
-                    self.canvas.tag_lower(old_id)
-
-            self.selectedId = id = self.canvas.find_withtag(CURRENT)[0]
-            if id in self.busyHsh:
-                self.active_date = self.busyHsh[id][-1].date()
-
+                else:
+                    self.canvas.itemconfig(old_id, fill="white")
+        self.selectedId = id = self.canvas.find_withtag(CURRENT)[0]
+        self.active_date = self.monthid2date[id]
+        self.canvas_idpos = self.canvas_ids.index(id)
+        if id in self.busy_ids:
             self.canvas.itemconfig(id, fill=ACTIVEFILL)
-            self.canvas.tag_raise('conflict')
-            self.canvas.tag_raise('grid')
-            self.canvas.tag_raise(id)
-            self.canvas.tag_lower('occasion')
-            self.canvas.tag_lower('current_day')
-            self.canvas.tag_raise('current_time')
-
-            if id in self.busyHsh:
-                self.canvas_idpos = self.canvas_ids.index(id)
-
-                self.OnSelect(uuid=self.busyHsh[id][-4], dt=self.busyHsh[id][-1])
-        elif self.monthly:
-            if self.canvas_idpos is not None:
-                old_id = self.canvas_ids[self.canvas_idpos]
-                if old_id in self.busy_ids:
-                    tags = self.canvas.gettags(old_id)
-                    if 'current_day' in tags:
-                        self.canvas.itemconfig(old_id, fill=CURRENTFILL)
-                    elif 'occasion' in tags:
-                        self.canvas.itemconfig(old_id, fill=OCCASIONFILL)
-                    else:
-                        self.canvas.itemconfig(old_id, fill="white")
-            self.selectedId = id = self.canvas.find_withtag(CURRENT)[0]
-            self.active_date = self.monthid2date[id]
-            self.canvas_idpos = self.canvas_ids.index(id)
-            if id in self.busy_ids:
-                self.canvas.itemconfig(id, fill=ACTIVEFILL)
-            if id in self.busyHsh:
-                txt = "\n".join(self.busyHsh[id])
-                self.content.delete("1.0", END)
-                self.content.insert("1.0", txt)
-            else:
-                self.content.delete("1.0", END)
+        if id in self.busyHsh:
+            txt = "\n".join(self.busyHsh[id])
+            self.content.delete("1.0", END)
+            self.content.insert("1.0", txt)
+        else:
+            self.content.delete("1.0", END)
 
     def on_leave_item(self, e):
         if self.weekly or self.monthly:
