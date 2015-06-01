@@ -239,7 +239,6 @@ class App(Tk):
         self.canvas.bind('<Button-1>', (lambda e: self.selectId(event=e, d=0)))
         self.canvas.bind("<Control-Button-1>", self.on_select_item)
         self.canvas.bind("<Double-1>", self.on_select_item)
-        self.canvas.bind("<Configure>", self.configureCanvas)
 
         self.canvas.bind("<Return>", lambda e: self.on_activate_item(event=e))
         self.canvas.bind('<Left>', (lambda e: self.priorWeekMonth(event=e)))
@@ -866,7 +865,7 @@ class App(Tk):
         # calendars
         # self.calbutton = Button(topbar, text=CALENDARS, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, width=8, pady=2)
         self.newIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_plus.gif')
-        self.newbutton = Button(topbar, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0, highlightthickness=0, takefocus=False)
+        self.newbutton = Button(topbar, command=self.newItem, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0, highlightthickness=0, takefocus=False)
         self.newbutton.config(image=self.newIcon, width=iconsize, height=iconsize)
         # self.calbutton.config(image=self.plusIcon)
         self.newbutton.pack(side="right", padx=6, pady=2)
@@ -1113,10 +1112,6 @@ class App(Tk):
         cal_pattern = r'^%s' % '|'.join(
             [x[2] for x in loop.calendars if x[1]])
         self.cal_regex = re.compile(cal_pattern)
-        if loop.calendars != self.default_calendars:
-            self.calbutton.configure(text="{0}*".format(CALENDARS))
-        else:
-            self.calbutton.configure(text=CALENDARS)
         self.update()
         self.updateAlerts()
         if self.weekly:
@@ -2095,14 +2090,6 @@ Enter the shortest time period you want displayed in minutes.""")
         self.busy_info = (theweek, weekdays, weekdates, busy_lst, occasion_lst)
         return self.busy_info
 
-    def configureCanvas(self, e=None):
-        if self.weekly:
-            self.showWeek()
-        elif self.monthly:
-            self.showMonth()
-        else:
-            return
-
     def closeWeekly(self, event=None):
         self.today_col = None
         for i in range(14, 20):
@@ -2160,7 +2147,7 @@ Enter the shortest time period you want displayed in minutes.""")
             self.hours = ["{0}:00".format(i) for i in range(7, 24)]
         for i in range(14, 20):
             self.viewmenu.entryconfig(i, state="normal")
-        # self.showWeek(event=event)
+        self.showWeek(event=event)
         tt.stop()
 
     def priorWeekMonth(self, event=None):
@@ -2505,7 +2492,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
         for i in range(14, 20):
             self.viewmenu.entryconfig(i, state="normal")
-        # self.showMonth(event=event)
+        self.showMonth(event=event)
         tt.stop()
 
     def showMonth(self, event=None, month=None):
@@ -2545,7 +2532,6 @@ Enter the shortest time period you want displayed in minutes.""")
         weeks = self.monthly_calendar.monthdatescalendar(*self.year_month)
         num_weeks = len(weeks)
         weekdays = [s2or3(x.strftime("%a")) for x in weeks[0]]
-        weeknumbers = [x[0].isocalendar()[1] for x in weeks]
         themonth = weeks[1][0].strftime("%B %Y")
         self.canvas.delete("all")
         l = 4
@@ -2792,7 +2778,7 @@ Enter the shortest time period you want displayed in minutes.""")
             if self.today_col is not None and i == self.today_col:
                 self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=CURRENTLINE)
             else:
-                self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=fill)
+                self.canvas.create_text(p, text="{0}".format(weekdays[i]),fill = "SteelBlue4")
 
         self.busy_info = (themonth, busy_dates, busy_lst, occasion_lst)
         self.busy_ids = busy_ids
