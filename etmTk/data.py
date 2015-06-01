@@ -4882,6 +4882,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
     alerts = []
     alert_minutes = {}
     folders = expandPath(f)
+    pastduerepeating = []
     for uid in file2uuids[f]:
         # this will give the items in file order!
         if uuid2hash[uid]['itemtype'] in ['=']:
@@ -5277,6 +5278,11 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 if 'f' in hsh and 'rrule' not in hsh:
                     continue
                 else:
+                    if 'rrule' in hsh and 'o' in hsh and hsh['o'] == 'r':
+                        # only nag about the oldest instance
+                        if uid in pastduerepeating:
+                            continue
+                        pastduerepeating.append(uid)
                     item = [
                         ('now', sn, dtl, hsh['_p'], summary, f), (cat,),
                         (uid, typ, summary, time_str, dtl)]

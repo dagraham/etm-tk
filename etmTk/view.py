@@ -193,10 +193,10 @@ class App(Tk):
         self.outline_depths[AGENDA] = 0
         self.outline_depths[CUSTOM] = 0
 
-        self.topbar = topbar = Frame(self, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR)
+        self.topbar = topbar = Frame(self, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR, takefocus=False)
         topbar.pack(side="top", fill="x", expand=0, padx=0, pady=0)
 
-        self.statusbar = Frame(self, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR)
+        self.statusbar = Frame(self, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR, takefocus=False)
         self.statusbar.pack(side="bottom", fill="x", expand=0, padx=0, pady=0)
 
         self.topwindow = topwindow = PanedWindow(self, orient="vertical", sashwidth=4, sashrelief='flat')
@@ -208,8 +208,10 @@ class App(Tk):
             highlightthickness=0,
             highlightbackground=BGCOLOR, background=BGCOLOR)
 
-        self.canvas = Canvas(self.toppane, background="white", bd=0, relief="flat", highlightthickness=0)
-        self.canvas.pack(fill="both", expand=1, padx=4, pady=0)
+        self.canvas = Canvas(
+            self.toppane, background="white", bd=1, relief="flat",
+            highlightthickness=2, highlightbackground=BGCOLOR)
+        self.canvas.pack(fill="both", expand=1, padx=0, pady=0)
 
 
         self.botwindow = botwindow = PanedWindow(topwindow, orient="vertical", sashwidth=4, sashrelief='flat')
@@ -217,8 +219,9 @@ class App(Tk):
 
         self.treepane = treepane = Frame(
             botwindow, bd=0, relief="flat",
-            highlightthickness=0,
-            highlightbackground=BGCOLOR, background=BGCOLOR)
+            highlightthickness=2,
+            highlightbackground=BGCOLOR,
+            background=BGCOLOR)
         botwindow.add(treepane, padx=0, pady=0, stretch="first")
 
         self.content = ReadOnlyText(
@@ -847,14 +850,14 @@ class App(Tk):
             topbar, command=self.selectCalendars,
             highlightbackground=BGCOLOR,
             bg=BGCOLOR, pady=0, bd=0,
-            highlightthickness=0,
+            highlightthickness=0, takefocus=False
             )
         self.settingsbutton.config(image=self.settingsIcon, width=iconsize, height=iconsize)
         self.settingsbutton.pack(side="left", padx=6, pady=2)
 
 
         self.toggleIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_refresh.gif')
-        self.toggleActiveButton = Button(topbar, command=self.toggleActiveView, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0)
+        self.toggleActiveButton = Button(topbar, command=self.toggleActiveView, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0, highlightthickness=0, takefocus=False)
         self.toggleActiveButton.config(image=self.toggleIcon, width=iconsize, height=iconsize)
         self.toggleActiveButton.pack(side="left", padx=6, pady=2)
 
@@ -862,7 +865,7 @@ class App(Tk):
         # calendars
         # self.calbutton = Button(topbar, text=CALENDARS, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, width=8, pady=2)
         self.newIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_plus.gif')
-        self.newbutton = Button(topbar, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0)
+        self.newbutton = Button(topbar, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0, highlightthickness=0, takefocus=False)
         self.newbutton.config(image=self.newIcon, width=iconsize, height=iconsize)
         # self.calbutton.config(image=self.plusIcon)
         self.newbutton.pack(side="right", padx=6, pady=2)
@@ -870,7 +873,7 @@ class App(Tk):
         #     self.calbutton.configure(state="disabled")
 
         self.searchIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_search.gif')
-        self.searchbutton = Button(topbar, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0)
+        self.searchbutton = Button(topbar, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0, highlightthickness=0, takefocus=False)
         self.searchbutton.config(image=self.searchIcon, width=iconsize, height=iconsize)
         # self.calbutton.config(image=self.plusIcon)
         self.searchbutton.pack(side="right", padx=6, pady=2)
@@ -954,8 +957,7 @@ class App(Tk):
                               textvariable=self.pendingAlerts,
                               command=self.showAlerts,
                               highlightbackground=BGCOLOR,
-                              bg=BGCOLOR,
-                              # highlightthickness=0,
+                              bg=BGCOLOR, highlightthickness=0, takefocus=False,
                               width=4, pady=2,
                             )
         # self.pending = Button(self.statusbar,
@@ -2180,9 +2182,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
         matching = self.cal_regex is not None and self.default_regex is not None
 
-        busy_lst = []
         busy_dates = []
-        occasion_lst = []
 
         self.current_day = get_current_time().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
         logger.debug('self.current_day: {0}, minutes: {1}'.format(self.current_day, self.current_minutes))
@@ -2205,6 +2205,8 @@ Enter the shortest time period you want displayed in minutes.""")
             return
         logger.debug('week active_date: {0}'.format(self.active_date))
         theweek, weekdays, weekdates, busy_lst, occasion_lst = self.setWeek(day)
+        busy_lst = []
+        occasion_lst = []
         weekdaynum = day.isocalendar()[2]
         # reset day to Monday of the current week
         day = day - (weekdaynum - 1) * ONEDAY
