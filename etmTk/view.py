@@ -853,14 +853,13 @@ class App(Tk):
             highlightthickness=0, takefocus=False
             )
         self.settingsbutton.config(image=self.settingsIcon, width=iconsize, height=iconsize)
-        self.settingsbutton.pack(side="left", padx=6, pady=2)
+        self.settingsbutton.pack(side="left", padx=4, pady=2)
 
 
-        self.toggleIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_refresh.gif')
-        self.toggleActiveButton = Button(topbar, command=self.toggleActiveView, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0, highlightthickness=0, takefocus=False)
-        self.toggleActiveButton.config(image=self.toggleIcon, width=iconsize, height=iconsize)
-        self.toggleActiveButton.pack(side="left", padx=6, pady=2)
-
+        # self.toggleIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_refresh.gif')
+        # self.toggleActiveButton = Button(topbar, command=self.toggleActiveView, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0, highlightthickness=0, takefocus=False)
+        # self.toggleActiveButton.config(image=self.toggleIcon, width=iconsize, height=iconsize)
+        # self.toggleActiveButton.pack(side="left", padx=6, pady=2)
 
         # calendars
         # self.calbutton = Button(topbar, text=CALENDARS, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, width=8, pady=2)
@@ -868,20 +867,20 @@ class App(Tk):
         self.newbutton = Button(topbar, command=self.newItem, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0, highlightthickness=0, takefocus=False)
         self.newbutton.config(image=self.newIcon, width=iconsize, height=iconsize)
         # self.calbutton.config(image=self.plusIcon)
-        self.newbutton.pack(side="right", padx=6, pady=2)
+        self.newbutton.pack(side="right", padx=4, pady=2)
         # if not self.default_calendars:
         #     self.calbutton.configure(state="disabled")
 
-        self.searchIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_search.gif')
-        self.searchbutton = Button(topbar, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0, highlightthickness=0, takefocus=False)
-        self.searchbutton.config(image=self.searchIcon, width=iconsize, height=iconsize)
-        # self.calbutton.config(image=self.plusIcon)
-        self.searchbutton.pack(side="right", padx=6, pady=2)
-        # if not self.default_calendars:
-        #     self.calbutton.configure(state="disabled")
+        # self.searchIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_search.gif')
+        # self.searchbutton = Button(topbar, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0, highlightthickness=0, takefocus=False)
+        # self.searchbutton.config(image=self.searchIcon, width=iconsize, height=iconsize)
+        # # self.calbutton.config(image=self.plusIcon)
+        # self.searchbutton.pack(side="right", padx=6, pady=2)
+        # # if not self.default_calendars:
+        # #     self.calbutton.configure(state="disabled")
 
         # self.windowTitle = StringVar(self)
-        windowtitle = Label(topbar, textvariable=self.currentView, bd=1, relief="flat",  padx=4, pady=0)
+        windowtitle = Label(topbar, textvariable=self.currentView, bd=1, relief="flat",  padx=8, pady=0)
         # windowtitle.pack(side="left", fill=X, expand=1)
         windowtitle.pack(side="left")
         windowtitle.configure(background=BGCOLOR)
