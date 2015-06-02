@@ -185,7 +185,7 @@ class App(Tk):
 
         # leaf: (parent, (option, [accelerator])
         self.outline_depths = {}
-        for view in DAY, TAG, KEYWORD, NOTE, PATH:
+        for view in DAY, WEEK, MONTH, TAG, KEYWORD, NOTE, PATH:
             # set all to the default
             logger.debug('Setting depth for {0} to {1}'.format(view, loop.options['outline_depth']))
             self.outline_depths[view] = loop.options['outline_depth']
@@ -373,57 +373,60 @@ class App(Tk):
         self.add2menu(path, (label, l))
 
         menubar.add_cascade(label=path, underline=0, menu=filemenu)
+        self.toolsmenu = viewmenu = Menu(menubar, tearoff=0)
 
-        # View menu
         self.viewmenu = viewmenu = Menu(menubar, tearoff=0)
         path = VIEW
         self.add2menu(menu, (path, ))
 
-        # go home
-        l = "Home"
-        label = _("Home")
-        viewmenu.add_command(label=label, command=self.goHome)
+        # # agenda
+        # l = label = AGENDA
+        # toolsmenu.add_command(label=label, command=self.agendaView)
 
-        viewmenu.entryconfig(0, accelerator=l)
-        self.add2menu(path, (label, l))
-        self.bindTop('<Home>', self.goHome)
+        self.vm_options = [[AGENDA, 'a'],
+                           [DAY, 'd'],
+                           [WEEK, 'w'],
+                           [MONTH, 'm'],
+                           [TAG, 't'],
+                           [KEYWORD, 'k'],
+                           [PATH, 'p'],
+                           [NOTE, 'n'],
+                           [CUSTOM, 'c'],
+                           ]
 
-        # show alerts
-        l = "A"
-        c = "a"
-        label = _("Show remaining alerts for today")
-        viewmenu.add_command(label=label, underline=1, command=self.showAlerts)
-        self.bindTop(c, self.showAlerts)
+        self.view2cmd = {'a': self.agendaView,
+                         'd': self.dayView,
+                         'm': self.showMonthly,
+                         'p': self.pathView,
+                         'k': self.keywordView,
+                         'n': self.noteView,
+                         't': self.tagView,
+                         'c': self.customView,
+                         'w': self.showWeekly}
 
-        viewmenu.entryconfig(1, accelerator=l)
-        self.add2menu(path, (label, l))
+        self.viewname2cmd = {}
 
-        # go to date
-        l = "J"
-        c = "j"
-        label = _("Jump to date")
-        viewmenu.add_command(label=label, command=self.goToDate)
-        self.bindTop(c, self.goToDate)
+        self.view = self.vm_options[0][0]
+        self.currentView = StringVar(self)
+        self.currentView.set(self.view)
 
-        viewmenu.entryconfig(2, accelerator=l)
-        self.add2menu(path, (label, l))
+        self.vm_opts = [x[0] for x in self.vm_options]
+        for i in range(len(self.vm_options)):
+            label = self.vm_options[i][0]
+            k = self.vm_options[i][1]
+            if label == "-":
+                self.viewmenu.add_separator()
+                # self.add2menu(VIEW, (SEP, ))
+            else:
+                l, c = commandShortcut(k)
+                viewmenu.add_command(label=label, command=self.view2cmd[k])
+                self.bind(c, lambda e, x=k: self.after(AFTER, self.view2cmd[x]))
+                viewmenu.entryconfig(i, accelerator=l)
+                self.add2menu(path, (label, l))
 
-        viewmenu.add_separator()  # 3
+
+        viewmenu.add_separator()
         self.add2menu(path, (SEP, ))
-
-        l = "Control-Down"
-        label = _("Next sibling")
-        viewmenu.add_command(label=label, underline=1, command=self.nextItem)
-
-        viewmenu.entryconfig(4, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        l = "Control-Up"
-        label = _("Previous sibling")
-        viewmenu.add_command(label=label, underline=1, command=self.prevItem)
-
-        viewmenu.entryconfig(5, accelerator=l)
-        self.add2menu(path, (label, l))
 
         # apply filter
         l, c = commandShortcut('f')
@@ -431,7 +434,7 @@ class App(Tk):
         viewmenu.add_command(label=label, underline=1, command=self.setFilter)
         self.bind(c, self.setFilter)
 
-        viewmenu.entryconfig(6, accelerator=l)
+        viewmenu.entryconfig(10, accelerator=l)
         self.add2menu(path, (label, l))
 
         # clear filter
@@ -439,17 +442,17 @@ class App(Tk):
         label = _("Clear outline filter")
         viewmenu.add_command(label=label, underline=1, command=self.clearFilter)
 
-        viewmenu.entryconfig(7, accelerator=l)
+        viewmenu.entryconfig(11, accelerator=l)
         self.add2menu(path, (label, l))
 
         # toggle showing labels
         l = "L"
         c = "l"
-        label = _("Toggle displaying labels column")
+        label = _("Toggle labels")
         viewmenu.add_command(label=label, underline=1, command=self.toggleLabels)
         self.bindTop(c, self.toggleLabels)
 
-        viewmenu.entryconfig(8, accelerator=l)
+        viewmenu.entryconfig(12, accelerator=l)
         self.add2menu(path, (label, l))
 
         # expand to depth
@@ -459,87 +462,18 @@ class App(Tk):
         viewmenu.add_command(label=label, underline=1, command=self.expand2Depth)
         self.bindTop(c, self.expand2Depth)
 
-        viewmenu.entryconfig(9, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        # popup active tree
-        l = "S"
-        c = "s"
-        label = _("Show outline as text")
-        viewmenu.add_command(label=label, underline=1, command=self.popupTree)
-        self.bindTop(c, self.popupTree)
-
-        viewmenu.entryconfig(10, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        # print active tree
-        l = "P"
-        c = "p"
-        label = _("Print outline")
-        viewmenu.add_command(label=label, underline=1, command=self.printTree)
-        self.bindTop("p", self.printTree)
-        viewmenu.entryconfig(11, accelerator=l)
+        viewmenu.entryconfig(13, accelerator=l)
         self.add2menu(path, (label, l))
 
         # toggle showing finished
         l = "X"
         c = "x"
-        label = _("Toggle displaying finished")
+        label = _("Toggle displayings finished")
         viewmenu.add_command(label=label, underline=1, command=self.toggleFinished)
         self.bindTop(c, self.toggleFinished)
-        viewmenu.entryconfig(12, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        viewmenu.add_separator()  # 13
-        self.add2menu(path, (SEP, ))
-
-        l = "Left"
-        label = _("Previous week/month")
-        viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.priorWeekMonth(event=e))
-
         viewmenu.entryconfig(14, accelerator=l)
         self.add2menu(path, (label, l))
 
-        l = "Right"
-        label = _("Next week/month")
-        viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.nextWeekMonth(event=e))
-
-        viewmenu.entryconfig(15, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        l = "Up"
-        label = _("Previous item/day in week/month")
-        viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=-1))
-
-        viewmenu.entryconfig(16, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        l = "Down"
-        label = _("Next item/day in week/month")
-        viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=1))
-
-        viewmenu.entryconfig(17, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        l = "B"
-        c = 'b'
-        label = _("List busy times in week/month")
-        viewmenu.add_command(label=label, underline=5, command=self.showBusyPeriods)
-
-        viewmenu.entryconfig(18, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        l = "F"
-        c = 'f'
-        label = _("List free times in week/month")
-        viewmenu.add_command(label=label, underline=5, command=self.showFreePeriods)
-
-        viewmenu.entryconfig(19, accelerator=l)
-        # set binding in showWeekly
-        self.add2menu(path, (label, l))
-
-        for i in range(14, 20):
-            self.viewmenu.entryconfig(i, state="disabled")
         menubar.add_cascade(label=path, underline=0, menu=viewmenu)
 
         # Item menu
@@ -599,7 +533,57 @@ class App(Tk):
         # tools menu
         path = TOOLS
         self.add2menu(menu, (path, ))
-        toolsmenu = Menu(menubar, tearoff=0)
+        self.toolsmenu = toolsmenu = Menu(menubar, tearoff=0)
+
+        # go home
+        l = "Home"
+        label = _("Home")
+        toolsmenu.add_command(label=label, command=self.goHome)
+
+        toolsmenu.entryconfig(0, accelerator=l)
+        self.add2menu(path, (label, l))
+        self.bindTop('<Home>', self.goHome)
+
+        # go to date
+        l = "J"
+        c = "j"
+        label = _("Jump to date")
+        toolsmenu.add_command(label=label, command=self.goToDate)
+        self.bindTop(c, self.goToDate)
+
+        toolsmenu.entryconfig(1, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        toolsmenu.add_separator()  # 2
+        self.add2menu(path, (SEP, ))
+
+        # show alerts
+        l = "A"
+        c = "a"
+        label = _("Show remaining alerts for today")
+        toolsmenu.add_command(label=label, underline=1, command=self.showAlerts)
+        self.bindTop(c, self.showAlerts)
+
+        toolsmenu.entryconfig(3, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        l = "B"
+        c = 'b'
+        label = _("List busy times in week/month")
+        toolsmenu.add_command(label=label, underline=5, command=self.showBusyPeriods)
+
+        toolsmenu.entryconfig(4, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        l = "F"
+        c = 'f'
+        label = _("List free times in week/month")
+        toolsmenu.add_command(label=label, underline=5, command=self.showFreePeriods)
+
+        toolsmenu.entryconfig(5, accelerator=l)
+        # set binding in showWeekly
+        self.add2menu(path, (label, l))
+
 
         # date calculator
         l = "Shift-D"
@@ -608,7 +592,7 @@ class App(Tk):
         toolsmenu.add_command(label=label, underline=12, command=self.dateCalculator)
         self.bindTop(c, self.dateCalculator)
 
-        toolsmenu.entryconfig(1, accelerator=l)
+        toolsmenu.entryconfig(6, accelerator=l)
         self.add2menu(path, (label, l))
 
         # available date calculator
@@ -618,7 +602,7 @@ class App(Tk):
         toolsmenu.add_command(label=label, underline=12, command=self.availableDateCalculator)
         self.bindTop(c, self.availableDateCalculator)
 
-        toolsmenu.entryconfig(2, accelerator=l)
+        toolsmenu.entryconfig(7, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Shift-Y"
@@ -628,7 +612,59 @@ class App(Tk):
         toolsmenu.add_command(label=label, underline=8, command=self.showCalendar)
         self.bindTop(c, self.showCalendar)
 
-        toolsmenu.entryconfig(3, accelerator=l)
+        toolsmenu.entryconfig(8, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        toolsmenu.add_separator() # 9
+        self.add2menu(path, (SEP, ))
+
+        # popup active tree
+        l = "S"
+        c = "s"
+        label = _("Show outline as text")
+        toolsmenu.add_command(label=label, underline=1, command=self.popupTree)
+        self.bindTop(c, self.popupTree)
+
+        toolsmenu.entryconfig(10, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        # print active tree
+        l = "P"
+        c = "p"
+        label = _("Print outline")
+        toolsmenu.add_command(label=label, underline=1, command=self.printTree)
+        self.bindTop("p", self.printTree)
+        toolsmenu.entryconfig(11, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        # export
+        l = "Shift-X"
+        c = "X"
+        label = _("Export to iCal")
+        toolsmenu.add_command(label=label, underline=1, command=self.exportToIcal)
+        self.bind(c, self.exportToIcal)
+
+        toolsmenu.entryconfig(12, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        # update subscriptions
+        l = "Shift-M"
+        c = "M"
+        label = _("Update calendar subscriptions")
+        toolsmenu.add_command(label=label, underline=1, command=self.updateSubscriptions)
+        self.bind(c, self.updateSubscriptions)
+
+        toolsmenu.entryconfig(13, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        # load data
+        l = "Shift-L"
+        c = "L"
+        label = _("Reload data from files")
+        toolsmenu.add_command(label=label, underline=1, command=loop.loadData)
+        self.bind(c, loop.loadData)
+
+        toolsmenu.entryconfig(14, accelerator=l)
         self.add2menu(path, (label, l))
 
         # changes
@@ -640,40 +676,14 @@ class App(Tk):
             toolsmenu.add_command(label=label, underline=1, command=self.showChanges)
             self.bind(c, lambda event: self.after(AFTER, self.showChanges))
 
-            toolsmenu.entryconfig(4, accelerator=l)
+            toolsmenu.entryconfig(15, accelerator=l)
             self.add2menu(path, (label, l))
 
-        # export
-        l = "Shift-X"
-        c = "X"
-        label = _("Export to iCal")
-        toolsmenu.add_command(label=label, underline=1, command=self.exportToIcal)
-        self.bind(c, self.exportToIcal)
-
-        toolsmenu.entryconfig(5, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        # update subscriptions
-        l = "Shift-M"
-        c = "M"
-        label = _("Update calendar subscriptions")
-        toolsmenu.add_command(label=label, underline=1, command=self.updateSubscriptions)
-        self.bind(c, self.updateSubscriptions)
-
-        toolsmenu.entryconfig(5, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        # load data
-        l = "Shift-L"
-        c = "L"
-        label = _("Reload data from files")
-        toolsmenu.add_command(label=label, underline=1, command=loop.loadData)
-        self.bind(c, loop.loadData)
-
-        toolsmenu.entryconfig(6, accelerator=l)
-        self.add2menu(path, (label, l))
-
         menubar.add_cascade(label=path, menu=toolsmenu, underline=0)
+
+        self.toolsmenu.entryconfig(1, state="disabled")
+        for i in range(4, 6):
+            self.toolsmenu.entryconfig(i, state="disabled")
 
         # report
         path = CUSTOM
@@ -790,59 +800,6 @@ class App(Tk):
             self.saved_specs = deepcopy(self.specs)
         self.custom_box.configure(width=30, background=BGCOLOR, takefocus=False)
 
-        self.vm_options = [[AGENDA, 'a'],
-                           ['-', ''],
-                           [DAY, 'd'],
-                           [WEEK, 'w'],
-                           [MONTH, 'm'],
-                           ['-', ''],
-                           [TAG, 't'],
-                           [KEYWORD, 'k'],
-                           [PATH, 'p'],
-                           ['-', ''],
-                           [NOTE, 'n'],
-                           [CUSTOM, 'c']]
-
-        self.view2cmd = {'a': self.toggleActiveView,
-                         'd': self.dayView,
-                         'm': self.showMonthly,
-                         'p': self.pathView,
-                         'k': self.keywordView,
-                         'n': self.noteView,
-                         't': self.tagView,
-                         'c': self.customView,
-                         'w': self.showWeekly}
-
-        self.viewname2cmd = {}
-
-        self.view = self.vm_options[0][0]
-        self.activeview = self.vm_options[3][0]
-        self.currentView = StringVar(self)
-        self.currentView.set(self.view)
-
-        MAIN = _("Main")
-        self.add2menu(root, (MAIN, ))
-        VIEWS = _("Views")
-        self.add2menu(MAIN, (VIEWS, ))
-
-        self.vm_opts = [x[0] for x in self.vm_options]
-        for i in range(len(self.vm_options)):
-            label = self.vm_options[i][0]
-            k = self.vm_options[i][1]
-            if label == DAY:
-                pass
-            elif label == AGENDA:
-                l, c = commandShortcut(k)
-                self.add2menu(VIEWS, (_("Toggle Agenda/Active"), l))
-                self.bind(c, lambda e, x=k: self.after(AFTER, self.view2cmd[x]))
-            elif label == "-":
-                # self.vm["menu"].add_separator()
-                self.add2menu(VIEWS, (SEP, ))
-            else:
-                self.viewname2cmd[label] = self.view2cmd[k]
-                l, c = commandShortcut(k)
-                self.bind(c, lambda e, x=k: self.after(AFTER, self.view2cmd[x]))
-                self.add2menu(VIEWS, (self.vm_opts[i], l))
 
         iconsize = "22"
         self.settingsIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_settings.gif')
@@ -851,37 +808,17 @@ class App(Tk):
             highlightbackground=BGCOLOR,
             bg=BGCOLOR, pady=0, bd=0,
             highlightthickness=0, takefocus=False
-            )
+        )
         self.settingsbutton.config(image=self.settingsIcon, width=iconsize, height=iconsize)
         self.settingsbutton.pack(side="left", padx=4, pady=2)
 
 
-        # self.toggleIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_refresh.gif')
-        # self.toggleActiveButton = Button(topbar, command=self.toggleActiveView, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0, highlightthickness=0, takefocus=False)
-        # self.toggleActiveButton.config(image=self.toggleIcon, width=iconsize, height=iconsize)
-        # self.toggleActiveButton.pack(side="left", padx=6, pady=2)
-
-        # calendars
-        # self.calbutton = Button(topbar, text=CALENDARS, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, width=8, pady=2)
         self.newIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_plus.gif')
         self.newbutton = Button(topbar, command=self.newItem, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0, highlightthickness=0, takefocus=False)
         self.newbutton.config(image=self.newIcon, width=iconsize, height=iconsize)
-        # self.calbutton.config(image=self.plusIcon)
         self.newbutton.pack(side="right", padx=4, pady=2)
-        # if not self.default_calendars:
-        #     self.calbutton.configure(state="disabled")
 
-        # self.searchIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_search.gif')
-        # self.searchbutton = Button(topbar, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0, highlightthickness=0, takefocus=False)
-        # self.searchbutton.config(image=self.searchIcon, width=iconsize, height=iconsize)
-        # # self.calbutton.config(image=self.plusIcon)
-        # self.searchbutton.pack(side="right", padx=6, pady=2)
-        # # if not self.default_calendars:
-        # #     self.calbutton.configure(state="disabled")
-
-        # self.windowTitle = StringVar(self)
         windowtitle = Label(topbar, textvariable=self.currentView, bd=1, relief="flat",  padx=8, pady=0)
-        # windowtitle.pack(side="left", fill=X, expand=1)
         windowtitle.pack(side="left")
         windowtitle.configure(background=BGCOLOR)
         self.currentView.set("Agenda")
@@ -892,15 +829,13 @@ class App(Tk):
         self.filterValue.set('')
         self.filterValue.trace_variable("w", self.filterView)
 
-        self.fltr = Entry(topbar, textvariable=self.filterValue, width=14, highlightbackground=BGCOLOR, bg=BGCOLOR)
-        # self.fltr.pack(side="left", padx=0, expand=1, fill=X)
-        # self.fltr.bind("<FocusIn>", self.setFilter)
-        # self.fltr.bind("<Escape>", self.clearFilter)
-        # self.fltr.bind('<Tab>', self.leaveFilter)
+        self.fltr = Entry(topbar, textvariable=self.filterValue, width=14, highlightbackground=BGCOLOR, bg=BGCOLOR, takefocus=False)
+        self.fltr.pack(side="left", padx=0, expand=1, fill=X)
+        self.fltr.bind("<FocusIn>", self.setFilter)
+        self.fltr.bind("<Escape>", self.clearFilter)
+        self.fltr.bind('<Tab>', self.leaveFilter)
         self.bind("<Shift-Control-F>", self.clearFilter)
         self.filter_active = False
-        self.viewmenu.entryconfig(6, state="normal")
-        self.viewmenu.entryconfig(7, state="disabled")
 
         self.weekly = False
 
@@ -919,17 +854,12 @@ class App(Tk):
         self.tree.bind('<Control-Down>', self.nextItem)
         self.tree.bind('<Control-Up>', self.prevItem)
 
-        # self.tree.bind('<Home>', self.goHome)
 
         for t in tstr2SCI:
             self.tree.tag_configure(t, foreground=tstr2SCI[t][1])
 
         self.date2id = {}
         self.root = ('', '_')
-
-
-        # treewindow.add(self.treepane, padx=0, pady=0, stretch="first")
-        # panedwindow.add(self.toppane, padx=0, pady=0)
 
         self.content.bind('<Escape>', self.cleartext)
         self.content.bind('<Tab>', self.focus_next_window)
@@ -942,14 +872,7 @@ class App(Tk):
         timer_status.pack(side="left", expand=0, padx=2)
         timer_status.configure(background=BGCOLOR, highlightthickness=0)
 
-        # self.pendingIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_clock.gif')
         self.pendingIcon = PhotoImage(file='etmTk/icons/icon_clock.gif')
-        # self.searchbutton = Button(topbar, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0)
-        # self.searchbutton.config(image=self.searchIcon, width="18", height="18")
-        # self.calbutton.config(image=self.plusIcon)
-        # self.searchbutton.pack(side="right", padx=4, pady=2)
-
-
         self.pendingAlerts = IntVar(self)
         self.pendingAlerts.set(0)
         self.pending = Button(self.statusbar,
@@ -958,23 +881,8 @@ class App(Tk):
                               highlightbackground=BGCOLOR,
                               bg=BGCOLOR, highlightthickness=0, takefocus=False,
                               width=4, pady=2,
-                            )
-        # self.pending = Button(self.statusbar,
-        #                       command=self.showAlerts,
-        #                       highlightbackground=BGCOLOR,
-        #                       bg=BGCOLOR, padx=2, pady=2,
-        #                       highlightthickness=0,
-        #                     )
-        # self.pending.config(image=self.pendingIcon,
-        #                     width=24, height=24
-        # )
-
+                              )
         self.pending.pack(side="right", padx=2, pady=2)
-
-        # currenttime = Label(self.statusbar, textvariable=self.currentTime, bd=1, relief="flat", anchor="e", padx=4, pady=0)
-        # currenttime.pack(side="right", padx=6, pady=2)
-        # currenttime.configure(background=BGCOLOR)
-
 
         # set cal_regex here and update it in updateCalendars
         self.cal_regex = None
@@ -1826,36 +1734,24 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
     def noteView(self, e=None):
         self.setView(NOTE)
 
-    def toggleActiveView(self, e=None):
-        logger.debug("toggleActiveView. self.view: {0}, self.activeview: {1}".format(self.view, self.activeview))
-        if self.view == AGENDA:
-            if self.activeview == WEEK:
-                self.showWeekly(event=e)
-            elif self.activeview == MONTH:
-                self.showMonthly(event=e)
-            if self.activeview not in [WEEK, MONTH]:
-                self.viewname2cmd[self.activeview]()
-            # self.setView(self.activeview)
-        else:
-            self.agendaView()
-
     def setView(self, view, row=None):
         self.rowSelected = None
+        if view in [DAY, WEEK, MONTH]:
+            self.toolsmenu.entryconfig(1, state="normal")
+        else:
+            self.toolsmenu.entryconfig(1, state="disabled")
         if view not in [DAY, WEEK] and self.weekly:
             self.closeWeekly()
         if view not in [DAY, MONTH] and self.monthly:
             self.closeMonthly()
-        if self.view and self.view != AGENDA:
-            self.activeview = self.view
         if view == CUSTOM:
-            # self.reportbar.pack(side="top")
             logger.debug('showing custom_box')
             self.custom_box.pack(side="top", fill="x", padx=3)
             self.custom_box.focus_set()
             for i in range(len(self.rm_options)):
                 self.custommenu.entryconfig(i, state="normal")
         else:
-            if self.view == CUSTOM:
+            if view == CUSTOM:
                 # we're leaving custom view
                 logger.debug('removing custom_box')
                 self.custom_box.forget()
@@ -1867,19 +1763,18 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.showView(row=row)
 
     def filterView(self, e, *args):
-        # if self.weekly or self.monthly:
-        #     return
         self.depth2id = {}
         fltr = self.filterValue.get()
-        cmd = "{0} {1}".format(
-            self.vm_options[self.vm_opts.index(self.view)][1], fltr)
+        cn = self.vm_options[self.vm_opts.index(self.view)][1]
+        if cn in ['w', 'm']:
+            # with week or month views use the day view command
+            cn = 'd'
+        cmd = "{0} {1}".format(cn, fltr)
         self.mode = 'command'
         self.process_input(event=e, cmd=cmd)
 
     def showView(self, e=None, row=None):
         tt = TimeIt(loglevel=2, label="{0} view".format(self.view))
-        # if self.weekly or self.monthly:
-        #     return
         self.depth2id = {}
         self.currentView.set(self.view)
         fltr = self.filterValue.get()
@@ -2026,7 +1921,6 @@ Enter the shortest time period you want displayed in minutes.""")
         occasion_lst = []
         matching = self.cal_regex is not None and self.default_regex is not None
         while day <= weekend:
-            # weekdays.append(fmt_weekday(day))
             weekdays.append(s2or3(day.strftime("%a")))
             weekdates.append(leadingzero.sub("", day.strftime("%d")))
             isokey = day.isocalendar()
@@ -2091,22 +1985,14 @@ Enter the shortest time period you want displayed in minutes.""")
 
     def closeWeekly(self, event=None):
         self.today_col = None
-        for i in range(14, 20):
-            self.viewmenu.entryconfig(i, state="disabled")
         self.week_height = self.topwindow.panecget(self.toppane, "height")
         self.topwindow.forget(self.toppane)
         self.weekly = False
         self.tree.pack(fill="both", expand=1, padx=4, pady=0)
         self.update_idletasks()
-        if self.filter_active:
-            self.viewmenu.entryconfig(6, state="disabled")
-            self.viewmenu.entryconfig(7, state="normal")
-        else:
-            self.viewmenu.entryconfig(6, state="normal")
-            self.viewmenu.entryconfig(7, state="disabled")
+        for i in range(4, 6):
+            self.toolsmenu.entryconfig(i, state="disabled")
 
-        for i in [4, 5, 8, 9, 10, 11, 12]:
-            self.viewmenu.entryconfig(i, state="normal")
         self.bind("<Control-f>", self.setFilter)
 
     def showWeekly(self, event=None, chosen_day=None):
@@ -2123,8 +2009,6 @@ Enter the shortest time period you want displayed in minutes.""")
             self.closeMonthly()
         self.content.delete("1.0", END)
         self.weekly = True
-        for i in range(4, 13):
-            self.viewmenu.entryconfig(i, state="disabled")
 
         self.setView(DAY)
 
@@ -2144,8 +2028,8 @@ Enter the shortest time period you want displayed in minutes.""")
             self.hours = ["{0}am".format(i) for i in range(7, 12)] + ['12pm'] + ["{0}pm".format(i) for i in range(1, 12)]
         else:
             self.hours = ["{0}:00".format(i) for i in range(7, 24)]
-        for i in range(14, 20):
-            self.viewmenu.entryconfig(i, state="normal")
+        for i in range(4, 6):
+            self.toolsmenu.entryconfig(i, state="normal")
         self.showWeek(event=event)
         tt.stop()
 
@@ -2432,7 +2316,6 @@ Enter the shortest time period you want displayed in minutes.""")
         self.busy_info = (theweek, busy_dates, busy_lst, occasion_lst)
         self.busy_ids = busy_ids
         self.busy_ids.sort()
-        # print("week", self.busy_ids)
         self.canvas_ids = self.busy_ids
         self.monthid2date = monthid2date
         self.canvas_idpos = None
@@ -2440,22 +2323,13 @@ Enter the shortest time period you want displayed in minutes.""")
 
     def closeMonthly(self, event=None):
         self.today_col = None
-        for i in range(14, 20):
-            self.viewmenu.entryconfig(i, state="disabled")
         self.month_height = self.topwindow.panecget(self.toppane, "height")
         self.topwindow.forget(self.toppane)
         self.monthly = False
         self.tree.pack(fill="both", expand=1, padx=4, pady=0)
         self.update_idletasks()
-        if self.filter_active:
-            self.viewmenu.entryconfig(6, state="disabled")
-            self.viewmenu.entryconfig(7, state="normal")
-        else:
-            self.viewmenu.entryconfig(6, state="normal")
-            self.viewmenu.entryconfig(7, state="disabled")
-
-        for i in [4, 5, 8, 9, 10, 11, 12]:
-            self.viewmenu.entryconfig(i, state="normal")
+        for i in range(4, 6):
+            self.toolsmenu.entryconfig(i, state="disabled")
         self.bind("<Control-f>", self.setFilter)
 
     def showMonthly(self, event=None, chosen_day=None):
@@ -2472,8 +2346,8 @@ Enter the shortest time period you want displayed in minutes.""")
             self.closeWeekly()
         self.content.delete("1.0", END)
         self.monthly = True
-        for i in range(4, 13):
-            self.viewmenu.entryconfig(i, state="disabled")
+        for i in range(4, 6):
+            self.toolsmenu.entryconfig(i, state="normal")
 
         self.setView(DAY)
 
@@ -2489,8 +2363,6 @@ Enter the shortest time period you want displayed in minutes.""")
 
         self.topwindow.add(self.toppane, padx=0, pady=0, before=self.botwindow, height=self.month_height)
 
-        for i in range(14, 20):
-            self.viewmenu.entryconfig(i, state="normal")
         self.showMonth(event=event)
         tt.stop()
 
@@ -2560,7 +2432,6 @@ Enter the shortest time period you want displayed in minutes.""")
 
         # month
         p = l + int((w - 1 - l - r) / 2), 20
-        # self.canvas.create_text(p, text="{0}".format(themonth))
         self.currentView.set(themonth)
         self.busyHsh = {}
 
@@ -3548,22 +3419,22 @@ Relative dates and fuzzy parsing are supported.""")
         return
 
     def setFilter(self, *args):
-        if self.view in [WEEK, MONTH, CUSTOM]:
+        if self.view in [CUSTOM]:
             return
         self.filter_active = True
-        self.viewmenu.entryconfig(6, state="disabled")
-        self.viewmenu.entryconfig(7, state="normal")
-        # self.fltr.configure(bg="white", state="normal")
+        # self.motionmenu.entryconfig(6, state="disabled")
+        # self.motionmenu.entryconfig(7, state="normal")
+        self.fltr.configure(bg="white", state="normal")
         self.fltr.focus_set()
 
     def clearFilter(self, e=None):
         if self.view in [CUSTOM]:
             return
         self.filter_active = False
-        self.viewmenu.entryconfig(6, state="normal")
-        self.viewmenu.entryconfig(7, state="disabled")
+        # self.motionmenu.entryconfig(6, state="normal")
+        # self.motionmenu.entryconfig(7, state="disabled")
         self.filterValue.set('')
-        # self.fltr.configure(bg=BGCOLOR)
+        self.fltr.configure(bg=BGCOLOR)
         self.tree.focus_set()
         if self.rowSelected:
             self.tree.focus(self.rowSelected)
@@ -3883,8 +3754,8 @@ or 0 to expand all branches completely.""")
                 self.goHome()
 
     def popupTree(self, e=None):
-        if self.weekly or self.monthly:
-            return
+        # if self.weekly or self.monthly:
+        #     return
         if not self.active_tree:
             return
         depth = self.outline_depths[self.view]
