@@ -2085,7 +2085,7 @@ Enter the shortest time period you want displayed in minutes.""")
         busy_ids = set([])
         monthid2date = {}
 
-        self.canvas.bind('<Escape>', self.on_clear_item)
+        # self.canvas.bind('<Escape>', self.on_leave_item)
 
         # weekdays
         intervals = [360, 720, 1080, 1440]
@@ -2417,7 +2417,7 @@ Enter the shortest time period you want displayed in minutes.""")
         busy_ids = set([])
         monthid2date = {}
 
-        self.canvas.bind('<Escape>', self.on_clear_item)
+        # self.canvas.bind('<Escape>', self.on_leave_item)
 
         # monthdays
         intervals = [360, 720, 1080, 1440]
@@ -2727,25 +2727,25 @@ Enter the shortest time period you want displayed in minutes.""")
         else:
             self.canvas.itemconfig(id, fill="white")
 
-    def on_clear_item(self, e=None):
-        if not self.weekly:
-            return
-        if self.selectedId:
-            id = self.selectedId
-            if id in self.busy_ids:
-                tags = self.canvas.gettags(id)
-                if 'other' in tags:
-                    self.canvas.itemconfig(id, fill=OTHERFILL)
-                else:
-                    self.canvas.itemconfig(id, fill=DEFAULTFILL)
-            else:
-                self.canvas.itemconfig(id, fill=OCCASIONFILL)
-        self.canvas.tag_raise('conflict')
-        self.canvas.tag_raise('grid')
-        self.canvas.tag_lower('occasion')
-        self.selectedId = None
-        self.OnSelect()
-        self.canvas.focus("")
+    # def on_clear_item(self, e=None):
+    #     if not self.weekly or self.monthly:
+    #         return
+    #     if self.selectedId:
+    #         id = self.selectedId
+    #         if id in self.busy_ids:
+    #             tags = self.canvas.gettags(id)
+    #             if 'other' in tags:
+    #                 self.canvas.itemconfig(id, fill=OTHERFILL)
+    #             else:
+    #                 self.canvas.itemconfig(id, fill=DEFAULTFILL)
+    #         else:
+    #             self.canvas.itemconfig(id, fill=OCCASIONFILL)
+    #     self.canvas.tag_raise('conflict')
+    #     self.canvas.tag_raise('grid')
+    #     self.canvas.tag_lower('occasion')
+    #     self.selectedId = None
+    #     self.OnSelect()
+    #     self.canvas.focus("")
 
     def on_select_item(self, event):
         if self.monthly:
