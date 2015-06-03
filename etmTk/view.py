@@ -196,7 +196,7 @@ class App(Tk):
         topbar.pack(side="top", fill="x", expand=0, padx=0, pady=0)
 
         self.statusbar = Frame(self, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR, takefocus=False)
-        self.statusbar.pack(side="bottom", fill="x", expand=0, padx=0, pady=0)
+        self.statusbar.pack(side="bottom", fill="x", expand=0, padx=4, pady=2)
 
         self.topwindow = topwindow = PanedWindow(self, orient="vertical", sashwidth=4, sashrelief='flat')
         self.topwindow.pack(side="top", fill=BOTH, expand=1)
@@ -868,7 +868,7 @@ class App(Tk):
         self.timerStatus = StringVar(self)
         self.timerStatus.set("")
         timer_status = Label(self.statusbar, textvariable=self.timerStatus, bd=0, relief="flat", anchor="w", padx=0, pady=0)
-        timer_status.pack(side="left", expand=0, padx=2)
+        timer_status.pack(side="left", expand=0, padx=4)
         timer_status.configure(background=BGCOLOR, highlightthickness=0)
 
         self.pendingIcon = PhotoImage(file='etmTk/icons/icon_clock.gif')
@@ -2045,9 +2045,10 @@ Enter the shortest time period you want displayed in minutes.""")
         day = day - (weekdaynum - 1) * ONEDAY
         if use_chosen:
             scrolldate = self.chosen_day.date()
+            self.canvas_idpos = weekdaynum - 1
         else:
             scrolldate = day.date()
-        print('scrolling to', scrolldate)
+            self.canvas_idpos = 0
         self.scrollToDate(scrolldate)
         # self.scrollToDate(self.chosen_day.date())
         self.OnSelect()
@@ -2284,7 +2285,6 @@ Enter the shortest time period you want displayed in minutes.""")
         self.busy_ids.sort()
         self.canvas_ids = self.busy_ids
         self.monthid2date = monthid2date
-        self.canvas_idpos = None
 
 
     def closeMonthly(self, event=None):
@@ -2345,6 +2345,7 @@ Enter the shortest time period you want displayed in minutes.""")
         self.x_win = self.canvas.winfo_width()
         self.y_win = self.canvas.winfo_height()
         month_day = 1
+        use_chosen = False
         if month in [-1, 0, 1]:
             if month == 0:
                 self.year_month = [self.current_day.year, self.current_day.month]
@@ -2359,14 +2360,21 @@ Enter the shortest time period you want displayed in minutes.""")
                     self.year_month[1] += 12
                     self.year_month[0] -= 1
         elif self.chosen_day:
+            use_chosen = True
             self.year_month = [self.chosen_day.year, self.chosen_day.month]
             month_day = self.chosen_day.day
         else:
             return
         logger.debug('month active_date: {0}'.format(self.active_date))
         day = date(self.year_month[0], self.year_month[1], month_day)
-        print("month", self.chosen_day, day)
-        self.scrollToDate(day)
+        if use_chosen:
+            scrolldate = self.chosen_day.date()
+            self.canvas_idpos = month_day - 1
+            # self.canvas_idpos = weekdaynum - 1
+        else:
+            scrolldate = day
+            self.canvas_idpos = 0
+        self.scrollToDate(scrolldate)
 
         weeks = self.monthly_calendar.monthdatescalendar(*self.year_month)
         num_weeks = len(weeks)
@@ -2619,7 +2627,6 @@ Enter the shortest time period you want displayed in minutes.""")
         # print("month", self.busy_ids)
         self.canvas_ids = self.busy_ids
         self.monthid2date = monthid2date
-        self.canvas_idpos = None
 
 
     def selectId(self, event, d=1):
@@ -2969,7 +2976,6 @@ or 0 to display all changes.""").format(title)
         if item:
             next = self.tree.next(item)
             if next:
-
                 next = int(next)
                 next -= 1
                 self.tree.focus(next)
@@ -2980,7 +2986,6 @@ or 0 to display all changes.""").format(title)
         if item:
             prev = self.tree.prev(item)
             if prev:
-
                 prev = int(prev)
                 prev += 1
                 self.tree.focus(prev)
@@ -3643,6 +3648,8 @@ or 0 to expand all branches completely.""")
         active_date = loop.prevnext[date][1]
         if active_date not in self.date2id:
             return
+        pos = date.isocalendar()[2] - 1
+        self.canvas_idpos = pos
         uid = self.date2id[active_date]
         self.active_date = active_date
         self.scrollToId(uid)
