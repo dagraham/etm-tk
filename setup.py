@@ -66,7 +66,7 @@ setup(
         ('share/man/man1', ['etmTk/etm.1']),
         ('share/doc/etm', ['etmTk/CHANGES']),
         ('share/pixmaps', ['etmTk/etm.xpm']),
-        ('share/icons/etmtk', glob.glob('etmTk/icons/*.gif')),
+        ('share/icons', glob.glob('etmTk/icons/*.gif')),
         ('share/applications', ['etmTk/etm.desktop']),
         ('share/appdata', ['etmTk/etm.appdata.xml']),
     ]
