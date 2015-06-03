@@ -1187,8 +1187,10 @@ returns:
             loop.do_update = True
             self.updateAlerts()
             if self.weekly:
+                self.setView(DAY)
                 self.showWeek()
             elif self.monthly:
+                self.setView(DAY)
                 self.showMonth()
             else:
                 self.showView()
@@ -1454,9 +1456,11 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
             self.updateAlerts()
             if self.weekly:
                 self.canvas.focus_set()
+                self.setView(DAY)
                 self.showWeek()
             elif self.monthly:
                 self.canvas.focus_set()
+                self.setView(DAY)
                 self.showMonth()
             else:
                 self.tree.focus_set()
@@ -1505,9 +1509,11 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
             self.updateAlerts()
             if self.weekly:
                 self.canvas.focus_set()
+                self.setView(DAY)
                 self.showWeek()
             elif self.monthly:
                 self.canvas.focus_set()
+                self.setView(DAY)
                 self.showMonth()
             else:
                 self.tree.focus_set()
@@ -1607,9 +1613,11 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
         self.updateAlerts()
         if self.weekly:
             self.canvas.focus_set()
+            self.setView(DAY)
             self.showWeek()
         elif self.monthly:
             self.canvas.focus_set()
+            self.setView(DAY)
             self.showMonth()
         else:
             self.tree.focus_set()
@@ -2262,9 +2270,6 @@ Enter the shortest time period you want displayed in minutes.""")
                 self.canvas.create_text(p, text="{0}".format(weekdates[i]), fill=fill)
 
         busy_ids = list(busy_ids)
-        for id in busy_ids:
-            self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
-            self.canvas.tag_bind(id, '<Any-Leave>', self.on_leave_item)
 
         self.conf_ids = conf_ids
 
@@ -2285,6 +2290,9 @@ Enter the shortest time period you want displayed in minutes.""")
         self.busy_info = (theweek, busy_dates, busy_lst, occasion_lst)
         self.busy_ids = busy_ids
         self.busy_ids.sort()
+        for id in self.busy_ids:
+            self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
+            # self.canvas.tag_bind(id, '<Any-Leave>', self.on_leave_item)
         self.canvas_ids = self.busy_ids
         self.monthid2date = monthid2date
 
@@ -2712,8 +2720,6 @@ Enter the shortest time period you want displayed in minutes.""")
             self.content.delete("1.0", END)
 
     def on_leave_item(self, e):
-        if self.weekly or self.monthly:
-            return
         self.content.delete("1.0", END)
         id = self.canvas.find_withtag(CURRENT)[0]
         if id in self.busy_ids:
