@@ -2100,9 +2100,9 @@ Enter the shortest time period you want displayed in minutes.""")
             h = self.canvas.winfo_height()
         logger.debug("w: {0}, h: {1}, l: {2}, t: {3}".format(w, h, l, t))
         self.margins = (w, h, l, r, t, b)
-        self.week_x = x = Decimal(w - 1 - l - r) / Decimal(7)
-        self.week_y = y = Decimal(h - 1 - t - b) / Decimal(1)
-        logger.debug("x: {0}, y: {1}".format(x, y))
+        self.week_x = x_ = Decimal(w - 1 - l - r) / Decimal(7)
+        self.week_y = y_ = Decimal(h - 1 - t - b) / Decimal(1)
+        logger.debug("x: {0}, y: {1}".format(x_, y_))
 
         # week
         self.currentView.set(theweek)
@@ -2132,8 +2132,8 @@ Enter the shortest time period you want displayed in minutes.""")
         self.timeline = None
         self.last_minutes = None
 
-        x_ = x
-        y_ = y
+        # x_ = x
+        # y_ = y
 
         for i in range(7):
             fill = "SteelBlue4"
@@ -2298,16 +2298,16 @@ Enter the shortest time period you want displayed in minutes.""")
 
 
         # border
-        xy = int(l), int(t), int(l + x * 7), int(t + y)
+        xy = int(l), int(t), int(l + x_ * 7), int(t + y_)
         self.canvas.create_rectangle(xy, tag="grid")
 
         # verticals
         for i in range(1, 7):
-            xy = int(l + x * i), int(t), int(l + x * i), int(t + y)
+            xy = int(l + x_ * i), int(t), int(l + x_ * i), int(t + y_)
             self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
 
         for i in range(7):
-            p = int(l + x / 2 + x * i), int(t - 10)
+            p = int(l + x_ / 2 + x_ * i), int(t - 10)
             if self.today_col is not None and i == self.today_col:
                 self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=CURRENTLINE)
             else:
