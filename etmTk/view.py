@@ -871,7 +871,7 @@ class App(Tk):
         timer_status.pack(side="left", expand=0, padx=4)
         timer_status.configure(background=BGCOLOR, highlightthickness=0)
 
-        self.pendingIcon = PhotoImage(file='etmTk/icons/icon_clock.gif')
+        # self.pendingIcon = PhotoImage(file='etmTk/icons/icon_clock.gif')
         self.pendingAlerts = IntVar(self)
         self.pendingAlerts.set(0)
         self.pending = Button(self.statusbar,
