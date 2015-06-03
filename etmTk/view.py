@@ -116,14 +116,16 @@ OTHERFILL = "#C7EDC8"  # green
 BUSYOUTLINE = ""
 
 CONFLICTFILL = "#C1C4C9"
-CURRENTFILL = "#FCF2F0"
+# CURRENTFILL = "#FCF2F0"
+CURRENTFILL = "#FCD9D2"
 # CURRENTLINE = "#D053E0"
 CURRENTLINE = "#3C3FDE"
 OUTSIDELINE = "#E0535C"
 LASTLTR = re.compile(r'([a-z])$')
 LINECOLOR = "gray80"
 
-OCCASIONFILL = "gray96"
+# OCCASIONFILL = "gray96"
+OCCASIONFILL = "gray92"
 
 this_dir, this_filename = os.path.split(__file__)
 USERMANUAL = os.path.normpath(os.path.join(this_dir, "help", "UserManual.html"))
@@ -871,7 +873,7 @@ class App(Tk):
         timer_status.pack(side="left", expand=0, padx=4)
         timer_status.configure(background=BGCOLOR, highlightthickness=0)
 
-        # self.pendingIcon = PhotoImage(file='etmTk/icons/icon_clock.gif')
+        # self.pendingIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_clock.gif')
         self.pendingAlerts = IntVar(self)
         self.pendingAlerts.set(0)
         self.pending = Button(self.statusbar,
