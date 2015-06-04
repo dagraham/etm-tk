@@ -2663,11 +2663,13 @@ Enter the shortest time period you want displayed in minutes.""")
             if d == -1:
                 self.canvas_idpos -= 1
                 if self.canvas_idpos < 0:
+                    self.priorWeekMonth(event=event)
                     self.canvas_idpos = len(self.canvas_ids) - 1
             elif d == 1:
                 self.canvas_idpos += 1
                 if self.canvas_idpos > len(self.canvas_ids) - 1:
-                    self.canvas_idpos = 0
+                    self.nextWeekMonth(event=event)
+                    # self.canvas_idpos = 0
 
         if old_id is not None and old_id in self.busy_ids:
             tags = self.canvas.gettags(old_id)
