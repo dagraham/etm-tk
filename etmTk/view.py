@@ -107,7 +107,8 @@ CLOSE = _("Close")
 
 SEP = "----"
 
-ACTIVEFILL = "#FAFCAC"
+# ACTIVEFILL = "#FAFCAC"
+ACTIVEFILL = "#FCFCD9"
 ACTIVEOUTLINE = "gray40"
 
 DEFAULTFILL = "#D4DCFC"  # blue
@@ -117,7 +118,7 @@ BUSYOUTLINE = ""
 
 CONFLICTFILL = "#C1C4C9"
 # CURRENTFILL = "#FCF2F0"
-CURRENTFILL = "#FCD9D2"
+CURRENTFILL = "#DCEAFC"
 # CURRENTLINE = "#D053E0"
 CURRENTLINE = "#3C3FDE"
 OUTSIDELINE = "#E0535C"
@@ -2275,12 +2276,12 @@ Enter the shortest time period you want displayed in minutes.""")
 
 
         # border
-        xy = int(l), int(t), int(l + x_ * 7), int(t + y_)
-        self.canvas.create_rectangle(xy, tag="grid")
+        # xy = int(l), int(t), int(l + x_ * 7), int(t + y_)
+        # self.canvas.create_rectangle(xy, tag="grid")
 
         # verticals
         for i in range(1, 7):
-            xy = int(l + x_ * i), int(t), int(l + x_ * i), int(t + y_)
+            xy = int(l + x_ * i), int(t-18), int(l + x_ * i), int(t + y_)
             self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
 
         for i in range(7):
@@ -2614,12 +2615,12 @@ Enter the shortest time period you want displayed in minutes.""")
             self.canvas.tag_bind(id, '<Any-Leave>', self.on_leave_item)
 
         # border
-        xy = int(l), int(t), int(l + x_ * 7), int(t + y_ * num_weeks + 1)
-        self.canvas.create_rectangle(xy, tag="grid")
+        # xy = int(l), int(t), int(l + x_ * 7), int(t + y_ * num_weeks + 1)
+        # self.canvas.create_rectangle(xy, tag="grid")
 
         # verticals
         for i in range(1, 7):
-            xy = int(l + x_ * i), int(t), int(l + x_ * i), int(t + y_ * num_weeks)
+            xy = int(l + x_ * i), int(t-18), int(l + x_ * i), int(t + y_ * num_weeks)
             self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
         # horizontals
         for j in range(1, num_weeks):
