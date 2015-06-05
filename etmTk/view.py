@@ -1188,10 +1188,10 @@ returns:
             loop.do_update = True
             self.updateAlerts()
             if self.weekly:
-                self.setView(DAY)
+                self.updateDay()
                 self.showWeek()
             elif self.monthly:
-                self.setView(DAY)
+                self.updateDay()
                 self.showMonth()
             else:
                 self.showView()
@@ -1281,8 +1281,10 @@ returns:
         if changed:
             self.updateAlerts()
             if self.weekly:
+                self.updateDay()
                 self.showWeek()
             elif self.weekly:
+                self.updateDay()
                 self.showMonth()
             else:
                 self.showView(row=self.topSelected)
@@ -1321,9 +1323,11 @@ returns:
         self.updateAlerts()
         if self.weekly:
             self.canvas.focus_set()
+            self.updateDay()
             self.showWeek()
         elif self.monthly:
             self.canvas.focus_set()
+            self.updateDay()
             self.showMonth()
         else:
             self.tree.focus_set()
@@ -1356,9 +1360,11 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
         self.updateAlerts()
         if self.weekly:
             self.canvas.focus_set()
+            self.updateDay()
             self.showWeek()
         elif self.monthly:
             self.canvas.focus_set()
+            self.updateDay()
             self.showWeek()
         else:
             self.tree.focus_set()
@@ -1457,11 +1463,11 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
             self.updateAlerts()
             if self.weekly:
                 self.canvas.focus_set()
-                self.setView(DAY)
+                self.updateDay()
                 self.showWeek()
             elif self.monthly:
                 self.canvas.focus_set()
-                self.setView(DAY)
+                self.updateDay()
                 self.showMonth()
             else:
                 self.tree.focus_set()
@@ -1614,11 +1620,11 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
         self.updateAlerts()
         if self.weekly:
             self.canvas.focus_set()
-            self.setView(DAY)
+            self.updateDay()
             self.showWeek()
         elif self.monthly:
             self.canvas.focus_set()
-            self.setView(DAY)
+            self.updateDay()
             self.showMonth()
         else:
             self.tree.focus_set()
@@ -1744,15 +1750,20 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
     def noteView(self, e=None):
         self.setView(NOTE)
 
+    def updateDay(self, e=None):
+        print('updateDay calling process_input')
+        self.mode = "command"
+        self.process_input(event=e, cmd='d')
+
     def setView(self, view, row=None):
         self.rowSelected = None
         if view in [DAY, WEEK, MONTH]:
             self.toolsmenu.entryconfig(1, state="normal")
         else:
             self.toolsmenu.entryconfig(1, state="disabled")
-        if view not in [DAY, WEEK] and self.weekly:
+        if self.weekly and view not in [DAY, WEEK]:
             self.closeWeekly()
-        if view not in [DAY, MONTH] and self.monthly:
+        if self.monthly and view not in [DAY, MONTH]:
             self.closeMonthly()
         if view == CUSTOM:
             logger.debug('showing custom_box')
@@ -2669,7 +2680,7 @@ Enter the shortest time period you want displayed in minutes.""")
                 self.canvas_idpos += 1
                 if self.canvas_idpos > len(self.canvas_ids) - 1:
                     self.nextWeekMonth(event=event)
-                    # self.canvas_idpos = 0
+                    self.canvas_idpos = 0
 
         if old_id is not None and old_id in self.busy_ids:
             tags = self.canvas.gettags(old_id)
@@ -2823,8 +2834,10 @@ Enter the shortest time period you want displayed in minutes.""")
 
             self.updateAlerts()
             if self.weekly:
+                self.updateDay()
                 self.showWeek()
             elif self.monthly:
+                self.updateDay()
                 self.showMonth()
             else:
                 self.showView()
@@ -3158,10 +3171,16 @@ or 0 to display all changes.""").format(title)
 
             if self.weekly:
                 logger.debug('calling showWeek')
+                self.updateDay()
                 self.showWeek()
+                if newday:
+                    self.scrollToDate(today)
             elif self.monthly:
                 logger.debug('calling showMonth')
+                self.updateDay()
                 self.showMonth()
+                if newday:
+                    self.scrollToDate(today)
             else:
                 logger.debug('calling showView')
                 self.showView()
