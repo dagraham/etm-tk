@@ -874,7 +874,6 @@ class App(Tk):
         timer_status.pack(side="left", expand=0, padx=4)
         timer_status.configure(background=BGCOLOR, highlightthickness=0)
 
-        # self.pendingIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_clock.gif')
         self.pendingAlerts = IntVar(self)
         self.pendingAlerts.set(0)
         self.pending = Button(self.statusbar,
@@ -1064,7 +1063,6 @@ class App(Tk):
     def printWithDefault(self, s, e=None):
         fo = codecs.open(loop.tmpfile, 'w', loop.options['encoding']['file'])
         # add a trailing formfeed
-        # fo.write("{0}".format(s))
         fo.write(s)
         fo.close()
         if windoz:
@@ -1751,7 +1749,6 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.setView(NOTE)
 
     def updateDay(self, e=None):
-        print('updateDay calling process_input')
         self.mode = "command"
         self.process_input(event=e, cmd='d')
 
@@ -2768,65 +2765,26 @@ Enter the shortest time period you want displayed in minutes.""")
     #     self.canvas.focus("")
 
     def on_select_item(self, event):
-        if self.monthly:
+        if self.monthly or self.weekly:
             self.newItem()
         else:
-            current = self.canvas.find_withtag(CURRENT)
-            logger.debug('current: {0}'.format(current))
-            if current and current[0] in self.busy_ids:
-                self.selectedId = current[0]
-                self.on_activate_item(event)
-            else:
-                self.newEvent(event)
             return "break"
 
     def on_activate_item(self, event):
-        if self.monthly:
+        if self.monthly or self.weekly:
             self.newItem()
-        else:
-            x = self.winfo_rootx() + 350
-            y = self.winfo_rooty() + 50
-            id = self.selectedId
-            if not id:
-                return
-
-            logger.debug("id: {0}, coords: {1}, {2}\n    {3}".format(id, x, y, self.busyHsh[id]))
-            self.uuidSelected = uuid = self.busyHsh[id][1]
-            self.itemSelected = loop.uuid2hash[uuid]
-            self.dtSelected = self.busyHsh[id][-1]
-            self.itemmenu.post(x, y)
-            self.itemmenu.focus_set()
 
     def newEvent(self, event):
         logger.debug("event: {0}".format(event))
         self.canvas.focus_set()
-        min_round = 15
         px = event.x
         py = event.y
         (w, h, l, r, t, b) = self.margins
         x = Decimal(w - 1 - l - r) / Decimal(7)  # x per day intervals
-        y = Decimal(h - 1 - t - b) / Decimal(16 * 60)  # y per minute intervals
-        if px < l:
-            px = l
-        elif px > l + 7 * x:
-            py = l + 7 * x
-        if py < t:
-            py = t
-        elif py > t + 16 * 60 * y:
-            py = t + 16 * 60 * y
-
         rx = int(round(Decimal(px - l) / x - Decimal(0.5)))  # number of days
-        ry = int(7 * 60 + round(Decimal(py - t) / y))  # number of minutes
-        ryr = round(Decimal(ry) / min_round) * min_round
-
-        hours = int(ryr // 60)
-        minutes = int(ryr % 60)
-        dt = (self.week_beg + rx * ONEDAY).replace(hour=hours, minute=minutes, second=0, microsecond=0, tzinfo=None)
-
-        tfmt = fmt_time(dt, options=loop.options)
+        dt = (self.week_beg + rx * ONEDAY).replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
         dfmt = dt.strftime("%a %b %d")
-        dtfmt = "{0} {1}".format(tfmt, dfmt)
-        s = "*  @s {0}".format(dtfmt)
+        s = "*  @s {0}".format(dfmt)
         changed = SimpleEditor(parent=self, master=self.canvas, start=s, options=loop.options).changed
 
         if changed:
@@ -3229,7 +3187,6 @@ or 0 to display all changes.""").format(title)
 
                             logger.debug('paused: {0}'.format(tcmd))
                             subprocess.call(tcmd, shell=True)
-
         tt.stop()
 
     def updateAlerts(self):
