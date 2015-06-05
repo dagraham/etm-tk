@@ -416,7 +416,9 @@ class App(Tk):
         for i in range(len(self.vm_options)):
             label = self.vm_options[i][0]
             k = self.vm_options[i][1]
-            if label == "-":
+            if label == DAY:
+                continue
+            elif label == "-":
                 self.viewmenu.add_separator()
                 # self.add2menu(VIEW, (SEP, ))
             else:
@@ -1994,7 +1996,6 @@ Enter the shortest time period you want displayed in minutes.""")
         self.setView(DAY)
 
         self.view = WEEK
-        self.activeview = WEEK
 
         if chosen_day is not None:
             self.chosen_day = chosen_day
