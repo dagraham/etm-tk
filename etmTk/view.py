@@ -156,8 +156,8 @@ class App(Tk):
         self.active_tree = {}
         root = "_"
 
-        self.week_height = "80p"
-        self.month_height = "260p"
+        self.week_height = 80
+        self.month_height = 260
 
         self.options = loop.options
 
@@ -209,11 +209,12 @@ class App(Tk):
             topwindow, bd=0, relief="flat",
             highlightthickness=0,
             highlightbackground=BGCOLOR, background=BGCOLOR)
+        self.toppane.pack(side="top", fill=BOTH, expand=1)
 
         self.canvas = Canvas(
             self.toppane, background="white", bd=1, relief="flat",
             highlightthickness=2, highlightbackground=BGCOLOR)
-        self.canvas.pack(fill="both", expand=1, padx=0, pady=0)
+        self.canvas.pack(fill=BOTH, expand=1, padx=0, pady=0)
 
 
         self.botwindow = botwindow = PanedWindow(topwindow, orient="vertical", sashwidth=4, sashrelief='flat')
@@ -1000,7 +1001,7 @@ class App(Tk):
 
     def selectCalendars(self):
         if self.default_calendars:
-            prompt = _("Only items from selected calendars will be displayed.")
+            prompt = _("Display items from calendars selected below.")
             title = CALENDARS
             if self.weekly or self.monthly:
                 master = self.canvas
@@ -1025,8 +1026,10 @@ class App(Tk):
         self.update()
         self.updateAlerts()
         if self.weekly:
+            self.updateDay()
             self.showWeek()
         elif self.monthly:
+            self.updateDay()
             self.showMonth()
         else:
             self.showView()
@@ -2012,7 +2015,7 @@ Enter the shortest time period you want displayed in minutes.""")
             self.hours = ["{0}:00".format(i) for i in range(7, 24)]
         for i in range(4, 6):
             self.toolsmenu.entryconfig(i, state="normal")
-        self.showWeek(event=event)
+        self.showWeek(event=event, week=0)
         tt.stop()
 
     def priorWeekMonth(self, event=None):
@@ -2023,9 +2026,9 @@ Enter the shortest time period you want displayed in minutes.""")
 
     def nextWeekMonth(self, event=None):
         if self.weekly:
-            self.showWeek(event, week=1)
+            self.showWeek(event=event, week=1)
         elif self.monthly:
-            self.showMonth(event, month=1)
+            self.showMonth(event=event, month=1)
 
     def showWeek(self, event=None, week=None):
         self.canvas.focus_set()
@@ -2037,8 +2040,9 @@ Enter the shortest time period you want displayed in minutes.""")
 
         self.current_day = get_current_time().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
         logger.debug('self.current_day: {0}, minutes: {1}'.format(self.current_day, self.current_minutes))
-        self.x_win = self.canvas.winfo_width()
-        self.y_win = self.canvas.winfo_height()
+        self.x_win = self.toppane.winfo_width()
+        # self.y_win = self.canvas.winfo_height()
+        self.y_win = self.toppane.winfo_height()
         logger.debug("win: {0}, {1}".format(self.x_win, self.y_win))
         logger.debug("event: {0}, week: {1}, chosen_day: {2}".format(event, week, self.chosen_day))
         use_chosen = False
@@ -2088,7 +2092,8 @@ Enter the shortest time period you want displayed in minutes.""")
                 h = self.canvas.winfo_height()
         else:
             w = self.canvas.winfo_width()
-            h = self.canvas.winfo_height()
+            # h = self.canvas.winfo_height()
+            h = self.week_height
         logger.debug("w: {0}, h: {1}, l: {2}, t: {3}".format(w, h, l, t))
         self.margins = (w, h, l, r, t, b)
         self.week_x = x_ = Decimal(w - 1 - l - r) / Decimal(7)
@@ -2152,7 +2157,7 @@ Enter the shortest time period you want displayed in minutes.""")
             if today:
                 flagcolor = CURRENTFILL
                 tags.append('current_day')
-            if isokey in loop.occasions:
+            if loop.occasions is not None and isokey in loop.occasions:
                 bt = []
                 for item in loop.occasions[isokey]:
                     it = list(item)
@@ -2174,8 +2179,8 @@ Enter the shortest time period you want displayed in minutes.""")
             else:
                 occasion_lst.append([])
 
-            if isokey in loop.busytimes:
-                if isokey in loop.conflicts:
+            if loop.busytimes is not None and isokey in loop.busytimes:
+                if loop.conflicts and isokey in loop.conflicts:
                     flagcolor = "red"
                 bt = []
                 for item in loop.busytimes[isokey]:
@@ -2265,9 +2270,9 @@ Enter the shortest time period you want displayed in minutes.""")
                         ey = bl_y - indent - .5 * busywidth
                         if flagcolor:
                             self.canvas.create_rectangle((bx, by, ex, ey), fill=flagcolor, outline=flagcolor, tag="busy")
-                else:
-                    busy_lst.append([])
-                    busy_dates.append(thisdate.strftime("%a %d"))
+            else:
+                busy_lst.append([])
+                busy_dates.append(thisdate.strftime("%a %d"))
 
             if 'current_day' in tags:
                 self.canvas.itemconfig(id, tag='current_day', fill=CURRENTFILL)
@@ -2276,8 +2281,8 @@ Enter the shortest time period you want displayed in minutes.""")
             elif 'busy' in tags:
                 self.canvas.itemconfig(id, tag='busy', fill="white")
 
-            if fill:
-                self.canvas.create_text(p, text="{0}".format(weekdates[i]), fill=fill)
+            # if fill:
+            self.canvas.create_text(p, text="{0}".format(weekdates[i]), fill=barcolor)
 
         busy_ids = list(busy_ids)
 
@@ -2295,7 +2300,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
         for i in range(7):
             p = int(l + x_ / 2 + x_ * i), int(t - 10)
-            self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=fill)
+            self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=barcolor)
 
         self.busy_info = (theweek, busy_dates, busy_lst, occasion_lst)
         self.busy_ids = busy_ids
@@ -2416,7 +2421,8 @@ Enter the shortest time period you want displayed in minutes.""")
                 h = self.canvas.winfo_height()
         else:
             w = self.canvas.winfo_width()
-            h = self.canvas.winfo_height()
+            # h = self.canvas.winfo_height()
+            h = self.month_height
         logger.debug("w: {0}, h: {1}, l: {2}, t: {3}".format(w, h, l, t))
 
         self.margins = (w, h, l, r, t, b)
@@ -2493,7 +2499,7 @@ Enter the shortest time period you want displayed in minutes.""")
                     if today:
                         flagcolor = CURRENTFILL
                         tags.append('current_day')
-                    if isokey in loop.occasions:
+                    if loop.occasions is not None and isokey in loop.occasions:
                         bt = []
                         for item in loop.occasions[isokey]:
                             it = list(item)
@@ -2515,7 +2521,7 @@ Enter the shortest time period you want displayed in minutes.""")
                     else:
                         occasion_lst.append([])
 
-                    if isokey in loop.busytimes:
+                    if loop.busytimes is not None and isokey in loop.busytimes:
                         if isokey in loop.conflicts:
                             flagcolor = "red"
                         bt = []
@@ -2644,7 +2650,6 @@ Enter the shortest time period you want displayed in minutes.""")
         self.busy_info = (themonth, busy_dates, busy_lst, occasion_lst)
         self.busy_ids = busy_ids
         self.busy_ids.sort()
-        # print("month", self.busy_ids)
         self.canvas_ids = self.busy_ids
         self.monthid2date = monthid2date
 
@@ -2794,10 +2799,10 @@ Enter the shortest time period you want displayed in minutes.""")
             self.updateAlerts()
             if self.weekly:
                 self.updateDay()
-                self.showWeek()
+                self.showWeek(event=event)
             elif self.monthly:
                 self.updateDay()
-                self.showMonth()
+                self.showMonth(event=event)
             else:
                 self.showView()
 
@@ -2940,10 +2945,10 @@ or 0 to display all changes.""").format(title)
     def goHome(self, event=None):
         today = get_current_time().date()
         if self.weekly:
-            self.showWeek(week=0)
+            self.showWeek(event=event, week=0)
             self.scrollToDate(today)
         elif self.monthly:
-            self.showMonth(month=0)
+            self.showMonth(event=event, month=0)
             self.scrollToDate(today)
         elif self.view == DAY:
             self.scrollToDate(today)
@@ -2981,6 +2986,8 @@ or 0 to display all changes.""").format(title)
         logger.debug("starting OnSelect with uuid: {0}".format(uuid))
         self.content.delete("1.0", END)
         if uuid is None:  # tree view
+            if not self.tree.selection():
+                return
             item = self.tree.selection()[0]
             self.rowSelected = int(item)
             logger.debug('rowSelected: {0}'.format(self.rowSelected))
@@ -3627,9 +3634,11 @@ or 0 to expand all branches completely.""")
                         except:
                             logger.exception('open: {0}, {1}'.format(i, item))
 
-    def scrollToDate(self, date):
+    def scrollToDate(self, date=None):
         # only makes sense for schedule
         logger.debug("DAY: {0}; date: {1}".format(self.view == DAY, date))
+        if not loop.prevnext or date is None:
+            return
         if self.view not in [DAY, WEEK, MONTH] or date not in loop.prevnext:
             return
         # new: go to the first date on or **after**, i.e., prevnext last

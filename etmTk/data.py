@@ -4005,7 +4005,7 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
     tom_fmt = tom.strftime("%Y%m%d")
     lst_fmt = lst.strftime("%Y%m%d")
     if not items:
-        return "no output"
+        return {}
     for item in items:
         if item[0][0] == 'day':
             if item[0][1] >= beg_fmt and item[0][1] <= lst_fmt:
@@ -4867,6 +4867,8 @@ def setItemPeriod(hsh, start, end, short=False, options=None):
 def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=None):
     if not options:
         options = {}
+    if file2data is None:
+        file2data = {}
     if not file2uuids:
         file2uuids = {}
     if not uuid2hash:
@@ -5547,6 +5549,10 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None, file2data=No
 
 
 def updateViewFromFile(f, file2data):
+    if not file2data:
+        file2data = {}
+    if f not in file2data:
+        file2data[f] = [[], [], [], [], []]
     _items, _alerts, _busytimes, _datetimes, _occasions = file2data[f]
     # logger.debug('file: {0}'.format(f))
     for item in _items:
@@ -5578,9 +5584,11 @@ def updateViewData(f, bef, file2uuids=None, uuid2hash=None, options=None, file2d
         uuid2hash = {}
     if not options:
         options = {}
+    if file2data is None:
+        file2data = {}
     # clear data for this file
     _items = _alerts = _busytimes = _datetimes = _occasions = []
-    if f in file2data:
+    if file2data is not None and f in file2data:
         _items, _alerts, _busytimes, _datetimes, _occasions = file2data[f]
         if _items:
             for item in _items:
@@ -6420,7 +6428,7 @@ class ETMCmd():
                 else:
                     f = None
                 if not self.rows:
-                    return "no output"
+                    return {}
                 rows = deepcopy(self.rows)
                 return (makeTree(rows, view=view, calendars=self.calendars, fltr=f, hide_finished=self.options['hide_finished']))
             else:
