@@ -248,6 +248,7 @@ class App(Tk):
         self.canvas.bind('<Right>', (lambda e: self.nextWeekMonth(event=e)))
         self.canvas.bind('<Up>', (lambda e: self.selectId(event=e, d=-1)))
         self.canvas.bind('<Down>', (lambda e: self.selectId(event=e, d=1)))
+        self.canvas.bind('<space>', self.goHome)
 
         self.canvas.bind("b", lambda event: self.after(AFTER, self.showBusyPeriods))
         self.canvas.bind("f", lambda event: self.after(AFTER, self.showFreePeriods))
