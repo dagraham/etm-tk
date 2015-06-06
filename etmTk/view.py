@@ -21,7 +21,7 @@ import platform
 
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, PanedWindow, OptionMenu, StringVar, IntVar, Menu, X, Canvas, CURRENT, Scrollbar
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, PanedWindow, OptionMenu, StringVar, IntVar, Menu, X, Canvas, CURRENT, Scrollbar, PhotoImage, CENTER, FLAT, RAISED, BOTH, TOP
     from tkinter import ttk
     from tkinter import font as tkFont
     utf8 = lambda x: x
@@ -29,7 +29,7 @@ if platform.python_version() >= '3':
 
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, PanedWindow, OptionMenu, StringVar, IntVar, Menu, X, Canvas, CURRENT, Scrollbar
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, PanedWindow, OptionMenu, StringVar, IntVar, Menu, X, Canvas, CURRENT, Scrollbar, PhotoImage, CENTER, FLAT, RAISED, BOTH, TOP
     import ttk
     import tkFont
 
@@ -47,18 +47,18 @@ from calendar import Calendar
 from decimal import Decimal
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, str2hsh, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical_active, fmt_time, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, FINISH, availableDates, syncTxt, update_subscription)
+    init_localization, fmt_weekday, fmt_dt, str2hsh, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical_active, fmt_time, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, FINISH, availableDates, syncTxt, update_subscription, _)
 
 from etmTk.dialog import MenuTree, Timer, ReadOnlyText, MessageWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, FileChoice, STOPPED, PAUSED, RUNNING, BGCOLOR, ONEDAY, ONEMINUTE
 
 from etmTk.edit import SimpleEditor
 
-import gettext
+# import gettext
 
-_ = gettext.gettext
+# _ = gettext.gettext
 
 
-from datetime import datetime, time
+from datetime import datetime, time, date
 
 ETM = "etm"
 
@@ -107,7 +107,8 @@ CLOSE = _("Close")
 
 SEP = "----"
 
-ACTIVEFILL = "#FAFCAC"
+# ACTIVEFILL = "#FAFCAC"
+ACTIVEFILL = "#FCFCD9"
 ACTIVEOUTLINE = "gray40"
 
 DEFAULTFILL = "#D4DCFC"  # blue
@@ -116,14 +117,16 @@ OTHERFILL = "#C7EDC8"  # green
 BUSYOUTLINE = ""
 
 CONFLICTFILL = "#C1C4C9"
-CURRENTFILL = "#FCF2F0"
+# CURRENTFILL = "#FCF2F0"
+CURRENTFILL = "#DCEAFC"
 # CURRENTLINE = "#D053E0"
 CURRENTLINE = "#3C3FDE"
 OUTSIDELINE = "#E0535C"
 LASTLTR = re.compile(r'([a-z])$')
 LINECOLOR = "gray80"
 
-OCCASIONFILL = "gray96"
+# OCCASIONFILL = "gray96"
+OCCASIONFILL = "gray92"
 
 this_dir, this_filename = os.path.split(__file__)
 USERMANUAL = os.path.normpath(os.path.join(this_dir, "help", "UserManual.html"))
@@ -149,10 +152,27 @@ class App(Tk):
         self.busy_info = None
         self.weekly = False
         self.monthly = False
-        self.today_col = None
         self.specsModified = False
         self.active_tree = {}
         root = "_"
+
+        self.week_height = 80
+        self.month_height = 260
+
+        self.options = loop.options
+
+        tkfixedfont = tkFont.nametofont("TkFixedFont")
+        if 'fontsize_fixed' in self.options and self.options['fontsize_fixed']:
+            tkfixedfont.configure(size=self.options['fontsize_fixed'])
+        logger.info("using fixedfont size: {0}".format(tkfixedfont.actual()['size']))
+        self.tkfixedfont = tkfixedfont
+
+        tktreefont = tkFont.nametofont("TkDefaultFont")
+        treefontfamily = tktreefont['family']
+        if 'fontsize_tree' in self.options and self.options['fontsize_tree']:
+            tktreefont.configure(size=self.options['fontsize_tree'])
+        logger.info("using treefont size: {0}".format(tktreefont.actual()['size']))
+        self.tktreefont = tktreefont
 
         ef = "%a %b %d"
         if 'ampm' in loop.options and loop.options['ampm']:
@@ -166,9 +186,8 @@ class App(Tk):
         self.menutree.create_node(root, root)
 
         # leaf: (parent, (option, [accelerator])
-
         self.outline_depths = {}
-        for view in DAY, TAG, KEYWORD, NOTE, PATH:
+        for view in DAY, WEEK, MONTH, TAG, KEYWORD, NOTE, PATH:
             # set all to the default
             logger.debug('Setting depth for {0} to {1}'.format(view, loop.options['outline_depth']))
             self.outline_depths[view] = loop.options['outline_depth']
@@ -176,20 +195,60 @@ class App(Tk):
         self.outline_depths[AGENDA] = 0
         self.outline_depths[CUSTOM] = 0
 
-        self.panedwindow = panedwindow = PanedWindow(self, orient="vertical", sashwidth=8, sashrelief='flat')
-        self.toppane = toppane = Frame(panedwindow, bd=0, highlightthickness=0, background=BGCOLOR)
-        self.tree = ttk.Treeview(toppane, show='tree', columns=["#1", "#2"], selectmode='browse')
-        self.canvas = Canvas(self.toppane, background="white", bd=2, relief="sunken")
+        self.topbar = topbar = Frame(self, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR, takefocus=False)
+        topbar.pack(side="top", fill="x", expand=0, padx=0, pady=0)
 
+        self.statusbar = Frame(self, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR, takefocus=False)
+        self.statusbar.pack(side="bottom", fill="x", expand=0, padx=4, pady=2)
+
+        self.topwindow = topwindow = PanedWindow(self, orient="vertical", sashwidth=4, sashrelief='flat')
+        self.topwindow.pack(side="top", fill=BOTH, expand=1)
+
+
+        self.toppane = toppane = Frame(
+            topwindow, bd=0, relief="flat",
+            highlightthickness=0,
+            highlightbackground=BGCOLOR, background=BGCOLOR)
+        self.toppane.pack(side="top", fill=BOTH, expand=1)
+
+        self.canvas = Canvas(
+            self.toppane, background="white", bd=1, relief="flat",
+            highlightthickness=2, highlightbackground=BGCOLOR)
+        self.canvas.pack(fill=BOTH, expand=1, padx=0, pady=0)
+
+
+        self.botwindow = botwindow = PanedWindow(topwindow, orient="vertical", sashwidth=4, sashrelief='flat')
+        topwindow.add(botwindow)
+
+        self.treepane = treepane = Frame(
+            botwindow, bd=0, relief="flat",
+            highlightthickness=2,
+            highlightbackground=BGCOLOR,
+            background=BGCOLOR)
+        botwindow.add(treepane, padx=0, pady=0, stretch="first")
+
+        self.content = ReadOnlyText(
+            botwindow, font=self.tkfixedfont,
+            wrap="word", padx=3, bd=2, relief="sunken",
+            height=loop.options['details_rows'],
+            width=46, takefocus=False)
+        botwindow.add(self.content, padx=3, pady=0, stretch="never")
+
+
+        self.tree = ttk.Treeview(treepane, show='tree', columns=["#1", "#2"], selectmode='browse')
+        self.tree.pack(fill="both", expand=1, padx=4, pady=0)
+
+
+        self.canvas.bind('<Button-1>', (lambda e: self.selectId(event=e, d=0)))
         self.canvas.bind("<Control-Button-1>", self.on_select_item)
         self.canvas.bind("<Double-1>", self.on_select_item)
-        self.canvas.bind("<Configure>", self.configureCanvas)
 
         self.canvas.bind("<Return>", lambda e: self.on_activate_item(event=e))
         self.canvas.bind('<Left>', (lambda e: self.priorWeekMonth(event=e)))
         self.canvas.bind('<Right>', (lambda e: self.nextWeekMonth(event=e)))
         self.canvas.bind('<Up>', (lambda e: self.selectId(event=e, d=-1)))
         self.canvas.bind('<Down>', (lambda e: self.selectId(event=e, d=1)))
+        self.canvas.bind('<space>', self.goHome)
 
         self.canvas.bind("b", lambda event: self.after(AFTER, self.showBusyPeriods))
         self.canvas.bind("f", lambda event: self.after(AFTER, self.showFreePeriods))
@@ -318,57 +377,62 @@ class App(Tk):
         self.add2menu(path, (label, l))
 
         menubar.add_cascade(label=path, underline=0, menu=filemenu)
+        self.toolsmenu = viewmenu = Menu(menubar, tearoff=0)
 
-        # View menu
         self.viewmenu = viewmenu = Menu(menubar, tearoff=0)
         path = VIEW
         self.add2menu(menu, (path, ))
 
-        # go home
-        l = "Home"
-        label = _("Home")
-        viewmenu.add_command(label=label, command=self.goHome)
+        # # agenda
+        # l = label = AGENDA
+        # toolsmenu.add_command(label=label, command=self.agendaView)
 
-        viewmenu.entryconfig(0, accelerator=l)
-        self.add2menu(path, (label, l))
-        self.bindTop('<Home>', self.goHome)
+        self.vm_options = [[AGENDA, 'a'],
+                           [DAY, 'd'],
+                           [WEEK, 'w'],
+                           [MONTH, 'm'],
+                           [TAG, 't'],
+                           [KEYWORD, 'k'],
+                           [PATH, 'p'],
+                           [NOTE, 'n'],
+                           [CUSTOM, 'c'],
+                           ]
 
-        # show alerts
-        l = "A"
-        c = "a"
-        label = _("Show remaining alerts for today")
-        viewmenu.add_command(label=label, underline=1, command=self.showAlerts)
-        self.bindTop(c, self.showAlerts)
+        self.view2cmd = {'a': self.agendaView,
+                         'd': self.dayView,
+                         'm': self.showMonthly,
+                         'p': self.pathView,
+                         'k': self.keywordView,
+                         'n': self.noteView,
+                         't': self.tagView,
+                         'c': self.customView,
+                         'w': self.showWeekly}
 
-        viewmenu.entryconfig(1, accelerator=l)
-        self.add2menu(path, (label, l))
+        self.viewname2cmd = {}
 
-        # go to date
-        l = "J"
-        c = "j"
-        label = _("Jump to date")
-        viewmenu.add_command(label=label, command=self.goToDate)
-        self.bindTop(c, self.goToDate)
+        self.view = self.vm_options[0][0]
+        self.currentView = StringVar(self)
+        self.currentView.set(self.view)
 
-        viewmenu.entryconfig(2, accelerator=l)
-        self.add2menu(path, (label, l))
+        self.vm_opts = [x[0] for x in self.vm_options]
+        for i in range(len(self.vm_options)):
+            label = self.vm_options[i][0]
+            k = self.vm_options[i][1]
+            if label == DAY:
+                continue
+            elif label == "-":
+                self.viewmenu.add_separator()
+                # self.add2menu(VIEW, (SEP, ))
+            else:
+                l, c = commandShortcut(k)
+                viewmenu.add_command(label=label, command=self.view2cmd[k])
+                self.bind(c, lambda e, x=k: self.after(AFTER, self.view2cmd[x]))
+                viewmenu.entryconfig(i, accelerator=l)
+                self.add2menu(path, (label, l))
 
-        viewmenu.add_separator()  # 3
+
+        viewmenu.add_separator()
         self.add2menu(path, (SEP, ))
-
-        l = "Control-Down"
-        label = _("Next sibling")
-        viewmenu.add_command(label=label, underline=1, command=self.nextItem)
-
-        viewmenu.entryconfig(4, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        l = "Control-Up"
-        label = _("Previous sibling")
-        viewmenu.add_command(label=label, underline=1, command=self.prevItem)
-
-        viewmenu.entryconfig(5, accelerator=l)
-        self.add2menu(path, (label, l))
 
         # apply filter
         l, c = commandShortcut('f')
@@ -376,7 +440,7 @@ class App(Tk):
         viewmenu.add_command(label=label, underline=1, command=self.setFilter)
         self.bind(c, self.setFilter)
 
-        viewmenu.entryconfig(6, accelerator=l)
+        viewmenu.entryconfig(10, accelerator=l)
         self.add2menu(path, (label, l))
 
         # clear filter
@@ -384,17 +448,17 @@ class App(Tk):
         label = _("Clear outline filter")
         viewmenu.add_command(label=label, underline=1, command=self.clearFilter)
 
-        viewmenu.entryconfig(7, accelerator=l)
+        viewmenu.entryconfig(11, accelerator=l)
         self.add2menu(path, (label, l))
 
         # toggle showing labels
         l = "L"
         c = "l"
-        label = _("Toggle displaying labels column")
+        label = _("Toggle labels")
         viewmenu.add_command(label=label, underline=1, command=self.toggleLabels)
         self.bindTop(c, self.toggleLabels)
 
-        viewmenu.entryconfig(8, accelerator=l)
+        viewmenu.entryconfig(12, accelerator=l)
         self.add2menu(path, (label, l))
 
         # expand to depth
@@ -404,87 +468,18 @@ class App(Tk):
         viewmenu.add_command(label=label, underline=1, command=self.expand2Depth)
         self.bindTop(c, self.expand2Depth)
 
-        viewmenu.entryconfig(9, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        # popup active tree
-        l = "S"
-        c = "s"
-        label = _("Show outline as text")
-        viewmenu.add_command(label=label, underline=1, command=self.popupTree)
-        self.bindTop(c, self.popupTree)
-
-        viewmenu.entryconfig(10, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        # print active tree
-        l = "P"
-        c = "p"
-        label = _("Print outline")
-        viewmenu.add_command(label=label, underline=1, command=self.printTree)
-        self.bindTop("p", self.printTree)
-        viewmenu.entryconfig(11, accelerator=l)
+        viewmenu.entryconfig(13, accelerator=l)
         self.add2menu(path, (label, l))
 
         # toggle showing finished
         l = "X"
         c = "x"
-        label = _("Toggle displaying finished")
+        label = _("Toggle displayings finished")
         viewmenu.add_command(label=label, underline=1, command=self.toggleFinished)
         self.bindTop(c, self.toggleFinished)
-        viewmenu.entryconfig(12, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        viewmenu.add_separator()  # 13
-        self.add2menu(path, (SEP, ))
-
-        l = "Left"
-        label = _("Previous week/month")
-        viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.priorWeekMonth(event=e))
-
         viewmenu.entryconfig(14, accelerator=l)
         self.add2menu(path, (label, l))
 
-        l = "Right"
-        label = _("Next week/month")
-        viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.nextWeekMonth(event=e))
-
-        viewmenu.entryconfig(15, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        l = "Up"
-        label = _("Previous item/day in week/month")
-        viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=-1))
-
-        viewmenu.entryconfig(16, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        l = "Down"
-        label = _("Next item/day in week/month")
-        viewmenu.add_command(label=label, underline=1, command=lambda e=None: self.selectId(event=e, d=1))
-
-        viewmenu.entryconfig(17, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        l = "B"
-        c = 'b'
-        label = _("List busy times in week/month")
-        viewmenu.add_command(label=label, underline=5, command=self.showBusyPeriods)
-
-        viewmenu.entryconfig(18, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        l = "F"
-        c = 'f'
-        label = _("List free times in week/month")
-        viewmenu.add_command(label=label, underline=5, command=self.showFreePeriods)
-
-        viewmenu.entryconfig(19, accelerator=l)
-        # set binding in showWeekly
-        self.add2menu(path, (label, l))
-
-        for i in range(14, 20):
-            self.viewmenu.entryconfig(i, state="disabled")
         menubar.add_cascade(label=path, underline=0, menu=viewmenu)
 
         # Item menu
@@ -544,7 +539,57 @@ class App(Tk):
         # tools menu
         path = TOOLS
         self.add2menu(menu, (path, ))
-        toolsmenu = Menu(menubar, tearoff=0)
+        self.toolsmenu = toolsmenu = Menu(menubar, tearoff=0)
+
+        # go home
+        l = "Home"
+        label = _("Home")
+        toolsmenu.add_command(label=label, command=self.goHome)
+
+        toolsmenu.entryconfig(0, accelerator=l)
+        self.add2menu(path, (label, l))
+        self.bindTop('<Home>', self.goHome)
+
+        # go to date
+        l = "J"
+        c = "j"
+        label = _("Jump to date")
+        toolsmenu.add_command(label=label, command=self.goToDate)
+        self.bindTop(c, self.goToDate)
+
+        toolsmenu.entryconfig(1, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        toolsmenu.add_separator()  # 2
+        self.add2menu(path, (SEP, ))
+
+        # show alerts
+        l = "A"
+        c = "a"
+        label = _("Show remaining alerts for today")
+        toolsmenu.add_command(label=label, underline=1, command=self.showAlerts)
+        self.bindTop(c, self.showAlerts)
+
+        toolsmenu.entryconfig(3, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        l = "B"
+        c = 'b'
+        label = _("List busy times in week/month")
+        toolsmenu.add_command(label=label, underline=5, command=self.showBusyPeriods)
+
+        toolsmenu.entryconfig(4, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        l = "F"
+        c = 'f'
+        label = _("List free times in week/month")
+        toolsmenu.add_command(label=label, underline=5, command=self.showFreePeriods)
+
+        toolsmenu.entryconfig(5, accelerator=l)
+        # set binding in showWeekly
+        self.add2menu(path, (label, l))
+
 
         # date calculator
         l = "Shift-D"
@@ -553,7 +598,7 @@ class App(Tk):
         toolsmenu.add_command(label=label, underline=12, command=self.dateCalculator)
         self.bindTop(c, self.dateCalculator)
 
-        toolsmenu.entryconfig(1, accelerator=l)
+        toolsmenu.entryconfig(6, accelerator=l)
         self.add2menu(path, (label, l))
 
         # available date calculator
@@ -563,7 +608,7 @@ class App(Tk):
         toolsmenu.add_command(label=label, underline=12, command=self.availableDateCalculator)
         self.bindTop(c, self.availableDateCalculator)
 
-        toolsmenu.entryconfig(2, accelerator=l)
+        toolsmenu.entryconfig(7, accelerator=l)
         self.add2menu(path, (label, l))
 
         l = "Shift-Y"
@@ -573,7 +618,59 @@ class App(Tk):
         toolsmenu.add_command(label=label, underline=8, command=self.showCalendar)
         self.bindTop(c, self.showCalendar)
 
-        toolsmenu.entryconfig(3, accelerator=l)
+        toolsmenu.entryconfig(8, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        toolsmenu.add_separator() # 9
+        self.add2menu(path, (SEP, ))
+
+        # popup active tree
+        l = "S"
+        c = "s"
+        label = _("Show outline as text")
+        toolsmenu.add_command(label=label, underline=1, command=self.popupTree)
+        self.bindTop(c, self.popupTree)
+
+        toolsmenu.entryconfig(10, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        # print active tree
+        l = "P"
+        c = "p"
+        label = _("Print outline")
+        toolsmenu.add_command(label=label, underline=1, command=self.printTree)
+        self.bindTop("p", self.printTree)
+        toolsmenu.entryconfig(11, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        # export
+        l = "Shift-X"
+        c = "X"
+        label = _("Export to iCal")
+        toolsmenu.add_command(label=label, underline=1, command=self.exportToIcal)
+        self.bind(c, self.exportToIcal)
+
+        toolsmenu.entryconfig(12, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        # update subscriptions
+        l = "Shift-M"
+        c = "M"
+        label = _("Update calendar subscriptions")
+        toolsmenu.add_command(label=label, underline=1, command=self.updateSubscriptions)
+        self.bind(c, self.updateSubscriptions)
+
+        toolsmenu.entryconfig(13, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        # load data
+        l = "Shift-L"
+        c = "L"
+        label = _("Reload data from files")
+        toolsmenu.add_command(label=label, underline=1, command=loop.loadData)
+        self.bind(c, loop.loadData)
+
+        toolsmenu.entryconfig(14, accelerator=l)
         self.add2menu(path, (label, l))
 
         # changes
@@ -585,40 +682,14 @@ class App(Tk):
             toolsmenu.add_command(label=label, underline=1, command=self.showChanges)
             self.bind(c, lambda event: self.after(AFTER, self.showChanges))
 
-            toolsmenu.entryconfig(4, accelerator=l)
+            toolsmenu.entryconfig(15, accelerator=l)
             self.add2menu(path, (label, l))
 
-        # export
-        l = "Shift-X"
-        c = "X"
-        label = _("Export to iCal")
-        toolsmenu.add_command(label=label, underline=1, command=self.exportToIcal)
-        self.bind(c, self.exportToIcal)
-
-        toolsmenu.entryconfig(5, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        # update subscriptions
-        l = "Shift-M"
-        c = "M"
-        label = _("Update calendar subscriptions")
-        toolsmenu.add_command(label=label, underline=1, command=self.updateSubscriptions)
-        self.bind(c, self.updateSubscriptions)
-
-        toolsmenu.entryconfig(5, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        # load data
-        l = "Shift-L"
-        c = "L"
-        label = _("Reload data from files")
-        toolsmenu.add_command(label=label, underline=1, command=loop.loadData)
-        self.bind(c, loop.loadData)
-
-        toolsmenu.entryconfig(6, accelerator=l)
-        self.add2menu(path, (label, l))
-
         menubar.add_cascade(label=path, menu=toolsmenu, underline=0)
+
+        self.toolsmenu.entryconfig(1, state="disabled")
+        for i in range(4, 6):
+            self.toolsmenu.entryconfig(i, state="disabled")
 
         # report
         path = CUSTOM
@@ -694,20 +765,6 @@ class App(Tk):
         self.count2id = {}
         self.now = get_current_time()
         self.today = self.now.date()
-        self.options = loop.options
-
-        tkfixedfont = tkFont.nametofont("TkFixedFont")
-        if 'fontsize_fixed' in self.options and self.options['fontsize_fixed']:
-            tkfixedfont.configure(size=self.options['fontsize_fixed'])
-        logger.info("using fixedfont size: {0}".format(tkfixedfont.actual()['size']))
-        self.tkfixedfont = tkfixedfont
-
-        tktreefont = tkFont.nametofont("TkDefaultFont")
-        treefontfamily = tktreefont['family']
-        if 'fontsize_tree' in self.options and self.options['fontsize_tree']:
-            tktreefont.configure(size=self.options['fontsize_tree'])
-        logger.info("using treefont size: {0}".format(tktreefont.actual()['size']))
-        self.tktreefont = tktreefont
 
         self.popup = ''
         self.value = ''
@@ -724,38 +781,15 @@ class App(Tk):
         self.dtSelected = None
         self.rowSelected = None
 
-        self.title(ETM)
+        self.currentTime = StringVar(self)
+        self.currentTime.set("")
 
-        # self.wm_iconbitmap(bitmap='etmlogo.gif')
-        # self.wm_iconbitmap('etmlogo-4.xbm')
-        # self.call('wm', 'iconbitmap', self._w, '/Users/dag/etm-tk/etmTk/etmlogo.gif')
-
-        # root = Tk()
-        # img = PhotoImage(file='/Users/dag/etm-tk/etmTk/etmlogo.icns')
-        # self.tk.call('wm', 'iconphoto', self._w, img)
-        # if not mac:
-        #     img = PhotoImage(file='etmlogo.gif')
-        #     self.call('wm', 'iconphoto', self._w, img)
-
-        # if sys_platform == 'Linux':
-        #     logger.debug('using linux icon')
-        #     self.wm_iconbitmap('@' + 'etmlogo.gif')
-        #     # self.wm_iconbitmap('etmlogo-4.xbm')
-        #     # self.call('wm', 'iconbitmap', self._w, '/Users/dag/etm-tk/etmlogo_128x128x32.ico')
-        #     # self.iconbitmap(ICON_PATH)
-        # elif sys_platform == 'Darwin':
-        #     logger.debug('using darwin icon')
-        # self.iconbitmap('/Users/dag/etm-tk/etmTk/etmlogo.ico')
-        # self.wm_iconbitmap('etmlogo.icns')
-        # else:
-        #     logger.debug('using windows icon')
-        #     self.wm_iconbitmap('etmlogo.ico')
+        # self.title(ETM)
+        self.title(self.currentTime.get())
 
         self.columnconfigure(0, minsize=300, weight=1)
         self.rowconfigure(1, weight=2)
 
-        topbar = Frame(self, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR)
-        topbar.pack(side="top", fill="x", expand=0, padx=0, pady=0)
 
         # report
         self.box_value = StringVar()
@@ -772,77 +806,42 @@ class App(Tk):
             self.saved_specs = deepcopy(self.specs)
         self.custom_box.configure(width=30, background=BGCOLOR, takefocus=False)
 
-        self.vm_options = [[AGENDA, 'a'],
-                           ['-', ''],
-                           [DAY, 'd'],
-                           [WEEK, 'w'],
-                           [MONTH, 'm'],
-                           ['-', ''],
-                           [TAG, 't'],
-                           [KEYWORD, 'k'],
-                           [PATH, 'p'],
-                           ['-', ''],
-                           [NOTE, 'n'],
-                           [CUSTOM, 'c']]
 
-        self.view2cmd = {'a': self.agendaView,
-                         'd': self.dayView,
-                         'm': self.showMonthly,
-                         'p': self.pathView,
-                         'k': self.keywordView,
-                         'n': self.noteView,
-                         't': self.tagView,
-                         'c': self.customView,
-                         'w': self.showWeekly}
+        iconsize = "22"
+        self.settingsIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_settings.gif')
+        self.settingsbutton = Button(
+            topbar, command=self.selectCalendars,
+            highlightbackground=BGCOLOR,
+            bg=BGCOLOR, pady=0, bd=0,
+            highlightthickness=0, takefocus=False
+        )
+        self.settingsbutton.config(image=self.settingsIcon, width=iconsize, height=iconsize)
+        self.settingsbutton.pack(side="left", padx=4, pady=2)
 
-        self.view = self.vm_options[0][0]
-        self.currentView = StringVar(self)
-        self.currentView.set(self.view)
 
-        MAIN = _("Main")
-        self.add2menu(root, (MAIN, ))
-        VIEWS = _("Views")
-        self.add2menu(MAIN, (VIEWS, ))
+        self.newIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_plus.gif')
+        self.newbutton = Button(topbar, command=self.newItem, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0, highlightthickness=0, takefocus=False)
+        self.newbutton.config(image=self.newIcon, width=iconsize, height=iconsize)
+        self.newbutton.pack(side="right", padx=4, pady=2)
 
-        self.vm_opts = [x[0] for x in self.vm_options]
-        # self.vm = OptionMenu(topbar, self.currentView, *self.vm_opts)
-        self.vm = OptionMenu(topbar, self.currentView, [])
-        self.vm["menu"].delete(0, END)
-        self.vm.configure(pady=2)
-        for i in range(len(self.vm_options)):
-            label = self.vm_options[i][0]
-            k = self.vm_options[i][1]
-            if label == "-":
-                self.vm["menu"].add_separator()
-                self.add2menu(VIEWS, (SEP, ))
-            else:
-                l, c = commandShortcut(k)
-                self.vm["menu"].add_command(label=label, command=self.view2cmd[k], accelerator=l)
-                self.bind(c, lambda e, x=k: self.after(AFTER, self.view2cmd[x]))
-                self.add2menu(VIEWS, (self.vm_opts[i], l))
-        self.vm.pack(side="left", padx=2)
-        self.vm.configure(background=BGCOLOR, takefocus=False)
+        windowtitle = Label(topbar, textvariable=self.currentView, bd=1, relief="flat",  padx=8, pady=0)
+        windowtitle.pack(side="left")
+        windowtitle.configure(background=BGCOLOR)
+        self.currentView.set("Agenda")
 
-        # calendars
-        self.calbutton = Button(topbar, text=CALENDARS, command=self.selectCalendars, highlightbackground=BGCOLOR, bg=BGCOLOR, width=8, pady=2)
-        self.calbutton.pack(side="right", padx=6)
-        if not self.default_calendars:
-            self.calbutton.configure(state="disabled")
 
         # filter
         self.filterValue = StringVar(self)
         self.filterValue.set('')
         self.filterValue.trace_variable("w", self.filterView)
 
-        self.fltr = Entry(topbar, textvariable=self.filterValue, width=14, highlightbackground=BGCOLOR, bg=BGCOLOR)
+        self.fltr = Entry(topbar, textvariable=self.filterValue, width=14, highlightbackground=BGCOLOR, bg=BGCOLOR, takefocus=False)
         self.fltr.pack(side="left", padx=0, expand=1, fill=X)
         self.fltr.bind("<FocusIn>", self.setFilter)
         self.fltr.bind("<Escape>", self.clearFilter)
         self.fltr.bind('<Tab>', self.leaveFilter)
         self.bind("<Shift-Control-F>", self.clearFilter)
         self.filter_active = False
-        self.viewmenu.entryconfig(6, state="normal")
-        self.viewmenu.entryconfig(7, state="disabled")
 
         self.weekly = False
 
@@ -861,7 +860,6 @@ class App(Tk):
         self.tree.bind('<Control-Down>', self.nextItem)
         self.tree.bind('<Control-Up>', self.prevItem)
 
-        # self.tree.bind('<Home>', self.goHome)
 
         for t in tstr2SCI:
             self.tree.tag_configure(t, foreground=tstr2SCI[t][1])
@@ -869,22 +867,15 @@ class App(Tk):
         self.date2id = {}
         self.root = ('', '_')
 
-        self.tree.pack(fill="both", expand=1, padx=4, pady=0)
-        panedwindow.add(self.toppane, padx=0, pady=0, stretch="first")
-
-        self.content = ReadOnlyText(panedwindow, wrap="word", padx=3, bd=2, relief="sunken", font=tkfixedfont, height=loop.options['details_rows'], width=46, takefocus=False)
         self.content.bind('<Escape>', self.cleartext)
         self.content.bind('<Tab>', self.focus_next_window)
         self.content.bind("<FocusIn>", self.editItem)
 
-        panedwindow.add(self.content, padx=3, pady=0, stretch="never")
-
-        self.statusbar = Frame(self)
 
         self.timerStatus = StringVar(self)
         self.timerStatus.set("")
         timer_status = Label(self.statusbar, textvariable=self.timerStatus, bd=0, relief="flat", anchor="w", padx=0, pady=0)
-        timer_status.pack(side="left", expand=0, padx=2)
+        timer_status.pack(side="left", expand=0, padx=4)
         timer_status.configure(background=BGCOLOR, highlightthickness=0)
 
         self.pendingAlerts = IntVar(self)
@@ -893,24 +884,10 @@ class App(Tk):
                               textvariable=self.pendingAlerts,
                               command=self.showAlerts,
                               highlightbackground=BGCOLOR,
-                              bg=BGCOLOR,
-                              highlightthickness=0,
-                              width=3,
-                            )
-
-        self.pending.pack(side="right", padx=0, pady=0)
-
-        self.currentTime = StringVar(self)
-        currenttime = Label(self.statusbar, textvariable=self.currentTime, bd=1, relief="flat", anchor="e", padx=4, pady=0)
-        currenttime.pack(side="right")
-        currenttime.configure(background=BGCOLOR)
-
-        self.statusbar.pack(side="bottom", fill="x", expand=0, padx=6, pady=0)
-        self.statusbar.configure(background=BGCOLOR)
-
-        panedwindow.pack(side="top", fill="both", expand=1, padx=2, pady=0)
-        panedwindow.configure(background=BGCOLOR)
-        self.panedwindow = panedwindow
+                              bg=BGCOLOR, highlightthickness=0, takefocus=False,
+                              width=4, pady=2,
+                              )
+        self.pending.pack(side="right", padx=2, pady=2)
 
         # set cal_regex here and update it in updateCalendars
         self.cal_regex = None
@@ -1025,7 +1002,7 @@ class App(Tk):
 
     def selectCalendars(self):
         if self.default_calendars:
-            prompt = _("Only items from selected calendars will be displayed.")
+            prompt = _("Display items from calendars selected below.")
             title = CALENDARS
             if self.weekly or self.monthly:
                 master = self.canvas
@@ -1047,15 +1024,13 @@ class App(Tk):
         cal_pattern = r'^%s' % '|'.join(
             [x[2] for x in loop.calendars if x[1]])
         self.cal_regex = re.compile(cal_pattern)
-        if loop.calendars != self.default_calendars:
-            self.calbutton.configure(text="{0}*".format(CALENDARS))
-        else:
-            self.calbutton.configure(text=CALENDARS)
         self.update()
         self.updateAlerts()
         if self.weekly:
+            self.updateDay()
             self.showWeek()
         elif self.monthly:
+            self.updateDay()
             self.showMonth()
         else:
             self.showView()
@@ -1094,7 +1069,6 @@ class App(Tk):
     def printWithDefault(self, s, e=None):
         fo = codecs.open(loop.tmpfile, 'w', loop.options['encoding']['file'])
         # add a trailing formfeed
-        # fo.write("{0}".format(s))
         fo.write(s)
         fo.close()
         if windoz:
@@ -1218,8 +1192,10 @@ returns:
             loop.do_update = True
             self.updateAlerts()
             if self.weekly:
+                self.updateDay()
                 self.showWeek()
             elif self.monthly:
+                self.updateDay()
                 self.showMonth()
             else:
                 self.showView()
@@ -1309,8 +1285,10 @@ returns:
         if changed:
             self.updateAlerts()
             if self.weekly:
+                self.updateDay()
                 self.showWeek()
             elif self.weekly:
+                self.updateDay()
                 self.showMonth()
             else:
                 self.showView(row=self.topSelected)
@@ -1349,9 +1327,11 @@ returns:
         self.updateAlerts()
         if self.weekly:
             self.canvas.focus_set()
+            self.updateDay()
             self.showWeek()
         elif self.monthly:
             self.canvas.focus_set()
+            self.updateDay()
             self.showMonth()
         else:
             self.tree.focus_set()
@@ -1384,9 +1364,11 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
         self.updateAlerts()
         if self.weekly:
             self.canvas.focus_set()
+            self.updateDay()
             self.showWeek()
         elif self.monthly:
             self.canvas.focus_set()
+            self.updateDay()
             self.showWeek()
         else:
             self.tree.focus_set()
@@ -1485,9 +1467,11 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
             self.updateAlerts()
             if self.weekly:
                 self.canvas.focus_set()
+                self.updateDay()
                 self.showWeek()
             elif self.monthly:
                 self.canvas.focus_set()
+                self.updateDay()
                 self.showMonth()
             else:
                 self.tree.focus_set()
@@ -1536,9 +1520,11 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
             self.updateAlerts()
             if self.weekly:
                 self.canvas.focus_set()
+                self.setView(DAY)
                 self.showWeek()
             elif self.monthly:
                 self.canvas.focus_set()
+                self.setView(DAY)
                 self.showMonth()
             else:
                 self.tree.focus_set()
@@ -1638,9 +1624,11 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
         self.updateAlerts()
         if self.weekly:
             self.canvas.focus_set()
+            self.updateDay()
             self.showWeek()
         elif self.monthly:
             self.canvas.focus_set()
+            self.updateDay()
             self.showMonth()
         else:
             self.tree.focus_set()
@@ -1758,7 +1746,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
     def customView(self, e=None):
         # TODO: finish this
         self.content.delete("1.0", END)
-        self.fltr.forget()
+        # self.fltr.forget()
         self.clearTree()
         self.setView(CUSTOM)
         pass
@@ -1766,46 +1754,51 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
     def noteView(self, e=None):
         self.setView(NOTE)
 
+    def updateDay(self, e=None):
+        self.mode = "command"
+        self.process_input(event=e, cmd='d')
+
     def setView(self, view, row=None):
         self.rowSelected = None
-        if view != WEEK and self.weekly:
+        if view in [DAY, WEEK, MONTH]:
+            self.toolsmenu.entryconfig(1, state="normal")
+        else:
+            self.toolsmenu.entryconfig(1, state="disabled")
+        if self.weekly and view not in [DAY, WEEK]:
             self.closeWeekly()
-        if view != MONTH and self.monthly:
+        if self.monthly and view not in [DAY, MONTH]:
             self.closeMonthly()
         if view == CUSTOM:
-            # self.reportbar.pack(side="top")
             logger.debug('showing custom_box')
             self.custom_box.pack(side="top", fill="x", padx=3)
             self.custom_box.focus_set()
             for i in range(len(self.rm_options)):
                 self.custommenu.entryconfig(i, state="normal")
         else:
-            if self.view == CUSTOM:
+            if view == CUSTOM:
                 # we're leaving custom view
                 logger.debug('removing custom_box')
                 self.custom_box.forget()
                 for i in range(len(self.rm_options)):
                     self.custommenu.entryconfig(i, state="disabled")
                 self.saveSpecs()
-                self.fltr.pack(side="left", padx=0, expand=1, fill=X)
         self.view = view
         logger.debug("setView view: {0}. Calling showView.".format(view))
         self.showView(row=row)
 
     def filterView(self, e, *args):
-        if self.weekly or self.monthly:
-            return
         self.depth2id = {}
         fltr = self.filterValue.get()
-        cmd = "{0} {1}".format(
-            self.vm_options[self.vm_opts.index(self.view)][1], fltr)
+        cn = self.vm_options[self.vm_opts.index(self.view)][1]
+        if cn in ['w', 'm']:
+            # with week or month views use the day view command
+            cn = 'd'
+        cmd = "{0} {1}".format(cn, fltr)
         self.mode = 'command'
         self.process_input(event=e, cmd=cmd)
 
     def showView(self, e=None, row=None):
         tt = TimeIt(loglevel=2, label="{0} view".format(self.view))
-        if self.weekly or self.monthly:
-            return
         self.depth2id = {}
         self.currentView.set(self.view)
         fltr = self.filterValue.get()
@@ -1929,7 +1922,7 @@ Enter the shortest time period you want displayed in minutes.""")
         s = "\n".join(lines)
         self.textWindow(parent=self, title=_('free times'), prompt=s, opts=self.options)
 
-    def setWeek(self, chosen_day=None):
+    def getWeek(self, chosen_day=None):
         if chosen_day is None:
             chosen_day = get_current_time()
         yn, wn, dn = chosen_day.isocalendar()
@@ -1944,6 +1937,7 @@ Enter the shortest time period you want displayed in minutes.""")
         logger.debug('week_beg: {0}'.format(self.week_beg))
         weekend = chosen_day + (6 - days) * ONEDAY
         weekdays = []
+        weekdates = []
 
         day = weekbeg
         self.active_date = weekbeg.date()
@@ -1951,45 +1945,10 @@ Enter the shortest time period you want displayed in minutes.""")
         occasion_lst = []
         matching = self.cal_regex is not None and self.default_regex is not None
         while day <= weekend:
-            weekdays.append(fmt_weekday(day))
+            weekdays.append(s2or3(day.strftime("%a")))
+            weekdates.append(leadingzero.sub("", day.strftime("%d")))
             isokey = day.isocalendar()
 
-            if isokey in loop.occasions:
-                bt = []
-                for item in loop.occasions[isokey]:
-                    it = list(item)
-                    if matching:
-                        if not self.cal_regex.match(it[-1]):
-                            continue
-                        mtch = (self.default_regex.match(it[-1]) is not None)
-                    else:
-                        mtch = True
-                    it.append(mtch)
-                    item = tuple(it)
-                    bt.append(item)
-                occasion_lst.append(bt)
-            else:
-                occasion_lst.append([])
-
-            if isokey in loop.busytimes:
-                bt = []
-                for item in loop.busytimes[isokey]:
-                    it = list(item)
-                    if it[0] == it[1]:
-                        # skip reminders
-                        continue
-                    if matching:
-                        if not self.cal_regex.match(it[-1]):
-                            continue
-                        mtch = (self.default_regex.match(it[-1]) is not None)
-                    else:
-                        mtch = True
-                    it.append(mtch)
-                    item = tuple(it)
-                    bt.append(item)
-                busy_lst.append(bt)
-            else:
-                busy_lst.append([])
             day = day + ONEDAY
 
         ybeg = weekbeg.year
@@ -2008,36 +1967,19 @@ Enter the shortest time period you want displayed in minutes.""")
             header = "{0} - {1}".format(
                 fmt_dt(weekbeg, '%b %d, %Y'), fmt_dt(weekend, '%b %d, %Y'))
         header = leadingzero.sub('', header)
-        theweek = _("Week {0}: {1}").format(wn, header)
-        self.busy_info = (theweek, weekdays, busy_lst, occasion_lst)
-        return self.busy_info
+        theweek = _("{0} {1}: {2}").format(_("Week"), wn, header)
+        return theweek, weekdays, weekdates
 
-    def configureCanvas(self, e=None):
-        if self.weekly:
-            self.showWeek()
-        elif self.monthly:
-            self.showMonth()
-        else:
-            return
 
     def closeWeekly(self, event=None):
-        self.today_col = None
-        for i in range(14, 20):
-            self.viewmenu.entryconfig(i, state="disabled")
-        self.canvas.pack_forget()
+        self.week_height = self.topwindow.panecget(self.toppane, "height")
+        self.topwindow.forget(self.toppane)
         self.weekly = False
-        self.fltr.pack(side=LEFT, padx=8, pady=0, fill="x", expand=1)
         self.tree.pack(fill="both", expand=1, padx=4, pady=0)
         self.update_idletasks()
-        if self.filter_active:
-            self.viewmenu.entryconfig(6, state="disabled")
-            self.viewmenu.entryconfig(7, state="normal")
-        else:
-            self.viewmenu.entryconfig(6, state="normal")
-            self.viewmenu.entryconfig(7, state="disabled")
+        for i in range(4, 6):
+            self.toolsmenu.entryconfig(i, state="disabled")
 
-        for i in [4, 5, 8, 9, 10, 11, 12]:
-            self.viewmenu.entryconfig(i, state="normal")
         self.bind("<Control-f>", self.setFilter)
 
     def showWeekly(self, event=None, chosen_day=None):
@@ -2054,13 +1996,10 @@ Enter the shortest time period you want displayed in minutes.""")
             self.closeMonthly()
         self.content.delete("1.0", END)
         self.weekly = True
-        self.tree.pack_forget()
-        self.fltr.pack_forget()
-        for i in range(4, 13):
-            self.viewmenu.entryconfig(i, state="disabled")
+
+        self.setView(DAY)
 
         self.view = WEEK
-        self.currentView.set(WEEK)
 
         if chosen_day is not None:
             self.chosen_day = chosen_day
@@ -2069,17 +2008,15 @@ Enter the shortest time period you want displayed in minutes.""")
         else:
             self.chosen_day = get_current_time()
 
-        self.canvas.configure(highlightthickness=0)
-        self.canvas.pack(side="top", fill="both", expand=1, padx=4, pady=0)
+        self.topwindow.add(self.toppane, padx=0, pady=0, before=self.botwindow, height=self.week_height)
 
         if self.options['ampm']:
             self.hours = ["{0}am".format(i) for i in range(7, 12)] + ['12pm'] + ["{0}pm".format(i) for i in range(1, 12)]
         else:
             self.hours = ["{0}:00".format(i) for i in range(7, 24)]
-        for i in range(14, 20):
-            self.viewmenu.entryconfig(i, state="normal")
-        self.canvas.focus_set()
-        self.showWeek()
+        for i in range(4, 6):
+            self.toolsmenu.entryconfig(i, state="normal")
+        self.showWeek(event=event, week=0)
         tt.stop()
 
     def priorWeekMonth(self, event=None):
@@ -2090,19 +2027,26 @@ Enter the shortest time period you want displayed in minutes.""")
 
     def nextWeekMonth(self, event=None):
         if self.weekly:
-            self.showWeek(event, week=1)
+            self.showWeek(event=event, week=1)
         elif self.monthly:
-            self.showMonth(event, month=1)
+            self.showMonth(event=event, month=1)
 
     def showWeek(self, event=None, week=None):
         self.canvas.focus_set()
         self.selectedId = None
+
+        matching = self.cal_regex is not None and self.default_regex is not None
+
+        busy_dates = []
+
         self.current_day = get_current_time().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
         logger.debug('self.current_day: {0}, minutes: {1}'.format(self.current_day, self.current_minutes))
-        self.x_win = self.canvas.winfo_width()
-        self.y_win = self.canvas.winfo_height()
+        self.x_win = self.toppane.winfo_width()
+        # self.y_win = self.canvas.winfo_height()
+        self.y_win = self.toppane.winfo_height()
         logger.debug("win: {0}, {1}".format(self.x_win, self.y_win))
         logger.debug("event: {0}, week: {1}, chosen_day: {2}".format(event, week, self.chosen_day))
+        use_chosen = False
         if week in [-1, 0, 1]:
             if week == 0:
                 day = get_current_time()
@@ -2112,17 +2056,32 @@ Enter the shortest time period you want displayed in minutes.""")
                 day = self.prev_week
             self.chosen_day = day
         elif self.chosen_day:
+            use_chosen = True
+            self.year_month = [self.chosen_day.year, self.chosen_day.month]
             day = self.chosen_day
         else:
             return
         logger.debug('week active_date: {0}'.format(self.active_date))
-        theweek, weekdays, busy_lst, occasion_lst = self.setWeek(day)
+        theweek, weekdays, weekdates = self.getWeek(day)
+        busy_lst = []
+        occasion_lst = []
+        weekdaynum = day.isocalendar()[2]
+        # reset day to Monday of the current week
+        day = day - (weekdaynum - 1) * ONEDAY
+        if use_chosen:
+            scrolldate = self.chosen_day.date()
+            self.canvas_idpos = weekdaynum - 1
+        else:
+            scrolldate = day.date()
+            self.canvas_idpos = 0
+        self.scrollToDate(scrolldate)
+        # self.scrollToDate(self.chosen_day.date())
         self.OnSelect()
         self.canvas.delete("all")
-        l = 50
-        r = 8
-        t = 56
-        b = 8
+        l = 4
+        r = 4
+        t = 22
+        b = 4
         if event:
             logger.debug('event: {0}'.format(event))
             w, h = event.width, event.height
@@ -2134,159 +2093,234 @@ Enter the shortest time period you want displayed in minutes.""")
                 h = self.canvas.winfo_height()
         else:
             w = self.canvas.winfo_width()
-            h = self.canvas.winfo_height()
+            # h = self.canvas.winfo_height()
+            h = self.week_height
         logger.debug("w: {0}, h: {1}, l: {2}, t: {3}".format(w, h, l, t))
         self.margins = (w, h, l, r, t, b)
-        self.week_x = x = Decimal(w - 1 - l - r) / Decimal(7)
-        self.week_y = y = Decimal(h - 1 - t - b) / Decimal(16)
-        logger.debug("x: {0}, y: {1}".format(x, y))
+        self.week_x = x_ = Decimal(w - 1 - l - r) / Decimal(7)
+        self.week_y = y_ = Decimal(h - 1 - t - b) / Decimal(1)
+        logger.debug("x: {0}, y: {1}".format(x_, y_))
 
         # week
-        p = int(l + (w - 1 - l - r) / 2), 20
-        self.canvas.create_text(p, text=theweek)
+        self.currentView.set(theweek)
         self.busyHsh = {}
 
         # occasions
-        occasion_ids = []
-        for i in range(7):
-            day = (self.week_beg + i * ONEDAY).replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
-            if not occasion_lst[i]:
-                continue
-            occasions = occasion_lst[i]
-            start_x = l + i * x
-            end_x = start_x + x
-            for tup in occasions:
-                xy = int(start_x), int(t), int(end_x), int(t + y * 16)
-                id = self.canvas.create_rectangle(xy, fill=OCCASIONFILL, outline="", width=0, tag='occasion')
-                tmp = list(tup)
-                tmp.append(day)
-                self.busyHsh[id] = tmp
-                occasion_ids.append(id)
-        self.y_per_minute = y_per_minute = y / Decimal(60)
-        busy_ids = []
+        busy_ids = set([])
+        monthid2date = {}
+
+        # self.canvas.bind('<Escape>', self.on_leave_item)
+
+        # weekdays
+        intervals = [360, 720, 1080, 1440]
+        busywidth = 2
+        offset = 6
+        indent = 7
+
+        barcolor = "SteelBlue3"
+        nightcolor = barcolor
+        morningcolor = barcolor
+        afternooncolor = barcolor
+        eveningcolor = barcolor
+
         conf_ids = []
         self.today_id = None
-        self.today_col = None
         self.timeline = None
         self.last_minutes = None
+
+        # x_ = x
+        # y_ = y
+
         for i in range(7):
-            day = (self.week_beg + i * ONEDAY).replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
-            busy_times = busy_lst[i]
-            start_x = l + i * x
-            end_x = start_x + x
-            if day == self.current_day:
-                self.today_col = i
-                xy = int(start_x), int(t), int(end_x), int(t + y * 16)
-                self.canvas.create_rectangle(xy, fill=CURRENTFILL, outline="", width=0, tag='current_day')
-            if not busy_times and self.today_col is None:
-                continue
-            for tup in busy_times:
-                conf = None
-                mtch = tup[5]
-                if mtch:
-                    busyColor = DEFAULTFILL
-                    ttag = 'default'
-                else:
-                    busyColor = OTHERFILL
-                    ttag = 'other'
-                daytime = day + tup[0] * ONEMINUTE
+            fill = "SteelBlue4"
+            flagcolor = "white"
+            busytimes = 0
+            start_x = l + i * x_
+            end_x = start_x + x_
+            start_y = int(t)
+            end_y = start_y + y_
+            xy = int(start_x), int(start_y), int(end_x), int(end_y)
+            p = int(l + x_ / 2 + x_ * i), int(t + y_ / 2)
+            tl_x = bl_x = int(l + x_ * i)
+            tl_y = tr_y = int(t)
+            tr_x = br_x = int(tl_x + x_)
+            bl_y = br_y = int(tl_y + y_)
+            w_ = x_ - 12
+            h_ = y_ - 12
 
-                if (tup[0] < 420):
-                    # early
-                    xy = int(start_x), int(t - 1), int(end_x), int(t - 1)
-                    self.canvas.create_line(xy, fill=OUTSIDELINE, width=2, tag='default')
-                if (tup[1] > 1380):
-                    # late
-                    xy = int(start_x), int(t + y * 16 + 2), int(end_x), int(t + y * 16 + 2)
-                    self.canvas.create_line(xy, fill=OUTSIDELINE, width=2, tag='default')
+            thisdate = (day + i * ONEDAY).date()
+            isokey = thisdate.isocalendar()
+            tags = []
+            id = self.canvas.create_rectangle(xy, outline="", width=0)
+            busy_ids.add(id)
+            monthid2date[id] = thisdate
+            today = (thisdate == self.current_day.date())
+            if today:
+                flagcolor = CURRENTFILL
+                tags.append('current_day')
+            if loop.occasions is not None and isokey in loop.occasions:
+                bt = []
+                for item in loop.occasions[isokey]:
+                    it = list(item)
+                    if matching:
+                        if not self.cal_regex.match(it[-1]):
+                            continue
+                        mtch = (self.default_regex.match(it[-1]) is not None)
+                    else:
+                        mtch = True
+                    it.append(mtch)
+                    item = tuple(it)
+                    bt.append(item)
+                occasion_lst.append(bt)
+                if bt:
+                    if not today:
+                        flagcolor = OCCASIONFILL
+                        tags.append('occasion')
+                    self.busyHsh.setdefault(id, []).extend(["^ {0}".format(x[0]) for x in bt])
+            else:
+                occasion_lst.append([])
 
-                if tup[0] > 1380 or tup[1] < 420:
-                    continue
+            if loop.busytimes is not None and isokey in loop.busytimes:
+                if loop.conflicts and isokey in loop.conflicts:
+                    flagcolor = "red"
+                bt = []
+                for item in loop.busytimes[isokey]:
+                    it = list(item)
+                    if it[0] == it[1]:
+                        # skip reminders
+                        continue
+                    if matching:
+                        if not self.cal_regex.match(it[-1]):
+                            continue
+                        mtch = (self.default_regex.match(it[-1]) is not None)
+                    else:
+                        mtch = True
+                    it.append(mtch)
+                    item = tuple(it)
+                    bt.append(item)
+                busy_lst.append(bt)
+                busy_dates.append(thisdate.strftime("%a %d"))
+                if bt:
+                    for pts in bt:
+                        busytimes += pts[1] - pts[0]
+                        self.busyHsh.setdefault(id, []).append("* {0}".format(pts[2]))
+                    tags.append('busy')
 
-                t1 = t + (max(7 * 60, tup[0]) - 7 * 60) * y_per_minute
+                    busylines = [[], [], [], []]
+                    # each side 240 minutes plus 2 times bar width
+                    # 420 - 660 top: tl+(5,-3) -> tr+(-5,-3)
+                    # 660 - 900 right: tr+(-3,-5) -> br+(-3,+5)
+                    # 900 - 1140 bottom: br+(-5,+3) -> bl+(+5,+3)
+                    # 1140 - 1380 left: bl+(+3,+5) -> tl+(+3, -5)
 
-                t2 = t + min(16 * 60, max(7 * 60, tup[1]) - 7 * 60) * y_per_minute
+                    for pts in bt:
+                        pt1 = max(0, pts[0])
+                        pt2 = min(pts[1], 1440)
+                        tmp = [[], [], [], []]
 
-                xy = int(start_x), int(max(t, t1)), int(end_x), int(min(t2, t + y * 16))
-                conf = self.canvas.find_overlapping(*xy)
-                id = self.canvas.create_rectangle(xy, fill=busyColor, width=0, tag=ttag)
-                conf = [z for z in conf if z in busy_ids]
-                busy_ids.append(id)
-                conf_ids.extend(conf)
-                if conf:
-                    bb1 = self.canvas.bbox(id)
-                    bb2 = self.canvas.bbox(*conf)
+                        for ii in range(0, 4):
+                            if pt1 >= intervals[ii]:
+                                continue
+                            tmp[ii].append(pt1)
+                            for jj in range(ii, 4):
+                                if jj > ii:
+                                    tmp[jj].append(intervals[jj-1])
+                                if pt2 <= intervals[jj]:
+                                    tmp[jj].append(pt2)
+                                    break
+                                else:
+                                    tmp[jj].append(intervals[jj])
+                            break
+                        for ii in range(4):
+                            if tmp[ii]:
+                                busylines[ii].append(tmp[ii])
 
-                    # we want the max of bb1[1], bb2[1]
-                    # and the min of bb1[4], bb2[4]
-                    ol = bb1[0], max(bb1[1], bb2[1]), bb1[2], min(bb1[3], bb2[3])
-                    self.canvas.create_rectangle(ol, fill=CONFLICTFILL, outline="", width=0, tag="conflict")
 
-                tmp = list(tup[2:])  # id, time str, summary and file info
-                tmp.append(daytime)
-                self.busyHsh[id] = tmp
-            if self.today_col is not None:
-                xy = self.get_timeline()
-                if xy:
-                    self.canvas.delete('current_time')
-                    self.canvas.create_line(xy, width=2, fill=CURRENTLINE, tag='current_time')
+                    if busylines:
+                        for side in range(4):
+                            lines = busylines[side]
+                            if lines:
+                                if side == 0: # left
+                                    for line in lines:
+                                        bx = ex = bl_x + offset
+                                        by = bl_y - indent - int(Decimal((line[0])/360) * h_)
+                                        ey = bl_y - indent - int(Decimal((line[1])/360) * h_)
+                                        self.canvas.create_line((bx, by, ex, ey), fill=nightcolor, width=busywidth, tag="busy")
+                                elif side == 1: # top
+                                    for line in lines:
+                                        by = ey = tl_y + offset
+                                        bx = tl_x + indent + int(Decimal((line[0]-360)/360) * w_)
+                                        ex = tl_x + indent + int(Decimal((line[1]-360)/360) * w_)
+                                        self.canvas.create_line((bx, by, ex, ey), fill=morningcolor, width=busywidth, tag="busy")
+                                elif side == 2: # right
+                                    for line in lines:
+                                        bx = ex = tr_x - offset
+                                        by = tr_y + indent + int(Decimal((line[0]-720)/360) * h_)
+                                        ey = tr_y + indent + int(Decimal((line[1]-720)/360) * h_)
+                                        self.canvas.create_line((bx, by, ex, ey), fill=afternooncolor, width=busywidth, tag="busy")
+                                elif side == 3: # bottom
+                                    for line in lines:
+                                        by = ey = br_y - offset
+                                        bx = br_x - indent - int(Decimal((line[0]-1080)/360) * w_)
+                                        ex = br_x - indent - int(Decimal((line[1]-1080)/360) * w_)
+                                        self.canvas.create_line((bx, by, ex, ey), fill=eveningcolor, width=busywidth, tag="busy")
 
-        self.busy_ids = busy_ids
+                        bx = bl_x + offset - 1.5 * busywidth
+                        ex = bl_x + offset + .5 * busywidth
+                        by = bl_y - indent + 1.5 * busywidth
+                        ey = bl_y - indent - .5 * busywidth
+                        if flagcolor:
+                            self.canvas.create_rectangle((bx, by, ex, ey), fill=flagcolor, outline=flagcolor, tag="busy")
+            else:
+                busy_lst.append([])
+                busy_dates.append(thisdate.strftime("%a %d"))
+
+            if 'current_day' in tags:
+                self.canvas.itemconfig(id, tag='current_day', fill=CURRENTFILL)
+            elif 'occasion' in tags:
+                self.canvas.itemconfig(id, tag='occasion', fill=OCCASIONFILL)
+            elif 'busy' in tags:
+                self.canvas.itemconfig(id, tag='busy', fill="white")
+
+            # if fill:
+            self.canvas.create_text(p, text="{0}".format(weekdates[i]), fill=barcolor)
+
+        busy_ids = list(busy_ids)
+
         self.conf_ids = conf_ids
-        for id in occasion_ids + busy_ids + conf_ids:  # + conf_ids:
-            self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
 
-        self.canvas.bind('<Escape>', self.on_clear_item)
 
-        self.canvas_ids = [z for z in self.busyHsh.keys()]
-        self.canvas_ids.sort()
-        self.canvas_idpos = None
         # border
-        xy = int(l), int(t), int(l + x * 7), int(t + y * 16)
-        self.canvas.create_rectangle(xy, tag="grid")
+        # xy = int(l), int(t), int(l + x_ * 7), int(t + y_)
+        # self.canvas.create_rectangle(xy, tag="grid")
 
         # verticals
         for i in range(1, 7):
+            xy = int(l + x_ * i), int(t-18), int(l + x_ * i), int(t + y_)
+            self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
 
-            xy = int(l + x * i), int(t), int(l + x * i), int(t + y * 16)
-            self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
-        # horizontals
-        for j in range(1, 16):
-            xy = int(l), int(t + y * j), int(l + x * 7), int(t + y * j)
-            self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
-        # hours
-        for j in range(17):
-            if j % 2:
-                p = int(l - 5), int(t + y * j)
-                self.canvas.create_text(p, text=self.hours[j], anchor="e")
-        # days
         for i in range(7):
+            p = int(l + x_ / 2 + x_ * i), int(t - 10)
+            self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=barcolor)
 
-            p = int(l + x / 2 + x * i), int(t - 13)
+        self.busy_info = (theweek, busy_dates, busy_lst, occasion_lst)
+        self.busy_ids = busy_ids
+        self.busy_ids.sort()
+        for id in self.busy_ids:
+            self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
+            # self.canvas.tag_bind(id, '<Any-Leave>', self.on_leave_item)
+        self.canvas_ids = self.busy_ids
+        self.monthid2date = monthid2date
 
-            if self.today_col is not None and i == self.today_col:
-                self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=CURRENTLINE)
-            else:
-                self.canvas.create_text(p, text="{0}".format(weekdays[i]))
 
     def closeMonthly(self, event=None):
-        self.today_col = None
-        for i in range(14, 20):
-            self.viewmenu.entryconfig(i, state="disabled")
-        self.canvas.pack_forget()
+        self.month_height = self.topwindow.panecget(self.toppane, "height")
+        self.topwindow.forget(self.toppane)
         self.monthly = False
-        self.fltr.pack(side=LEFT, padx=8, pady=0, fill="x", expand=1)
         self.tree.pack(fill="both", expand=1, padx=4, pady=0)
         self.update_idletasks()
-        if self.filter_active:
-            self.viewmenu.entryconfig(6, state="disabled")
-            self.viewmenu.entryconfig(7, state="normal")
-        else:
-            self.viewmenu.entryconfig(6, state="normal")
-            self.viewmenu.entryconfig(7, state="disabled")
-
-        for i in [4, 5, 8, 9, 10, 11, 12]:
-            self.viewmenu.entryconfig(i, state="normal")
+        for i in range(4, 6):
+            self.toolsmenu.entryconfig(i, state="disabled")
         self.bind("<Control-f>", self.setFilter)
 
     def showMonthly(self, event=None, chosen_day=None):
@@ -2297,16 +2331,16 @@ Enter the shortest time period you want displayed in minutes.""")
         tt = TimeIt(loglevel=2, label="month view")
         logger.debug("chosen_day: {0}; active_date: {1}".format(chosen_day, self.active_date))
         if self.monthly:
-            # we're in weekview already
+            # we're in month view already
             return
         if self.weekly:
             self.closeWeekly()
         self.content.delete("1.0", END)
         self.monthly = True
-        self.tree.pack_forget()
-        self.fltr.pack_forget()
-        for i in range(4, 13):
-            self.viewmenu.entryconfig(i, state="disabled")
+        for i in range(4, 6):
+            self.toolsmenu.entryconfig(i, state="normal")
+
+        self.setView(DAY)
 
         self.view = MONTH
         self.currentView.set(MONTH)
@@ -2318,13 +2352,9 @@ Enter the shortest time period you want displayed in minutes.""")
         else:
             self.chosen_day = get_current_time()
 
-        self.canvas.configure(highlightthickness=0)
-        self.canvas.pack(side="top", fill="both", expand=1, padx=4, pady=0)
+        self.topwindow.add(self.toppane, padx=0, pady=0, before=self.botwindow, height=self.month_height)
 
-        for i in range(14, 20):
-            self.viewmenu.entryconfig(i, state="normal")
-        self.canvas.focus_set()
-        self.showMonth()
+        self.showMonth(event=event)
         tt.stop()
 
     def showMonth(self, event=None, month=None):
@@ -2340,6 +2370,8 @@ Enter the shortest time period you want displayed in minutes.""")
         logger.debug('self.current_day: {0}, minutes: {1}'.format(self.current_day, self.current_minutes))
         self.x_win = self.canvas.winfo_width()
         self.y_win = self.canvas.winfo_height()
+        month_day = 1
+        use_chosen = False
         if month in [-1, 0, 1]:
             if month == 0:
                 self.year_month = [self.current_day.year, self.current_day.month]
@@ -2354,20 +2386,31 @@ Enter the shortest time period you want displayed in minutes.""")
                     self.year_month[1] += 12
                     self.year_month[0] -= 1
         elif self.chosen_day:
+            use_chosen = True
             self.year_month = [self.chosen_day.year, self.chosen_day.month]
+            month_day = self.chosen_day.day
         else:
             return
         logger.debug('month active_date: {0}'.format(self.active_date))
+        day = date(self.year_month[0], self.year_month[1], month_day)
+        if use_chosen:
+            scrolldate = self.chosen_day.date()
+            self.canvas_idpos = month_day - 1
+            # self.canvas_idpos = weekdaynum - 1
+        else:
+            scrolldate = day
+            self.canvas_idpos = 0
+        self.scrollToDate(scrolldate)
+
         weeks = self.monthly_calendar.monthdatescalendar(*self.year_month)
         num_weeks = len(weeks)
         weekdays = [s2or3(x.strftime("%a")) for x in weeks[0]]
-        weeknumbers = [x[0].isocalendar()[1] for x in weeks]
         themonth = weeks[1][0].strftime("%B %Y")
         self.canvas.delete("all")
-        l = 36
-        r = 8
-        t = 56
-        b = 8
+        l = 4
+        r = 4
+        t = 22
+        b = 4
         if event:
             logger.debug('event: {0}'.format(event))
             w, h = event.width, event.height
@@ -2379,7 +2422,8 @@ Enter the shortest time period you want displayed in minutes.""")
                 h = self.canvas.winfo_height()
         else:
             w = self.canvas.winfo_width()
-            h = self.canvas.winfo_height()
+            # h = self.canvas.winfo_height()
+            h = self.month_height
         logger.debug("w: {0}, h: {1}, l: {2}, t: {3}".format(w, h, l, t))
 
         self.margins = (w, h, l, r, t, b)
@@ -2391,14 +2435,14 @@ Enter the shortest time period you want displayed in minutes.""")
 
         # month
         p = l + int((w - 1 - l - r) / 2), 20
-        self.canvas.create_text(p, text="{0}".format(themonth))
+        self.currentView.set(themonth)
         self.busyHsh = {}
 
         # occasions
         busy_ids = set([])
         monthid2date = {}
 
-        self.canvas.bind('<Escape>', self.on_clear_item)
+        # self.canvas.bind('<Escape>', self.on_leave_item)
 
         # monthdays
         intervals = [360, 720, 1080, 1440]
@@ -2424,13 +2468,14 @@ Enter the shortest time period you want displayed in minutes.""")
         for j in range(num_weeks):
             for i in range(7):
                 busytimes = 0
+                flagcolor = "white"
                 start_x = l + i * x_
                 end_x = start_x + x_
                 start_y = int(t + y_ * j)
                 end_y = start_y + y_
                 xy = int(start_x), int(start_y), int(end_x), int(end_y)
                 p = int(l + x_ / 2 + x_ * i), int(t + y_ * j + y_ / 2)
-                pp = int(l +  x_ + x_ * i), int(t + y_ * j + y_ )
+                # pp = int(l +  x_ + x_ * i), int(t + y_ * j + y_ )
 
                 tl_x = bl_x = int(l + x_ * i)
                 tl_y = tr_y = int(t + y_ *j)
@@ -2442,7 +2487,6 @@ Enter the shortest time period you want displayed in minutes.""")
                 thisdate = weeks[j][i]
                 isokey = thisdate.isocalendar()
                 month = thisdate.month
-                fill = None
                 tags = []
                 if (month != self.year_month[1]):
                     fill = "gray70"
@@ -2454,8 +2498,9 @@ Enter the shortest time period you want displayed in minutes.""")
                     today = (thisdate == self.current_day.date())
                     bt = []
                     if today:
+                        flagcolor = CURRENTFILL
                         tags.append('current_day')
-                    if isokey in loop.occasions:
+                    if loop.occasions is not None and isokey in loop.occasions:
                         bt = []
                         for item in loop.occasions[isokey]:
                             it = list(item)
@@ -2471,16 +2516,15 @@ Enter the shortest time period you want displayed in minutes.""")
                         occasion_lst.append(bt)
                         if bt:
                             if not today:
+                                flagcolor = OCCASIONFILL
                                 tags.append('occasion')
                             self.busyHsh.setdefault(id, []).extend(["^ {0}".format(x[0]) for x in bt])
                     else:
                         occasion_lst.append([])
 
-                    if isokey in loop.busytimes:
+                    if loop.busytimes is not None and isokey in loop.busytimes:
                         if isokey in loop.conflicts:
                             flagcolor = "red"
-                        else:
-                            flagcolor = "white"
                         bt = []
                         for item in loop.busytimes[isokey]:
                             it = list(item)
@@ -2533,7 +2577,6 @@ Enter the shortest time period you want displayed in minutes.""")
                                     if tmp[ii]:
                                         busylines[ii].append(tmp[ii])
 
-
                             if busylines:
                                 for side in range(4):
                                     lines = busylines[side]
@@ -2567,7 +2610,8 @@ Enter the shortest time period you want displayed in minutes.""")
                                 ex = bl_x + offset + .5 * busywidth
                                 by = bl_y - indent + 1.5 * busywidth
                                 ey = bl_y - indent - .5 * busywidth
-                                self.canvas.create_rectangle((bx, by, ex, ey), fill=flagcolor, outline=flagcolor, tag="busy")
+                                if flagcolor:
+                                    self.canvas.create_rectangle((bx, by, ex, ey), fill=flagcolor, outline=flagcolor, tag="busy")
                     else:
                         busy_lst.append([])
                         busy_dates.append(thisdate.strftime("%a %d"))
@@ -2580,62 +2624,36 @@ Enter the shortest time period you want displayed in minutes.""")
 
                 if fill:
                     self.canvas.create_text(p, text="{0}".format(weeks[j][i].day), fill=fill)
+
         busy_ids = list(busy_ids)
         for id in busy_ids:
             self.canvas.tag_bind(id, '<Any-Enter>', self.on_enter_item)
             self.canvas.tag_bind(id, '<Any-Leave>', self.on_leave_item)
 
         # border
-        xy = int(l), int(t), int(l + x_ * 7), int(t + y_ * num_weeks + 1)
-        self.canvas.create_rectangle(xy, tag="grid")
+        # xy = int(l), int(t), int(l + x_ * 7), int(t + y_ * num_weeks + 1)
+        # self.canvas.create_rectangle(xy, tag="grid")
 
         # verticals
         for i in range(1, 7):
-            xy = int(l + x_ * i), int(t), int(l + x_ * i), int(t + y_ * num_weeks)
+            xy = int(l + x_ * i), int(t-18), int(l + x_ * i), int(t + y_ * num_weeks)
             self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
         # horizontals
         for j in range(1, num_weeks):
             xy = int(l), int(t + y_ * j), int(l + x_ * 7), int(t + y_ * j)
             self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
 
-        # week numbers
-        for j in range(num_weeks):
-            p = int(l - 5), int(t + y_ * j + y_ / 2)
-            self.canvas.create_text(p, text=weeknumbers[j], anchor="e")
         # days
         for i in range(7):
-
-            p = int(l + x_ / 2 + x_ * i), int(t - 13)
-
-            if self.today_col is not None and i == self.today_col:
-                self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=CURRENTLINE)
-            else:
-                self.canvas.create_text(p, text="{0}".format(weekdays[i]))
+            p = int(l + x_ / 2 + x_ * i), int(t - 10)
+            self.canvas.create_text(p, text="{0}".format(weekdays[i]),fill = "SteelBlue4")
 
         self.busy_info = (themonth, busy_dates, busy_lst, occasion_lst)
         self.busy_ids = busy_ids
         self.busy_ids.sort()
         self.canvas_ids = self.busy_ids
         self.monthid2date = monthid2date
-        self.canvas_idpos = None
 
-    def get_timeline(self):
-        if not (self.weekly and self.today_col is not None):
-            return
-        x = self.week_x
-        if self.current_minutes < 7 * 60:
-            return None
-        elif self.current_minutes > 23 * 60:
-            return None
-        else:
-            current_minutes = self.current_minutes
-        (w, h, l, r, t, b) = self.margins
-        start_x = l + self.today_col * x
-        end_x = start_x + x
-
-        t1 = t + (current_minutes - 7 * 60) * self.y_per_minute
-        xy = int(start_x), int(t1), int(end_x), int(t1)
-        return xy
 
     def selectId(self, event, d=1):
         ids = self.busy_ids
@@ -2660,107 +2678,66 @@ Enter the shortest time period you want displayed in minutes.""")
             if d == -1:
                 self.canvas_idpos -= 1
                 if self.canvas_idpos < 0:
+                    self.priorWeekMonth(event=event)
                     self.canvas_idpos = len(self.canvas_ids) - 1
             elif d == 1:
                 self.canvas_idpos += 1
                 if self.canvas_idpos > len(self.canvas_ids) - 1:
+                    self.nextWeekMonth(event=event)
                     self.canvas_idpos = 0
-        if self.weekly:
-            self.selectedId = id = self.canvas_ids[self.canvas_idpos]
-            self.canvas.itemconfig(id, fill=ACTIVEFILL)
-            self.canvas.tag_raise('conflict')
-            self.canvas.tag_raise(id)
-            self.canvas.tag_lower('occasion')
-            self.canvas.tag_lower('current_day')
-            self.canvas.tag_raise('current_time')
-            if id in self.busyHsh:
-                self.OnSelect(uuid=self.busyHsh[id][-4], dt=self.busyHsh[id][-1])
-                self.active_date = self.busyHsh[id][-1].date()
 
-        elif self.monthly:
-            if old_id is not None and old_id in self.busy_ids:
-                tags = self.canvas.gettags(old_id)
-                if 'current_day' in tags:
-                    self.canvas.itemconfig(old_id, fill=CURRENTFILL)
-                elif 'occasion' in tags:
-                    self.canvas.itemconfig(old_id, fill=OCCASIONFILL)
-                elif 'busy' in tags:
-                    self.canvas.itemconfig(old_id, fill="white")
-                else:
-                    self.canvas.itemconfig(old_id, fill="white")
-            self.selectedId = id = self.canvas_ids[self.canvas_idpos]
-            self.active_date = self.monthid2date[id]
-            self.canvas_idpos = self.canvas_ids.index(id)
-            if id in self.busy_ids:
-                self.canvas.itemconfig(id, fill=ACTIVEFILL)
-            if id in self.busyHsh:
-                txt = "\n".join(self.busyHsh[id])
-                self.content.delete("1.0", END)
-                self.content.insert("1.0", txt)
+        if old_id is not None and old_id in self.busy_ids:
+            tags = self.canvas.gettags(old_id)
+            if 'current_day' in tags:
+                self.canvas.itemconfig(old_id, fill=CURRENTFILL)
+            elif 'occasion' in tags:
+                self.canvas.itemconfig(old_id, fill=OCCASIONFILL)
+            elif 'busy' in tags:
+                self.canvas.itemconfig(old_id, fill="white")
             else:
-                self.content.delete("1.0", END)
+                self.canvas.itemconfig(old_id, fill="white")
+
+        self.selectedId = id = self.canvas_ids[self.canvas_idpos]
+        self.active_date = self.monthid2date[id]
+        self.scrollToDate(self.active_date)
+        self.canvas_idpos = self.canvas_ids.index(id)
+        if id in self.busy_ids:
+            self.canvas.itemconfig(id, fill=ACTIVEFILL)
+        if id in self.busyHsh:
+            txt = "\n".join(self.busyHsh[id])
+            self.content.delete("1.0", END)
+            self.content.insert("1.0", txt)
+        else:
+            self.content.delete("1.0", END)
 
     def setFocus(self, e):
         self.canvas.focus()
         self.canvas.focus_set()
 
     def on_enter_item(self, e):
-        if self.weekly:
-            old_id = None
-            if self.canvas_idpos is not None:
-                old_id = self.canvas_ids[self.canvas_idpos]
-                if old_id in self.busy_ids:
-                    tags = self.canvas.gettags(old_id)
-                    if 'other' in tags:
-                        self.canvas.itemconfig(old_id, fill=OTHERFILL)
-                    else:
-                        self.canvas.itemconfig(old_id, fill=DEFAULTFILL)
-                else:
+        if self.canvas_idpos is not None:
+            old_id = self.canvas_ids[self.canvas_idpos]
+            if old_id in self.busy_ids:
+                tags = self.canvas.gettags(old_id)
+                if 'current_day' in tags:
+                    self.canvas.itemconfig(old_id, fill=CURRENTFILL)
+                elif 'occasion' in tags:
                     self.canvas.itemconfig(old_id, fill=OCCASIONFILL)
-                    self.canvas.tag_lower(old_id)
-
-            self.selectedId = id = self.canvas.find_withtag(CURRENT)[0]
-            if id in self.busyHsh:
-                self.active_date = self.busyHsh[id][-1].date()
-
+                else:
+                    self.canvas.itemconfig(old_id, fill="white")
+        self.selectedId = id = self.canvas.find_withtag(CURRENT)[0]
+        self.active_date = self.monthid2date[id]
+        self.canvas_idpos = self.canvas_ids.index(id)
+        if id in self.busy_ids:
             self.canvas.itemconfig(id, fill=ACTIVEFILL)
-            self.canvas.tag_raise('conflict')
-            self.canvas.tag_raise('grid')
-            self.canvas.tag_raise(id)
-            self.canvas.tag_lower('occasion')
-            self.canvas.tag_lower('current_day')
-            self.canvas.tag_raise('current_time')
-
-            if id in self.busyHsh:
-                self.canvas_idpos = self.canvas_ids.index(id)
-
-                self.OnSelect(uuid=self.busyHsh[id][-4], dt=self.busyHsh[id][-1])
-        elif self.monthly:
-            if self.canvas_idpos is not None:
-                old_id = self.canvas_ids[self.canvas_idpos]
-                if old_id in self.busy_ids:
-                    tags = self.canvas.gettags(old_id)
-                    if 'current_day' in tags:
-                        self.canvas.itemconfig(old_id, fill=CURRENTFILL)
-                    elif 'occasion' in tags:
-                        self.canvas.itemconfig(old_id, fill=OCCASIONFILL)
-                    else:
-                        self.canvas.itemconfig(old_id, fill="white")
-            self.selectedId = id = self.canvas.find_withtag(CURRENT)[0]
-            self.active_date = self.monthid2date[id]
-            self.canvas_idpos = self.canvas_ids.index(id)
-            if id in self.busy_ids:
-                self.canvas.itemconfig(id, fill=ACTIVEFILL)
-            if id in self.busyHsh:
-                txt = "\n".join(self.busyHsh[id])
-                self.content.delete("1.0", END)
-                self.content.insert("1.0", txt)
-            else:
-                self.content.delete("1.0", END)
+        if id in self.busyHsh:
+            txt = "\n".join(self.busyHsh[id])
+            self.content.delete("1.0", END)
+            self.content.insert("1.0", txt)
+        else:
+            self.content.delete("1.0", END)
 
     def on_leave_item(self, e):
-        if self.weekly or self.monthly:
-            return
         self.content.delete("1.0", END)
         id = self.canvas.find_withtag(CURRENT)[0]
         if id in self.busy_ids:
@@ -2774,86 +2751,47 @@ Enter the shortest time period you want displayed in minutes.""")
         else:
             self.canvas.itemconfig(id, fill="white")
 
-    def on_clear_item(self, e=None):
-        if not self.weekly:
-            return
-        if self.selectedId:
-            id = self.selectedId
-            if id in self.busy_ids:
-                tags = self.canvas.gettags(id)
-                if 'other' in tags:
-                    self.canvas.itemconfig(id, fill=OTHERFILL)
-                else:
-                    self.canvas.itemconfig(id, fill=DEFAULTFILL)
-            else:
-                self.canvas.itemconfig(id, fill=OCCASIONFILL)
-        self.canvas.tag_raise('conflict')
-        self.canvas.tag_raise('grid')
-        self.canvas.tag_lower('occasion')
-        self.selectedId = None
-        self.OnSelect()
-        self.canvas.focus("")
+    # def on_clear_item(self, e=None):
+    #     if not self.weekly or self.monthly:
+    #         return
+    #     if self.selectedId:
+    #         id = self.selectedId
+    #         if id in self.busy_ids:
+    #             tags = self.canvas.gettags(id)
+    #             if 'other' in tags:
+    #                 self.canvas.itemconfig(id, fill=OTHERFILL)
+    #             else:
+    #                 self.canvas.itemconfig(id, fill=DEFAULTFILL)
+    #         else:
+    #             self.canvas.itemconfig(id, fill=OCCASIONFILL)
+    #     self.canvas.tag_raise('conflict')
+    #     self.canvas.tag_raise('grid')
+    #     self.canvas.tag_lower('occasion')
+    #     self.selectedId = None
+    #     self.OnSelect()
+    #     self.canvas.focus("")
 
     def on_select_item(self, event):
-        if self.monthly:
+        if self.monthly or self.weekly:
             self.newItem()
         else:
-            current = self.canvas.find_withtag(CURRENT)
-            logger.debug('current: {0}'.format(current))
-            if current and current[0] in self.busy_ids:
-                self.selectedId = current[0]
-                self.on_activate_item(event)
-            else:
-                self.newEvent(event)
             return "break"
 
     def on_activate_item(self, event):
-        if self.monthly:
+        if self.monthly or self.weekly:
             self.newItem()
-        else:
-            x = self.winfo_rootx() + 350
-            y = self.winfo_rooty() + 50
-            id = self.selectedId
-            if not id:
-                return
-
-            logger.debug("id: {0}, coords: {1}, {2}\n    {3}".format(id, x, y, self.busyHsh[id]))
-            self.uuidSelected = uuid = self.busyHsh[id][1]
-            self.itemSelected = loop.uuid2hash[uuid]
-            self.dtSelected = self.busyHsh[id][-1]
-            self.itemmenu.post(x, y)
-            self.itemmenu.focus_set()
 
     def newEvent(self, event):
         logger.debug("event: {0}".format(event))
         self.canvas.focus_set()
-        min_round = 15
         px = event.x
         py = event.y
         (w, h, l, r, t, b) = self.margins
         x = Decimal(w - 1 - l - r) / Decimal(7)  # x per day intervals
-        y = Decimal(h - 1 - t - b) / Decimal(16 * 60)  # y per minute intervals
-        if px < l:
-            px = l
-        elif px > l + 7 * x:
-            py = l + 7 * x
-        if py < t:
-            py = t
-        elif py > t + 16 * 60 * y:
-            py = t + 16 * 60 * y
-
         rx = int(round(Decimal(px - l) / x - Decimal(0.5)))  # number of days
-        ry = int(7 * 60 + round(Decimal(py - t) / y))  # number of minutes
-        ryr = round(Decimal(ry) / min_round) * min_round
-
-        hours = int(ryr // 60)
-        minutes = int(ryr % 60)
-        dt = (self.week_beg + rx * ONEDAY).replace(hour=hours, minute=minutes, second=0, microsecond=0, tzinfo=None)
-
-        tfmt = fmt_time(dt, options=loop.options)
+        dt = (self.week_beg + rx * ONEDAY).replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
         dfmt = dt.strftime("%a %b %d")
-        dtfmt = "{0} {1}".format(tfmt, dfmt)
-        s = "*  @s {0}".format(dtfmt)
+        s = "*  @s {0}".format(dfmt)
         changed = SimpleEditor(parent=self, master=self.canvas, start=s, options=loop.options).changed
 
         if changed:
@@ -2861,9 +2799,11 @@ Enter the shortest time period you want displayed in minutes.""")
 
             self.updateAlerts()
             if self.weekly:
-                self.showWeek()
+                self.updateDay()
+                self.showWeek(event=event)
             elif self.monthly:
-                self.showMonth()
+                self.updateDay()
+                self.showMonth(event=event)
             else:
                 self.showView()
 
@@ -3004,12 +2944,14 @@ or 0 to display all changes.""").format(title)
         return "break"
 
     def goHome(self, event=None):
+        today = get_current_time().date()
         if self.weekly:
-            self.showWeek(week=0)
+            self.showWeek(event=event, week=0)
+            self.scrollToDate(today)
         elif self.monthly:
-            self.showMonth(month=0)
+            self.showMonth(event=event, month=0)
+            self.scrollToDate(today)
         elif self.view == DAY:
-            today = get_current_time().date()
             self.scrollToDate(today)
         else:
             self.tree.focus_set()
@@ -3023,7 +2965,6 @@ or 0 to display all changes.""").format(title)
         if item:
             next = self.tree.next(item)
             if next:
-
                 next = int(next)
                 next -= 1
                 self.tree.focus(next)
@@ -3034,7 +2975,6 @@ or 0 to display all changes.""").format(title)
         if item:
             prev = self.tree.prev(item)
             if prev:
-
                 prev = int(prev)
                 prev += 1
                 self.tree.focus(prev)
@@ -3046,12 +2986,9 @@ or 0 to display all changes.""").format(title)
         """
         logger.debug("starting OnSelect with uuid: {0}".format(uuid))
         self.content.delete("1.0", END)
-        if self.weekly:  # week view
-            if uuid:
-                # an item is selected, enable clear selection
-                hsh = loop.uuid2hash[uuid]
-                type_chr = hsh['itemtype']
-        elif uuid is None:  # tree view
+        if uuid is None:  # tree view
+            if not self.tree.selection():
+                return
             item = self.tree.selection()[0]
             self.rowSelected = int(item)
             logger.debug('rowSelected: {0}'.format(self.rowSelected))
@@ -3174,14 +3111,16 @@ or 0 to display all changes.""").format(title)
         self.now = get_current_time()
         self.current_minutes = self.now.hour * 60 + self.now.minute
         nxt = (60 - self.now.second) * 1000 - self.now.microsecond // 1000
+        nowfmt = "{0} {1}".format(
+            s2or3(self.now.strftime("%a %b %d")),
+            s2or3(self.now.strftime(loop.options['reprtimefmt']).lower()),
+        )
         logger.debug('next update in {0} milliseconds.'.format(nxt))
         self.after(nxt, self.updateClock)
-        nowfmt = "{0} {1}".format(
-            s2or3(self.now.strftime(loop.options['reprtimefmt']).lower()),
-            s2or3(self.now.strftime("%a %b %d")))
 
         nowfmt = leadingzero.sub("", nowfmt)
         self.currentTime.set("{0}".format(nowfmt))
+        self.title(self.currentTime.get())
         today = self.now.date()
         newday = (today != self.today)
         self.today = today
@@ -3199,19 +3138,19 @@ or 0 to display all changes.""").format(title)
 
             if self.weekly:
                 logger.debug('calling showWeek')
+                self.updateDay()
                 self.showWeek()
+                if newday:
+                    self.scrollToDate(today)
             elif self.monthly:
                 logger.debug('calling showMonth')
+                self.updateDay()
                 self.showMonth()
+                if newday:
+                    self.scrollToDate(today)
             else:
                 logger.debug('calling showView')
                 self.showView()
-        elif self.today_col is not None:
-            xy = self.get_timeline()
-            if xy:
-                self.canvas.delete('current_time')
-                self.canvas.create_line(xy, width=2, fill=CURRENTLINE, tag='current_time')
-                self.update_idletasks()
 
         if self.current_minutes % loop.options['update_minutes'] == 0:
             if loop.do_update:
@@ -3257,7 +3196,6 @@ or 0 to display all changes.""").format(title)
 
                             logger.debug('paused: {0}'.format(tcmd))
                             subprocess.call(tcmd, shell=True)
-
         tt.stop()
 
     def updateAlerts(self):
@@ -3406,39 +3344,38 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
         prompt = _("""\
 Return an empty string for the current date or a date to be parsed.
 Relative dates and fuzzy parsing are supported.""")
-        if self.view not in [DAY, WEEK]:
-            self.view = DAY
-            self.showView()
+        if self.view not in [DAY, WEEK, MONTH]:
+            return
         d = GetDateTime(parent=self, title=_('date'), prompt=prompt)
         day = d.value
 
         logger.debug('day: {0}'.format(day))
-        if day is not None:
-            self.chosen_day = day
+        if day is None:
+            return
+        self.chosen_day = day
 
-            if self.weekly:
-                self.showWeek(event=e, week=None)
-            elif self.monthly:
-                self.showMonth(event=e, month=None)
-            else:
-                self.scrollToDate(day.date())
+        if self.weekly:
+            self.showWeek(event=e, week=None)
+        elif self.monthly:
+            self.showMonth(event=e, month=None)
+        self.scrollToDate(day.date())
         return
 
     def setFilter(self, *args):
-        if self.view in [WEEK, MONTH, CUSTOM]:
+        if self.view in [CUSTOM]:
             return
         self.filter_active = True
-        self.viewmenu.entryconfig(6, state="disabled")
-        self.viewmenu.entryconfig(7, state="normal")
+        # self.motionmenu.entryconfig(6, state="disabled")
+        # self.motionmenu.entryconfig(7, state="normal")
         self.fltr.configure(bg="white", state="normal")
         self.fltr.focus_set()
 
     def clearFilter(self, e=None):
-        if self.view in [WEEK, MONTH, CUSTOM]:
+        if self.view in [CUSTOM]:
             return
         self.filter_active = False
-        self.viewmenu.entryconfig(6, state="normal")
-        self.viewmenu.entryconfig(7, state="disabled")
+        # self.motionmenu.entryconfig(6, state="normal")
+        # self.motionmenu.entryconfig(7, state="disabled")
         self.filterValue.set('')
         self.fltr.configure(bg=BGCOLOR)
         self.tree.focus_set()
@@ -3698,21 +3635,26 @@ or 0 to expand all branches completely.""")
                         except:
                             logger.exception('open: {0}, {1}'.format(i, item))
 
-    def scrollToDate(self, date):
+    def scrollToDate(self, date=None):
         # only makes sense for schedule
         logger.debug("DAY: {0}; date: {1}".format(self.view == DAY, date))
-        if self.view != DAY or date not in loop.prevnext:
+        if not loop.prevnext or date is None:
             return
+        if self.view not in [DAY, WEEK, MONTH] or date not in loop.prevnext:
+            return
+        # new: go to the first date on or **after**, i.e., prevnext last
         active_date = loop.prevnext[date][1]
         if active_date not in self.date2id:
             return
+        pos = date.isocalendar()[2] - 1
+        self.canvas_idpos = pos
         uid = self.date2id[active_date]
         self.active_date = active_date
         self.scrollToId(uid)
 
     def scrollToId(self, uid):
         self.update_idletasks()
-        self.tree.focus_set()
+        # self.tree.focus_set()
         self.tree.focus(uid)
         self.tree.selection_set(uid)
         self.tree.yview(int(uid) - 1)
@@ -3733,10 +3675,10 @@ or 0 to expand all branches completely.""")
 
         if event is None:
 
-            if self.view == DAY and self.active_date:
+            if self.view in [DAY, WEEK, MONTH] and self.active_date:
                 self.scrollToDate(self.active_date)
             else:
-                if self.view in [AGENDA, DAY, TAG, KEYWORD, NOTE, PATH]:
+                if self.view in [AGENDA, TAG, KEYWORD, NOTE, PATH]:
                     if self.filter_active:
                         depth = 0
                     else:
@@ -3759,8 +3701,8 @@ or 0 to expand all branches completely.""")
                 self.goHome()
 
     def popupTree(self, e=None):
-        if self.weekly or self.monthly:
-            return
+        # if self.weekly or self.monthly:
+        #     return
         if not self.active_tree:
             return
         depth = self.outline_depths[self.view]

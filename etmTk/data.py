@@ -81,12 +81,14 @@ def setup_logging(level, etmdir=None):
 import subprocess
 
 import gettext
+t = gettext.translation('etm', 'locale', fallback=True)
 
 if platform.python_version() >= '3':
     python_version = 3
     python_version2 = False
     from io import StringIO
-    from gettext import gettext as _
+    _ = t.gettext
+    # from gettext import gettext as _
     unicode = str
     u = lambda x: x
     raw_input = input
@@ -95,7 +97,7 @@ else:
     python_version = 2
     python_version2 = True
     from cStringIO import StringIO
-    _ = gettext.lgettext
+    _ = t.ugettext
     from urllib2 import quote
 
 from random import random
@@ -138,7 +140,7 @@ NIL = Node(End(), [], [])
 
 # default for items without a tag or keyword entry
 # the leading ~ makes them sort last
-NONE = '~ {0} ~'.format(_("None"))
+NONE = '~ {0} ~'.format(_("none"))
 
 YESTERDAY = _('Yesterday')
 TODAY = _('Today')
@@ -286,8 +288,6 @@ def clear_all_data():
 
 dayfirst = False
 yearfirst = True
-# bgclr = "#e9e9e9"
-# BGCOLOR = "#ebebeb"
 
 FINISH = _("Finish ...")
 
@@ -556,7 +556,7 @@ def get_week(dt):
         header = "{0} - {1}".format(
             fmt_dt(weekbeg, '%b %d, %Y'), fmt_dt(weekend, '%b %d, %Y'))
     header = leadingzero.sub('', header)
-    theweek = "{0} {1}: {2}".format(_("{0} Week".format(yn)), "{0:02d}".format(wn), header)
+    theweek = "{0} {1}: {2}".format(_("Week"), "{0:02d}".format(wn), header)
     return theweek
 
 
@@ -977,7 +977,7 @@ def date_calculator(s, options=None):
     if ny:
         y, yzs = ny.groups()
         yz = gettz(yzs)
-    windoz_epoch = _("Warning: under Windows with dates prior to 1970,\nany timezone information is ignored.")
+    windoz_epoch = _("Warning: any timezone information in dates prior to 1970 is ignored under Windows.")
     warn = ""
     try:
         dt_x = parse(parse_dtstr(x, timezone=xzs))
@@ -1932,6 +1932,7 @@ def fmt_date(dt, short=False):
             dt_fmt = dt.strftime(shortdatefmt)
     else:
         dt_fmt = dt.strftime(reprdatefmt)
+        dt_fmt = leadingzero.sub('', dt_fmt)
     return s2or3(dt_fmt)
 
 
@@ -4004,7 +4005,7 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
     tom_fmt = tom.strftime("%Y%m%d")
     lst_fmt = lst.strftime("%Y%m%d")
     if not items:
-        return "no output"
+        return {}
     for item in items:
         if item[0][0] == 'day':
             if item[0][1] >= beg_fmt and item[0][1] <= lst_fmt:
@@ -4866,6 +4867,8 @@ def setItemPeriod(hsh, start, end, short=False, options=None):
 def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=None):
     if not options:
         options = {}
+    if file2data is None:
+        file2data = {}
     if not file2uuids:
         file2uuids = {}
     if not uuid2hash:
@@ -4881,6 +4884,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
     alerts = []
     alert_minutes = {}
     folders = expandPath(f)
+    pastduerepeating = []
     for uid in file2uuids[f]:
         # this will give the items in file order!
         if uuid2hash[uid]['itemtype'] in ['=']:
@@ -5165,8 +5169,8 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
 
         elif 's' in hsh and hsh['s'] and 'f' not in hsh:
             thisdate = parse(
-                parse_dtstr(
-                    hsh['s'], hsh['z'])).astimezone(
+                        parse_dtstr(
+                        hsh['s'], hsh['z'])).astimezone(
                 tzlocal()).replace(tzinfo=None)
             dates.append(thisdate)
             # add2list("datetimes", (thisdate, f))
@@ -5276,6 +5280,11 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 if 'f' in hsh and 'rrule' not in hsh:
                     continue
                 else:
+                    if 'rrule' in hsh and 'o' in hsh and hsh['o'] == 'r':
+                        # only nag about the oldest instance
+                        if uid in pastduerepeating:
+                            continue
+                        pastduerepeating.append(uid)
                     item = [
                         ('now', sn, dtl, hsh['_p'], summary, f), (cat,),
                         (uid, typ, summary, time_str, dtl)]
@@ -5540,6 +5549,10 @@ def getViewData(bef, file2uuids=None, uuid2hash=None, options=None, file2data=No
 
 
 def updateViewFromFile(f, file2data):
+    if not file2data:
+        file2data = {}
+    if f not in file2data:
+        file2data[f] = [[], [], [], [], []]
     _items, _alerts, _busytimes, _datetimes, _occasions = file2data[f]
     # logger.debug('file: {0}'.format(f))
     for item in _items:
@@ -5571,9 +5584,11 @@ def updateViewData(f, bef, file2uuids=None, uuid2hash=None, options=None, file2d
         uuid2hash = {}
     if not options:
         options = {}
+    if file2data is None:
+        file2data = {}
     # clear data for this file
     _items = _alerts = _busytimes = _datetimes = _occasions = []
-    if f in file2data:
+    if file2data is not None and f in file2data:
         _items, _alerts, _busytimes, _datetimes, _occasions = file2data[f]
         if _items:
             for item in _items:
@@ -6382,7 +6397,7 @@ class ETMCmd():
         cmd = arg_str[0]
         ret = []
         views = {
-            # everything but agenda and week
+            # everything but agenda, week and month
             'd': 'day',
             'p': 'folder',
             't': 'tag',
@@ -6413,7 +6428,7 @@ class ETMCmd():
                 else:
                     f = None
                 if not self.rows:
-                    return "no output"
+                    return {}
                 rows = deepcopy(self.rows)
                 return (makeTree(rows, view=view, calendars=self.calendars, fltr=f, hide_finished=self.options['hide_finished']))
             else:

@@ -28,11 +28,10 @@ else:
 
 from datetime import datetime, timedelta
 
-from etmTk.data import fmt_period, parse_dt, get_current_time, relpath, ensureMonthly, parse_period
+from etmTk.data import (fmt_period, parse_dt, get_current_time, relpath, ensureMonthly, parse_period, _)
 
-import gettext
-
-_ = gettext.gettext
+# import gettext
+# _ = gettext.gettext
 
 
 def sanitize_id(id):

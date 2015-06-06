@@ -26,12 +26,14 @@ else:
 import string
 ID_CHARS = string.ascii_letters + string.digits + "_@/"
 
-import gettext
-_ = gettext.gettext
+# import gettext
+# _ = gettext.gettext
 
 import logging
 import logging.config
 logger = logging.getLogger()
+
+from etmTk.data import (hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, completion_regex, getFileTuples, fmt_shortdatetime, fmt_date, FINISH, uniqueId, import_ical, _)
 
 
 SOMEREPS = _('selected repetitions')
@@ -65,8 +67,6 @@ type2Text = {
     '?': _("Someday Maybe item"),
     '#': _("Hidden item")
 }
-
-from etmTk.data import hsh2str, str2hsh, get_reps, rrulefmt, ensureMonthly, commandShortcut, completion_regex, getFileTuples, fmt_shortdatetime, fmt_date, FINISH, uniqueId, import_ical
 
 from etmTk.dialog import BGCOLOR, OptionsDialog, ReadOnlyText, FileChoice
 
