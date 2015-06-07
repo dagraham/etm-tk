@@ -199,6 +199,9 @@ class App(Tk):
         self.topbar = topbar = Frame(self, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR, takefocus=False)
         topbar.pack(side="top", fill="x", expand=0, padx=0, pady=0)
 
+        self.box_value = StringVar()
+        self.custom_box = ttk.Combobox(self.topbar, textvariable=self.box_value, font=self.tkfixedfont)
+
         self.statusbar = Frame(self, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR, takefocus=False)
         self.statusbar.pack(side="bottom", fill="x", expand=0, padx=4, pady=2)
 
@@ -793,8 +796,6 @@ class App(Tk):
 
 
         # report
-        self.box_value = StringVar()
-        self.custom_box = ttk.Combobox(self, textvariable=self.box_value, font=self.tkfixedfont)
         self.custom_box.bind("<<ComboboxSelected>>", self.newselection)
         self.bind("<Return>", self.makeReport)
         self.bind("<Control-q>", self.quit)
@@ -1771,15 +1772,17 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             self.closeMonthly()
         if view == CUSTOM:
             logger.debug('showing custom_box')
-            self.custom_box.pack(side="top", fill="x", padx=3)
+            self.fltr.forget()
+            self.custom_box.pack(side="left", fill=X, padx=0, expand=1)
             self.custom_box.focus_set()
             for i in range(len(self.rm_options)):
                 self.custommenu.entryconfig(i, state="normal")
         else:
-            if view == CUSTOM:
+            if self.view == CUSTOM:
                 # we're leaving custom view
                 logger.debug('removing custom_box')
                 self.custom_box.forget()
+                self.fltr.pack(side="left", padx=0, expand=1, fill=X)
                 for i in range(len(self.rm_options)):
                     self.custommenu.entryconfig(i, state="disabled")
                 self.saveSpecs()
