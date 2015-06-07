@@ -1,5 +1,28 @@
 ## Screen shots ##
 
+### New in 3.1.x
+
+<table align="center" hspace="10" vspace="10" width="100%">
+<tr>
+    <td>
+    <center><img src="images/new_agenda.gif" /></a></center>
+    </td>
+    <td>
+    <center><img src="images/new_week.gif"/></a></center>
+    </td>
+</tr>
+<tr>
+    <td>
+    <center><img src="images/new_month.gif"/></a></center>
+    </td>
+    <td>
+    <center><img src="images/new_custom.gif"/></a></center>
+    </td>
+</tr>
+</table>
+
+### Original
+
 <table align="center" hspace="10" vspace="10" width="100%">
 <tr>
     <td>
@@ -301,7 +324,7 @@ When the major version number is incremented, both the minor version number and 
 
 ## License ##
 
-Copyright (c) 2009-2014 [Daniel Graham]. All rights reserved.
+Copyright (c) 2009-2015 [Daniel Graham]. All rights reserved.
 
 [Daniel Graham]: mailto://daniel.graham@duke.edu
 
