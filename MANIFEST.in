@@ -4,3 +4,4 @@ include etmTk/etm.xpm
 include etmTk/etm.desktop
 include etmTk/etm.appdata.xml
 include etmTk/help/UserManual.html
+include etmTk/icons/*.gif
