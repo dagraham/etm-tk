@@ -808,7 +808,7 @@ class App(Tk):
 
 
         iconsize = "22"
-        self.settingsIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_settings.gif')
+        self.settingsIcon = PhotoImage(file='etmTk/icons/icon_settings.gif')
         self.settingsbutton = Button(
             topbar, command=self.selectCalendars,
             highlightbackground=BGCOLOR,
@@ -819,7 +819,7 @@ class App(Tk):
         self.settingsbutton.pack(side="left", padx=4, pady=2)
 
 
-        self.newIcon = PhotoImage(file='/Users/dag/etm-tk/etmTk/icons/icon_plus.gif')
+        self.newIcon = PhotoImage(file='etmTk/icons/icon_plus.gif')
         self.newbutton = Button(topbar, command=self.newItem, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0, highlightthickness=0, takefocus=False)
         self.newbutton.config(image=self.newIcon, width=iconsize, height=iconsize)
         self.newbutton.pack(side="right", padx=4, pady=2)
