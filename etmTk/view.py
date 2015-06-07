@@ -2713,6 +2713,8 @@ Enter the shortest time period you want displayed in minutes.""")
             self.content.insert("1.0", txt)
         else:
             self.content.delete("1.0", END)
+        self.setFocus(e=event)
+
 
     def setFocus(self, e):
         self.canvas.focus()
