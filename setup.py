@@ -60,9 +60,10 @@ setup(
     # install_requires=REQUIRES,
     # extras_require={"icalendar": EXTRAS},
     # package_data={'etmTk': ['etmlogo.*', 'CHANGES', 'etmtk.desktop', 'etmtk.1', 'etmtk.xpm']},
-    package_data={'etmTk': ['etm.desktop', 'etm.appdata.xml', 'CHANGES', 'etm.1', 'etm.xpm'],
-                  'etmTk/help' : ['help/UserManual.html'],
-                  'etmTk/icons': ['icons/*']},
+    package_data={
+        'etmTk': ['icons/*', 'etm.desktop', 'etm.appdata.xml', 'CHANGES', 'etm.1', 'etm.xpm'],
+        'etmTk/help' : ['help/UserManual.html'],
+        'etmTk/icons': ['icons/*']},
     data_files=[
         ('share/man/man1', ['etmTk/etm.1']),
         ('share/doc/etm', ['etmTk/CHANGES']),
