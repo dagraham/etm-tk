@@ -3147,16 +3147,16 @@ def items2Hashes(list_of_items, options=None):
             else:
                 lines.append(item)
             for line in lines:
-                messages.append("   %s" % line)
+                messages.append("{0}".format(line))
             for m in msg:
-                messages.append('      %s' % m)
-
+                messages.append('{0}'.format(m))
+            msg.append('    {0}'.format(hsh['fileinfo']))
             # put the bad item in the inbox for repairs
             hsh['_summary'] = "{0} {1}".format(hsh['itemtype'], hsh['_summary'])
             hsh['itemtype'] = "$"
             hsh['I'] = uniqueId()
-            hsh['errors'] = "\n".join(msg)
-            logger.warn("hsh errors: {0}".format(hsh['errors']))
+            hsh['errors'] = "\n    ".join(msg)
+            logger.warn("{0}".format(hsh['errors']))
             # no more processing
             # ('hsh:', hsh)
             hashes.append(hsh)
