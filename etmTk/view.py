@@ -930,8 +930,6 @@ class App(Tk):
     def toggleLabels(self, e=None):
         if e and e.char != "l":
             return
-        if self.weekly or self.monthly:
-            return
         if self.labels:
             width0 = self.tree.column('#0')['width']
             self.tree.column('#0', width=width0 + self.col2_width)
@@ -953,8 +951,10 @@ class App(Tk):
         logger.debug('reloading data')
         # self.updateAlerts()
         if self.weekly:
+            self.updateDay()
             self.showWeek()
         elif self.monthly:
+            self.updateDay()
             self.showMonth()
         else:
             self.showView()
@@ -1700,7 +1700,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         if self.weekly:
             self.canvas.focus_set()
             self.showWeek()
-        elif self.weekly:
+        elif self.monthly:
             self.canvas.focus_set()
             self.showMonth()
         else:
@@ -3509,8 +3509,10 @@ Relative dates and fuzzy parsing are supported.""")
 
             self.updateAlerts()
             if self.weekly:
+                self.updateDay()
                 self.showWeek()
             elif self.monthly:
+                self.updateDay()
                 self.showMonth()
             else:
                 self.showView(row=self.topSelected)
@@ -3731,8 +3733,6 @@ or 0 to expand all branches completely.""")
 
     def printTree(self, e=None):
         if e and e.char != "p":
-            return
-        if self.weekly or self.monthly:
             return
         if not self.active_tree:
             return
