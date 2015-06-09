@@ -132,6 +132,7 @@ this_dir, this_filename = os.path.split(__file__)
 USERMANUAL = os.path.normpath(os.path.join(this_dir, "help", "UserManual.html"))
 ICONSETTINGS = os.path.normpath(os.path.join(this_dir, "icons", "icon_settings.gif"))
 ICONPLUS = os.path.normpath(os.path.join(this_dir, "icons", "icon_plus.gif"))
+ICONLOGO = os.path.normpath(os.path.join(this_dir, "icons", "etmlogo.gif"))
 
 class App(Tk):
     def __init__(self, path=None):
@@ -794,6 +795,8 @@ class App(Tk):
         self.columnconfigure(0, minsize=300, weight=1)
         self.rowconfigure(1, weight=2)
 
+        self.etmlogo = PhotoImage(file=ICONLOGO)
+        self.iconphoto(True, self.etmlogo)
 
         # report
         self.custom_box.bind("<<ComboboxSelected>>", self.newselection)
@@ -2079,7 +2082,6 @@ Enter the shortest time period you want displayed in minutes.""")
             scrolldate = day.date()
             self.canvas_idpos = 0
         self.scrollToDate(scrolldate)
-        # self.scrollToDate(self.chosen_day.date())
         self.OnSelect()
         self.canvas.delete("all")
         l = 4
@@ -2097,12 +2099,11 @@ Enter the shortest time period you want displayed in minutes.""")
                 h = self.canvas.winfo_height()
         else:
             w = self.canvas.winfo_width()
-            # h = self.canvas.winfo_height()
             h = self.week_height
-        logger.debug("w: {0}, h: {1}, l: {2}, t: {3}".format(w, h, l, t))
+        logger.debug("w: {0} {1}; h: {2} {3}, l: {4} {5}, t: {6} {7}".format(w, type(w), h, type(h), l, type(l), t, type(t)))
         self.margins = (w, h, l, r, t, b)
         self.week_x = x_ = Decimal(w - 1 - l - r) / Decimal(7)
-        self.week_y = y_ = Decimal(h - 1 - t - b) / Decimal(1)
+        self.week_y = y_ = Decimal(h - 1 - t - b)
         logger.debug("x: {0}, y: {1}".format(x_, y_))
 
         # week
