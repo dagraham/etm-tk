@@ -1667,9 +1667,11 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.updateAlerts()
         if self.weekly:
             self.canvas.focus_set()
+            self.updateDay()
             self.showWeek()
         elif self.monthly:
             self.canvas.focus_set()
+            self.updateDay()
             self.showMonthly()
         else:
             self.tree.focus_set()
@@ -1702,9 +1704,11 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         self.updateAlerts()
         if self.weekly:
             self.canvas.focus_set()
+            self.updateDay()
             self.showWeek()
         elif self.monthly:
             self.canvas.focus_set()
+            self.updateDay()
             self.showMonth()
         else:
             self.tree.focus_set()
