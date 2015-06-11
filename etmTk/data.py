@@ -6356,7 +6356,6 @@ class ETMCmd():
         self.tkversion = ''
         self.rows = None
         self.busytimes = None
-        self.conflicts = []
         self.busydays = None
         self.alerts = None
         self.occasions = None
@@ -6472,12 +6471,6 @@ class ETMCmd():
         self.busytimes = {}
         for key in busytimesSL:
             self.busytimes[key] = list(busytimesSL[key])
-            lm = 0
-            for x in self.busytimes[key]:
-                if x[0] < lm:
-                    self.conflicts.append(key)
-                    continue
-                lm = x[1]
 
         self.occasions = {}
         for key in occasionsSL:
@@ -6535,14 +6528,6 @@ class ETMCmd():
         mtime = os.path.getmtime(fp)
         self.file2lastmodified[(fp, rp)] = mtime
         (self.rows, self.alerts, self.busytimes, self.datetimes, self.occasions, self.file2data) = updateViewData(rp, bef, self.file2uuids, self.uuid2hash, self.options, self.file2data)
-        self.conflicts = []
-        for key in self.busytimes:
-            lm = 0
-            for x in self.busytimes[key]:
-                if x[0] < lm:
-                    self.conflicts.append(key)
-                    continue
-                lm = x[1]
 
         logger.debug('ended updateDataFromFile')
 

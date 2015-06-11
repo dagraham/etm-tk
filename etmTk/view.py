@@ -2190,9 +2190,8 @@ Enter the shortest time period you want displayed in minutes.""")
                 occasion_lst.append([])
 
             if loop.busytimes is not None and isokey in loop.busytimes:
-                if loop.conflicts and isokey in loop.conflicts:
-                    flagcolor = "red"
                 bt = []
+                overlap = False
                 for item in loop.busytimes[isokey]:
                     it = list(item)
                     if it[0] == it[1]:
@@ -2210,17 +2209,19 @@ Enter the shortest time period you want displayed in minutes.""")
                 busy_lst.append(bt)
                 busy_dates.append(thisdate.strftime("%a %d"))
                 if bt:
+                    lastend = 0
                     for pts in bt:
                         busytimes += pts[1] - pts[0]
                         self.busyHsh.setdefault(id, []).append("* {0}".format(pts[2]))
+                        if pts[0] < lastend:
+                            overlap = True
+                        lastend = pts[1]
+                    if overlap:
+                        flagcolor = "red"
                     tags.append('busy')
 
                     busylines = [[], [], [], []]
-                    # each side 240 minutes plus 2 times bar width
-                    # 420 - 660 top: tl+(5,-3) -> tr+(-5,-3)
-                    # 660 - 900 right: tr+(-3,-5) -> br+(-3,+5)
-                    # 900 - 1140 bottom: br+(-5,+3) -> bl+(+5,+3)
-                    # 1140 - 1380 left: bl+(+3,+5) -> tl+(+3, -5)
+                    # each side 360 minutes plus 2 times bar width
 
                     for pts in bt:
                         pt1 = max(0, pts[0])
@@ -2532,9 +2533,8 @@ Enter the shortest time period you want displayed in minutes.""")
                         occasion_lst.append([])
 
                     if loop.busytimes is not None and isokey in loop.busytimes:
-                        if isokey in loop.conflicts:
-                            flagcolor = "red"
                         bt = []
+                        overlap = False
                         for item in loop.busytimes[isokey]:
                             it = list(item)
                             if it[0] == it[1]:
@@ -2552,18 +2552,19 @@ Enter the shortest time period you want displayed in minutes.""")
                         busy_lst.append(bt)
                         busy_dates.append(thisdate.strftime("%a %d"))
                         if bt:
+                            lastend = 0
                             for pts in bt:
                                 busytimes += pts[1] - pts[0]
                                 self.busyHsh.setdefault(id, []).append("* {0}".format(pts[2]))
+                                if pts[0] < lastend:
+                                    overlap = True
+                                lastend = pts[1]
+                            if overlap:
+                                flagcolor = "red"
                             tags.append('busy')
 
                             busylines = [[], [], [], []]
-                            # each side 240 minutes plus 2 times bar width
-                            # 420 - 660 top: tl+(5,-3) -> tr+(-5,-3)
-                            # 660 - 900 right: tr+(-3,-5) -> br+(-3,+5)
-                            # 900 - 1140 bottom: br+(-5,+3) -> bl+(+5,+3)
-                            # 1140 - 1380 left: bl+(+3,+5) -> tl+(+3, -5)
-
+                            # each side 360 minutes plus 2 times bar width
                             for pts in bt:
                                 pt1 = max(0, pts[0])
                                 pt2 = min(pts[1], 1440)
