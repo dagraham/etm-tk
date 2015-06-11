@@ -132,7 +132,7 @@ this_dir, this_filename = os.path.split(__file__)
 USERMANUAL = os.path.normpath(os.path.join(this_dir, "help", "UserManual.html"))
 ICONSETTINGS = os.path.normpath(os.path.join(this_dir, "icons", "icon_settings.gif"))
 ICONPLUS = os.path.normpath(os.path.join(this_dir, "icons", "icon_plus.gif"))
-ICONLOGO = os.path.normpath(os.path.join(this_dir, "icons", "etmlogo.gif"))
+# ICONLOGO = os.path.normpath(os.path.join(this_dir, "icons", "etmlogo.gif"))
 
 class App(Tk):
     def __init__(self, path=None):
@@ -795,8 +795,8 @@ class App(Tk):
         self.columnconfigure(0, minsize=300, weight=1)
         self.rowconfigure(1, weight=2)
 
-        self.etmlogo = PhotoImage(file=ICONLOGO)
-        self.iconphoto(True, self.etmlogo)
+        # self.etmlogo = PhotoImage(file=ICONLOGO)
+        # self.iconphoto(True, self.etmlogo)
 
         # report
         self.custom_box.bind("<<ComboboxSelected>>", self.newselection)
