@@ -151,6 +151,7 @@ class App(Tk):
         self.menutree = MenuTree()
         self.chosen_day = None
         self.active_date = None
+        self.canvas_date = None
         self.busy_info = None
         self.weekly = False
         self.monthly = False
@@ -1175,8 +1176,8 @@ returns:
             elif self.active_date:
                 text = " @s {0}".format(self.active_date)
             changed = SimpleEditor(parent=self, master=master, start=text, options=loop.options).changed
-        elif self.view in [DAY, WEEK, MONTH] and self.active_date:
-            text = " @s {0}".format(self.active_date)
+        elif self.view in [DAY, WEEK, MONTH] and self.canvas_date:
+            text = " @s {0}".format(self.canvas_date)
             changed = SimpleEditor(parent=self, master=master, start=text, options=loop.options).changed
         elif self.view in [KEYWORD, NOTE] and self.itemSelected:
             if self.itemSelected and 'k' in self.itemSelected:
@@ -2709,6 +2710,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
         self.selectedId = id = self.canvas_ids[self.canvas_idpos]
         self.active_date = self.monthid2date[id]
+        self.canvas_date = self.monthid2date[id]
         self.scrollToDate(self.active_date)
         self.canvas_idpos = self.canvas_ids.index(id)
         if id in self.busy_ids:
@@ -2739,6 +2741,7 @@ Enter the shortest time period you want displayed in minutes.""")
                     self.canvas.itemconfig(old_id, fill="white")
         self.selectedId = id = self.canvas.find_withtag(CURRENT)[0]
         self.active_date = self.monthid2date[id]
+        self.canvas_date = self.monthid2date[id]
         self.canvas_idpos = self.canvas_ids.index(id)
         if id in self.busy_ids:
             self.canvas.itemconfig(id, fill=ACTIVEFILL)
@@ -3008,7 +3011,7 @@ or 0 to display all changes.""").format(title)
             type_chr = self.tree.item(item)['text'][0]
             uuid, dt, hsh = self.getInstance(item)
             logger.debug('tree rowSelected: {0}; {1}; {2}'.format(self.rowSelected, self.tree.item(item)['text'], dt))
-            if self.view in [AGENDA, DAY]:
+            if self.view in [AGENDA]:
                 if self.rowSelected in self.id2date:
                     if dt is None:
                         # we have the date selected
@@ -3423,6 +3426,17 @@ Relative dates and fuzzy parsing are supported.""")
             MessageWindow(self, title="error", prompt=prompt)
             return
         self.actionTimer.idle_stop()
+        if self.actionTimer.changed:
+            self.updateAlerts()
+            if self.weekly:
+                self.updateDay()
+                self.showWeek()
+            elif self.monthly:
+                self.updateDay()
+                self.showMonth()
+            else:
+                self.showView(row=self.topSelected)
+
         self.timerStatus.set("")
         self.newmenu.entryconfig(4, state="normal")
         self.newmenu.entryconfig(5, state="disabled")
