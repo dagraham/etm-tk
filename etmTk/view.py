@@ -49,9 +49,9 @@ from decimal import Decimal
 from etmTk.data import (
     init_localization, fmt_weekday, fmt_dt, str2hsh, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical_active, fmt_time, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, FINISH, availableDates, syncTxt, update_subscription, _)
 
-from etmTk.dialog import MenuTree, Timer, ReadOnlyText, MessageWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, FileChoice, STOPPED, PAUSED, RUNNING, BGCOLOR, ONEDAY, ONEMINUTE
+from etmTk.dialog import MenuTree, Timer, ReadOnlyText, MessageWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, FileChoice, STOPPED, PAUSED, RUNNING, BGCOLOR, ONEDAY, ONEMINUTE, SimpleEditor
 
-from etmTk.edit import SimpleEditor
+# from etmTk.edit import SimpleEditor
 
 # import gettext
 
@@ -292,11 +292,11 @@ class App(Tk):
         newmenu.entryconfig(1, accelerator=l)
         self.add2menu(path, (label, l))
 
-        label = _("Begin/Pause Action Timer")
+        label = _("Start Action Timer")
         l = "T"
         c = 't'
-        newmenu.add_command(label=label, command=self.startActionTimer)
-        self.bindTop(c, self.startActionTimer)
+        newmenu.add_command(label=label, command=self.actionTimer.selectTimer)
+        self.bindTop(c, self.actionTimer.selectTimer)
         newmenu.entryconfig(2, accelerator=l)
         self.add2menu(path, (label, l))
 
@@ -309,22 +309,22 @@ class App(Tk):
         newmenu.entryconfig(3, state="disabled")
         self.add2menu(path, (label, l))
 
-        label = _("Start/Resolve Idle Timer")
+        label = _("Interrupt or Initiate Action Timer")
         l = "I"
         c = 'i'
-        newmenu.add_command(label=label, command=self.startIdleTimer)
-        self.bindTop(c, self.startIdleTimer)
+        newmenu.add_command(label=label, command=self.actionTimer.toggleCurrent)
+        self.bindTop(c, self.actionTimer.toggleCurrent)
         newmenu.entryconfig(4, accelerator=l)
         self.add2menu(path, (label, l))
 
-        label = _("Stop Idle Timer")
-        l = "Shift-I"
-        c = "I"
-        newmenu.add_command(label=label, command=self.stopIdleTimer)
-        self.bind(c, self.stopIdleTimer)
-        newmenu.entryconfig(5, accelerator=l)
-        self.add2menu(path, (label, l))
-        newmenu.entryconfig(5, state="disabled")
+        # label = _("Stop Idle Timer")
+        # l = "Shift-I"
+        # c = "I"
+        # newmenu.add_command(label=label, command=self.stopIdleTimer)
+        # self.bind(c, self.stopIdleTimer)
+        # newmenu.entryconfig(5, accelerator=l)
+        # self.add2menu(path, (label, l))
+        # newmenu.entryconfig(5, state="disabled")
 
         path = FILE
 
@@ -3192,12 +3192,12 @@ or 0 to display all changes.""").format(title)
 
         self.updateAlerts()
 
-        if self.actionTimer.idle_active or self.actionTimer.timer_status != STOPPED:
-            self.timerStatus.set(self.actionTimer.get_time())
-            if self.actionTimer.timer_minutes >= 1:
-                if (self.options['action_interval'] and self.actionTimer.timer_minutes % loop.options['action_interval'] == 0):
-                    logger.debug('action_minutes trigger: {0} {1}'.format(self.actionTimer.timer_minutes, self.actionTimer.timer_status))
-                    if self.actionTimer.timer_status == 'running':
+        if self.actionTimer.currentStatus != STOPPED:
+            self.timerStatus.set(self.actionTimer.getStatus())
+            if self.actionTimer.currentMinutes >= 1:
+                if (self.options['action_interval'] and self.actionTimer.currentMinutes % loop.options['action_interval'] == 0):
+                    logger.debug('action_minutes trigger: {0} {1}'.format(self.actionTimer.currentMinutes, self.actionTimer.currentStatus))
+                    if self.actionTimer.currentStatus == 'running':
                         if ('running' in loop.options['action_timer'] and
                                 loop.options['action_timer']['running']):
                             tcmd = loop.options['action_timer']['running']
@@ -3407,40 +3407,40 @@ Relative dates and fuzzy parsing are supported.""")
             self.tree.selection_set(self.rowSelected)
             self.tree.see(self.rowSelected)
 
-    def startIdleTimer(self, e=None):
-        if self.actionTimer.timer_status != STOPPED:
-            prompt = "The active action timer must be stopped before starting the idle timer."
-            MessageWindow(self, title="error", prompt=prompt)
-            return
-        if self.actionTimer.idle_active:
-            self.actionTimer.idle_resolve()
-        else:
-            self.actionTimer.idle_start()
-        self.newmenu.entryconfig(4, state="disabled")
-        self.newmenu.entryconfig(5, state="normal")
-
-    def stopIdleTimer(self, e=None):
-        if not self.actionTimer.idle_active:
-            return
-        if self.actionTimer.timer_status != STOPPED:
-            prompt = "The active action timer must be stopped before stopping the idle timer."
-            MessageWindow(self, title="error", prompt=prompt)
-            return
-        self.actionTimer.idle_stop()
-        if self.actionTimer.changed:
-            self.updateAlerts()
-            if self.weekly:
-                self.updateDay()
-                self.showWeek()
-            elif self.monthly:
-                self.updateDay()
-                self.showMonth()
-            else:
-                self.showView(row=self.topSelected)
-
-        self.timerStatus.set("")
-        self.newmenu.entryconfig(4, state="normal")
-        self.newmenu.entryconfig(5, state="disabled")
+    # def startIdleTimer(self, e=None):
+    #     if self.actionTimer.timer_status != STOPPED:
+    #         prompt = "The active action timer must be stopped before starting the idle timer."
+    #         MessageWindow(self, title="error", prompt=prompt)
+    #         return
+    #     if self.actionTimer.idle_active:
+    #         self.actionTimer.idle_resolve()
+    #     else:
+    #         self.actionTimer.idle_start()
+    #     self.newmenu.entryconfig(4, state="disabled")
+    #     self.newmenu.entryconfig(5, state="normal")
+    #
+    # def stopIdleTimer(self, e=None):
+    #     if not self.actionTimer.idle_active:
+    #         return
+    #     if self.actionTimer.timer_status != STOPPED:
+    #         prompt = "The active action timer must be stopped before stopping the idle timer."
+    #         MessageWindow(self, title="error", prompt=prompt)
+    #         return
+    #     self.actionTimer.idle_stop()
+    #     if self.actionTimer.changed:
+    #         self.updateAlerts()
+    #         if self.weekly:
+    #             self.updateDay()
+    #             self.showWeek()
+    #         elif self.monthly:
+    #             self.updateDay()
+    #             self.showMonth()
+    #         else:
+    #             self.showView(row=self.topSelected)
+    #
+    #     self.timerStatus.set("")
+    #     self.newmenu.entryconfig(4, state="normal")
+    #     self.newmenu.entryconfig(5, state="disabled")
 
     def startActionTimer(self, e=None):
         """
@@ -3518,7 +3518,7 @@ Relative dates and fuzzy parsing are supported.""")
         if self.actionTimer.timer_status not in [RUNNING, PAUSED]:
             logger.info('stopping already stopped timer')
             return "break"
-        self.actionTimer.timer_stop()
+        self.actionTimer.finishTimer()
         self.timerStatus.set(self.actionTimer.get_time())
         hsh = self.actionTimer.timer_hsh
         changed = SimpleEditor(parent=self, newhsh=hsh, rephsh=None, options=loop.options, title=_("new action"), modified=True).changed
