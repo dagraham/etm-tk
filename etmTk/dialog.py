@@ -243,6 +243,111 @@ class MenuTree:
     def __getitem__(self, key):
         return self.nodes[self.get_index(key)]
 
+class Timers():
+    def __init__(self, parent=None, options={}):
+        """
+        Methods providing timers
+        """
+        self.parent = parent
+        self.options = options
+        self.resetTimers()
+
+    def resetTimers(self):
+        self.activeDate = datetime.now().date()
+        self.activeTimers = {} # summary -> { total, start, stop }
+        self.currentTimer = None # summary
+
+
+    def selectTimer(self):
+        """
+        Combo box with list of active timer summaries and option to create a new, unique summary.
+        """
+        if not self.timerhsh:
+            return None
+
+    def dumpTimers(self):
+        """
+        dump activeTimers, ...
+        """
+        pass
+
+    def loadTimers(self):
+        """
+        load activeTimers
+        """
+        pass
+
+    def startTimer(self, summary):
+        self.pauseTimer()
+        if summary not in self.activeTimers:
+            # new timer
+            hsh = {}
+            hsh['total'] = 0 * ONEMINUTE
+            hsh['stop'] = datetime.now()
+        else:
+            hsh = self.activeTimers[summary]
+
+        hsh['start'] = datetime.now()
+        self.activeTimers[summary] = hsh
+        self.currentTimer = summary
+        self.currentStatus = RUNNING
+
+    def toggleCurrent(self):
+        """
+
+        """
+        if not self.activeTimers or not self.currentTimer:
+            return
+
+        hsh = self.activeTimers[self.self.currentTimer]
+
+        if self.currentStatus == RUNNING:
+            hsh['total'] += datetime.now() - hsh['start']
+            hsh['stop'] = datetime.now()
+            self.currentStatus = PAUSED
+
+        elif self.currentStatus == PAUSED:
+            hsh['start'] = datetime.now()
+            self.currentStatus = RUNNING
+
+        self.activeTimers[self.currentTimer] = hsh
+
+        if self.parent:
+            self.parent.update_idletasks()
+
+
+    def pauseTimer(self):
+        """
+        Pause the running timer
+        """
+        if self.activeTimers and self.currentTimer and self.currentStatus == RUNNING:
+            self.toggleCurrent()
+
+        return False
+
+
+
+    def updateStatus(self):
+        """
+
+        """
+        if not self.activeTimers or not self.currentTimer:
+            return ""
+        if not self.currentStatus or self.currentStatus not in [PAUSED, RUNNING]:
+            return ""
+        hsh = self.activeTimers[self.currentTimer]
+        if self.currentStatus == RUNNING:
+            now = datetime.now()
+            hsh['total'] = hsh['total'] + (now - hsh['start'])
+            hsh[start] = now
+            self.activeTimers[self.currentTimer] = hsh
+        total = hsh['total']
+        ret = "({0}) {1}{2} ({3})".format(len(self.activeTimers.keys()), self.currentTimer, fmt_period(hsh['total']), self.currentStatus)
+        logger.debug("timer: {0}, {1}".format(ret))
+        return ret
+
+
+
 
 class Timer():
     def __init__(self, parent=None, options={}):
@@ -253,6 +358,7 @@ class Timer():
         self.parent = parent
         self.options = options
         self.idle_active = False
+        self.changed = False
         self.idle_delta = 0 * ONEMINUTE
 
     def timer_clear(self):
@@ -291,7 +397,9 @@ class Timer():
         self.idle_delta += datetime.now() - self.idle_starttime
         logger.debug('resolve, idle time: {0}'.format(self.idle_delta))
         opts = {'idle_delta': self.idle_delta, 'keywords': self.options['keywords'], 'currfile': ensureMonthly(self.options), 'tz': self.options['local_timezone']}
+        start_idle_delta = self.idle_delta
         self.idle_delta = ResolveIdleTime(self.parent, title="assign idle time", opts=opts).idle_delta
+        self.changed = (self.idle_delta != start_idle_delta)
 
     def idle_resume(self):
         if not self.idle_active:

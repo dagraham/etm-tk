@@ -922,6 +922,7 @@ class App(Tk):
         self.updateAlerts()
         self.etmgeo = os.path.normpath(os.path.join(loop.options['etmdir'], ".etmgeo"))
         self.restoreGeometry()
+        self.etmtimers = os.path.normpath(os.path.join(loop.options['etmdir'], ".etmtimers"))
         self.tree.focus_set()
 
     def bindTop(self, c, cmd, e=None):
