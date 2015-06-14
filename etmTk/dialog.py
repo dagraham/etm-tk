@@ -1030,7 +1030,6 @@ class Timer():
         (self.activeDate, self.activeTimers, self.currentTimer, self.currentStatus, self.currentMinutes) = tmp
         if self.activeDate != datetime.now().date():
             self.newDay()
-        self.parent.timerStatus.set(self.getStatus())
         self.updateMenu()
 
     def startTimer(self, e=None):
