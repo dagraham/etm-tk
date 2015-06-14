@@ -859,11 +859,25 @@ class Timer():
         self.parent = parent
         self.options = options
         self.loop = parent.loop
+        self.timermenu = parent.timermenu
         self.match = ""
         self.etmtimers = os.path.normpath(os.path.join(options['etmdir'], ".etmtimers"))
         self.dfile_encoding = options['encoding']['file']
 
         self.resetTimers()
+
+    def updateMenu(self, e=None):
+        if self.activeTimers:
+            self.timermenu.entryconfig(1, state="active")
+            if self.currentTimer:
+                self.timermenu.entryconfig(2, state="active")
+            else:
+                self.timermenu.entryconfig(2, state="disabled")
+            self.timermenu.entryconfig(3, state="active")
+        else:
+            self.timermenu.entryconfig(1, state="disabled")
+            self.timermenu.entryconfig(2, state="disabled")
+            self.timermenu.entryconfig(3, state="disabled")
 
     def resetTimers(self):
         try:
@@ -877,16 +891,21 @@ class Timer():
             self.currentMinutes = 0
             logger.info("reset timer data")
 
-
-    def selectTimer(self, e=None, new=True):
+    def selectTimer(self, e=None, new=True, title=None):
         """
         Combo box with list of active timer summaries and option to create a new, unique summary.
         """
         self.selected = None
         self.new = new
         if not self.activeTimers:
+            if not new:
+                return False
             self.completions = []
+            if title is None:
+                title = _("Create Timer")
         else:
+            if title is None:
+                title = _("Create or Choose Timer")
             self.completions = []
             tmp = [(self.activeTimers[x]['stop'], x) for x in self.activeTimers]
             # put the most recently stopped timers at the top
@@ -900,9 +919,11 @@ class Timer():
             master = self.parent.tree
         master=self.parent
         self.timerswindow = win = Toplevel(master=master)
-        self.timerswindow.title("Timers")
+        self.timerswindow.title(title)
+
         self.filterValue = StringVar(master)
         self.timerswindow.geometry("+%d+%d" % (master.winfo_rootx() + 50, master.winfo_rooty() + 50))
+        self.timerswindow.minsize(240, 30)
 
         self.timerswindow.wm_attributes("-topmost", 1)
 
@@ -984,8 +1005,6 @@ class Timer():
         self.listbox.see(newsel)
         return "break"
 
-
-
     def saveTimers(self):
         """
         dump activeTimers, ...
@@ -1000,6 +1019,8 @@ class Timer():
         fo = codecs.open(self.etmtimers, 'w', self.dfile_encoding)
         yaml.dump(tmp, fo)
         fo.close()
+        self.parent.timerStatus.set(self.getStatus())
+        self.updateMenu()
 
     def loadTimers(self):
         """
@@ -1011,6 +1032,8 @@ class Timer():
         (self.activeDate, self.activeTimers, self.currentTimer, self.currentStatus, self.currentMinutes) = tmp
         if self.activeDate != datetime.now().date():
             self.newDay()
+        self.parent.timerStatus.set(self.getStatus())
+        self.updateMenu()
 
     def startTimer(self, e=None):
         self.pauseTimer()
@@ -1030,8 +1053,6 @@ class Timer():
         self.activeTimers[summary] = hsh
         self.currentTimer = summary
         self.currentStatus = RUNNING
-        ret = self.getStatus()
-        self.parent.timerStatus.set(ret)
 
         self.saveTimers()
 
@@ -1040,7 +1061,7 @@ class Timer():
 
     def finishTimer(self, e=None):
         self.pauseTimer()
-        self.selectTimer(new=False)
+        self.selectTimer(new=False, title="Finish Timer")
         if not self.selected:
             return
 
@@ -1057,12 +1078,18 @@ class Timer():
 
         return hsh
 
-    def deleteTimer(self, timer):
-        if timer not in self.activeTimers:
+    def deleteTimer(self, e=None, timer=None):
+        # self.timerswindow.title("Delete")
+        if timer is None:
+            self.selectTimer(new=False, title="Delete Timer")
+            timer = self.selected
+        if not timer or timer not in self.activeTimers:
             return
         if self.currentTimer == timer:
             self.pauseTimer()
             self.currentTimer = None
+            self.currentMinutes = 0
+            self.currentStatus = STOPPED
         del self.activeTimers[timer]
         self.saveTimers()
 
@@ -1162,8 +1189,10 @@ class Timer():
             self.currentMinutes = total.seconds // 60
 
             ret = "{1}: {2} - {3} ({0})".format(len(self.activeTimers.keys()), self.currentTimer, fmt_period(hsh['total']), self.currentStatus)
-        else:
+        elif self.activeTimers:
             ret = "all paused ({0})".format(len(self.activeTimers))
+        else:
+            ret = ""
         logger.debug("timer: {0}".format(ret))
         return ret
 

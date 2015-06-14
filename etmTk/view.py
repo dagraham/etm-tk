@@ -91,6 +91,7 @@ DELETE = _("Delete")
 
 FILE = _("File")
 NEW = _("New")
+TIMER = _("Timer")
 OPEN = _("Open")
 VIEW = _("View")
 ITEM = _("Item")
@@ -142,7 +143,6 @@ class App(Tk):
         self.uuidSelected = None
         self.timerItem = None
         self.loop = loop
-        self.actionTimer = Timer(self, options=loop.options)
         self.monthly_calendar = Calendar()
         self.activeAlerts = []
         self.configure(background=BGCOLOR)
@@ -271,6 +271,8 @@ class App(Tk):
         self.add2menu(menu, (path, ))
 
         self.newmenu = newmenu = Menu(filemenu, tearoff=0)
+        filemenu.add_cascade(label=NEW, menu=newmenu)
+
         self.add2menu(path, (NEW, ))
         path = NEW
 
@@ -293,39 +295,48 @@ class App(Tk):
         newmenu.entryconfig(1, accelerator=l)
         self.add2menu(path, (label, l))
 
+        path = FILE
+
+        self.timermenu = timermenu = Menu(filemenu, tearoff=0)
+        filemenu.add_cascade(label=TIMER, menu=timermenu)
+        self.add2menu(path, (TIMER, ))
+        path = TIMER
+
+        self.actionTimer = Timer(self, options=loop.options)
+
         label = _("Start Action Timer")
         l = "T"
         c = 't'
-        newmenu.add_command(label=label, command=self.actionTimer.selectTimer)
+        timermenu.add_command(label=label, command=self.actionTimer.selectTimer)
         self.bindTop(c, self.actionTimer.selectTimer)
-        newmenu.entryconfig(2, accelerator=l)
+        timermenu.entryconfig(0, accelerator=l)
         self.add2menu(path, (label, l))
 
         label = _("Finish Action Timer")
         l = "Shift-T"
         c = "T"
-        newmenu.add_command(label=label, command=self.finishActionTimer)
+        timermenu.add_command(label=label, command=self.finishActionTimer)
         self.bind(c, self.finishActionTimer)
-        filemenu.add_cascade(label=NEW, menu=newmenu)
-        newmenu.entryconfig(3, state="disabled")
+        timermenu.entryconfig(1, accelerator=l)
         self.add2menu(path, (label, l))
 
-        label = _("Interrupt or Initiate Action Timer")
+        label = _("Toggle Current Timer")
         l = "I"
         c = 'i'
-        newmenu.add_command(label=label, command=self.actionTimer.toggleCurrent)
+        timermenu.add_command(label=label, command=self.actionTimer.toggleCurrent)
         self.bindTop(c, self.actionTimer.toggleCurrent)
-        newmenu.entryconfig(4, accelerator=l)
+        timermenu.entryconfig(2, accelerator=l)
         self.add2menu(path, (label, l))
 
-        # label = _("Stop Idle Timer")
-        # l = "Shift-I"
-        # c = "I"
-        # newmenu.add_command(label=label, command=self.stopIdleTimer)
-        # self.bind(c, self.stopIdleTimer)
-        # newmenu.entryconfig(5, accelerator=l)
-        # self.add2menu(path, (label, l))
-        # newmenu.entryconfig(5, state="disabled")
+        label = _("Delete Action Timer")
+        l = "Shift-I"
+        c = "I"
+        timermenu.add_command(label=label, command=self.actionTimer.deleteTimer)
+        self.bind(c, self.actionTimer.deleteTimer)
+        timermenu.entryconfig(3, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        self.actionTimer.updateMenu()
 
         path = FILE
 
@@ -3530,7 +3541,7 @@ Relative dates and fuzzy parsing are supported.""")
         changed = SimpleEditor(parent=self, newhsh=hsh, rephsh=None, options=loop.options, title=_("new action"), modified=True).changed
         if changed:
             # clear status and reload
-            self.actionTimer.deleteTimer(self.actionTimer.selected)
+            self.actionTimer.deleteTimer(timer = self.actionTimer.selected)
 
             self.updateAlerts()
             if self.weekly:
