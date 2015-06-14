@@ -10,6 +10,7 @@ import os
 import os.path
 
 logger = logging.getLogger()
+import codecs
 
 import platform
 
@@ -880,11 +881,11 @@ class Timer():
         self.currentMinutes = 0
 
 
-    def selectTimer(self, e=None, allownew=True):
+    def selectTimer(self, e=None, new=True):
         """
         Combo box with list of active timer summaries and option to create a new, unique summary.
         """
-        self.allownew = allownew
+        self.new = new
         if not self.activeTimers:
             self.completions = []
         else:
@@ -899,7 +900,8 @@ class Timer():
         else:
             master = self.parent.tree
         master=self.parent
-        self.timerswindow = Toplevel(master=master)
+        self.timerswindow = win = Toplevel(master=master)
+        self.timerswindow.title("Timers")
         self.filterValue = StringVar(master)
         self.timerswindow.geometry("+%d+%d" % (master.winfo_rootx() + 50, master.winfo_rooty() + 50))
 
@@ -923,6 +925,7 @@ class Timer():
         self.fltr.bind("<Up>", self.cursorUp)
         self.fltr.bind("<Down>", self.cursorDown)
         self.setCompletions()
+        win.wait_window(win)
 
 
     def setCompletions(self, *args):
@@ -958,14 +961,15 @@ class Timer():
             cursel = self.matches[int(self.listbox.curselection()[0])]
         else:
             tmp = self.filterValue.get()
-            if tmp in self.activeTimers or self.allownew:
+            if tmp in self.activeTimers or self.new:
                 cursel = tmp
         logger.debug("cursel: {0}; match: {1}".format(cursel, self.match))
         self.hideCompletions(e=event)
         if cursel is not None:
             self.selected = cursel
             print('completionSelected got self.selected', self.selected)
-            self.startTimer()
+            if self.new:
+                self.startTimer()
 
     def cursorUp(self, event=None):
         cursel = int(self.listbox.curselection()[0])
@@ -1023,17 +1027,21 @@ class Timer():
         if self.parent:
             self.parent.update_idletasks()
 
-    def finishTimer(self):
+    def finishTimer(self, e=None):
         self.pauseTimer()
-        self.selectTimer(allownew=False)
+        self.selectTimer(new=False)
         if not self.selected:
             return
 
+        self.currentStatus = STOPPED
+        self.currentTimer = None
+
         hsh = self.activeTimers[self.selected]
+        hsh['summary'] = self.selected
 
-        if self.parent:
-            self.parent.update_idletasks()
-
+        # if self.parent:
+        #     self.parent.update_idletasks()
+        return hsh
 
     def toggleCurrent(self, e=None):
         """
@@ -1054,6 +1062,9 @@ class Timer():
             self.currentStatus = RUNNING
 
         self.activeTimers[self.currentTimer] = hsh
+
+        ret = self.getStatus()
+        self.parent.timerStatus.set(ret)
 
         if self.parent:
             self.parent.update_idletasks()

@@ -47,7 +47,7 @@ from calendar import Calendar
 from decimal import Decimal
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, str2hsh, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical_active, fmt_time, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, FINISH, availableDates, syncTxt, update_subscription, _)
+    init_localization, fmt_weekday, fmt_dt, str2hsh, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical_active, fmt_time, fmt_period, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, FINISH, availableDates, syncTxt, update_subscription, _)
 
 from etmTk.dialog import MenuTree, Timer, ReadOnlyText, MessageWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, FileChoice, STOPPED, PAUSED, RUNNING, BGCOLOR, ONEDAY, ONEMINUTE, SimpleEditor
 
@@ -3205,7 +3205,7 @@ or 0 to display all changes.""").format(title)
 
                             subprocess.call(tcmd, shell=True)
 
-                    elif self.actionTimer.timer_status == 'paused':
+                    elif self.actionTimer.currentStatus == 'paused':
                         if ('paused' in loop.options['action_timer'] and
                                 loop.options['action_timer']['paused']):
                             tcmd = loop.options['action_timer']['paused']
@@ -3515,18 +3515,18 @@ Relative dates and fuzzy parsing are supported.""")
     def finishActionTimer(self, e=None):
         if e and e.char != "T":
             return
-        if self.actionTimer.timer_status not in [RUNNING, PAUSED]:
-            logger.info('stopping already stopped timer')
-            return "break"
-        self.actionTimer.finishTimer()
-        self.timerStatus.set(self.actionTimer.get_time())
-        hsh = self.actionTimer.timer_hsh
+        thsh = self.actionTimer.finishTimer(e=e)
+        if not thsh:
+            return
+        self.timerStatus.set("")
+
+        hsh = {"itemtype": "~", "_summary": thsh['summary'], "s": thsh['start'], "e": thsh['total']}
         changed = SimpleEditor(parent=self, newhsh=hsh, rephsh=None, options=loop.options, title=_("new action"), modified=True).changed
         if changed:
             # clear status and reload
-            self.actionTimer.timer_clear()
-            # self.timerStatus.set("")
-            self.newmenu.entryconfig(3, state="disabled")
+            del self.actionTimer.activeTimers[self.actionTimer.selected]
+            self.actionTimer.selected = None
+            self.actionTimer.currentTimer = None
 
             self.updateAlerts()
             if self.weekly:
@@ -3537,24 +3537,8 @@ Relative dates and fuzzy parsing are supported.""")
                 self.showMonth()
             else:
                 self.showView(row=self.topSelected)
-        else:
-            # edit canceled
-            ans = self.confirm(
-                title=_('timer'),
-                prompt=_('Retain the timer for "{0}"').format(self.actionTimer.timer_hsh['_summary']),
-                parent=self)
-            if ans:
-                # restore timer with the old status
-                self.actionTimer.timer_start(hsh=hsh, toggle=False)
-            else:
-                if self.actionTimer.idle_active:
-                    # add the time back into idle
-                    self.actionTimer.idle_delta += self.actionTimer.timer_delta
-                self.actionTimer.timer_clear()
-                # self.timerStatus.set("")
-                self.newmenu.entryconfig(3, state="disabled")
-        self.timerStatus.set(self.actionTimer.get_time())
-        self.tree.focus_set()
+
+        self.timerStatus.set(self.actionTimer.getStatus())
 
     def gettext(self, event=None):
         s = self.e.get()
