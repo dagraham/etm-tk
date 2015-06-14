@@ -560,7 +560,6 @@ class SimpleEditor(Toplevel):
                     else:
                         reps = SOMEREPS
                     prompt = "{0}, {1}:\n  {2}".format(prompt, reps, "\n  ".join(repsfmt))
-                    # self.messageWindow(VALID, repetitions, opts=self.options)
             else:
                 repetitions = "No repetitions were generated."
                 self.loop.messages.append(repetitions)
@@ -593,7 +592,6 @@ class SimpleEditor(Toplevel):
             where = self.text.search(target, INSERT, nocase=1)
         if where:
             pastit = where + ('+%dc' % len(target))
-            # self.text.tag_remove(SEL, '1.0', END)
             self.text.tag_add(FOUND, where, pastit)
             self.text.mark_set(INSERT, pastit)
             self.text.see(INSERT)
@@ -1174,7 +1172,7 @@ class Timer():
 
     def getStatus(self):
         """
-
+        Return the status of the timers for the status bar
         """
         if not self.activeTimers:
             return ""
@@ -1194,146 +1192,6 @@ class Timer():
         else:
             ret = ""
         logger.debug("timer: {0}".format(ret))
-        return ret
-
-
-
-
-class OldTimer():
-    def __init__(self, parent=None, options={}):
-        """
-            Methods providing the action timer
-        """
-        self.timer_clear()
-        self.parent = parent
-        self.options = options
-        self.idle_active = False
-        self.changed = False
-        self.idle_delta = 0 * ONEMINUTE
-
-    def timer_clear(self):
-        self.timer_delta = 0 * ONEMINUTE
-        self.timer_active = False
-        self.timer_status = STOPPED
-        self.stop_status = STOPPED
-        self.timer_last = None
-        self.timer_hsh = None
-        self.timer_summary = None
-
-    def idle_start(self):
-        if self.idle_active:
-            return
-        self.idle_starttime = datetime.now()
-        self.idle_active = True
-        self.parent.timerStatus.set(self.get_time())
-        logger.debug('idle start: {0}'.format(self.idle_starttime))
-
-    def idle_stop(self):
-        if not self.idle_active:
-            return
-        if self.timer_status != STOPPED:
-            self.timer_stop()
-        if self.idle_delta:
-            self.idle_resolve()
-        logger.debug('idle stop: {0}'.format(self.idle_starttime))
-        self.idle_active = False
-
-    def idle_resolve(self):
-        """
-        Called when action timer is started or restarted
-        """
-        if not self.idle_active or self.idle_delta < ONEMINUTE:
-            return
-        self.idle_delta += datetime.now() - self.idle_starttime
-        logger.debug('resolve, idle time: {0}'.format(self.idle_delta))
-        opts = {'idle_delta': self.idle_delta, 'keywords': self.options['keywords'], 'currfile': ensureMonthly(self.options), 'tz': self.options['local_timezone']}
-        start_idle_delta = self.idle_delta
-        self.idle_delta = ResolveIdleTime(self.parent, title="assign idle time", opts=opts).idle_delta
-        self.changed = (self.idle_delta != start_idle_delta)
-
-    def idle_resume(self):
-        if not self.idle_active:
-            return
-        self.idle_starttime = datetime.now()
-        logger.debug('resume, idle time: {0}'.format(self.idle_delta))
-
-    def timer_start(self, hsh=None, toggle=True):
-        if not hsh:
-            hsh = {}
-        self.timer_starttime = datetime.now()
-        self.timer_hsh = hsh
-        text = hsh['_summary']
-        # self.timer_hsh['s'] = self.starttime
-        if 'e' in hsh:
-            self.timer_delta = hsh['e']
-        if len(text) > 16:
-            self.timer_summary = "{0}~".format(text[:15])
-        else:
-            self.timer_summary = text
-        if toggle:
-            self.timer_toggle(self.timer_hsh)
-        else:
-            self.timer_status = self.stop_status
-
-    def timer_stop(self, create=True):
-        if self.timer_status == STOPPED:
-            return ()
-        self.idle_resume()
-        self.stop_status = self.timer_status
-        if self.timer_status == RUNNING:
-            self.timer_delta += datetime.now() - self.timer_last
-            self.timer_status = PAUSED
-
-        self.timer_delta = max(self.timer_delta, ONEMINUTE)
-        self.timer_hsh['e'] = self.timer_delta
-        self.timer_hsh['s'] = self.timer_starttime
-        self.timer_hsh['itemtype'] = '~'
-
-    def timer_toggle(self, hsh=None):
-        if not hsh:
-            hsh = {}
-        if self.timer_status == STOPPED:
-            self.get_time()
-            self.timer_last = datetime.now()
-            self.timer_status = RUNNING
-        elif self.timer_status == RUNNING:
-            self.idle_resume()
-            self.timer_delta += datetime.now() - self.timer_last
-            self.timer_status = PAUSED
-        elif self.timer_status == PAUSED:
-            self.timer_status = RUNNING
-            self.timer_last = datetime.now()
-        if self.parent:
-            self.parent.update_idletasks()
-
-    def get_time(self):
-        # if self.timer_status == STOPPED:
-        if self.idle_active:
-            if self.timer_status in [STOPPED, PAUSED]:
-                self.idle_delta += datetime.now() - self.idle_starttime
-                self.idle_starttime = datetime.now()
-            idle = "[{0}]".format(fmt_period(self.idle_delta))
-            logger.debug("idle: {0}, {1}".format(self.idle_starttime, self.idle_delta))
-        else:
-            idle = ""
-        if self.timer_status == STOPPED:
-            ret = idle
-            self.timer_minutes = 0
-            self.elapsed_time = 0 * ONEMINUTE
-        else:
-            if self.timer_status == PAUSED:
-                elapsed_time = self.timer_delta
-            elif self.timer_status == RUNNING:
-                elapsed_time = (self.timer_delta + datetime.now() - self.timer_last)
-            else:
-                elapsed_time = self.timer_delta
-            plus = " ({0})".format(_("paused"))
-            self.timer_minutes = elapsed_time.seconds // 60
-            if self.timer_status == RUNNING:
-                plus = " ({0})".format(_("running"))
-            # ret = "{0}  {1}{2}".format(self.timer_summary, self.timer_time, s)
-            ret = "{1} {2}{3} {0}".format(idle, self.timer_summary, fmt_period(elapsed_time), plus)
-            logger.debug("timer: {0}, {1}".format(self.timer_last, elapsed_time))
         return ret
 
 
