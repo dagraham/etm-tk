@@ -1009,6 +1009,8 @@ class Timer():
         tmp = yaml.load(fo)
         fo.close()
         (self.activeDate, self.activeTimers, self.currentTimer, self.currentStatus, self.currentMinutes) = tmp
+        if self.activeDate != datetime.now().date():
+            self.newDay()
 
     def startTimer(self, e=None):
         self.pauseTimer()
@@ -1062,44 +1064,44 @@ class Timer():
             self.pauseTimer()
             self.currentTimer = None
         del self.activeTimers[timer]
-
         self.saveTimers()
 
 
-
-
     def newDay(self, e=None):
-        if not self.activeTimers:
-            return
-        running = False
         now = datetime.now()
-        if self.currentTimer:
-            if self.currentStatus == RUNNING:
-                self.toggleCurrent()
-                running = True
+        self.activeDate = now.date()
+        if not self.activeTimers:
+            self.activeTimers = {} # summary -> { total, start, stop }
+            self.currentTimer = None # summary
+            self.currentStatus = STOPPED
+            self.currentMinutes = 0
 
-        self.activeDate = datetime.now().date()
+        running = (self.currentTimer and self.currentStatus == RUNNING)
 
-        tmp = []
         curfile = ensureMonthly(self.options, date=now.date())
+        tmp = []
         for timer in self.activeTimers:
             # create inbox entries
             thsh = self.activeTimers[timer]
-            hsh = {"itemtype": "?", "_summary": thsh['summary'], "s": thsh['start'], "e": thsh['total']}
-            self.loop.append_item(hsh, curfile)
-            del self.activeTimers[timer]
+            hsh = {"itemtype": "$", "_summary": timer, "s": thsh['start'], "e": thsh['total']}
+            tmp.append([timer, hsh])
 
-        if self.currentTimer:
+        for timer, hsh in tmp:
+            res = self.loop.append_item(hsh, curfile)
+            if res:
+                del self.activeTimers[timer]
+
+        if running:
             hsh = {}
             hsh['total'] = 0 * ONEMINUTE
             hsh['start'] = hsh['stop'] = now
             self.activeTimers[self.currentTimer] = hsh
+        else:
+            self.currentTimer = None
+            self.currentStatus = STOPPED
 
         self.currentMinutes = 0
-        if running:
-            self.toggleCurrent()
-
-
+        self.saveTimers()
 
     def toggleCurrent(self, e=None):
         """
@@ -1159,7 +1161,7 @@ class Timer():
             total = hsh['total']
             self.currentMinutes = total.seconds // 60
 
-            ret = "{1} {2} - {3} ({0})".format(len(self.activeTimers.keys()), self.currentTimer, fmt_period(hsh['total']), self.currentStatus)
+            ret = "{1}: {2} - {3} ({0})".format(len(self.activeTimers.keys()), self.currentTimer, fmt_period(hsh['total']), self.currentStatus)
         else:
             ret = "all paused ({0})".format(len(self.activeTimers))
         logger.debug("timer: {0}".format(ret))

@@ -1051,7 +1051,7 @@ class App(Tk):
                 prompt=_("An action timer is running.\nDo you really want to quit?"),
                 parent=self)
         if ans:
-            self.actionTimer.pauseTimer()
+            # self.actionTimer.pauseTimer()
             self.saveGeometry()
             self.destroy()
 
