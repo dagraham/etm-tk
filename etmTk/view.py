@@ -157,6 +157,7 @@ class App(Tk):
         self.monthly = False
         self.specsModified = False
         self.active_tree = {}
+        self.protocol("WM_DELETE_WINDOW", self.quit)
         root = "_"
 
         self.week_height = 80
@@ -1043,11 +1044,14 @@ class App(Tk):
             self.showView()
 
     def quit(self, e=None):
-        ans = self.confirm(
-            title=_('Quit'),
-            prompt=_("Do you really want to quit?"),
-            parent=self)
+        ans = True
+        if self.actionTimer.currentStatus == RUNNING:
+            ans = self.confirm(
+                title=_('Quit'),
+                prompt=_("An action timer is running.\nDo you really want to quit?"),
+                parent=self)
         if ans:
+            self.actionTimer.pauseTimer()
             self.saveGeometry()
             self.destroy()
 
@@ -3147,6 +3151,8 @@ or 0 to display all changes.""").format(title)
         if newday or new or modified or deleted:
             if newday:
                 logger.info('newday')
+                self.actionTimer.newDay()
+
             logger.info("new: {0}; modified: {1}; deleted: {2}".format(len(new), len(modified), len(deleted)))
             logger.debug('calling loadData')
             loop.loadData()
@@ -3518,15 +3524,13 @@ Relative dates and fuzzy parsing are supported.""")
         thsh = self.actionTimer.finishTimer(e=e)
         if not thsh:
             return
-        self.timerStatus.set("")
+        self.timerStatus.set(self.actionTimer.getStatus())
 
         hsh = {"itemtype": "~", "_summary": thsh['summary'], "s": thsh['start'], "e": thsh['total']}
         changed = SimpleEditor(parent=self, newhsh=hsh, rephsh=None, options=loop.options, title=_("new action"), modified=True).changed
         if changed:
             # clear status and reload
-            del self.actionTimer.activeTimers[self.actionTimer.selected]
-            self.actionTimer.selected = None
-            self.actionTimer.currentTimer = None
+            self.actionTimer.deleteTimer(self.actionTimer.selected)
 
             self.updateAlerts()
             if self.weekly:

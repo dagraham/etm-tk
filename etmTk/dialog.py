@@ -11,6 +11,7 @@ import os.path
 
 logger = logging.getLogger()
 import codecs
+import yaml
 
 import platform
 
@@ -609,8 +610,6 @@ class SimpleEditor(Toplevel):
         if self.text.tag_ranges("sel"):
             self.text.tag_remove('sel', "1.0", END)
             return
-        # if self.checkmodified():
-        #     return "break"
         logger.debug(('calling quit'))
         self.quit()
 
@@ -859,40 +858,40 @@ class Timer():
         """
         self.parent = parent
         self.options = options
+        self.loop = parent.loop
         self.match = ""
-        # if self.parent.weekly or self.parent.monthly:
-        #     master = self.parent.canvas
-        # else:
-        #     master = self.parent.tree
-        # master = parent
-        # self.timerswindow = Toplevel()
-        # self.filterValue = StringVar()
-        # self.timerswindow.geometry("+%d+%d" % (master.winfo_rootx() + 50, master.winfo_rooty() + 50))
-        #
-        # self.timerswindow.wm_attributes("-topmost", 1)
+        self.etmtimers = os.path.normpath(os.path.join(options['etmdir'], ".etmtimers"))
+        self.dfile_encoding = options['encoding']['file']
+
         self.resetTimers()
 
     def resetTimers(self):
-        self.selected = None
-        self.activeDate = datetime.now().date()
-        self.activeTimers = {} # summary -> { total, start, stop }
-        self.currentTimer = None # summary
-        self.currentStatus = STOPPED
-        self.currentMinutes = 0
+        try:
+            self.loadTimers()
+            logger.info("reloaded saved timer data")
+        except:
+            self.activeDate = datetime.now().date()
+            self.activeTimers = {} # summary -> { total, start, stop }
+            self.currentTimer = None # summary
+            self.currentStatus = STOPPED
+            self.currentMinutes = 0
+            logger.info("reset timer data")
 
 
     def selectTimer(self, e=None, new=True):
         """
         Combo box with list of active timer summaries and option to create a new, unique summary.
         """
+        self.selected = None
         self.new = new
         if not self.activeTimers:
             self.completions = []
         else:
             self.completions = []
-            tmp = [x for x in self.activeTimers]
-            tmp.sort()
-            self.completions = tmp
+            tmp = [(self.activeTimers[x]['stop'], x) for x in self.activeTimers]
+            # put the most recently stopped timers at the top
+            sort = sorted(tmp, reverse=True)
+            self.completions = [x[1] for x in sort]
 
         # return the focus to the right place
         if self.parent.weekly or self.parent.monthly:
@@ -945,14 +944,12 @@ class Timer():
         # destroy widgets
         if not self.is_active():
             return
-        print('hideCompletions1')
         self.fltr.destroy()
         self.fltr = None
         self.listbox.destroy()
         self.listbox = None
         self.timerswindow.destroy()
         self.timerswindow = None
-        print('hideCompletions2')
 
     def completionSelected(self, event):
         # Put the selected completion in the text, and close the list
@@ -967,7 +964,6 @@ class Timer():
         self.hideCompletions(e=event)
         if cursel is not None:
             self.selected = cursel
-            print('completionSelected got self.selected', self.selected)
             if self.new:
                 self.startTimer()
 
@@ -990,21 +986,32 @@ class Timer():
 
 
 
-    def dumpTimers(self):
+    def saveTimers(self):
         """
         dump activeTimers, ...
         """
-        pass
+        tmp = (
+            self.activeDate,
+            self.activeTimers,
+            self.currentTimer,
+            self.currentStatus,
+            self.currentMinutes,
+        )
+        fo = codecs.open(self.etmtimers, 'w', self.dfile_encoding)
+        yaml.dump(tmp, fo)
+        fo.close()
 
     def loadTimers(self):
         """
         load activeTimers
         """
-        pass
+        fo = codecs.open(self.etmtimers, 'r', self.dfile_encoding)
+        tmp = yaml.load(fo)
+        fo.close()
+        (self.activeDate, self.activeTimers, self.currentTimer, self.currentStatus, self.currentMinutes) = tmp
 
     def startTimer(self, e=None):
         self.pauseTimer()
-        print('startTimer got self.selected', self.selected)
         if not self.selected:
             return
 
@@ -1024,6 +1031,8 @@ class Timer():
         ret = self.getStatus()
         self.parent.timerStatus.set(ret)
 
+        self.saveTimers()
+
         if self.parent:
             self.parent.update_idletasks()
 
@@ -1039,9 +1048,58 @@ class Timer():
         hsh = self.activeTimers[self.selected]
         hsh['summary'] = self.selected
 
+        self.saveTimers()
+
         # if self.parent:
         #     self.parent.update_idletasks()
+
         return hsh
+
+    def deleteTimer(self, timer):
+        if timer not in self.activeTimers:
+            return
+        if self.currentTimer == timer:
+            self.pauseTimer()
+            self.currentTimer = None
+        del self.activeTimers[timer]
+
+        self.saveTimers()
+
+
+
+
+    def newDay(self, e=None):
+        if not self.activeTimers:
+            return
+        running = False
+        now = datetime.now()
+        if self.currentTimer:
+            if self.currentStatus == RUNNING:
+                self.toggleCurrent()
+                running = True
+
+        self.activeDate = datetime.now().date()
+
+        tmp = []
+        curfile = ensureMonthly(self.options, date=now.date())
+        for timer in self.activeTimers:
+            # create inbox entries
+            thsh = self.activeTimers[timer]
+            hsh = {"itemtype": "?", "_summary": thsh['summary'], "s": thsh['start'], "e": thsh['total']}
+            self.loop.append_item(hsh, curfile)
+            del self.activeTimers[timer]
+
+        if self.currentTimer:
+            hsh = {}
+            hsh['total'] = 0 * ONEMINUTE
+            hsh['start'] = hsh['stop'] = now
+            self.activeTimers[self.currentTimer] = hsh
+
+        self.currentMinutes = 0
+        if running:
+            self.toggleCurrent()
+
+
 
     def toggleCurrent(self, e=None):
         """
@@ -1066,6 +1124,8 @@ class Timer():
         ret = self.getStatus()
         self.parent.timerStatus.set(ret)
 
+        self.saveTimers()
+
         if self.parent:
             self.parent.update_idletasks()
 
@@ -1077,6 +1137,8 @@ class Timer():
         if self.activeTimers and self.currentTimer and self.currentStatus == RUNNING:
             self.toggleCurrent()
 
+        self.saveTimers()
+
         return False
 
 
@@ -1085,20 +1147,21 @@ class Timer():
         """
 
         """
-        if not self.activeTimers or not self.currentTimer:
+        if not self.activeTimers:
             return ""
-        if not self.currentStatus or self.currentStatus not in [PAUSED, RUNNING]:
-            return ""
-        hsh = self.activeTimers[self.currentTimer]
-        now = datetime.now()
-        if self.currentStatus == RUNNING:
-            hsh['total'] = hsh['total'] + (now - hsh['start'])
-            hsh['start'] = now
-            self.activeTimers[self.currentTimer] = hsh
-        total = hsh['total']
-        self.currentMinutes = total.seconds // 60
+        if self.currentTimer and self.currentStatus:
+            hsh = self.activeTimers[self.currentTimer]
+            now = datetime.now()
+            if self.currentStatus == RUNNING:
+                hsh['total'] = hsh['total'] + (now - hsh['start'])
+                hsh['start'] = now
+                self.activeTimers[self.currentTimer] = hsh
+            total = hsh['total']
+            self.currentMinutes = total.seconds // 60
 
-        ret = "({0}) {1} {2} ({3})".format(len(self.activeTimers.keys()), self.currentTimer, fmt_period(hsh['total']), self.currentStatus)
+            ret = "{1} {2} - {3} ({0})".format(len(self.activeTimers.keys()), self.currentTimer, fmt_period(hsh['total']), self.currentStatus)
+        else:
+            ret = "all paused ({0})".format(len(self.activeTimers))
         logger.debug("timer: {0}".format(ret))
         return ret
 
