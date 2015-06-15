@@ -1116,6 +1116,7 @@ class Timer():
                 del self.activeTimers[timer]
 
         if running:
+            # currentStatus == RUNNING
             hsh = {}
             hsh['total'] = 0 * ONEMINUTE
             hsh['start'] = hsh['stop'] = now
