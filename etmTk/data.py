@@ -1931,7 +1931,10 @@ def fmt_date(dt, short=False):
         else:
             dt_fmt = dt.strftime(shortdatefmt)
     else:
-        dt_fmt = dt.strftime(reprdatefmt)
+        if python_version2:
+            dt_fmt = unicode(dt.strftime(reprdatefmt), term_encoding)
+        else:
+            dt_fmt = dt.strftime(reprdatefmt)
         dt_fmt = leadingzero.sub('', dt_fmt)
     return s2or3(dt_fmt)
 
@@ -2818,7 +2821,7 @@ For editing one or more, but not all, instances of an item. Needed:
         else:
             keys = []
 
-        if key in hsh and hsh[key]:
+        if key in hsh and hsh[key] is not None:
             # since r and j can repeat, value will be a list
             value = hsh[key]
             if keys:

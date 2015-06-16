@@ -889,7 +889,7 @@ class Timer():
             self.currentMinutes = 0
             logger.info("reset timer data")
 
-    def selectTimer(self, e=None, new=True, title=None):
+    def selectTimer(self, e=None, new=True, title=None, name=None):
         """
         Combo box with list of active timer summaries and option to create a new, unique summary.
         """
@@ -942,6 +942,8 @@ class Timer():
         self.timerswindow.bind("<Down>", self.cursorDown)
         self.fltr.bind("<Up>", self.cursorUp)
         self.fltr.bind("<Down>", self.cursorDown)
+        if name is not None:
+            self.filterValue.set(name)
         self.setCompletions()
         win.wait_window(win)
 
@@ -1017,7 +1019,6 @@ class Timer():
         fo = codecs.open(self.etmtimers, 'w', self.dfile_encoding)
         yaml.dump(tmp, fo)
         fo.close()
-        self.parent.timerStatus.set(self.getStatus())
         self.updateMenu()
 
     def loadTimers(self):
@@ -1054,6 +1055,7 @@ class Timer():
         self.saveTimers()
 
         if self.parent:
+            self.parent.updateTimerStatus()
             self.parent.update_idletasks()
 
     def finishTimer(self, e=None):
@@ -1070,8 +1072,9 @@ class Timer():
 
         self.saveTimers()
 
-        # if self.parent:
-        #     self.parent.update_idletasks()
+        if self.parent:
+            self.parent.updateTimerStatus()
+            self.parent.update_idletasks()
 
         return hsh
 
@@ -1089,6 +1092,9 @@ class Timer():
             self.currentStatus = STOPPED
         del self.activeTimers[timer]
         self.saveTimers()
+        if self.parent:
+            self.parent.updateTimerStatus()
+            self.parent.update_idletasks()
 
 
     def newDay(self, e=None):
@@ -1127,6 +1133,9 @@ class Timer():
 
         self.currentMinutes = 0
         self.saveTimers()
+        if self.parent:
+            self.parent.updateTimerStatus()
+            self.parent.update_idletasks()
 
     def toggleCurrent(self, e=None):
         """
@@ -1148,12 +1157,10 @@ class Timer():
 
         self.activeTimers[self.currentTimer] = hsh
 
-        ret = self.getStatus()
-        self.parent.timerStatus.set(ret)
-
         self.saveTimers()
 
         if self.parent:
+            self.parent.updateTimerStatus()
             self.parent.update_idletasks()
 
 
@@ -1165,6 +1172,9 @@ class Timer():
             self.toggleCurrent()
 
         self.saveTimers()
+        if self.parent:
+            self.parent.updateTimerStatus()
+            self.parent.update_idletasks()
 
         return False
 
@@ -1174,8 +1184,6 @@ class Timer():
         """
         Return the status of the timers for the status bar
         """
-        if not self.activeTimers:
-            return ""
         if self.currentTimer and self.currentStatus:
             hsh = self.activeTimers[self.currentTimer]
             now = datetime.now()
@@ -1186,13 +1194,15 @@ class Timer():
             total = hsh['total']
             self.currentMinutes = total.seconds // 60
 
-            ret = "{1}: {2} - {3} ({0})".format(len(self.activeTimers.keys()), self.currentTimer, fmt_period(hsh['total']), self.currentStatus)
+            ret1 = "{0}".format(self.currentTimer)
+            ret2 = "{0} - {1} ({2})".format(self.currentStatus, fmt_period(hsh['total']), len(self.activeTimers.keys()))
         elif self.activeTimers:
-            ret = "all paused ({0})".format(len(self.activeTimers))
+            ret1 = "all paused ({0})".format(len(self.activeTimers))
+            ret2 = ""
         else:
-            ret = ""
-        logger.debug("timer: {0}".format(ret))
-        return ret
+            ret1 = ret2 = ""
+        logger.debug("timer: {0} {1}".format(ret1, ret2))
+        return ret1, ret2
 
 
 class ReadOnlyText(Text):

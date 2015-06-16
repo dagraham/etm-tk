@@ -21,7 +21,7 @@ import platform
 
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, PanedWindow, OptionMenu, StringVar, IntVar, Menu, X, Canvas, CURRENT, Scrollbar, PhotoImage, CENTER, FLAT, RAISED, BOTH, TOP
+    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, PanedWindow, OptionMenu, StringVar, IntVar, Menu, X, Canvas, CURRENT, Scrollbar, PhotoImage, CENTER, FLAT, RAISED, BOTH, TOP, W
     from tkinter import ttk
     from tkinter import font as tkFont
     utf8 = lambda x: x
@@ -29,7 +29,7 @@ if platform.python_version() >= '3':
 
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, PanedWindow, OptionMenu, StringVar, IntVar, Menu, X, Canvas, CURRENT, Scrollbar, PhotoImage, CENTER, FLAT, RAISED, BOTH, TOP
+    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, PanedWindow, OptionMenu, StringVar, IntVar, Menu, X, Canvas, CURRENT, Scrollbar, PhotoImage, CENTER, FLAT, RAISED, BOTH, TOP, W
     import ttk
     import tkFont
 
@@ -893,12 +893,6 @@ class App(Tk):
         self.content.bind("<FocusIn>", self.editItem)
 
 
-        self.timerStatus = StringVar(self)
-        self.timerStatus.set("")
-        timer_status = Label(self.statusbar, textvariable=self.timerStatus, bd=0, relief="flat", anchor="w", padx=0, pady=0)
-        timer_status.pack(side="left", expand=0, padx=4)
-        timer_status.configure(background=BGCOLOR, highlightthickness=0)
-
         self.pendingAlerts = IntVar(self)
         self.pendingAlerts.set(0)
         self.pending = Button(self.statusbar,
@@ -908,7 +902,21 @@ class App(Tk):
                               bg=BGCOLOR, highlightthickness=0, takefocus=False,
                               width=4, pady=2,
                               )
-        self.pending.pack(side="right", padx=2, pady=2)
+        self.pending.pack(side="right", expand=0, padx=2, pady=2)
+
+        self.timerStatus = StringVar(self)
+        self.timerStatus.set("")
+        self.timer_status = timer_status = Label(self.statusbar, textvariable=self.timerStatus, bd=0, relief="flat", anchor=W, justify=LEFT, padx=2, pady=0)
+        timer_status.pack(side="right", expand=1, fill=X, padx=6)
+        timer_status.configure(background=BGCOLOR, highlightthickness=0)
+
+        self.timerTitle = StringVar(self)
+        self.timerTitle.set("")
+        timer_title = Label(self.statusbar, textvariable=self.timerTitle, bd=0, relief="flat", anchor=W, justify=LEFT, padx=2, pady=0)
+
+        timer_title.pack(side="left", expand=1, fill=X, padx=0)
+        timer_title.configure(background=BGCOLOR, highlightthickness=0)
+
 
         # set cal_regex here and update it in updateCalendars
         self.cal_regex = None
@@ -1550,11 +1558,11 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
             self.updateAlerts()
             if self.weekly:
                 self.canvas.focus_set()
-                self.setView(DAY)
+                self.updateDay()
                 self.showWeek()
             elif self.monthly:
                 self.canvas.focus_set()
-                self.setView(DAY)
+                self.updateDay()
                 self.showMonth()
             else:
                 self.tree.focus_set()
@@ -3145,6 +3153,12 @@ or 0 to display all changes.""").format(title)
             logger.debug('returning None')
             return None, None, None
 
+    def updateTimerStatus(self):
+        title, status = self.actionTimer.getStatus()
+        # print('setting title:', title, " and status:", status)
+        self.timerTitle.set(title)
+        self.timerStatus.set(status)
+
     def updateClock(self):
         tt = TimeIt(loglevel=2, label="updateClock")
         self.now = get_current_time()
@@ -3218,7 +3232,9 @@ or 0 to display all changes.""").format(title)
         self.updateAlerts()
 
         if self.actionTimer.currentStatus != STOPPED:
-            self.timerStatus.set(self.actionTimer.getStatus())
+            title, status = self.actionTimer.getStatus()
+            self.timerTitle.set(title)
+            self.timerStatus.set(status)
             if self.actionTimer.currentMinutes >= 1:
                 if (self.options['action_interval'] and self.actionTimer.currentMinutes % loop.options['action_interval'] == 0):
                     logger.debug('action_minutes trigger: {0} {1}'.format(self.actionTimer.currentMinutes, self.actionTimer.currentStatus))
@@ -3444,8 +3460,7 @@ Relative dates and fuzzy parsing are supported.""")
         hsh = loop.uuid2hash[self.uuidSelected]
         self.timerItem = self.uuidSelected
         logger.debug('item: {0}'.format(hsh))
-        self.actionTimer.selected = hsh['_summary']
-        self.actionTimer.startTimer()
+        self.actionTimer.selectTimer(name=hsh['_summary'])
 
     def finishActionTimer(self, e=None):
         if e and e.char != "T":
@@ -3453,7 +3468,7 @@ Relative dates and fuzzy parsing are supported.""")
         thsh = self.actionTimer.finishTimer(e=e)
         if not thsh:
             return
-        self.timerStatus.set(self.actionTimer.getStatus())
+        self.updateTimerStatus()
 
         hsh = {"itemtype": "~", "_summary": thsh['summary'], "s": thsh['start'], "e": thsh['total']}
         changed = SimpleEditor(parent=self, newhsh=hsh, rephsh=None, options=loop.options, title=_("new action"), modified=True).changed
@@ -3471,7 +3486,7 @@ Relative dates and fuzzy parsing are supported.""")
             else:
                 self.showView(row=self.topSelected)
 
-        self.timerStatus.set(self.actionTimer.getStatus())
+        self.updateTimerStatus()
 
     def gettext(self, event=None):
         s = self.e.get()
