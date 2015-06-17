@@ -3597,8 +3597,6 @@ or 0 to expand all branches completely.""")
                             logger.exception('open: {0}, {1}'.format(i, item))
 
     def scrollToDate(self, date=None):
-        # only makes sense for schedule
-        logger.debug("DAY: {0}; date: {1}".format(self.view == DAY, date))
         if not loop.prevnext or date is None:
             return
         if self.view not in [DAY, WEEK, MONTH] or date not in loop.prevnext:
@@ -3607,8 +3605,12 @@ or 0 to expand all branches completely.""")
         active_date = loop.prevnext[date][1]
         if active_date not in self.date2id:
             return
-        pos = date.isocalendar()[2] - 1
-        self.canvas_idpos = pos
+        if self.weekly:
+            pos = date.isocalendar()[2] - 1
+            self.canvas_idpos = pos
+        elif self.monthly:
+            pos = date.day - 1
+            self.canvas_idpos = pos
         uid = self.date2id[active_date]
         self.active_date = active_date
         self.scrollToId(uid)
