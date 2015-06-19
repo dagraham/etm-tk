@@ -3495,7 +3495,7 @@ def str2opts(s, options=None, cli=True):
         cal_pattern = r'^%s' % '|'.join(
             [x[2] for x in options['calendars'] if x[1]])
         filters['cal_regex'] = re.compile(cal_pattern)
-    s = str(s)
+    s = s2or3(s)
     op_str = s.split('#')[0]
     parts = minus_regex.split(op_str)
     head = parts.pop(0)
@@ -7130,20 +7130,24 @@ def main(etmdir='', argv=[]):
     use_locale = ()
     (user_options, options, use_locale) = get_options(etmdir)
     ARGS = ['a', 'k', 'm', 'n', 'N', 'p', 'c', 'd', 't', 'v']
+    QUESTION = s2or3("?")
     if len(argv) > 1:
+        for i in range(len(argv)-1):
+            j = i+1
+            argv[j] = s2or3(argv[j])
         c = ETMCmd(options)
         c.loop = False
         c.number = False
         args = []
-        if len(argv) == 2 and argv[1] == "?":
+        if len(argv) == 2 and argv[1] == QUESTION:
             term_print(USAGE)
         elif len(argv) == 2 and argv[1] == 'v':
             term_print(c.do_v(""))
-        elif len(argv) == 3 and '?' in argv:
-            if argv[1] == '?':
-                args = ['?', argv[2]]
+        elif len(argv) == 3 and QUESTION in argv:
+            if argv[1] == QUESTION:
+                args = [QUESTION, argv[2]]
             else:
-                args = ['?', argv[1]]
+                args = [QUESTION, argv[1]]
             if args[1] not in ARGS:
                 term_print(USAGE)
             else:
