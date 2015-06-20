@@ -21,7 +21,33 @@ import platform
 
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, PanedWindow, OptionMenu, StringVar, IntVar, Menu, X, Canvas, CURRENT, Scrollbar, PhotoImage, CENTER, FLAT, RAISED, BOTH, TOP, W
+    from tkinter import (
+        BOTH,
+        Button,
+        Canvas,
+        CENTER,
+        CURRENT,
+        END,
+        Entry,
+        FLAT,
+        Frame,
+        INSERT,
+        IntVar,
+        Label,
+        LEFT,
+        Menu,
+        OptionMenu,
+        PanedWindow,
+        PhotoImage,
+        RAISED,
+        Scrollbar,
+        StringVar,
+        Tk,
+        TOP,
+        Toplevel,
+        W,
+        X,
+    )
     from tkinter import ttk
     from tkinter import font as tkFont
     utf8 = lambda x: x
@@ -29,7 +55,33 @@ if platform.python_version() >= '3':
 
 else:
     import Tkinter as tkinter
-    from Tkinter import Tk, Entry, INSERT, END, Label, Toplevel, Button, Frame, LEFT, PanedWindow, OptionMenu, StringVar, IntVar, Menu, X, Canvas, CURRENT, Scrollbar, PhotoImage, CENTER, FLAT, RAISED, BOTH, TOP, W
+    from Tkinter import (
+        BOTH,
+        Button,
+        Canvas,
+        CENTER,
+        CURRENT,
+        END,
+        Entry,
+        FLAT,
+        Frame,
+        INSERT,
+        IntVar,
+        Label,
+        LEFT,
+        Menu,
+        OptionMenu,
+        PanedWindow,
+        PhotoImage,
+        RAISED,
+        Scrollbar,
+        StringVar,
+        Tk,
+        TOP,
+        Toplevel,
+        W,
+        X,
+    )
     import ttk
     import tkFont
 

@@ -17,12 +17,64 @@ import platform
 
 if platform.python_version() >= '3':
     import tkinter
-    from tkinter import Entry, END, Label, Toplevel, Button, Frame, LEFT, Text, StringVar, IntVar, BooleanVar, ACTIVE, Radiobutton, Checkbutton, W, X, TclError, Listbox, BROWSE, Scrollbar, FLAT, RIGHT, BOTH, INSERT
+    from tkinter import (
+        ACTIVE,
+        BooleanVar,
+        BOTH,
+        BROWSE,
+        Button,
+        Checkbutton,
+        END,
+        Entry,
+        FLAT,
+        Frame,
+        INSERT,
+        IntVar,
+        Label,
+        LEFT,
+        Listbox,
+        # Radiobutton,
+        RIGHT,
+        Scrollbar,
+        StringVar,
+        TclError,
+        Text,
+        Toplevel,
+        W,
+        X,
+    )
+    from tkinter import ttk
     from tkinter import font as tkFont
     unicode = str
 else:
     import Tkinter as tkinter
-    from Tkinter import Entry, END, Label, Toplevel, Button, Frame, LEFT, Text, StringVar, IntVar, BooleanVar, ACTIVE, Radiobutton, Checkbutton, W, X, TclError, Listbox, BROWSE, Scrollbar, FLAT, RIGHT, BOTH, INSERT
+    from Tkinter import (
+        ACTIVE,
+        BooleanVar,
+        BOTH,
+        BROWSE,
+        Button,
+        Checkbutton,
+        END,
+        Entry,
+        FLAT,
+        Frame,
+        INSERT,
+        IntVar,
+        Label,
+        LEFT,
+        Listbox,
+        # Radiobutton,
+        RIGHT,
+        Scrollbar,
+        StringVar,
+        TclError,
+        Text,
+        Toplevel,
+        W,
+        X,
+    )
+    import ttk
     import tkFont
 
 from datetime import datetime, timedelta
