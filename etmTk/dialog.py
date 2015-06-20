@@ -19,14 +19,11 @@ if platform.python_version() >= '3':
     import tkinter
     from tkinter import Entry, END, Label, Toplevel, Button, Frame, LEFT, Text, StringVar, IntVar, BooleanVar, ACTIVE, Radiobutton, Checkbutton, W, X, TclError, Listbox, BROWSE, Scrollbar, FLAT, RIGHT, BOTH, INSERT
     from tkinter import font as tkFont
-    utf8 = lambda x: x
+    unicode = str
 else:
     import Tkinter as tkinter
     from Tkinter import Entry, END, Label, Toplevel, Button, Frame, LEFT, Text, StringVar, IntVar, BooleanVar, ACTIVE, Radiobutton, Checkbutton, W, X, TclError, Listbox, BROWSE, Scrollbar, FLAT, RIGHT, BOTH, INSERT
     import tkFont
-
-    def utf8(s):
-        return s
 
 from datetime import datetime, timedelta
 
