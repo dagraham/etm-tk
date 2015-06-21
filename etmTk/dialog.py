@@ -87,6 +87,7 @@ from etmTk.data import (_,
     fmt_date,
     fmt_period,
     fmt_shortdatetime,
+    fmt_time,
     get_current_time,
     get_reps,
     getFileTuples,
@@ -561,20 +562,27 @@ class SimpleEditor(Toplevel):
 
         if not msg:
             # we have a good hsh
-            pre = post = ""
+            pre = post = warn = ""
             if 'r' in hsh:
                 pre = _("Repeating ")
             elif 's' in hsh:
                 dt = hsh['s']
-                if not dt.hour and not dt.minute:
-                    dtfmt = fmt_date(dt, short=True)
-                else:
+                if hsh['itemtype'] in ['*', '~']:
+                    if self.options['early_hour'] and dt.hour < self.options['early_hour']:
+                        warn = _("Is {0} the starting time you intended?".format(fmt_time(dt, options=self.options)))
                     dtfmt = fmt_shortdatetime(hsh['s'], self.options)
-                post = _(" scheduled for {0}").format(dtfmt)
+                else:
+                    if not dt.hour and not dt.minute:
+                        dtfmt = fmt_date(dt, short=True)
+                    else:
+                        dtfmt = fmt_shortdatetime(hsh['s'], self.options)
+                post = _(" starting {0}.").format(dtfmt)
             else:  # unscheduled
                 pre = _("Unscheduled ")
 
             prompt = "{0}{1}{2}".format(pre, type2Text[hsh['itemtype']], post)
+            if warn:
+                prompt = prompt + "\n\n" + warn
 
             if self.edithsh and 'fileinfo' in self.edithsh:
                 fileinfo = self.edithsh['fileinfo']
@@ -608,7 +616,7 @@ class SimpleEditor(Toplevel):
                         reps = ALLREPS
                     else:
                         reps = SOMEREPS
-                    prompt = "{0}, {1}:\n  {2}".format(prompt, reps, "\n  ".join(repsfmt))
+                    prompt = "{0}, {1}:\n\n  {2}".format(prompt, reps, "\n  ".join(repsfmt))
             else:
                 repetitions = "No repetitions were generated."
                 self.loop.messages.append(repetitions)
