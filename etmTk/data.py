@@ -13,6 +13,8 @@ import logging
 import logging.config
 logger = logging.getLogger()
 
+this_dir, this_filename = os.path.split(__file__)
+LANGUAGES = os.path.normpath(os.path.join(this_dir, "locale"))
 
 def setup_logging(level, etmdir=None):
     """
@@ -80,15 +82,13 @@ def setup_logging(level, etmdir=None):
 
 import subprocess
 
+# setup gettext in get_options once locale is known
 import gettext
-t = gettext.translation('etm', 'locale', fallback=True)
 
 if platform.python_version() >= '3':
     python_version = 3
     python_version2 = False
     from io import StringIO
-    _ = t.gettext
-    # from gettext import gettext as _
     unicode = str
     u = lambda x: x
     raw_input = input
@@ -97,8 +97,25 @@ else:
     python_version = 2
     python_version2 = True
     from cStringIO import StringIO
-    _ = t.ugettext
     from urllib2 import quote
+
+def s2or3(s):
+    if python_version == 2:
+        if type(s) is unicode:
+            return s
+        elif type(s) is str:
+            try:
+                return unicode(s, term_encoding)
+            except ValueError:
+                logger.error('s2or3 exception: {0}'.format(s))
+        else:
+            return s.toUtf8()
+    else:
+        return s
+
+# def _(s):
+#     return s2or3(s)
+
 
 from random import random
 from math import log
@@ -138,13 +155,6 @@ class End(object):
 # Singleton terminator node
 NIL = Node(End(), [], [])
 
-# default for items without a tag or keyword entry
-# the leading ~ makes them sort last
-NONE = '~ {0} ~'.format(_("none"))
-
-YESTERDAY = _('Yesterday')
-TODAY = _('Today')
-TOMORROW = _('Tomorrow')
 
 class IndexableSkiplist:
     """Sorted collection supporting O(lg n) insertion, removal, and lookup by rank."""
@@ -288,8 +298,6 @@ def clear_all_data():
 
 dayfirst = False
 yearfirst = True
-
-FINISH = _("Finish ...")
 
 IGNORE = """\
 syntax: glob
@@ -676,24 +684,6 @@ import shutil
 import fnmatch
 
 
-def s2or3(s):
-    """
-
-    :rtype : str
-    """
-    if python_version == 2:
-        if type(s) is unicode:
-            return s
-        elif type(s) is str:
-            try:
-                return unicode(s, term_encoding)
-            except ValueError:
-                logger.error('s2or3 exception: {0}'.format(s))
-        else:
-            return s.toUtf8()
-    else:
-        return s
-
 
 def term_print(s):
     if python_version2:
@@ -703,6 +693,16 @@ def term_print(s):
             logger.exception("error printing: '{0}', {1}".format(s, type(s)))
     else:
         print(s)
+
+_ = None
+
+def setup_translate(t):
+    global _
+    if python_version2:
+        _ = t.ugettext
+    else:
+        _ = t.gettext
+
 
 parse = None
 
@@ -1279,12 +1279,15 @@ term_encoding = None
 file_encoding = None
 local_timezone = None
 
+NONE = YESTERDAY = TODAY = TOMORROW = FINISH = ""
+trans = lang = None
 
 def get_options(d=''):
     """
     """
     logger.debug('starting get_options with directory: "{0}"'.format(d))
-    global parse, s2or3, term_encoding, file_encoding, local_timezone
+    global parse, _, lang, trans, s2or3, term_encoding, file_encoding, local_timezone, NONE, YESTERDAY, TODAY, TOMORROW, FINISH
+
     from locale import getpreferredencoding
     from sys import stdout
     try:
@@ -1329,6 +1332,26 @@ def get_options(d=''):
         tmp = locale.getdefaultlocale()
         dgui_encoding = tmp[1]
 
+    if use_locale:
+        locale.setlocale(locale.LC_ALL, map(str, use_locale[0]))
+        lcl = locale.getlocale()
+        lang = use_locale[0][0]
+        trans = gettext.translation(lang, localedir=LANGUAGES, languages=[lang], fallback=True)
+    else:
+        trans = gettext.translation('etm', 'locale', fallback=True)
+        lcl = locale.getdefaultlocale()
+
+    setup_translate(trans)
+
+    NONE = '~ {0} ~'.format(_("none"))
+    YESTERDAY = _('Yesterday')
+    TODAY = _('Today')
+    TOMORROW = _('Tomorrow')
+    FINISH = _("Finish ...")
+
+    trans.install()
+    print(_("Today"))
+
     try:
         dgui_encoding = codecs.lookup(dgui_encoding).name
     except (TypeError, LookupError):
@@ -1347,7 +1370,7 @@ def get_options(d=''):
         'action_markups': {'default': 1.0, },
         'action_minutes': 6,
         'action_interval': 1,
-        'action_timer': {'running': '', 'paused': '', 'idle': ''},
+        'action_timer': {'running': '', 'paused': ''},
         'action_rates': {'default': 100.0, },
         'action_template': '!hours!h $!value!) !label! (!count!)',
 
@@ -1400,7 +1423,6 @@ def get_options(d=''):
         'icsitem_file': os.path.normpath(os.path.join(etmdir, 'etmitem.ics')),
         'icssync_folder': '',
         'ics_subscriptions': [],
-        'idle_minutes': 10,
 
         'local_timezone': time_zone,
 
@@ -1690,14 +1712,9 @@ def get_options(d=''):
         if not os.path.isdir(options['current_icsfolder']):
             os.makedirs(options['current_icsfolder'])
 
-    if use_locale:
-        locale.setlocale(locale.LC_ALL, map(str, use_locale[0]))
-        lcl = locale.getlocale()
-    else:
-        lcl = locale.getdefaultlocale()
-
     options['lcl'] = lcl
     logger.info('using lcl: {0}'.format(lcl))
+
     options['hide_finished'] = False
     # define parse using dayfirst and yearfirst
     setup_parse(options['dayfirst'], options['yearfirst'])
@@ -1928,7 +1945,7 @@ def fmt_date(dt, short=False):
             dt_fmt = "%s" % YESTERDAY
         elif dt == tdy.date() + oneday:
             dt_fmt = "%s" % TOMORROW
-        elif dt == tdy.year:
+        elif dt.year == tdy.year:
             dt_fmt = dt.strftime(shortyearlessfmt)
         else:
             dt_fmt = dt.strftime(shortdatefmt)
@@ -1937,8 +1954,8 @@ def fmt_date(dt, short=False):
             dt_fmt = unicode(dt.strftime(reprdatefmt), term_encoding)
         else:
             dt_fmt = dt.strftime(reprdatefmt)
-        dt_fmt = leadingzero.sub('', dt_fmt)
-    return s2or3(dt_fmt)
+    dt_fmt = leadingzero.sub('', s2or3(dt_fmt))
+    return dt_fmt
 
 
 def fmt_shortdatetime(dt, options=None):
@@ -4202,7 +4219,6 @@ def str2hsh(s, uid=None, options=None):
             if itemtype not in key2type[at_key]:
                 msg.append("An entry for @{0} is not allowed in items of type '{1}'.".format(at_key, itemtype))
                 continue
-                # print('bad key', at_key, itemtype)
             if at_key == 'a':
                 actns = options['alert_default']
                 arguments = []
@@ -4786,9 +4802,9 @@ def timedelta2Str(td, short=False):
 def timedelta2Sentence(td):
     string = timedelta2Str(td)
     if string == 'none':
-        return str(_("now"))
+        return _("now")
     else:
-        return str(_("{0} from now")).format(string)
+        return _("{0} from now").format(string)
 
 
 def add_busytime(key, sm, em, evnt_summary, uid, rpth):
@@ -4807,9 +4823,6 @@ def remove_busytime(key, bt):
     key = (year, weeknum, weekdaynum with Monday=1, Sunday=7)
     value = [minute_total, list of (uid, start_minute, end_minute)]
     """
-    # sm, em, uid, evnt_summary, rpth = bt
-    # timekey = sd.isocalendar()  # year, weeknum, weekdaynum
-    # daykey = sd
     busytimesSL[key].remove(bt)
 
 
@@ -5307,7 +5320,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                              time_diff,
                              hsh['_p'],
                              f),
-                            (fmt_date(today_datetime, ),),
+                            (fmt_date(today_datetime, short=True),),
                             (uid, 'by', summary, extstr, dtl)]
                     items.append(item)
 
@@ -5316,7 +5329,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 item = [
                     ('day', sd.strftime(sortdatefmt), tstr2SCI[typ][0],
                      hsh['_p'], '', f),
-                    (fmt_date(dt),),
+                    (fmt_date(dt, short=True),),
                     (uid, typ, summary, '', dtl)]
                 items.append(item)
                 continue
@@ -5325,7 +5338,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 item = [
                     ('day', sd.strftime(sortdatefmt),
                      tstr2SCI[typ][0], hsh['_p'], '', f),
-                    (fmt_date(dt, ),),
+                    (fmt_date(dt, short=True),),
                     (uid, typ, summary, '', dtl)]
                 items.append(item)
                 occasions.append([sd, summary, uid, f])
@@ -5339,7 +5352,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 item = [
                     ('day', sd.strftime(sortdatefmt),
                      tstr2SCI[typ][0], hsh['_p'], '', f),
-                    (fmt_date(dt, ),),
+                    (fmt_date(dt, short=True),),
                     (uid, 'ac', summary,
                      sdt, dtl)]
                 items.append(item)
@@ -5363,7 +5376,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         ('day', sd.strftime(sortdatefmt),
                          tstr2SCI[typ][0], hsh['_p'],
                          st.strftime(sorttimefmt), f),
-                        (fmt_date(sd, ),),
+                        (fmt_date(sd, short=True),),
                         (uid, typ, summary, '%s ~ %s' %
                                             (st_fmt,
                                              options['dayend_fmt']), dtl)]
@@ -5378,7 +5391,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         item_copy[i][1] = list(item_copy[i][1])
                         item_copy[i][2] = list(item_copy[i][2])
                         item_copy[i][0][1] = sd.strftime(sortdatefmt)
-                        item_copy[i][1][0] = fmt_date(sd)
+                        item_copy[i][1][0] = fmt_date(sd, short=True)
                         item_copy[i][2][3] = '%s ~ %s' % (
                             options['daybegin_fmt'],
                             options['dayend_fmt'])
@@ -5397,7 +5410,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         item_copy[i][1] = list(item_copy[i][1])
                         item_copy[i][2] = list(item_copy[i][2])
                         item_copy[i][0][1] = sd.strftime(sortdatefmt)
-                        item_copy[i][1][0] = fmt_date(sd)
+                        item_copy[i][1][0] = fmt_date(sd, short=True)
                         item_copy[i][2][3] = '%s%s' % (
                             options['daybegin_fmt'], et_fmt)
                         item_copy[i][0] = tuple(item_copy[i][0])
@@ -5412,7 +5425,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         ('day', sd.strftime(sortdatefmt),
                          tstr2SCI[typ][0], hsh['_p'],
                          st.strftime(sorttimefmt), f),
-                        (fmt_date(sd, ),),
+                        (fmt_date(sd, short=True),),
                         (uid, typ, summary, '%s%s' % (
                             st_fmt,
                             et_fmt), dtl)]
@@ -5456,7 +5469,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                             ('day', sd.strftime(sortdatefmt),
                              tstr2SCI[typ][0], hsh['_p'],
                              st.strftime(sorttimefmt), f),
-                            (fmt_date(sd, ),),
+                            (fmt_date(sd, short=True),),
                             (uid, typ, summary, '%s ~ %s' %
                                                 (st_fmt,
                                                  options['dayend_fmt']), dtl)]
@@ -5505,7 +5518,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                             ('day', sd.strftime(sortdatefmt),
                              tstr2SCI[typ][0], hsh['_p'],
                              st.strftime(sorttimefmt), f),
-                            (fmt_date(sd, ),),
+                            (fmt_date(sd, short=True),),
                             (uid, typ, summary, '%s%s' % (
                                 st_fmt,
                                 et_fmt), dtl)]
@@ -5519,7 +5532,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     item = [
                         ('day', dtl.strftime(sortdatefmt), tstr2SCI[typ][0],
                          hsh['_p'], '', f),
-                        (fmt_date(dt, ),),
+                        (fmt_date(dt, short=True),),
                         (uid, typ, summary, tmpl_hsh['e'], dtl)]
                     items.append(item)
                     continue
@@ -6596,7 +6609,7 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
         """
         if not mode:
             mode = "Edited file"
-        logger.debug('starting safe_save: {0}, {1}, cli: {2}'.format(file, mode, cli))
+        logger.debug('starting safe_save. file: {0}, mode: {1}, cli: {2},\n     file_encoding: {3}, type(s): {4}, term_encoding: {5}'.format(file, mode, cli, file_encoding, type(s), term_encoding))
         try:
             fo = codecs.open(self.tmpfile, 'w', file_encoding)
             # add a trailing newline to make diff happy
@@ -6916,7 +6929,7 @@ Show notes grouped and sorted by keyword optionally limited to those containing 
 """)
 
     def do_N(self, arg_str='', itemstr=""):
-        logger.debug('arg_str: {0}'.format(arg_str))
+        logger.debug('arg_str: {0}, type(arg_str): {1}'.format(arg_str, type(arg_str)))
         if arg_str:
             new_item = s2or3(arg_str)
             new_hsh, msg = str2hsh(new_item, options=self.options)
@@ -7070,6 +7083,8 @@ Show items grouped and sorted by tag, optionally limited to those containing a c
             'dateutil': dateutil_version,
             'pyyaml': yaml.__version__,
             'tkversion': self.tkversion,
+            'file_encoding': file_encoding,
+            'term_encoding': term_encoding,
             'github': 'https://github.com/dagraham/etm-tk',
         }
         if not d['tkversion']:  # command line
@@ -7086,6 +7101,9 @@ System Information:
   PyYaml:    {0[pyyaml]}
   Tk/Tcl:    {0[tkversion]}
   Platform:  {0[platform]}
+  Encodings
+     File:   {0[file_encoding]}
+     Term:   {0[term_encoding]}
 
 ETM Information:
   Homepage:
@@ -7128,6 +7146,8 @@ Display information about etm and the operating system.""")
 
 
 def main(etmdir='', argv=[]):
+    global lang, trans
+    lang = trans = None
     logger.debug("data.main etmdir: {0}, argv: {1}".format(etmdir, argv))
     use_locale = ()
     (user_options, options, use_locale) = get_options(etmdir)

@@ -5,7 +5,7 @@ import sys
 lib_path = os.path.relpath('etmTk/')
 sys.path.append(lib_path)
 
-from etmTk import view
+# from etmTk import view
 from etmTk.data import setup_logging
 
 import logging
@@ -39,6 +39,7 @@ if __name__ == "__main__":
         data.main(etmdir, sys.argv)
 
     else:
+        from etmTk import view
         logger.debug("calling view.main with etmdir: {0}".format(etmdir))
         view.main(dir=etmdir)
         sys.exit()

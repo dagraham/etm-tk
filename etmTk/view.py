@@ -118,6 +118,9 @@ ETM = "etm"
 # PAUSED = _('paused')
 # RUNNING = _('running')
 
+def _(s):
+    return s
+
 FILTER = _("filter")
 FILTERCOLOR = "gray"
 
@@ -1245,23 +1248,24 @@ returns:
         # hack to avoid Ctrl-n activation
         if e and e.char != "n":
             return
-        if self.weekly or self.monthly:
+        # if self.weekly or self.monthly:
+        if self.canvas == self.canvas.focus_get():
             master = self.canvas
         else:
             master = self.tree
-        if self.view in [AGENDA] and self.active_date:
-            if self.itemSelected:
-                if 's' in self.itemSelected:
-                    text = " @s {0}".format(self.active_date)
-                elif 'c' in self.itemSelected:
-                    text = " @c {0}".format(self.itemSelected['c'])
+        if self.view in [AGENDA, WEEK, MONTH]:
+            if self.active_date:
+                if self.itemSelected:
+                    if 's' in self.itemSelected:
+                        text = " @s {0}".format(self.active_date)
+                    elif 'c' in self.itemSelected:
+                        text = " @c {0}".format(self.itemSelected['c'])
+                    else:
+                        text = " "
                 else:
-                    text = " "
-            elif self.active_date:
-                text = " @s {0}".format(self.active_date)
-            changed = SimpleEditor(parent=self, master=master, start=text, options=loop.options).changed
-        elif self.view in [DAY, WEEK, MONTH] and self.canvas_date:
-            text = " @s {0}".format(self.canvas_date)
+                    text = " @s {0}".format(self.active_date)
+            elif self.canvas_date:
+                text = " @s {0}".format(self.canvas_date)
             changed = SimpleEditor(parent=self, master=master, start=text, options=loop.options).changed
         elif self.view in [KEYWORD, NOTE] and self.itemSelected:
             if self.itemSelected and 'k' in self.itemSelected:
@@ -2113,6 +2117,7 @@ Enter the shortest time period you want displayed in minutes.""")
         for i in range(4, 6):
             self.toolsmenu.entryconfig(i, state="normal")
         self.showWeek(event=event, week=0)
+        self.canvas.focus_set()
         tt.stop()
 
     def priorWeekMonth(self, event=None):
@@ -2128,7 +2133,7 @@ Enter the shortest time period you want displayed in minutes.""")
             self.showMonth(event=event, month=1)
 
     def showWeek(self, event=None, week=None):
-        self.canvas.focus_set()
+        # self.canvas.focus_set()
         self.selectedId = None
 
         matching = self.cal_regex is not None and self.default_regex is not None
@@ -2450,10 +2455,11 @@ Enter the shortest time period you want displayed in minutes.""")
         self.topwindow.add(self.toppane, padx=0, pady=0, before=self.botwindow, height=self.month_height)
 
         self.showMonth(event=event)
+        self.canvas.focus_set()
         tt.stop()
 
     def showMonth(self, event=None, month=None):
-        self.canvas.focus_set()
+        # self.canvas.focus_set()
         self.selectedId = None
         matching = self.cal_regex is not None and self.default_regex is not None
         busy_lst = []
@@ -3094,8 +3100,11 @@ or 0 to display all changes.""").format(title)
             # type_chr is the actual type, e.g., "-"
             type_chr = self.tree.item(item)['text'][0]
             uuid, dt, hsh = self.getInstance(item)
-            logger.debug('tree rowSelected: {0}; {1}; {2}'.format(self.rowSelected, self.tree.item(item)['text'], dt))
-            if self.view in [AGENDA]:
+            logger.debug('tree rowSelected: {0}; {1}; {2} {3}'.format(self.rowSelected, self.tree.item(item)['text'], dt, hsh))
+            if self.canvas == self.canvas.focus_get():
+                # canvas has focus
+                logger.debug("using canvas active_date: {0}; {1}".format(self.active_date, self.tree.item(item)['text']))
+            elif self.view in [AGENDA, WEEK, MONTH]:
                 if self.rowSelected in self.id2date:
                     if dt is None:
                         # we have the date selected
@@ -3664,7 +3673,8 @@ or 0 to expand all branches completely.""")
             pos = date.day - 1
             self.canvas_idpos = pos
         uid = self.date2id[active_date]
-        self.active_date = active_date
+        self.active_date = date
+        self.canvas_date = date
         self.scrollToId(uid)
 
     def scrollToId(self, uid):
