@@ -108,8 +108,6 @@ def s2or3(s):
                 return unicode(s, term_encoding)
             except ValueError:
                 logger.error('s2or3 exception: {0}'.format(s))
-        elif type(s) == str:
-            return s.toUtf8()
         else:
             return s
     else:

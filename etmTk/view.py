@@ -103,21 +103,10 @@ from etmTk.data import (
 
 from etmTk.dialog import MenuTree, Timer, ReadOnlyText, MessageWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, FileChoice, STOPPED, PAUSED, RUNNING, BGCOLOR, ONEDAY, ONEMINUTE, SimpleEditor
 
-# from etmTk.edit import SimpleEditor
-
-# import gettext
-
-# _ = gettext.gettext
-
 
 from datetime import datetime, time, date
 
 ETM = "etm"
-
-# STOPPED = _('stopped')
-# PAUSED = _('paused')
-# RUNNING = _('running')
-
 
 FILTER = _("filter")
 FILTERCOLOR = "gray"
@@ -315,7 +304,7 @@ class App(Tk):
 
         # main menu
         self.menubar = menubar = Menu(self)
-        menu = _("Menubar")
+        menu = _("Menu")
         self.add2menu(root, (menu,))
 
         # File menu

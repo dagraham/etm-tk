@@ -122,7 +122,7 @@ CREATENEW = _("creating a new item")
 EDITEXISTING = _("editing an existing item")
 
 type2Text = {
-    '$': _("In Basket item"),
+    '$': _("In Basket"),
     '^': _("Occasion"),
     '*': _("Event"),
     '~': _("Action"),
@@ -130,13 +130,9 @@ type2Text = {
     '-': _("Task"),  # for next view
     '+': _("Task Group"),  # for next view
     '%': _("Delegated Task"),
-    '?': _("Someday Maybe item"),
-    '#': _("Hidden item")
+    '?': _("Someday"),
+    '#': _("Hidden")
 }
-
-# import gettext
-# _ = gettext.gettext
-
 
 def sanitize_id(id):
     if type(id) == str:
@@ -837,7 +833,7 @@ class WidgetRedirector:
 class Node:
 
     def __init__(self, name, identifier=None, expanded=True):
-        self.__identifier = (s2or3(uuid.uuid1()) if identifier is None else sanitize_id(s2or3(identifier)))
+        self.__identifier = (uuid.uuid1()) if identifier is None else sanitize_id(s2or3(identifier))
         self.name = name
         self.expanded = expanded
         self.__bpointer = None
