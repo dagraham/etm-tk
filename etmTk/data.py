@@ -5252,14 +5252,14 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         typ = 'pd'
                     else:
                         typ = 'ds'
-                    cat = 'Delegated'
+                    cat = _('Delegated')
                     sn = (2, tstr2SCI[typ][0])
                 elif hsh['itemtype'] == '-':
                     if pastdue:
                         typ = 'pt'
                     else:
                         typ = 'av'
-                    cat = 'Available'
+                    cat = _('Available')
                     sn = (1, tstr2SCI[typ][0])
                 else:
                     # group
@@ -5268,14 +5268,14 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                             typ = 'pu'
                         else:
                             typ = 'cu'
-                        cat = 'Waiting'
+                        cat = _('Waiting')
                         sn = (2, tstr2SCI[typ][0])
                     else:
                         if pastdue:
                             typ = 'pc'
                         else:
                             typ = 'cs'
-                        cat = 'Available'
+                        cat = _('Available')
                         sn = (1, tstr2SCI[typ][0])
                 if 'f' in hsh and 'rrule' not in hsh:
                     continue
