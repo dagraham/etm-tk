@@ -108,14 +108,12 @@ def s2or3(s):
                 return unicode(s, term_encoding)
             except ValueError:
                 logger.error('s2or3 exception: {0}'.format(s))
-        else:
+        elif type(s) == str:
             return s.toUtf8()
+        else:
+            return s
     else:
         return s
-
-# def _(s):
-#     return s2or3(s)
-
 
 from random import random
 from math import log
@@ -514,12 +512,12 @@ def optionShortcut(s):
         return "{0}Alt-{1}".format(shift, s.upper()), "<{0}Alt-{1}>".format(shift, s)
 
 
-def init_localization():
-    """prepare l10n"""
-    locale.setlocale(locale.LC_ALL, '')  # use user's preferred locale
-    # take first two characters of country code
-    trans = gettext.NullTranslations()
-    trans.install()
+# def init_localization():
+#     """prepare l10n"""
+#     locale.setlocale(locale.LC_ALL, '')  # use user's preferred locale
+#     # take first two characters of country code
+#     trans = gettext.NullTranslations()
+#     trans.install()
 
 
 def d_to_str(d, s):
@@ -683,8 +681,6 @@ import codecs
 import shutil
 import fnmatch
 
-
-
 def term_print(s):
     if python_version2:
         try:
@@ -694,18 +690,10 @@ def term_print(s):
     else:
         print(s)
 
-_ = None
 
-def setup_translate(t):
-    global _
-    if python_version2:
-        _ = t.ugettext
-    else:
-        _ = t.gettext
 
 
 parse = None
-
 
 def setup_parse(day_first, year_first):
     """
@@ -1286,7 +1274,7 @@ def get_options(d=''):
     """
     """
     logger.debug('starting get_options with directory: "{0}"'.format(d))
-    global parse, _, lang, trans, s2or3, term_encoding, file_encoding, local_timezone, NONE, YESTERDAY, TODAY, TOMORROW, FINISH
+    global parse, lang, trans, s2or3, term_encoding, file_encoding, local_timezone, NONE, YESTERDAY, TODAY, TOMORROW, FINISH
 
     from locale import getpreferredencoding
     from sys import stdout
@@ -1336,21 +1324,15 @@ def get_options(d=''):
         locale.setlocale(locale.LC_ALL, map(str, use_locale[0]))
         lcl = locale.getlocale()
         lang = use_locale[0][0]
-        trans = gettext.translation(lang, localedir=LANGUAGES, languages=[lang], fallback=True)
     else:
-        trans = gettext.translation('etm', 'locale', fallback=True)
         lcl = locale.getdefaultlocale()
 
-    setup_translate(trans)
 
     NONE = '~ {0} ~'.format(_("none"))
     YESTERDAY = _('Yesterday')
     TODAY = _('Today')
     TOMORROW = _('Tomorrow')
     FINISH = _("Finish ...")
-
-    trans.install()
-    print(_("Today"))
 
     try:
         dgui_encoding = codecs.lookup(dgui_encoding).name
@@ -4040,16 +4022,16 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
                     item[1] = TOMORROW
                 day.append(item)
         elif item[0][0] == 'inbasket':
-            item.insert(1, "%sIn Basket%s" % (bb, eb))
+            item.insert(1, "{0}{1}{2}".format(bb, _("In Basket"), eb))
             inbasket.append(item)
         elif item[0][0] == 'now':
-            item.insert(1, "%sNow%s" % (bb, eb))
+            item.insert(1, "{0}{1}{2}".format(bb, _("Now"), eb))
             now.append(item)
         elif item[0][0] == 'next':
-            item.insert(1, "%sNext%s" % (bb, eb))
+            item.insert(1, "{0}{1}{2}".format(bb, _("Next"), eb))
             next.append(item)
         elif item[0][0] == 'someday':
-            item.insert(1, "%sSomeday%s" % (bb, eb))
+            item.insert(1, "{0}{1}{2}".format(bb, _("Someday"), eb))
             someday.append(item)
     tree = {}
     nv = 0
@@ -6962,7 +6944,7 @@ The item will be appended to the monthly file for the current month.\
 
     @staticmethod
     def help_q():
-        return _('quit\n')
+        return '{0}\n'.format(_("quit"))
 
     def do_c(self, arg):
         logger.debug('custom spec: {0}, {1}'.format(arg, type(arg)))

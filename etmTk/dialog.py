@@ -79,7 +79,7 @@ else:
 
 from datetime import datetime, timedelta
 
-from etmTk.data import (setup_translate,
+from etmTk.data import (
     commandShortcut,
     completion_regex,
     ensureMonthly,
@@ -97,14 +97,10 @@ from etmTk.data import (setup_translate,
     parse_period,
     relpath,
     rrulefmt,
+    s2or3,
     str2hsh,
     uniqueId,
 )
-
-def _(s):
-    return s
-
-# setup_translate(trans)
 
 SOMEREPS = _('selected repetitions')
 ALLREPS = _('all repetitions')
@@ -143,7 +139,10 @@ type2Text = {
 
 
 def sanitize_id(id):
-    return id.strip().replace(" ", "")
+    if type(id) == str:
+        return id.strip().replace(" ", "")
+    else:
+        return id
 
 (_ADD, _DELETE, _INSERT) = range(3)
 (_ROOT, _DEPTH, _WIDTH) = range(3)
@@ -838,7 +837,7 @@ class WidgetRedirector:
 class Node:
 
     def __init__(self, name, identifier=None, expanded=True):
-        self.__identifier = (str(uuid.uuid1()) if identifier is None else sanitize_id(str(identifier)))
+        self.__identifier = (s2or3(uuid.uuid1()) if identifier is None else sanitize_id(s2or3(identifier)))
         self.name = name
         self.expanded = expanded
         self.__bpointer = None

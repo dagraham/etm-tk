@@ -99,7 +99,7 @@ from calendar import Calendar
 from decimal import Decimal
 
 from etmTk.data import (
-    init_localization, fmt_weekday, fmt_dt, str2hsh, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical_active, fmt_time, fmt_period, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, FINISH, availableDates, syncTxt, update_subscription, _)
+    fmt_weekday, fmt_dt, str2hsh, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical_active, fmt_time, fmt_period, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, FINISH, availableDates, syncTxt, update_subscription)
 
 from etmTk.dialog import MenuTree, Timer, ReadOnlyText, MessageWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, FileChoice, STOPPED, PAUSED, RUNNING, BGCOLOR, ONEDAY, ONEMINUTE, SimpleEditor
 
@@ -118,8 +118,6 @@ ETM = "etm"
 # PAUSED = _('paused')
 # RUNNING = _('running')
 
-def _(s):
-    return s
 
 FILTER = _("filter")
 FILTERCOLOR = "gray"
@@ -3216,7 +3214,6 @@ or 0 to display all changes.""").format(title)
 
     def updateTimerStatus(self):
         title, status = self.actionTimer.getStatus()
-        # print('setting title:', title, " and status:", status)
         self.timerTitle.set(title)
         self.timerStatus.set(status)
 
@@ -3998,7 +3995,6 @@ def main(dir=None):  # debug, info, warn, error, critical
     if dir is not None:
         etmdir = dir
         logger.debug('using etmdir: {0}'.format(etmdir))
-    init_localization()
     (user_options, options, use_locale) = data.get_options(etmdir)
     loop = data.ETMCmd(options=options)
     loop.tkversion = tkversion

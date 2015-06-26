@@ -7,6 +7,11 @@ sys.path.append(lib_path)
 
 # from etmTk import view
 from etmTk.data import setup_logging
+import codecs
+import yaml
+import locale
+import gettext
+import platform
 
 import logging
 import logging.config
@@ -14,8 +19,20 @@ logger = logging.getLogger()
 
 log_levels = [str(x) for x in range(1, 6)]
 
+from locale import getpreferredencoding
+from sys import stdout
+
+try:
+    dterm_encoding = stdout.term_encoding
+except AttributeError:
+    dterm_encoding = None
+if not dterm_encoding:
+    dterm_encoding = getpreferredencoding()
+
+dterm_encoding = dfile_encoding = codecs.lookup(dterm_encoding).name
+
 if __name__ == "__main__":
-    etmdir = ''
+    etmdir = language = use_locale = ''
     loglevel = '3'
     help = False
     argstr = " ".join(sys.argv)
@@ -30,6 +47,27 @@ if __name__ == "__main__":
         newpath = os.path.join(temp, 'etmtk.cfg')
         if os.path.isfile(newpath) or os.path.isfile(oldpath):
             etmdir = temp
+
+        locale_cfg = os.path.normpath(os.path.join(etmdir, 'locale.cfg'))
+        if os.path.isfile(locale_cfg):
+            fo = codecs.open(locale_cfg, 'r', dfile_encoding)
+            use_locale = yaml.load(fo)
+            fo.close()
+
+        if use_locale:
+            locale.setlocale(locale.LC_ALL, map(str, use_locale[0]))
+            lcl = locale.getlocale()
+            lang = use_locale[0][0]
+            trans = gettext.translation(lang, localedir=etmdir, languages=[lang], fallback=True)
+    else:
+        trans = gettext.NullTranslations()
+        lcl = locale.getdefaultlocale()
+
+    uu = (platform.python_version() < '3')
+    if uu:
+        trans.install(unicode=True)
+    else:
+        trans.install()
 
     setup_logging(loglevel, etmdir=etmdir)
 
