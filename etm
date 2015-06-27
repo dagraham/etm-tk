@@ -58,7 +58,7 @@ if __name__ == "__main__":
             locale.setlocale(locale.LC_ALL, map(str, use_locale[0]))
             lcl = locale.getlocale()
             lang = use_locale[0][0]
-            localedir = os.path.join(etmdir, "locale")
+            localedir = os.path.join(etmdir, "languages")
             trans = gettext.translation(lang, localedir=localedir, languages=[lang], fallback=True)
     else:
         trans = gettext.NullTranslations()

@@ -534,7 +534,7 @@ class App(Tk):
         # toggle showing finished
         l = "X"
         c = "x"
-        label = _("Toggle displayings finished")
+        label = _("Toggle finished")
         viewmenu.add_command(label=label, underline=1, command=self.toggleFinished)
         self.bindTop(c, self.toggleFinished)
         viewmenu.entryconfig(14, accelerator=l)

@@ -21,6 +21,21 @@
 </tr>
 </table>
 
+### Internationalization in 3.1.20+
+
+<table align="center" hspace="10" vspace="10" width="100%">
+<tr>
+    <td>
+    <center><img src="images/international.gif" /></a></center>
+    </td>
+</tr>
+<tr>
+    <td>
+    <center><img src="images/poedit.gif"/></a></center>
+    </td>
+</tr>
+</table>
+
 ### Original
 
 <table align="center" hspace="10" vspace="10" width="100%">

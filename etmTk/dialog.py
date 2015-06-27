@@ -108,7 +108,7 @@ MESSAGES = _('Error messages')
 VALID = _("Valid entry")
 FOUND = "found"  # for found text marking
 
-MAKE = _("Make")
+# MAKE = _("Make")
 PRINT = _("Print")
 EXPORTTEXT = _("Export report in text format ...")
 EXPORTCSV = _("Export report in CSV format ...")
@@ -155,7 +155,6 @@ PAUSED = _('paused')
 RUNNING = _('running')
 
 FOUND = "found"
-CLOSE = _("Close")
 
 BGLCOLOR = "#f2f2f2"
 BGCOLOR = "#ebebeb"
