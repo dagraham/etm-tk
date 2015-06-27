@@ -4928,7 +4928,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     item = [
                         ('day', d0.strftime(sortdatefmt),
                          tstr2SCI[typ][0], hsh['_p'], '', f),
-                        (fmt_date(d0),),
+                        (fmt_date(d0, short=True), ),
                         (uid, typ, setSummary(hsh, d0), '', d0)]
                     items.append(item)
                     # add2Dates(datetimes, (d0, f))
