@@ -1283,7 +1283,7 @@ def get_options(d=''):
     if not dterm_encoding:
         dterm_encoding = getpreferredencoding()
 
-    dterm_encoding = dfile_encoding = codecs.lookup(dterm_encoding).name
+    term_encoding = dterm_encoding = dfile_encoding = codecs.lookup(dterm_encoding).name
 
     use_locale = ()
     etmdir = ''
@@ -1575,17 +1575,17 @@ def get_options(d=''):
             fo.write(JOIN)
         sample = os.path.normpath(os.path.join(options['datadir'], 'sample'))
         os.makedirs(sample)
-        with open(os.path.join(sample, 'sample.txt'), 'w') as fo:
+        with codecs.open(os.path.join(sample, 'sample.txt'), 'w', dfile_encoding) as fo:
             fo.write(SAMPLE)
         holidays = os.path.normpath(os.path.join(options['datadir'], 'shared'))
         os.makedirs(holidays)
-        with open(os.path.join(holidays, 'holidays.txt'), 'w') as fo:
+        with codecs.open(os.path.join(holidays, 'holidays.txt'), 'w', dfile_encoding) as fo:
             fo.write(HOLIDAYS)
-        with open(os.path.join(options['datadir'], 'sample', 'completions.cfg'), 'w') as fo:
+        with codecs.open(os.path.join(options['datadir'], 'sample', 'completions.cfg'), 'w', dfile_encoding) as fo:
             fo.write(COMPETIONS)
-        with open(os.path.join(options['datadir'], 'sample', 'reports.cfg'), 'w') as fo:
+        with codecs.open(os.path.join(options['datadir'], 'sample', 'reports.cfg'), 'w', dfile_encoding) as fo:
             fo.write(REPORTS)
-        with open(os.path.join(options['datadir'], 'sample', 'users.cfg'), 'w') as fo:
+        with codecs.open(os.path.join(options['datadir'], 'sample', 'users.cfg'), 'w', dfile_encoding) as fo:
             fo.write(USERS)
         if not options['calendars']:
             options['calendars'] = [['personal', True, 'personal'], ['sample', True, 'sample'], ['shared', True, 'shared']]

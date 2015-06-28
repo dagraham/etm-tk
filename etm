@@ -29,11 +29,12 @@ except AttributeError:
 if not dterm_encoding:
     dterm_encoding = getpreferredencoding()
 
-dterm_encoding = dfile_encoding = codecs.lookup(dterm_encoding).name
+term_encoding = dterm_encoding = dfile_encoding = codecs.lookup(dterm_encoding).name
 
 if __name__ == "__main__":
     etmdir = language = use_locale = ''
     loglevel = '3'
+    trans = gettext.NullTranslations()
     help = False
     argstr = " ".join(sys.argv)
     etm = sys.argv[0]
@@ -61,7 +62,6 @@ if __name__ == "__main__":
             localedir = os.path.join(etmdir, "languages")
             trans = gettext.translation(lang, localedir=localedir, languages=[lang], fallback=True)
     else:
-        trans = gettext.NullTranslations()
         lcl = locale.getdefaultlocale()
 
     uu = (platform.python_version() < '3')
