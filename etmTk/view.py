@@ -1459,6 +1459,12 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
         if not self.itemSelected:
             return
         logger.debug('starting editItem: {0}; {1}, {2}'.format(self.itemSelected['_summary'], self.dtSelected, type(self.dtSelected)))
+
+        if self.canvas == self.canvas.focus_get():
+            master = self.canvas
+        else:
+            master = self.tree
+
         choice = 3
         title = ETM
         start_text = None
@@ -1540,7 +1546,7 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
             hsh_rev = deepcopy(self.itemSelected)
 
         logger.debug("mode: {0}; newhsh: {1}; rephsh: {2}".format(self.mode, hsh_cpy is not None, hsh_rev is not None))
-        changed = SimpleEditor(parent=self, file=filename, newhsh=hsh_cpy, rephsh=hsh_rev, options=loop.options, title=title, start=start_text).changed
+        changed = SimpleEditor(parent=self, master=master, file=filename, newhsh=hsh_cpy, rephsh=hsh_rev, options=loop.options, title=title, start=start_text).changed
 
         if changed:
             logger.debug("starting if changed")
@@ -2011,7 +2017,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
     def getWeek(self, chosen_day=None):
         if chosen_day is None:
-            chosen_day = get_current_time()
+            chosen_day = get_current_time().date()
         yn, wn, dn = chosen_day.isocalendar()
         self.prev_week = chosen_day - 7 * ONEDAY
         self.next_week = chosen_day + 7 * ONEDAY
@@ -2091,9 +2097,10 @@ Enter the shortest time period you want displayed in minutes.""")
         if chosen_day is not None:
             self.chosen_day = chosen_day
         elif self.active_date:
-            self.chosen_day = datetime.combine(self.active_date, time())
+            # self.chosen_day = datetime.combine(self.active_date, time())
+            self.chosen_day = self.active_date
         else:
-            self.chosen_day = get_current_time()
+            self.chosen_day = get_current_time().date()
 
         self.topwindow.add(self.toppane, padx=0, pady=0, before=self.botwindow, height=self.week_height)
 
@@ -2127,14 +2134,14 @@ Enter the shortest time period you want displayed in minutes.""")
 
         busy_dates = []
 
-        self.current_day = get_current_time().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
+        self.current_day = get_current_time().date()
         logger.debug('self.current_day: {0}, minutes: {1}'.format(self.current_day, self.current_minutes))
         self.x_win = self.toppane.winfo_width()
         # self.y_win = self.canvas.winfo_height()
         self.y_win = self.toppane.winfo_height()
         logger.debug("win: {0}, {1}".format(self.x_win, self.y_win))
         logger.debug("event: {0}, week: {1}, chosen_day: {2}".format(event, week, self.chosen_day))
-        use_chosen = False
+        use_active = False
         if week in [-1, 0, 1]:
             if week == 0:
                 day = get_current_time()
@@ -2143,10 +2150,10 @@ Enter the shortest time period you want displayed in minutes.""")
             elif week == -1:
                 day = self.prev_week
             self.chosen_day = day
-        elif self.chosen_day:
-            use_chosen = True
-            self.year_month = [self.chosen_day.year, self.chosen_day.month]
-            day = self.chosen_day
+        elif self.active_date:
+            use_active = True
+            self.year_month = [self.active_date.year, self.active_date.month]
+            day = self.active_date
         else:
             return
         logger.debug('week active_date: {0}'.format(self.active_date))
@@ -2156,7 +2163,7 @@ Enter the shortest time period you want displayed in minutes.""")
         weekdaynum = day.isocalendar()[2]
         # reset day to Monday of the current week
         day = day - (weekdaynum - 1) * ONEDAY
-        if use_chosen:
+        if use_active:
             scrolldate = self.chosen_day.date()
             self.canvas_idpos = weekdaynum - 1
         else:
@@ -2234,13 +2241,13 @@ Enter the shortest time period you want displayed in minutes.""")
             w_ = x_ - 12
             h_ = y_ - 12
 
-            thisdate = (day + i * ONEDAY).date()
+            thisdate = (day + i * ONEDAY)
             isokey = thisdate.isocalendar()
             tags = []
             id = self.canvas.create_rectangle(xy, outline="", width=0)
             busy_ids.add(id)
             monthid2date[id] = thisdate
-            today = (thisdate == self.current_day.date())
+            today = (thisdate == self.current_day)
             if today:
                 flagcolor = CURRENTFILL
                 tags.append('current_day')
@@ -2435,9 +2442,9 @@ Enter the shortest time period you want displayed in minutes.""")
         if chosen_day is not None:
             self.chosen_day = chosen_day
         elif self.active_date:
-            self.chosen_day = datetime.combine(self.active_date, time())
+            self.chosen_day = self.active_date
         else:
-            self.chosen_day = get_current_time()
+            self.chosen_day = get_current_time().date()
 
         self.topwindow.add(self.toppane, padx=0, pady=0, before=self.botwindow, height=self.month_height)
 
@@ -2454,12 +2461,11 @@ Enter the shortest time period you want displayed in minutes.""")
         occasion_lst = []
 
         self.current_day = get_current_time().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
-
         logger.debug('self.current_day: {0}, minutes: {1}'.format(self.current_day, self.current_minutes))
         self.x_win = self.canvas.winfo_width()
         self.y_win = self.canvas.winfo_height()
         month_day = 1
-        use_chosen = False
+        use_active = False
         if month in [-1, 0, 1]:
             if month == 0:
                 self.year_month = [self.current_day.year, self.current_day.month]
@@ -2473,16 +2479,16 @@ Enter the shortest time period you want displayed in minutes.""")
                 if self.year_month[1] < 1:
                     self.year_month[1] += 12
                     self.year_month[0] -= 1
-        elif self.chosen_day:
-            use_chosen = True
-            self.year_month = [self.chosen_day.year, self.chosen_day.month]
-            month_day = self.chosen_day.day
+        elif self.active_date:
+            use_active = True
+            self.year_month = [self.active_date.year, self.active_date.month]
+            month_day = self.active_date.day
         else:
             return
         logger.debug('month active_date: {0}'.format(self.active_date))
         day = date(self.year_month[0], self.year_month[1], month_day)
-        if use_chosen:
-            scrolldate = self.chosen_day.date()
+        if use_active:
+            scrolldate = self.chosen_day
             self.canvas_idpos = month_day - 1
             # self.canvas_idpos = weekdaynum - 1
         else:
@@ -2787,7 +2793,9 @@ Enter the shortest time period you want displayed in minutes.""")
 
         self.selectedId = id = self.canvas_ids[self.canvas_idpos]
         self.active_date = self.monthid2date[id]
-        self.canvas_date = self.monthid2date[id]
+        if type(self.active_date) is not date:
+            self.active_date = self.active_date.date()
+        self.canvas_date = self.active_date
         self.scrollToDate(self.active_date)
         self.canvas_idpos = self.canvas_ids.index(id)
         if id in self.busy_ids:
