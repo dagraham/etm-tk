@@ -509,15 +509,6 @@ def optionShortcut(s):
     else:
         return "{0}Alt-{1}".format(shift, s.upper()), "<{0}Alt-{1}>".format(shift, s)
 
-
-# def init_localization():
-#     """prepare l10n"""
-#     locale.setlocale(locale.LC_ALL, '')  # use user's preferred locale
-#     # take first two characters of country code
-#     trans = gettext.NullTranslations()
-#     trans.install()
-
-
 def d_to_str(d, s):
     for key, val in qt2dt:
         s = s.replace(key, val)
@@ -1350,6 +1341,7 @@ def get_options(d=''):
         'action_markups': {'default': 1.0, },
         'action_minutes': 6,
         'action_interval': 1,
+        'action_keys': 'k',
         'action_timer': {'running': '', 'paused': ''},
         'action_rates': {'default': 100.0, },
         'action_template': '!hours!h $!value!) !label! (!count!)',
@@ -1492,7 +1484,7 @@ def get_options(d=''):
     # logger.debug("user_options: {0}".format(user_options))
 
     for key in default_options:
-        if key in ['show_finished', 'fontsize_busy', 'fontsize_fixed', 'fontsize_tree', 'outline_depth', 'prefix', 'prefix_uses', 'icssyc_folder', 'ics_subscriptions', 'agenda_days']:
+        if key in ['action_keys', 'show_finished', 'fontsize_busy', 'fontsize_fixed', 'fontsize_tree', 'outline_depth', 'prefix', 'prefix_uses', 'icssyc_folder', 'ics_subscriptions', 'agenda_days']:
             if key not in user_options:
                 # we want to allow 0 as an entry
                 options[key] = default_options[key]
@@ -1517,6 +1509,15 @@ def get_options(d=''):
             changed = True
     for key in remove_keys:
         del options[key]
+
+    action_keys = [x for x in options['action_keys']]
+    if action_keys:
+        for at_key in action_keys:
+            if at_key not in key2type or "~" not in key2type[at_key]:
+                action_keys.remove(at_key)
+                changed = True
+        if changed:
+            options['action_keys'] = "".join(action_keys)
 
     # check freetimes
     for key in default_freetimes:

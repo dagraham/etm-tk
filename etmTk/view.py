@@ -1597,7 +1597,7 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
                 current_options = deepcopy(loop.options)
                 (user_options, options, use_locale) = data.get_options(
                     d=loop.options['etmdir'])
-                loop.options = options
+                loop.options = self.options = options
                 if options['calendars'] != current_options['calendars']:
                     self.updateCalendars()
             loop.do_update = True
@@ -2156,7 +2156,7 @@ Enter the shortest time period you want displayed in minutes.""")
         elif self.active_date:
             use_active = True
             self.year_month = [self.active_date.year, self.active_date.month]
-            self.chosen_date = self.active_date
+            day = self.chosen_date = self.active_date
         else:
             return
         logger.debug('week active_date: {0}'.format(self.active_date))
@@ -3518,8 +3518,16 @@ Relative dates and fuzzy parsing are supported.""")
         hsh = loop.uuid2hash[self.uuidSelected]
         self.timerItem = self.uuidSelected
         logger.debug('item: {0}'.format(hsh))
-        self.actionTimer.selectTimer(name=hsh['_summary'])
-        # self.actionTimer.selectTimer(name=hsh2str(hsh, options=loop.options)[0][2:])
+        name = hsh['_summary']
+
+        for k in self.options['action_keys']:
+            if k in hsh and hsh[k]:
+                if type(hsh[k]) is list:
+                    v = ", ".join(hsh[k])
+                else:
+                    v = hsh[k]
+                name += " @{0} {1}".format(k, v)
+        self.actionTimer.selectTimer(name=name)
 
     def finishActionTimer(self, e=None):
         if e and e.char != "T":
