@@ -191,7 +191,7 @@ class App(Tk):
         self.option_add('*tearOff', False)
         self.menu_lst = []
         self.menutree = MenuTree()
-        self.chosen_day = None
+        self.chosen_date = None
         self.active_date = None
         self.canvas_date = None
         self.busy_info = None
@@ -2096,12 +2096,12 @@ Enter the shortest time period you want displayed in minutes.""")
         self.view = WEEK
 
         if chosen_day is not None:
-            self.chosen_day = chosen_day
+            self.chosen_date = chosen_day
         elif self.active_date:
             # self.chosen_day = datetime.combine(self.active_date, time())
-            self.chosen_day = self.active_date
+            self.chosen_date = self.active_date
         else:
-            self.chosen_day = get_current_time().date()
+            self.chosen_date = get_current_time().date()
 
         self.topwindow.add(self.toppane, padx=0, pady=0, before=self.botwindow, height=self.week_height)
 
@@ -2141,7 +2141,7 @@ Enter the shortest time period you want displayed in minutes.""")
         # self.y_win = self.canvas.winfo_height()
         self.y_win = self.toppane.winfo_height()
         logger.debug("win: {0}, {1}".format(self.x_win, self.y_win))
-        logger.debug("event: {0}, week: {1}, chosen_day: {2}".format(event, week, self.chosen_day))
+        logger.debug("event: {0}, week: {1}, chosen_day: {2}".format(event, week, self.chosen_date))
         use_active = False
         if week in [-1, 0, 1]:
             if week == 0:
@@ -2152,11 +2152,11 @@ Enter the shortest time period you want displayed in minutes.""")
                 day = self.prev_week
             if type(day) is not date:
                 day = day.date()
-            self.chosen_day = day
+            self.chosen_date = day
         elif self.active_date:
             use_active = True
             self.year_month = [self.active_date.year, self.active_date.month]
-            day = self.active_date
+            self.chosen_date = self.active_date
         else:
             return
         logger.debug('week active_date: {0}'.format(self.active_date))
@@ -2167,7 +2167,7 @@ Enter the shortest time period you want displayed in minutes.""")
         # reset day to Monday of the current week
         day = day - (weekdaynum - 1) * ONEDAY
         if use_active:
-            scrolldate = self.chosen_day.date()
+            scrolldate = self.chosen_date
             self.canvas_idpos = weekdaynum - 1
         else:
             scrolldate = day
@@ -2443,11 +2443,11 @@ Enter the shortest time period you want displayed in minutes.""")
         self.currentView.set(MONTH)
 
         if chosen_day is not None:
-            self.chosen_day = chosen_day
+            self.chosen_date = chosen_day
         elif self.active_date:
-            self.chosen_day = self.active_date
+            self.chosen_date = self.active_date
         else:
-            self.chosen_day = get_current_time().date()
+            self.chosen_date = get_current_time().date()
 
         self.topwindow.add(self.toppane, padx=0, pady=0, before=self.botwindow, height=self.month_height)
 
@@ -2491,7 +2491,7 @@ Enter the shortest time period you want displayed in minutes.""")
         logger.debug('month active_date: {0}'.format(self.active_date))
         day = date(self.year_month[0], self.year_month[1], month_day)
         if use_active:
-            scrolldate = self.chosen_day
+            scrolldate = self.chosen_date
             self.canvas_idpos = month_day - 1
             # self.canvas_idpos = weekdaynum - 1
         else:
@@ -3467,7 +3467,7 @@ Relative dates and fuzzy parsing are supported.""")
         logger.debug('day: {0}'.format(day))
         if day is None:
             return
-        self.chosen_day = day
+        self.chosen_date = day
 
         if self.weekly:
             self.showWeek(event=e, week=None)
@@ -3518,8 +3518,8 @@ Relative dates and fuzzy parsing are supported.""")
         hsh = loop.uuid2hash[self.uuidSelected]
         self.timerItem = self.uuidSelected
         logger.debug('item: {0}'.format(hsh))
-        # self.actionTimer.selectTimer(name=hsh['_summary'])
-        self.actionTimer.selectTimer(name=hsh2str(hsh, options=loop.options)[0][2:])
+        self.actionTimer.selectTimer(name=hsh['_summary'])
+        # self.actionTimer.selectTimer(name=hsh2str(hsh, options=loop.options)[0][2:])
 
     def finishActionTimer(self, e=None):
         if e and e.char != "T":
