@@ -99,7 +99,7 @@ from calendar import Calendar
 from decimal import Decimal
 
 from etmTk.data import (
-    fmt_weekday, fmt_dt, str2hsh, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical_active, fmt_time, fmt_period, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, FINISH, availableDates, syncTxt, update_subscription)
+    fmt_weekday, fmt_dt, str2hsh, hsh2str, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical_active, fmt_time, fmt_period, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, FINISH, availableDates, syncTxt, update_subscription)
 
 from etmTk.dialog import MenuTree, Timer, ReadOnlyText, MessageWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, FileChoice, STOPPED, PAUSED, RUNNING, BGCOLOR, ONEDAY, ONEMINUTE, SimpleEditor
 
@@ -954,11 +954,10 @@ class App(Tk):
 
         self.timerTitle = StringVar(self)
         self.timerTitle.set("")
-        timer_title = Label(self.statusbar, textvariable=self.timerTitle, bd=0, relief="flat", anchor=W, justify=LEFT, padx=2, pady=0)
+        self.timer_title = timer_title = Label(self.statusbar, textvariable=self.timerTitle, bd=0, relief="flat", anchor=W, justify=LEFT, padx=2, pady=0)
 
         timer_title.pack(side="left", expand=1, fill=X, padx=0)
         timer_title.configure(background=BGCOLOR, highlightthickness=0)
-
 
         # set cal_regex here and update it in updateCalendars
         self.cal_regex = None
@@ -2026,6 +2025,8 @@ Enter the shortest time period you want displayed in minutes.""")
             days = dn - 1
         else:
             days = 0
+        if type(chosen_day) is not date:
+            chosen_day = chosen_day.date()
         self.week_beg = weekbeg = chosen_day - days * ONEDAY
         logger.debug('week_beg: {0}'.format(self.week_beg))
         weekend = chosen_day + (6 - days) * ONEDAY
@@ -2033,7 +2034,7 @@ Enter the shortest time period you want displayed in minutes.""")
         weekdates = []
 
         day = weekbeg
-        self.active_date = weekbeg.date()
+        self.active_date = weekbeg
         busy_lst = []
         occasion_lst = []
         matching = self.cal_regex is not None and self.default_regex is not None
@@ -2149,6 +2150,8 @@ Enter the shortest time period you want displayed in minutes.""")
                 day = self.next_week
             elif week == -1:
                 day = self.prev_week
+            if type(day) is not date:
+                day = day.date()
             self.chosen_day = day
         elif self.active_date:
             use_active = True
@@ -2167,7 +2170,7 @@ Enter the shortest time period you want displayed in minutes.""")
             scrolldate = self.chosen_day.date()
             self.canvas_idpos = weekdaynum - 1
         else:
-            scrolldate = day.date()
+            scrolldate = day
             self.canvas_idpos = 0
         self.scrollToDate(scrolldate)
         self.OnSelect()
@@ -3515,7 +3518,8 @@ Relative dates and fuzzy parsing are supported.""")
         hsh = loop.uuid2hash[self.uuidSelected]
         self.timerItem = self.uuidSelected
         logger.debug('item: {0}'.format(hsh))
-        self.actionTimer.selectTimer(name=hsh['_summary'])
+        # self.actionTimer.selectTimer(name=hsh['_summary'])
+        self.actionTimer.selectTimer(name=hsh2str(hsh, options=loop.options)[0][2:])
 
     def finishActionTimer(self, e=None):
         if e and e.char != "T":

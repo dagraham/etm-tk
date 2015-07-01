@@ -2791,7 +2791,7 @@ For editing one or more, but not all, instances of an item. Needed:
         amp_key = None
         if hsh['itemtype'] == "=":
             prefix = ""
-        elif key in options['prefix_uses']:
+        elif 'prefix_uses' in options and key in options['prefix_uses']:
             prefix = options['prefix']
         else:
             prefix = ""
