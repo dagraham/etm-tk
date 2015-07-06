@@ -179,8 +179,7 @@ ICONPLUS = os.path.normpath(os.path.join(this_dir, "icons", "icon_plus.gif"))
 
 class App(Tk):
     def __init__(self, path=None):
-        Tk.__init__(self)
-
+        Tk.__init__(self, className="EtmTk")
         self.minsize(400, 460)
         self.uuidSelected = None
         self.timerItem = None
