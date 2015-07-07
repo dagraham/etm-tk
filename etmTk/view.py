@@ -3221,7 +3221,7 @@ or 0 to display all changes.""").format(title)
         self.now = get_current_time()
         self.current_minutes = self.now.hour * 60 + self.now.minute
         nxt = (60 - self.now.second) * 1000 - self.now.microsecond // 1000
-        nowfmt = "{0} {1}".format(
+        nowfmt = "etm  -  {1} {0}".format(
             s2or3(self.now.strftime("%a %b %d")),
             s2or3(self.now.strftime(loop.options['reprtimefmt']).lower()),
         )
