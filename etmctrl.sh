@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# On linux systems, use wmctrl to set the properties of the etm GUI
+
 usage='Usage:
 
     etmctrl.sh [-v] -(a|c|R|<argument>)
