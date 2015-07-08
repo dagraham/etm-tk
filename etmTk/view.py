@@ -555,8 +555,8 @@ class App(Tk):
             [_('Reschedule'), 'r'],
             [_('Schedule new'), 's'],
             [_('Klone as timer'), 'k'],
-            [_('Open link'), 'g'],
             [_('Show date and time details'), 'd'],
+            [_('Open link'), 'g'],
             [_('Show user details'), 'u'],
             ]
         path = ITEM
@@ -3187,27 +3187,27 @@ or 0 to display all changes.""").format(title)
                 text = "{1}\n\n{2}: {3}\n\n{4}: {5}".format(item, hsh['entry'].lstrip(), _("Errors"), hsh['errors'], _("file"), filetext)
             else:
                 text = "{1}\n\n{2}: {3}".format(item, hsh['entry'].lstrip(), _("file"), filetext)
-            for i in [0, 1, 2, 3, 5, 6, 7, 8]:  # everything except finish (4), open link (9) and show user (10)
+            for i in [0, 1, 2, 3, 5, 6, 7, 8, 9]:  # everything except finish (4), open link (10) and show user (11)
                 self.itemmenu.entryconfig(i, state='normal')
             if isUnfinished:
                 self.itemmenu.entryconfig(4, state='normal')
             else:
                 self.itemmenu.entryconfig(4, state='disabled')
             if hasLink:
-                self.itemmenu.entryconfig(9, state='normal')
-            else:
-                self.itemmenu.entryconfig(9, state='disabled')
-            if hasUser:
                 self.itemmenu.entryconfig(10, state='normal')
             else:
                 self.itemmenu.entryconfig(10, state='disabled')
+            if hasUser:
+                self.itemmenu.entryconfig(11, state='normal')
+            else:
+                self.itemmenu.entryconfig(11, state='disabled')
             self.uuidSelected = uuid
             self.itemSelected = hsh
             logger.debug('dt selected: {0}, {1}'.format(dt, type(dt)))
             self.dtSelected = dt
         else:
             text = ""
-            for i in range(11):
+            for i in range(12):
                 self.itemmenu.entryconfig(i, state='disabled')
             self.itemSelected = None
             self.uuidSelected = None
