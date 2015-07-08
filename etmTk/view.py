@@ -99,9 +99,9 @@ from calendar import Calendar
 from decimal import Decimal
 
 from etmTk.data import (
-    fmt_weekday, fmt_dt, str2hsh, hsh2str, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical_active, fmt_time, fmt_period, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, FINISH, availableDates, syncTxt, update_subscription)
+    fmt_weekday, fmt_dt, fmt_date, str2hsh, hsh2str, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type,     fmt_shortdatetime, get_reps, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical_active, fmt_time, fmt_period, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, availableDates, syncTxt, update_subscription)
 
-from etmTk.dialog import MenuTree, Timer, ReadOnlyText, MessageWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, FileChoice, STOPPED, PAUSED, RUNNING, BGCOLOR, ONEDAY, ONEMINUTE, SimpleEditor
+from etmTk.dialog import MenuTree, Timer, ReadOnlyText, MessageWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, FileChoice, FINISH, STOPPED, PAUSED, RUNNING, BGCOLOR, ONEDAY, ONEMINUTE, SOMEREPS, ALLREPS, type2Text, SimpleEditor
 
 
 from datetime import datetime, time, date
@@ -542,33 +542,35 @@ class App(Tk):
         menubar.add_cascade(label=path, underline=0, menu=viewmenu)
 
         # Item menu
+        self.itemmenu = itemmenu = Menu(menubar, tearoff=0)
+        self.itemmenu.bind("<Escape>", self.closeItemMenu)
+        self.itemmenu.bind("<FocusOut>", self.closeItemMenu)
         self.em_options = [
             [_('Copy'), 'c'],
-            [_('Delete'), 'd'],
+            [_('Delete'), 'D'],
             [_('Edit'), 'e'],
             [_('Edit file'), 'E'],
             [_('Finish'), 'f'],
             [_('Move'), 'm'],
             [_('Reschedule'), 'r'],
-            [_('Schedule new'), 'R'],
+            [_('Schedule new'), 's'],
             [_('Klone as timer'), 'k'],
             [_('Open link'), 'g'],
+            [_('Show date and time details'), 'd'],
             [_('Show user details'), 'u'],
             ]
-        self.itemmenu = itemmenu = Menu(menubar, tearoff=0)
-        self.itemmenu.bind("<Escape>", self.closeItemMenu)
-        self.itemmenu.bind("<FocusOut>", self.closeItemMenu)
         path = ITEM
         self.add2menu(menu, (path, ))
         self.edit2cmd = {
             'c': self.copyItem,
-            'd': self.deleteItem,
+            'D': self.deleteItem,
             'e': self.editItem,
             'E': self.editItemFile,
             'f': self.finishItem,
             'm': self.moveItem,
             'r': self.rescheduleItem,
-            'R': self.scheduleNewItem,
+            's': self.scheduleNewItem,
+            'd': self.showDateTimeDetails,
             'g': self.openWithDefault,
             'u': self.showUserDetails,
             'k': self.kloneTimer}
@@ -576,15 +578,12 @@ class App(Tk):
         for i in range(len(self.em_options)):
             label = self.em_options[i][0]
             k = self.em_options[i][1]
-            if k == 'd':
+            if k == 'D':
                 l = "BackSpace"
                 c = "<BackSpace>"
             elif k == 'E':
                 l = "Shift-E"
                 c = "E"
-            elif k == 'R':
-                l = "Shift-R"
-                c = "R"
             else:
                 l = k.upper()
                 c = k
@@ -687,8 +686,8 @@ class App(Tk):
         self.add2menu(path, (SEP, ))
 
         # popup active tree
-        l = "S"
-        c = "s"
+        l = "Shift-O"
+        c = "O"
         label = _("Show outline as text")
         toolsmenu.add_command(label=label, underline=1, command=self.popupTree)
         self.bindTop(c, self.popupTree)
@@ -1758,7 +1757,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
             self.showView(row=self.topSelected)
 
     def scheduleNewItem(self, e=None):
-        if e and e.char != 'i':
+        if e and e.char != 's':
             return
         if not self.itemSelected:
             return
@@ -1793,6 +1792,47 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         else:
             self.tree.focus_set()
             self.showView(row=self.topSelected)
+
+    def showDateTimeDetails(self, e=None):
+        if not self.itemSelected:
+            return
+        if e and e.char != 'd':
+            return
+        pre = post = warn = ""
+        hsh = self.itemSelected
+
+        if 'r' in hsh:
+            pre = _("Repeating ")
+        elif 's' in hsh:
+            dt = hsh['s']
+            if hsh['itemtype'] in ['*', '~']:
+                dtfmt = fmt_shortdatetime(hsh['s'], self.options)
+            else:
+                if not dt.hour and not dt.minute:
+                    dtfmt = fmt_date(dt, short=True)
+                else:
+                    dtfmt = fmt_shortdatetime(hsh['s'], self.options)
+            post = _(" starting {0}.").format(dtfmt)
+        else:  # unscheduled
+            pre = _("Unscheduled ")
+
+        prompt = "{0}{1}{2}".format(pre, type2Text[hsh['itemtype']], post)
+
+        if 'r' in hsh:
+            showing_all, reps = get_reps(self.loop.options['bef'], hsh)
+
+            try:
+                repsfmt = [unicode(x.strftime(rrulefmt)) for x in reps]
+            except:
+                repsfmt = [unicode(x.strftime("%X %x")) for x in reps]
+            logger.debug("{0}: {1}".format(showing_all, repsfmt))
+            if showing_all:
+                reps = ALLREPS
+            else:
+                reps = SOMEREPS
+            prompt = "{0}, {1}:\n\n  {2}".format(prompt, reps, "\n  ".join(repsfmt))
+
+        self.textWindow(parent=self, title=_("Date and time details"), prompt=prompt, opts=self.options)
 
     def showAlerts(self, e=None):
         # hack to avoid activating with Ctrl-a
@@ -3221,7 +3261,7 @@ or 0 to display all changes.""").format(title)
         self.now = get_current_time()
         self.current_minutes = self.now.hour * 60 + self.now.minute
         nxt = (60 - self.now.second) * 1000 - self.now.microsecond // 1000
-        nowfmt = "etm  -  {1} {0}".format(
+        nowfmt = "etm  -  {1}  {0}".format(
             s2or3(self.now.strftime("%a %b %d")),
             s2or3(self.now.strftime(loop.options['reprtimefmt']).lower()),
         )

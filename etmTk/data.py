@@ -1256,14 +1256,14 @@ term_encoding = None
 file_encoding = None
 local_timezone = None
 
-NONE = YESTERDAY = TODAY = TOMORROW = FINISH = ""
+NONE = YESTERDAY = TODAY = TOMORROW = ""
 trans = lang = None
 
 def get_options(d=''):
     """
     """
     logger.debug('starting get_options with directory: "{0}"'.format(d))
-    global parse, lang, trans, s2or3, term_encoding, file_encoding, local_timezone, NONE, YESTERDAY, TODAY, TOMORROW, FINISH
+    global parse, lang, trans, s2or3, term_encoding, file_encoding, local_timezone, NONE, YESTERDAY, TODAY, TOMORROW
 
     from locale import getpreferredencoding
     from sys import stdout
@@ -1321,7 +1321,6 @@ def get_options(d=''):
     YESTERDAY = _('Yesterday')
     TODAY = _('Today')
     TOMORROW = _('Tomorrow')
-    FINISH = _("Finish ...")
 
     try:
         dgui_encoding = codecs.lookup(dgui_encoding).name

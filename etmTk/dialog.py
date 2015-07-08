@@ -83,7 +83,6 @@ from etmTk.data import (
     commandShortcut,
     completion_regex,
     ensureMonthly,
-    FINISH,
     fmt_date,
     fmt_period,
     fmt_shortdatetime,
@@ -107,6 +106,7 @@ ALLREPS = _('all repetitions')
 MESSAGES = _('Error messages')
 VALID = _("Valid entry")
 FOUND = "found"  # for found text marking
+FINISH = _("Finish")
 
 # MAKE = _("Make")
 PRINT = _("Print")
