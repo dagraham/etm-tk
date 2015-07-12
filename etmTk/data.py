@@ -1869,7 +1869,7 @@ tstr2SCI = {
 }
 
 
-def fmt_period(td, parent=None):
+def fmt_period(td, parent=None, short=False):
     # logger.debug('td: {0}, {1}'.format(td, type(td)))
     if td < oneminute * 0:
         return '0m'
@@ -1879,6 +1879,16 @@ def fmt_period(td, parent=None):
     td_days = td.days
     td_hours = td.seconds // (60 * 60)
     td_minutes = (td.seconds % (60 * 60)) // 60
+
+    if short:
+        if td_days > 1:
+            if td_minutes > 30:
+                td_hours += 1
+            td_minutes = 0
+        if td_days > 7:
+            if td_hours > 12:
+                td_days += 1
+            td_hours = 0
 
     if td_days:
         until.append("%dd" % td_days)
@@ -2069,6 +2079,7 @@ at_keys = [
     'g',  # goto
     'j',  # job
     'p',  # priority
+    'q',  # queue
     'r',  # repetition rule
     '+',  # include
     '-',  # exclude
@@ -2107,6 +2118,7 @@ key2type = {
     u'm': all_types,
     u'o': job_types + any_types,
     u'p': job_types + any_types,
+    u'q': job_types + any_types,
     u'r': all_types,
     u's': all_types,
     u't': all_types,
@@ -2786,7 +2798,7 @@ For editing one or more, but not all, instances of an item. Needed:
         omitted = []
         for key in bad_keys:
             omitted.append('@{0} {1}'.format(key, hsh[key]))
-        msg.append("unrecogized entries: {0}".format(", ".join(omitted)))
+        msg.append("unrecognized entries: {0}".format(", ".join(omitted)))
     for key in at_keys:
         amp_key = None
         if hsh['itemtype'] == "=":
@@ -2834,7 +2846,7 @@ For editing one or more, but not all, instances of an item. Needed:
                         if k not in keys:
                             omitted.append('&{0} {1}'.format(k, v[k]))
                 if omitted:
-                    msg.append("unrecogized entries: {0}".format(", ".join(omitted)))
+                    msg.append("unrecognized entries: {0}".format(", ".join(omitted)))
 
                 tmp = []
                 for h in value:
@@ -2875,6 +2887,14 @@ For editing one or more, but not all, instances of an item. Needed:
                     sl.append("%s@%s %s" % (prefix, key, fmt_datetime(value, options=options)))
                 except:
                     msg.append("problem with @{0}: {1}".format(key, value))
+            elif key == 'q':
+                if type(value) is datetime:
+                    sl.append("%s@%s %s" % (
+                        prefix, key,
+                        value.strftime(zfmt),
+                    ))
+                else:
+                    sl.append("%s@%s %s" % (prefix, key, value))
             elif key == 'e':
                 try:
                     sl.append("%s@%s %s" % (prefix, key, fmt_period(value)))
@@ -4301,6 +4321,15 @@ def str2hsh(s, uid=None, options=None):
             except:
                 err = "error: could not parse '@s {0}'".format(hsh['s'])
                 msg.append(err)
+        if 'q' in hsh:
+            try:
+                # hsh['q'] = parse(parse_datetime(part, f=sfmt))
+                hsh['q'] = parse(
+                    parse_datetime(
+                        hsh['q'], hsh['z'])).replace(tzinfo=None)
+            except:
+                err = "error: could not parse '@s {0}'".format(hsh['s'])
+                msg.append(err)
         if '+' in hsh:
             tmp = []
             for part in hsh['+']:
@@ -5015,32 +5044,39 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
             if not due and not done:  # undated
                 # dts = "none"
                 dtl = today_datetime
+                extstr = ""
+                exttd = ""
+                if 'q' in hsh and type(hsh['q']) is datetime:
+                    # extstr = exttd = fmt_datetime(hsh['q'], options=options)
+                    dtl = hsh['q']
+                    exttd = hsh['q'] - datetime.now()
+                    extstr = fmt_period(abs(exttd), short=True)
                 item = [
                     ('folder', (f, tstr2SCI[typ][0]), '',
                      hsh['_summary'], f),
                     tuple(folders),
-                    (uid, typ, setSummary(hsh, ''), '')]
+                    (uid, typ, setSummary(hsh, ''), extstr)]
                 items.append(item)
 
                 if 'k' in hsh and hsh['itemtype'] != "#":
                     keywords = [x.strip() for x in hsh['k'].split(':')]
                     item = [
-                        ('keyword', (hsh['k'], tstr2SCI[typ][0]), '',
+                        ('keyword', (hsh['k'], tstr2SCI[typ][0]), dtl,
                          hsh['_summary'], f), tuple(keywords),
-                        (uid, typ, setSummary(hsh, ''), '', dtl)]
+                        (uid, typ, setSummary(hsh, ''), extstr, dtl)]
                     items.append(item)
                 if 't' in hsh and hsh['itemtype'] != "#":
                     for tag in hsh['t']:
                         item = [
-                            ('tag', (tag, tstr2SCI[typ][0]), due,
+                            ('tag', (tag, tstr2SCI[typ][0]), dtl,
                              hsh['_summary'], f), (tag,),
-                            (uid, typ, setSummary(hsh, ''), '', dtl)]
+                            (uid, typ, setSummary(hsh, ''), extstr, dtl)]
                         items.append(item)
 
         else:  # not a task type
             if 's' in hsh:
                 if 'rrule' in hsh:
-                    if hsh['itemtype'] in ['^', '*', '~']:
+                    if hsh['itemtype'] in [u'^', u'*', u'~']:
                         dt = (
                             hsh['rrule'].after(today_datetime, inc=True)
                             or hsh['rrule'].before(
@@ -5135,7 +5171,12 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
         if 's' not in hsh and hsh['itemtype'] in [u'+', u'-', u'%']:
             if 'f' in hsh:
                 continue
-            if 'e' in hsh and hsh['e'] is not None:
+            if 'q' in hsh and type(hsh['q']) is datetime:
+                # extstr = exttd = fmt_datetime(hsh['q'], options=options)
+                exttd = hsh['q'] - datetime.now()
+                extstr = fmt_period(abs(exttd), short=True)
+                # extstr = exttd = hsh['q'].strftime(zfmt)
+            elif 'e' in hsh and hsh['e'] is not None:
                 extstr = fmt_period(hsh['e'])
                 exttd = hsh['e']
             else:

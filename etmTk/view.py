@@ -1250,6 +1250,8 @@ returns:
                     text = " @s {0}".format(self.active_date)
             elif self.canvas_date:
                 text = " @s {0}".format(self.canvas_date)
+            else:
+                text = " "
             changed = SimpleEditor(parent=self, master=master, start=text, options=loop.options).changed
         elif self.view in [KEYWORD, NOTE] and self.itemSelected:
             if self.itemSelected and 'k' in self.itemSelected:

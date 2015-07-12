@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# On linux systems, use wmctrl to set the properties of the etm GUI
+# A script for using wmctrl on linux systems to set the properties of the etm GUI
 
 usage='Usage:
 
-    etmctrl.sh [-v] -(a|c|R|<argument>)
+    etmctrl.sh [-v] (-a|-c|-R|<argument>)
 
 where
 
@@ -28,7 +28,7 @@ E.g.,
 
 would toggle the "above" state of the etm window.'
 
-if [ -z "$1" ] || [ "$1" = "?" ]; then
+if [ -z "$1" ] || [ "$1" = "?" ] || [ "$1" = "--help" ]; then
     echo "$usage"
     exit 1
 fi
@@ -45,12 +45,6 @@ verbose=""
 if [ "$1" = "-v" ]; then
     verbose="-v"
     shift
-fi
-
-
-if [ -z "$1" ]; then
-    echo "$usage"
-    exit 1
 fi
 
 arg=$1
