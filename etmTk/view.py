@@ -1753,7 +1753,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         elif self.monthly:
             self.canvas.focus_set()
             self.updateDay()
-            self.showMonthly()
+            self.showMonth()
         else:
             self.tree.focus_set()
             self.showView(row=self.topSelected)
