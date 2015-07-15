@@ -2522,8 +2522,11 @@ Recursively process groups and accumulate the totals.
 
     for i in range(len(auglst)):
         if type(auglst[i][-1]) in [str, unicode]:
-            summary, uid, trailing = auglst[i][-1].split('!!')
-            auglst[i][-1] = tuple((uid, 'ac', summary, ''))
+            res = auglst[i][-1].split('!!')
+            if len(res) > 1:
+                summary = res[0]
+                uid = res[1]
+                auglst[i][-1] = tuple((uid, 'ac', summary, ''))
     res = makeTree(auglst, sort=False)
 
     if export:
