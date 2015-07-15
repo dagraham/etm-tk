@@ -2521,7 +2521,7 @@ Recursively process groups and accumulate the totals.
     doGroups(list_of_tuples, level)
 
     for i in range(len(auglst)):
-        if type(auglst[i][-1]) is str:
+        if type(auglst[i][-1]) in [str, unicode]:
             summary, uid, trailing = auglst[i][-1].split('!!')
             auglst[i][-1] = tuple((uid, 'ac', summary, ''))
     res = makeTree(auglst, sort=False)
@@ -4159,7 +4159,7 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
         return tree
     else:
         if grpby['report'] == 'a' and 'depth' in grpby and grpby['depth']:
-            depth = min(grpby['depth'], len(grpby['lst']))
+            depth = min(grpby['depth']-1, len(grpby['lst']))
         else:
             depth = len(grpby['lst'])
         logger.debug('using depth: {0}'.format(depth))
