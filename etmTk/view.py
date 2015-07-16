@@ -101,8 +101,7 @@ from decimal import Decimal
 from etmTk.data import (
     fmt_weekday, fmt_dt, fmt_date, str2hsh, hsh2str, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type,     fmt_shortdatetime, get_reps, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical_active, fmt_time, fmt_period, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, availableDates, syncTxt, update_subscription)
 
-from etmTk.dialog import MenuTree, Timer, ReadOnlyText, MessageWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, FileChoice, FINISH, STOPPED, PAUSED, RUNNING, BGCOLOR, ONEDAY, ONEMINUTE, SOMEREPS, ALLREPS, type2Text, SimpleEditor
-
+from etmTk.dialog import MenuTree, Timer, ReadOnlyText, MessageWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, FileChoice, FINISH, STOPPED, PAUSED, RUNNING, ONEDAY, ONEMINUTE, SOMEREPS, ALLREPS, type2Text, SimpleEditor
 
 from datetime import datetime, time, date
 
@@ -177,15 +176,23 @@ ICONSETTINGS = os.path.normpath(os.path.join(this_dir, "icons", "icon_settings.g
 ICONPLUS = os.path.normpath(os.path.join(this_dir, "icons", "icon_plus.gif"))
 # ICONLOGO = os.path.normpath(os.path.join(this_dir, "icons", "etmlogo.gif"))
 
+# STYLE = "default"
+
 class App(Tk):
     def __init__(self, path=None):
         Tk.__init__(self, className="EtmTk")
         self.minsize(400, 460)
         self.uuidSelected = None
         self.timerItem = None
-        self.loop = loop
         self.monthly_calendar = Calendar()
         self.activeAlerts = []
+
+        self.loop = loop
+        self.options = loop.options
+        style = self.options['style']
+        BGCOLOR = self.options['background_color']
+        self.BGCOLOR = BGCOLOR
+
         self.configure(background=BGCOLOR)
         self.option_add('*tearOff', False)
         self.menu_lst = []
@@ -204,7 +211,16 @@ class App(Tk):
         self.week_height = 80
         self.month_height = 260
 
-        self.options = loop.options
+
+        s = ttk.Style()
+        styles = s.theme_names()
+        if style in styles:
+            s.theme_use(style)
+            logger.info("using style {0}".format(style))
+        else:
+            logger.warn("style {0} is not an option from {1} - ignoring style".format(style, ", ".join(styles)))
+
+        ttk.Style().configure("bg.TButton", background=BGCOLOR, activebackground=BGCOLOR, highlightbackground=BGCOLOR,  relief=RAISED)
 
         tkfixedfont = tkFont.nametofont("TkFixedFont")
         if 'fontsize_fixed' in self.options and self.options['fontsize_fixed']:
@@ -249,7 +265,7 @@ class App(Tk):
         self.statusbar = Frame(self, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR, takefocus=False)
         self.statusbar.pack(side="bottom", fill="x", expand=0, padx=4, pady=2)
 
-        self.topwindow = topwindow = PanedWindow(self, orient="vertical", sashwidth=4, sashrelief='flat')
+        self.topwindow = topwindow = PanedWindow(self, orient="vertical", sashwidth=4, sashrelief='flat', background=BGCOLOR)
         self.topwindow.pack(side="top", fill=BOTH, expand=1)
 
 
@@ -260,12 +276,12 @@ class App(Tk):
         self.toppane.pack(side="top", fill=BOTH, expand=1)
 
         self.canvas = Canvas(
-            self.toppane, background="white", bd=1, relief="flat",
+            self.toppane, background=BGCOLOR, bd=2, relief="flat",
             highlightthickness=2, highlightbackground=BGCOLOR)
         self.canvas.pack(fill=BOTH, expand=1, padx=0, pady=0)
 
 
-        self.botwindow = botwindow = PanedWindow(topwindow, orient="vertical", sashwidth=4, sashrelief='flat')
+        self.botwindow = botwindow = PanedWindow(topwindow, orient="vertical", sashwidth=4, sashrelief='flat', background=BGCOLOR)
         topwindow.add(botwindow)
 
         self.treepane = treepane = Frame(
@@ -279,12 +295,21 @@ class App(Tk):
             botwindow, font=self.tkfixedfont,
             wrap="word", padx=3, bd=2, relief="sunken",
             height=loop.options['details_rows'],
-            width=46, takefocus=False)
+            width=46, takefocus=False,
+            # highlightthickness=8,
+            highlightbackground=BGCOLOR,
+            background=BGCOLOR,
+            )
         botwindow.add(self.content, padx=3, pady=0, stretch="never")
 
 
         self.tree = ttk.Treeview(treepane, show='tree', columns=["#1", "#2"], selectmode='browse')
-        self.tree.pack(fill="both", expand=1, padx=4, pady=0)
+        ttk.Style().configure("Treeview",
+                              background=BGCOLOR,
+                              # foreground=BGCOLOR,
+                              fieldbackground=BGCOLOR,
+                              )
+        self.tree.pack(fill="both", expand=1, padx=1, pady=0)
 
 
         self.canvas.bind('<Button-1>', (lambda e: self.selectId(event=e, d=0)))
@@ -870,19 +895,16 @@ class App(Tk):
 
         iconsize = "22"
         self.settingsIcon = PhotoImage(file=ICONSETTINGS)
-        self.settingsbutton = Button(
-            topbar, command=self.selectCalendars,
-            highlightbackground=BGCOLOR,
-            bg=BGCOLOR, pady=0, bd=0,
-            highlightthickness=0, takefocus=False
+        self.settingsbutton = ttk.Button(
+            topbar, command=self.selectCalendars, style="bg.TButton", takefocus=False, width=0
         )
-        self.settingsbutton.config(image=self.settingsIcon, width=iconsize, height=iconsize)
+        self.settingsbutton.config(image=self.settingsIcon)
         self.settingsbutton.pack(side="left", padx=4, pady=2)
 
 
         self.newIcon = PhotoImage(file=ICONPLUS)
-        self.newbutton = Button(topbar, command=self.newItem, highlightbackground=BGCOLOR, bg=BGCOLOR, pady=0, highlightthickness=0, takefocus=False)
-        self.newbutton.config(image=self.newIcon, width=iconsize, height=iconsize)
+        self.newbutton = ttk.Button(topbar, command=self.newItem, style="bg.TButton", takefocus=False, width=0)
+        self.newbutton.config(image=self.newIcon)
         self.newbutton.pack(side="right", padx=4, pady=2)
 
         windowtitle = Label(topbar, textvariable=self.currentView, bd=1, relief="flat",  padx=8, pady=0)
@@ -935,12 +957,14 @@ class App(Tk):
 
         self.pendingAlerts = IntVar(self)
         self.pendingAlerts.set(0)
-        self.pending = Button(self.statusbar,
+        self.pending = ttk.Button(self.statusbar,
                               textvariable=self.pendingAlerts,
                               command=self.showAlerts,
-                              highlightbackground=BGCOLOR,
-                              bg=BGCOLOR, highlightthickness=0, takefocus=False,
-                              width=4, pady=2,
+                              style="bg.TButton",
+                              # highlightbackground=BGCOLOR,
+                              # bg=BGCOLOR, highlightthickness=0, takefocus=False,
+                              # width=4, pady=2,
+                              width=0
                               )
         self.pending.pack(side="right", expand=0, padx=2, pady=2)
 
@@ -1633,14 +1657,14 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
         self.editFile(e, file=ret, config=True)
 
     def getReportsFile(self, e=None):
-        ret = FileChoice(self, "append to reports file", prefix=self.loop.options['etmdir'], list=self.loop.options['report_files']).returnValue()
+        ret = FileChoice(self, title="append to reports file", prefix=self.loop.options['etmdir'], list=self.loop.options['report_files']).returnValue()
         if not (ret and os.path.isfile(ret)):
             return False
         return ret
 
     def getDataFile(self, e=None, title="data file", start=''):
         prefix, tuples = getFileTuples(loop.options['datadir'], include=r'*.txt')
-        ret = FileChoice(self, title, prefix=prefix, list=tuples, start=start).returnValue()
+        ret = FileChoice(self, title=title, prefix=prefix, list=tuples, start=start).returnValue()
         if not (ret and os.path.isfile(ret)):
             return False
         return ret
@@ -2270,7 +2294,8 @@ Enter the shortest time period you want displayed in minutes.""")
 
         for i in range(7):
             fill = "SteelBlue4"
-            flagcolor = "white"
+            # flagcolor = "white"
+            flagcolor = self.BGCOLOR
             busytimes = 0
             start_x = l + i * x_
             end_x = start_x + x_
@@ -2418,7 +2443,9 @@ Enter the shortest time period you want displayed in minutes.""")
             elif 'occasion' in tags:
                 self.canvas.itemconfig(id, tag='occasion', fill=OCCASIONFILL)
             elif 'busy' in tags:
-                self.canvas.itemconfig(id, tag='busy', fill="white")
+                self.canvas.itemconfig(id, tag='busy', fill=self.BGCOLOR)
+            else:
+                self.canvas.itemconfig(id, tag='default', fill=self.BGCOLOR)
 
             # if fill:
             self.canvas.create_text(p, text="{0}".format(weekdates[i]), fill=barcolor)
@@ -2606,7 +2633,7 @@ Enter the shortest time period you want displayed in minutes.""")
         for j in range(num_weeks):
             for i in range(7):
                 busytimes = 0
-                flagcolor = "white"
+                flagcolor = self.BGCOLOR
                 start_x = l + i * x_
                 end_x = start_x + x_
                 start_y = int(t + y_ * j)
@@ -2758,7 +2785,7 @@ Enter the shortest time period you want displayed in minutes.""")
                 elif 'occasion' in tags:
                     self.canvas.itemconfig(id, tag='occasion', fill=OCCASIONFILL)
                 elif 'busy' in tags:
-                    self.canvas.itemconfig(id, tag='busy', fill="white")
+                    self.canvas.itemconfig(id, tag='busy', fill=self.BGCOLOR)
 
                 if fill:
                     self.canvas.create_text(p, text="{0}".format(weeks[j][i].day), fill=fill)
@@ -2831,9 +2858,9 @@ Enter the shortest time period you want displayed in minutes.""")
             elif 'occasion' in tags:
                 self.canvas.itemconfig(old_id, fill=OCCASIONFILL)
             elif 'busy' in tags:
-                self.canvas.itemconfig(old_id, fill="white")
+                self.canvas.itemconfig(old_id, fill=self.BGCOLOR)
             else:
-                self.canvas.itemconfig(old_id, fill="white")
+                self.canvas.itemconfig(old_id, fill=self.BGCOLOR)
 
         self.selectedId = id = self.canvas_ids[self.canvas_idpos]
         self.active_date = self.monthid2date[id]
@@ -2867,7 +2894,7 @@ Enter the shortest time period you want displayed in minutes.""")
                 elif 'occasion' in tags:
                     self.canvas.itemconfig(old_id, fill=OCCASIONFILL)
                 else:
-                    self.canvas.itemconfig(old_id, fill="white")
+                    self.canvas.itemconfig(old_id, fill=self.BGCOLOR)
         self.selectedId = id = self.canvas.find_withtag(CURRENT)[0]
         self.active_date = self.monthid2date[id]
         self.canvas_date = self.monthid2date[id]
@@ -2891,9 +2918,9 @@ Enter the shortest time period you want displayed in minutes.""")
             elif 'occasion' in tags:
                 self.canvas.itemconfig(id, fill=OCCASIONFILL)
             else:
-                self.canvas.itemconfig(id, fill="white")
+                self.canvas.itemconfig(id, fill=self.BGCOLOR)
         else:
-            self.canvas.itemconfig(id, fill="white")
+            self.canvas.itemconfig(id, fill=self.BGCOLOR)
 
     # def on_clear_item(self, e=None):
     #     if not self.weekly or self.monthly:
@@ -2975,20 +3002,20 @@ Enter the shortest time period you want displayed in minutes.""")
             t.delete("0.0", END)
             t.insert("0.0", cal)
 
-        win = Toplevel()
+        win = Toplevel(highlightbackground=self.BGCOLOR, background=self.BGCOLOR)
         win.title(_("Calendar"))
         f = Frame(win)
         # pack the button first so that it doesn't disappear with resizing
-        b = Button(win, text=_('OK'), width=10, command=win.destroy, default='active', pady=2)
+        b = ttk.Button(win, text=_('OK'), style="bg.TButton",  command=win.destroy, default='active')
         b.pack(side='bottom', fill=tkinter.NONE, expand=0, pady=0)
         win.bind('<Return>', (lambda e, b=b: b.invoke()))
         win.bind('<Escape>', (lambda e, b=b: b.invoke()))
 
         t = ReadOnlyText(f, wrap="word", padx=2, pady=2, bd=2, relief="sunken",
-
                          font=self.tkfixedfont,
-
-                         takefocus=False)
+                         takefocus=False,
+                         background=self.BGCOLOR,
+                         highlightbackground=self.BGCOLOR)
         win.bind('<Left>', (lambda e: showYear(-1)))
         win.bind('<Right>', (lambda e: showYear(1)))
         win.bind('<Home>', (lambda e: showYear()))
@@ -3523,7 +3550,7 @@ Relative dates and fuzzy parsing are supported.""")
         self.filter_active = True
         # self.motionmenu.entryconfig(6, state="disabled")
         # self.motionmenu.entryconfig(7, state="normal")
-        self.fltr.configure(bg="white", state="normal")
+        self.fltr.configure(bg=self.BGCOLOR, state="normal")
         self.fltr.focus_set()
 
     def clearFilter(self, e=None):
@@ -3533,7 +3560,7 @@ Relative dates and fuzzy parsing are supported.""")
         # self.motionmenu.entryconfig(6, state="normal")
         # self.motionmenu.entryconfig(7, state="disabled")
         self.filterValue.set('')
-        self.fltr.configure(bg=BGCOLOR)
+        self.fltr.configure(bg=self.BGCOLOR)
         self.tree.focus_set()
         if self.rowSelected:
             self.tree.focus(self.rowSelected)

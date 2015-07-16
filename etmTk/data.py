@@ -16,6 +16,8 @@ logger = logging.getLogger()
 this_dir, this_filename = os.path.split(__file__)
 LANGUAGES = os.path.normpath(os.path.join(this_dir, "locale"))
 
+BGCOLOR = None
+
 def setup_logging(level, etmdir=None):
     """
     Setup logging configuration. Override root:level in
@@ -573,9 +575,11 @@ else:
 if sys.platform == 'darwin':
     mac = True
     CMD = "Command"
+    default_style = 'aqua'
 else:
     mac = False
     CMD = "Control"
+    default_style = 'default'
 
 # used in hack to prevent dialog from hanging under os x
 if mac:
@@ -1263,7 +1267,7 @@ def get_options(d=''):
     """
     """
     logger.debug('starting get_options with directory: "{0}"'.format(d))
-    global parse, lang, trans, s2or3, term_encoding, file_encoding, local_timezone, NONE, YESTERDAY, TODAY, TOMORROW
+    global parse, lang, trans, s2or3, term_encoding, file_encoding, local_timezone, NONE, YESTERDAY, TODAY, TOMORROW, BGCOLOR
 
     from locale import getpreferredencoding
     from sys import stdout
@@ -1361,6 +1365,8 @@ def get_options(d=''):
         'ampm': True,
         'completions_width': 36,
 
+        'background_color': "#f5f5f5",
+
         'calendars': [],
 
         'cfg_files': {'completions': [], 'reports': [], 'users': []},
@@ -1423,6 +1429,8 @@ def get_options(d=''):
         'sms_pw': '',
         'sms_server': '',
         'sms_subject': '!time_span!',
+
+        'style': default_style,
 
         'sundayfirst': False,
         'update_minutes': 15,
@@ -1701,6 +1709,7 @@ def get_options(d=''):
     term_encoding = options['encoding']['term']
     file_encoding = options['encoding']['file']
     local_timezone = options['local_timezone']
+    BGCOLOR = options['background_color']
     logger.debug("ending get_options")
     return user_options, options, use_locale
 
