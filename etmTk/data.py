@@ -6464,6 +6464,7 @@ class ETMCmd():
         self.item_hsh = {}
         self.output = 'text'
         self.tkversion = ''
+        self.tkstyle = ''
         self.rows = None
         self.busytimes = None
         self.busydays = None
@@ -7175,12 +7176,15 @@ Show items grouped and sorted by tag, optionally limited to those containing a c
             'dateutil': dateutil_version,
             'pyyaml': yaml.__version__,
             'tkversion': self.tkversion,
+            'tkstyle': self.tkstyle,
             'file_encoding': file_encoding,
             'term_encoding': term_encoding,
             'github': 'https://github.com/dagraham/etm-tk',
         }
         if not d['tkversion']:  # command line
             d['tkversion'] = 'NA'
+        if not d['tkstyle']:  # command line
+            d['tkstyle'] = 'NA'
         return _("""\
 Event and Task Manager
 etmtk {0[etmversion]}
@@ -7188,14 +7192,16 @@ etmtk {0[etmversion]}
 This application provides a format for using plain text files to store events, tasks and other items and a Tk based GUI for creating and modifying items as well as viewing them.
 
 System Information:
-  Python:    {0[python]}
-  Dateutil:  {0[dateutil]}
-  PyYaml:    {0[pyyaml]}
-  Tk/Tcl:    {0[tkversion]}
-  Platform:  {0[platform]}
+  Platform:   {0[platform]}
+  Python:     {0[python]}
+  Dateutil:   {0[dateutil]}
+  PyYaml:     {0[pyyaml]}
+  Tk/Tcl
+     Version: {0[tkversion]}
+     Style:   {0[tkstyle]}
   Encodings
-     File:   {0[file_encoding]}
-     Term:   {0[term_encoding]}
+     File:    {0[file_encoding]}
+     Term:    {0[term_encoding]}
 
 ETM Information:
   Homepage:

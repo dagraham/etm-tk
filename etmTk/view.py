@@ -170,13 +170,11 @@ class App(Tk):
 
         self.loop = loop
         self.options = loop.options
-        style = self.options['style']
         BGCOLOR = self.options['background_color']
         self.BGCOLOR = BGCOLOR
         FGCOLOR = self.options['foreground_color']
         self.FGCOLOR = FGCOLOR
         CALENDAR_COLORS = self.options['calendar_colors']
-        print(FGCOLOR, BGCOLOR, CALENDAR_COLORS)
 
         self.ACTIVEFILL = CALENDAR_COLORS['active'] # "#FCFCD9"
         self.DEFAULTFILL = CALENDAR_COLORS['default'] # "#D4DCFC"  # blue
@@ -211,13 +209,16 @@ class App(Tk):
         self.month_height = 260
 
 
+        style = self.options['style']
         s = ttk.Style()
         styles = s.theme_names()
         if style in styles:
-            s.theme_use(style)
             logger.info("using style {0}".format(style))
         else:
-            logger.warn("style {0} is not an option from {1} - ignoring style".format(style, ", ".join(styles)))
+            logger.warn("style {0} is not an option from {1} - using default".format(style, ", ".join(styles)))
+            style = 'default'
+        s.theme_use(style)
+        loop.tkstyle = style
 
         ttk.Style().configure("bg.TButton", background=BGCOLOR, activebackground=BGCOLOR, highlightbackground=BGCOLOR, foreground=FGCOLOR, relief=RAISED)
 
