@@ -83,6 +83,7 @@ from datetime import datetime, timedelta
 
 from etmTk.data import (
     BGCOLOR,
+    FGCOLOR,
     commandShortcut,
     completion_regex,
     ensureMonthly,
@@ -159,20 +160,6 @@ RUNNING = _('running')
 
 FOUND = "found"
 
-# BGLCOLOR = "#f2f2f2"
-# BGLCOLOR = "#f3f3f3"
-# BGCOLOR = "#ebebeb"
-
-# BGCOLOR = "#f2f3f4" # anti flash white
-# BGCOLOR = "#f5f5f5" # white smoke
-# BGCOLOR = "#f7f7f7" # white smoke
-# BGCOLOR = "#FEFEFA" # baby powder
-# BGCOLOR = "#DECEAC" # brown
-# BGCOLOR = "#BCC7D1" # lite gray
-# BGCOLOR = "#DADAC8" # lite green
-# BGCOLOR = "#A7BFCC" # lite blue
-# BGCOLOR = "#F5EBCC" # lite brown
-
 class SimpleEditor(Toplevel):
 
     def __init__(self, parent=None, master=None, file=None, line=None, newhsh=None, rephsh=None, options=None, title=None, start=None, modified=False):
@@ -198,6 +185,7 @@ class SimpleEditor(Toplevel):
         self.parent = parent
         self.loop = parent.loop
         BGCOLOR = self.loop.options['background_color']
+        FGCOLOR = self.loop.options['foreground_color']
         self.configure(background=BGCOLOR, highlightbackground=BGCOLOR)
         self.messages = self.loop.messages
         self.messages = []
@@ -229,10 +217,6 @@ class SimpleEditor(Toplevel):
         frame.pack(side="bottom", fill=X, padx=4, pady=0)
         frame.configure(background=BGCOLOR, highlightbackground=BGCOLOR)
 
-        # quit with a warning prompt if modified
-        # s = ttk.Style()
-        # s.theme_use(STYLE)
-        # ttk.Style().configure("bg.TButton", background=BGCOLOR, activebackground=BGCOLOR, highlightbackground=BGCOLOR,  relief=RAISED)
         qb = ttk.Button(frame, text=_("Cancel"), style="bg.TButton",  command=self.quit)
         qb.pack(side=LEFT, padx=4)
         self.bind("<Escape>", self.quit)
@@ -249,18 +233,18 @@ class SimpleEditor(Toplevel):
 
 
         # find
-        xb = ttk.Button(frame, text='x', command=self.clearFind, style="bg.TButton", width=0)
+        xb = ttk.Button(frame, text='\u2716', command=self.clearFind, style="bg.TButton", width=0)
         xb.pack(side=LEFT, padx=0)
         self.find_text = StringVar(frame)
-        self.e = Entry(frame, textvariable=self.find_text, width=10, highlightbackground=BGCOLOR, background=BGCOLOR)
-        self.e.pack(side=LEFT, padx=0, expand=1, fill=X)
+        self.e = Entry(frame, textvariable=self.find_text, width=10, highlightbackground=BGCOLOR, background=BGCOLOR, foreground=FGCOLOR)
+        self.e.pack(side=LEFT, padx=2, expand=1, fill=X)
         self.e.bind("<Return>", self.onFind)
-        nb = ttk.Button(frame, text='>', command=self.onFind, style="bg.TButton", width=0)
+        nb = ttk.Button(frame, text='\u279c', command=self.onFind, style="bg.TButton", width=0)
         nb.pack(side=LEFT, padx=0)
 
         text = Text(self, wrap="word", bd=2, relief="sunken", padx=3, pady=2, font=self.tkfixedfont, undo=True, width=70)
-        text.configure(highlightthickness=0,  background=BGCOLOR)
-        text.tag_configure(FOUND, background="lightskyblue")
+        text.configure(highlightthickness=0,  background=BGCOLOR, foreground=FGCOLOR, insertbackground=FGCOLOR)
+        text.tag_configure(FOUND, background=FGCOLOR, foreground=BGCOLOR)
 
         text.pack(side="bottom", padx=4, pady=3, expand=1, fill=BOTH)
         self.text = text
@@ -722,6 +706,7 @@ class SimpleEditor(Toplevel):
             height=height,
             background=BGCOLOR,
             highlightbackground=BGCOLOR,
+            foreground=FGCOLOR,
             width=width,
             takefocus=False)
         t.insert("0.0", prompt)
@@ -1303,16 +1288,17 @@ class MessageWindow():
         self.parent = parent
         self.loop = parent.loop
         BGCOLOR = self.loop.options['background_color']
+        FGCOLOR = self.loop.options['foreground_color']
         self.options = opts
         self.win.title(title)
         tkfixedfont = tkFont.nametofont("TkFixedFont")
         if 'fontsize_fixed' in self.options and self.options['fontsize_fixed']:
             tkfixedfont.configure(size=self.options['fontsize_fixed'])
 
-        self.content = ReadOnlyText(self.win, wrap="word", padx=3, bd=2, height=10, relief="sunken", font=tkfixedfont, width=46, takefocus=False, background=BGCOLOR, highlightbackground=BGCOLOR)
+        self.content = ReadOnlyText(self.win, wrap="word", padx=3, bd=2, height=10, relief="sunken", font=tkfixedfont, width=46, takefocus=False, background=BGCOLOR, highlightbackground=BGCOLOR, foreground=FGCOLOR)
         self.content.pack(fill=tkinter.BOTH, expand=1, padx=10, pady=10)
         self.content.insert("1.0", prompt)
-        b = ttk.Button(frame, text=_("OK"), style="bg.TButton",  command=self.cancel)
+        b = ttk.Button(self.win, text=_("OK"), style="bg.TButton",  command=self.cancel)
         # b = Button(self.win, text=_('OK'), width=10, command=self.cancel, default='active', pady=2)
         b.pack()
         self.win.bind('<Return>', (lambda e, b=b: b.invoke()))
@@ -1330,11 +1316,13 @@ class MessageWindow():
 
 
 class FileChoice(object):
-    def __init__(self, parent, master=None, title=None, prefix=None, list=[], start='', ext="txt", new=False):
+    def __init__(self, parent, title=None, prefix=None, list=[], start='', ext="txt", new=False):
         self.parent = parent
         self.loop = parent.loop
         BGCOLOR = self.loop.options['background_color']
-        self.master = master
+        self.BGCOLOR = BGCOLOR
+        FGCOLOR = self.loop.options['foreground_color']
+        self.FGCOLOR = FGCOLOR
         self.value = None
         self.prefix = prefix
         self.list = list
@@ -1345,12 +1333,11 @@ class FileChoice(object):
         self.ext = ext
         self.new = new
 
-        self.modalPane = Toplevel(self.master, highlightbackground=BGCOLOR, background=BGCOLOR)
-        if master is not None:
-            logger.debug('winfo: {0}, {1}; {2}, {3}'.format(master.winfo_rootx(), type(master.winfo_rootx()), master.winfo_rooty(), type(master.winfo_rooty())))
-            self.modalPane.geometry("+%d+%d" % (master.winfo_rootx() + 50, master.winfo_rooty() + 50))
+        self.modalPane = Toplevel(self.parent, highlightbackground=BGCOLOR, background=BGCOLOR)
+        logger.debug('winfo: {0}, {1}; {2}, {3}'.format(parent.winfo_rootx(), type(parent.winfo_rootx()), parent.winfo_rooty(), type(parent.winfo_rooty())))
+        self.modalPane.geometry("+%d+%d" % (parent.winfo_rootx() + 50, parent.winfo_rooty() + 50))
 
-        self.modalPane.transient(self.master)
+        self.modalPane.transient(self.parent)
         self.modalPane.grab_set()
 
         self.modalPane.bind("<Return>", self._choose)
@@ -1363,13 +1350,13 @@ class FileChoice(object):
             nameFrame = Frame(self.modalPane, highlightbackground=BGCOLOR, background=BGCOLOR)
             nameFrame.pack(side="top", padx=18, pady=2, fill="x")
 
-            nameLabel = Label(nameFrame, text=_("file:"), bd=1, relief="flat", anchor="w", padx=0, pady=0, highlightbackground=BGCOLOR, background=BGCOLOR)
+            nameLabel = Label(nameFrame, text=_("file:"), bd=1, relief="flat", anchor="w", padx=0, pady=0, highlightbackground=BGCOLOR, background=BGCOLOR, foreground=FGCOLOR)
             nameLabel.pack(side="left")
 
             self.fileName = StringVar(self.modalPane)
             self.fileName.set("untitled.{0}".format(ext))
             self.fileName.trace_variable("w", self.onSelect)
-            self.fname = Entry(nameFrame, textvariable=self.fileName, bd=1, highlightbackground=BGCOLOR, background=BGCOLOR)
+            self.fname = Entry(nameFrame, textvariable=self.fileName, bd=1, highlightbackground=FGCOLOR, background=FGCOLOR, foreground=BGCOLOR)
             self.fname.pack(side="left", fill="x", expand=1, padx=0, pady=0)
             self.fname.icursor(END)
             self.fname.bind("<Up>", self.cursorUp)
@@ -1378,20 +1365,20 @@ class FileChoice(object):
         filterFrame = Frame(self.modalPane, highlightbackground=BGCOLOR, background=BGCOLOR)
         filterFrame.pack(side="top", padx=18, pady=4, fill="x")
 
-        filterLabel = Label(filterFrame, text=_("filter:"), bd=1, relief="flat", anchor="w", padx=0, pady=0, highlightbackground=BGCOLOR, background=BGCOLOR)
+        filterLabel = Label(filterFrame, text=_("filter:"), bd=1, relief="flat", anchor="w", padx=0, pady=0, highlightbackground=BGCOLOR, background=BGCOLOR, foreground=FGCOLOR)
         filterLabel.pack(side="left")
 
         self.filterValue = StringVar(self.modalPane)
         self.filterValue.set("")
         self.filterValue.trace_variable("w", self.setMatching)
-        self.fltr = Entry(filterFrame, textvariable=self.filterValue, bd=1, highlightbackground=BGCOLOR)
+        self.fltr = Entry(filterFrame, textvariable=self.filterValue, bd=1, highlightbackground=BGCOLOR, background=BGCOLOR, foreground=FGCOLOR)
         self.fltr.pack(side="left", fill="x", expand=1, padx=0, pady=0)
         self.fltr.icursor(END)
 
         prefixFrame = Frame(self.modalPane, highlightbackground=BGCOLOR, background=BGCOLOR)
         prefixFrame.pack(side="top", padx=8, pady=2, fill="x")
 
-        self.prefixLabel = Label(prefixFrame, text=_("{0}:").format(prefix), bd=1, highlightbackground=BGCOLOR, background=BGCOLOR)
+        self.prefixLabel = Label(prefixFrame, text=_("{0}:").format(prefix), bd=1, highlightbackground=BGCOLOR, background=BGCOLOR, foreground=FGCOLOR)
         self.prefixLabel.pack(side="left", expand=0, padx=0, pady=0)
 
         buttonFrame = Frame(self.modalPane, highlightbackground=BGCOLOR, background=BGCOLOR)
@@ -1408,7 +1395,7 @@ class FileChoice(object):
 
         self.selectionValue = StringVar(self.modalPane)
         self.selectionValue.set("")
-        self.selection = Label(selectionFrame, textvariable=self.selectionValue, bd=1, highlightbackground=BGCOLOR, background=BGCOLOR)
+        self.selection = Label(selectionFrame, textvariable=self.selectionValue, bd=1, highlightbackground=BGCOLOR, background=BGCOLOR, foreground=FGCOLOR)
         self.selection.pack(side="left", fill="x", expand=1, padx=0, pady=0)
 
         listFrame = Frame(self.modalPane, highlightbackground=BGCOLOR, background=BGCOLOR, width=40)
@@ -1416,7 +1403,7 @@ class FileChoice(object):
 
         scrollBar = Scrollbar(listFrame, width=8)
         scrollBar.pack(side="right", fill="y")
-        self.listBox = Listbox(listFrame, selectmode=BROWSE, width=36)
+        self.listBox = Listbox(listFrame, selectmode=BROWSE, width=36, foreground=FGCOLOR, background=BGCOLOR, selectbackground=FGCOLOR, selectforeground=BGCOLOR)
         self.listBox.pack(side="left", fill="both", expand=1, ipadx=4, padx=2, pady=0)
         self.listBox.bind('<<ListboxSelect>>', self.onSelect)
         self.listBox.bind("<Double-1>", self._choose)
@@ -1486,20 +1473,19 @@ class FileChoice(object):
         for item in matches:
             if type(item) is tuple:
                 # only show the label
-                # (label, value, disabled)FF
                 self.listBox.insert(END, item[0])
                 if self.new:
                     if not item[-1]:
                         self.listBox.itemconfig(index, fg=disabled)
                     else:
-                        self.listBox.itemconfig(index, fg="blue")
+                        self.listBox.itemconfig(index, fg=self.FGCOLOR)
                         if self.start and item[1] == self.start:
                             init_index = index
                 else:
                     if item[-1]:
                         self.listBox.itemconfig(index, fg=disabled)
                     else:
-                        self.listBox.itemconfig(index, fg="blue")
+                        self.listBox.itemconfig(index, fg=self.FGCOLOR)
                         if self.start and item[1] == self.start:
                             init_index = index
             # elif files:
@@ -1534,8 +1520,8 @@ class FileChoice(object):
         self.modalPane.destroy()
 
     def returnValue(self):
-        if self.master is not None:
-            self.master.wait_window(self.modalPane)
+        if self.parent is not None:
+            self.parent.wait_window(self.modalPane)
         return self.value
 
 
@@ -1549,6 +1535,8 @@ class Dialog(Toplevel):
         self.loop = parent.loop
         BGCOLOR = self.loop.options['background_color']
         self.BGCOLOR = BGCOLOR
+        FGCOLOR = self.loop.options['foreground_color']
+        self.FGCOLOR = FGCOLOR
 
         Toplevel.__init__(self, parent, highlightbackground=BGCOLOR, background=BGCOLOR)
         self.protocol("WM_DELETE_WINDOW", self.quit)
@@ -1660,7 +1648,7 @@ class TextVariableWindow(Dialog):
             return
         self.entry = Entry(master, textvariable=self.options['textvariable'])
         self.entry.pack(side="bottom", padx=5, pady=5)
-        Label(master, text=self.prompt, justify='left', highlightbackground=BGCOLOR, background=BGCOLOR).pack(side="top", fill=tkinter.BOTH, expand=1, padx=10, pady=5)
+        Label(master, text=self.prompt, justify='left', highlightbackground=BGCOLOR, background=BGCOLOR, foreground=FGCOLOR).pack(side="top", fill=tkinter.BOTH, expand=1, padx=10, pady=5)
         self.entry.focus_set()
         self.entry.bind('<Escape>', self.entry.delete(0, END))
         return self.entry
@@ -1691,7 +1679,7 @@ class TextVariableWindow(Dialog):
 class DialogWindow(Dialog):
     # master will be a frame in Dialog
     def body(self, master):
-        self.entry = Entry(master)
+        self.entry = Entry(master, highlightbackground=self.BGCOLOR, background=self.BGCOLOR, foreground=self.FGCOLOR)
         self.entry.pack(side="bottom", padx=5, pady=2, fill=X)
         tkfixedfont = self.font
         lines = self.prompt.split('\n')
@@ -1703,8 +1691,9 @@ class DialogWindow(Dialog):
             font=tkfixedfont,
             height=height,
             width=width,
-            background=BGCOLOR,
-            highlightbackground=BGCOLOR,
+            background=self.BGCOLOR,
+            highlightbackground=self.BGCOLOR,
+            foreground=self.FGCOLOR,
             takefocus=False)
         self.text.insert("1.1", self.prompt)
         self.text.pack(side="top", fill=tkinter.BOTH, expand=1, padx=6, pady=2)
@@ -1728,8 +1717,9 @@ class TextDialog(Dialog):
             font=tkfixedfont,
             height=height,
             width=width,
-            background=BGCOLOR,
-            highlightbackground=BGCOLOR,
+            background=self.BGCOLOR,
+            highlightbackground=self.BGCOLOR,
+            foreground=self.FGCOLOR,
             takefocus=False)
         self.text.insert("1.1", self.prompt)
         self.text.pack(side='left', fill=tkinter.BOTH, expand=1, padx=5,
@@ -1764,6 +1754,8 @@ class OptionsDialog():
         self.loop = parent.loop
         BGCOLOR = self.loop.options['background_color']
         self.BGCOLOR = BGCOLOR
+        FGCOLOR = self.loop.options['foreground_color']
+        self.FGCOLOR = FGCOLOR
         self.win = Toplevel(parent, background=BGCOLOR, highlightbackground=BGCOLOR)
         self.win.protocol("WM_DELETE_WINDOW", self.quit)
         if parent:
@@ -1778,11 +1770,11 @@ class OptionsDialog():
             tkfixedfont = tkFont.nametofont("TkFixedFont")
             if 'fontsize_fixed' in self.parent.options and self.parent.options['fontsize_fixed']:
                 tkfixedfont.configure(size=self.parent.options['fontsize_fixed'])
-            self.content = ReadOnlyText(self.win, wrap="word", padx=3, bd=2, height=10, relief="sunken", font=tkfixedfont, background=BGCOLOR, highlightbackground=BGCOLOR, width=46, takefocus=False)
+            self.content = ReadOnlyText(self.win, wrap="word", padx=3, bd=2, height=10, relief="sunken", font=tkfixedfont, background=BGCOLOR, highlightbackground=BGCOLOR, foreground=FGCOLOR, width=46, takefocus=False)
             self.content.pack(fill=tkinter.BOTH, expand=1, padx=10, pady=5)
             self.content.insert("1.0", prompt)
         else:
-            Label(self.win, text=prompt, justify='left', highlightbackground=BGCOLOR, background=BGCOLOR).pack(fill=tkinter.BOTH, expand=1, padx=10, pady=5)
+            Label(self.win, text=prompt, justify='left', highlightbackground=BGCOLOR, background=BGCOLOR, foreground=FGCOLOR).pack(fill=tkinter.BOTH, expand=1, padx=10, pady=5)
             self.sv = StringVar(parent)
         self.sv = IntVar(parent)
         self.sv.set(1)
@@ -1794,7 +1786,7 @@ class OptionsDialog():
                     val = i + 1
                     # bind keyboard numbers 1-9 (at most) to options selection, i.e., press 1 to select option 1, 2 to select 2, etc.
                     self.win.bind(str(val), (lambda e, x=val: self.sv.set(x)))
-                    Radiobutton(self.win, text="{0}: {1}".format(val, txt), padx=20, indicatoron=True, variable=self.sv, background=BGCOLOR, highlightbackground=BGCOLOR, command=self.getValue, value=val).pack(padx=10, anchor=W)
+                    Radiobutton(self.win, text="{0}: {1}".format(val, txt), padx=20, indicatoron=True, variable=self.sv, background=BGCOLOR, highlightbackground=BGCOLOR, foreground=FGCOLOR, command=self.getValue, value=val).pack(padx=10, anchor=W)
             else:
                 self.check_values = {}
                 # show 0, check 1, return 2
@@ -1817,14 +1809,10 @@ class OptionsDialog():
         c.pack(side=LEFT, padx=5, pady=5)
         o = ttk.Button(box, text=YES, style="bg.TButton",  default='active', command=self.ok)
         o.pack(side=LEFT, padx=5, pady=5)
-        # if list:
-        #     for b in [c, o]:
-        #         b.configure(bg=self.BGCOLOR, highlightbackground=self.BGCOLOR)
         box.pack()
         self.win.bind('<Return>', (lambda e, o=o: o.invoke()))
         self.win.bind('<Control-w>', self.Ok)
         self.win.bind('<Escape>', (lambda e, c=c: c.invoke()))
-        # self.choice.focus_set()
         logger.debug('parent: {0}'.format(parent))
         self.win.focus_set()
         self.win.transient(parent)

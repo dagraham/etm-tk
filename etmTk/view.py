@@ -149,26 +149,7 @@ CLOSE = _("Close")
 
 SEP = "----"
 
-# ACTIVEFILL = "#FAFCAC"
-ACTIVEFILL = "#FCFCD9"
-ACTIVEOUTLINE = "gray40"
-
-DEFAULTFILL = "#D4DCFC"  # blue
-OTHERFILL = "#C7EDC8"  # green
-
-BUSYOUTLINE = ""
-
-CONFLICTFILL = "#C1C4C9"
-# CURRENTFILL = "#FCF2F0"
-CURRENTFILL = "#DCEAFC"
-# CURRENTLINE = "#D053E0"
-CURRENTLINE = "#3C3FDE"
-OUTSIDELINE = "#E0535C"
 LASTLTR = re.compile(r'([a-z])$')
-LINECOLOR = "gray80"
-
-# OCCASIONFILL = "gray96"
-OCCASIONFILL = "gray92"
 
 this_dir, this_filename = os.path.split(__file__)
 USERMANUAL = os.path.normpath(os.path.join(this_dir, "help", "UserManual.html"))
@@ -192,6 +173,24 @@ class App(Tk):
         style = self.options['style']
         BGCOLOR = self.options['background_color']
         self.BGCOLOR = BGCOLOR
+        FGCOLOR = self.options['foreground_color']
+        self.FGCOLOR = FGCOLOR
+        CALENDAR_COLORS = self.options['calendar_colors']
+        print(FGCOLOR, BGCOLOR, CALENDAR_COLORS)
+
+        self.ACTIVEFILL = CALENDAR_COLORS['active'] # "#FCFCD9"
+        self.DEFAULTFILL = CALENDAR_COLORS['default'] # "#D4DCFC"  # blue
+        # self.OTHERFILL = CALENDAR_COLORS['other'] # "#C7EDC8"  # green
+        self.CONFLICTFILL = CALENDAR_COLORS['conflict'] # "#C1C4C9"
+        self.CURRENTFILL = CALENDAR_COLORS['current'] # "#DCEAFC"
+        self.GRIDCOLOR = CALENDAR_COLORS['grid'] # "gray80"
+        self.OCCASIONFILL = CALENDAR_COLORS['occasion'] # "gray92"
+        self.BUSYBAR = CALENDAR_COLORS['busybar']
+        self.CURRDATE = CALENDAR_COLORS['date']
+        self.OTHERDATE = CALENDAR_COLORS['grid']
+        self.YEARPAST = CALENDAR_COLORS['year_past']
+        self.YEARCURRENT = CALENDAR_COLORS['year_current']
+        self.YEARFUTURE = CALENDAR_COLORS['year_future']
 
         self.configure(background=BGCOLOR)
         self.option_add('*tearOff', False)
@@ -220,7 +219,7 @@ class App(Tk):
         else:
             logger.warn("style {0} is not an option from {1} - ignoring style".format(style, ", ".join(styles)))
 
-        ttk.Style().configure("bg.TButton", background=BGCOLOR, activebackground=BGCOLOR, highlightbackground=BGCOLOR,  relief=RAISED)
+        ttk.Style().configure("bg.TButton", background=BGCOLOR, activebackground=BGCOLOR, highlightbackground=BGCOLOR, foreground=FGCOLOR, relief=RAISED)
 
         tkfixedfont = tkFont.nametofont("TkFixedFont")
         if 'fontsize_fixed' in self.options and self.options['fontsize_fixed']:
@@ -299,6 +298,7 @@ class App(Tk):
             # highlightthickness=8,
             highlightbackground=BGCOLOR,
             background=BGCOLOR,
+            foreground=FGCOLOR
             )
         botwindow.add(self.content, padx=3, pady=0, stretch="never")
 
@@ -306,7 +306,7 @@ class App(Tk):
         self.tree = ttk.Treeview(treepane, show='tree', columns=["#1", "#2"], selectmode='browse')
         ttk.Style().configure("Treeview",
                               background=BGCOLOR,
-                              # foreground=BGCOLOR,
+                              foreground=FGCOLOR,
                               fieldbackground=BGCOLOR,
                               )
         self.tree.pack(fill="both", expand=1, padx=1, pady=0)
@@ -890,7 +890,7 @@ class App(Tk):
             self.custom_box['values'] = self.specs
             self.custom_box.current(0)
             self.saved_specs = deepcopy(self.specs)
-        self.custom_box.configure(width=30, background=BGCOLOR, takefocus=False)
+        self.custom_box.configure(width=30, background=BGCOLOR, foreground=FGCOLOR, takefocus=False)
 
 
         iconsize = "22"
@@ -909,7 +909,7 @@ class App(Tk):
 
         windowtitle = Label(topbar, textvariable=self.currentView, bd=1, relief="flat",  padx=8, pady=0)
         windowtitle.pack(side="left")
-        windowtitle.configure(background=BGCOLOR)
+        windowtitle.configure(background=BGCOLOR, foreground=FGCOLOR)
         self.currentView.set("Agenda")
 
 
@@ -918,7 +918,7 @@ class App(Tk):
         self.filterValue.set('')
         self.filterValue.trace_variable("w", self.filterView)
 
-        self.fltr = Entry(topbar, textvariable=self.filterValue, width=14, highlightbackground=BGCOLOR, bg=BGCOLOR, takefocus=False)
+        self.fltr = Entry(topbar, textvariable=self.filterValue, width=14, highlightbackground=BGCOLOR, bg=BGCOLOR, foreground=FGCOLOR, takefocus=False)
         self.fltr.pack(side="left", padx=0, expand=1, fill=X)
         self.fltr.bind("<FocusIn>", self.setFilter)
         self.fltr.bind("<Escape>", self.clearFilter)
@@ -961,9 +961,6 @@ class App(Tk):
                               textvariable=self.pendingAlerts,
                               command=self.showAlerts,
                               style="bg.TButton",
-                              # highlightbackground=BGCOLOR,
-                              # bg=BGCOLOR, highlightthickness=0, takefocus=False,
-                              # width=4, pady=2,
                               width=0
                               )
         self.pending.pack(side="right", expand=0, padx=2, pady=2)
@@ -979,7 +976,7 @@ class App(Tk):
         self.timer_title = timer_title = Label(self.statusbar, textvariable=self.timerTitle, bd=0, relief="flat", anchor=W, justify=LEFT, padx=2, pady=0)
 
         timer_title.pack(side="left", expand=1, fill=X, padx=0)
-        timer_title.configure(background=BGCOLOR, highlightthickness=0)
+        timer_title.configure(background=BGCOLOR, foreground=FGCOLOR, highlightthickness=0)
 
         # set cal_regex here and update it in updateCalendars
         self.cal_regex = None
@@ -2278,11 +2275,10 @@ Enter the shortest time period you want displayed in minutes.""")
         offset = 6
         indent = 7
 
-        barcolor = "SteelBlue3"
-        nightcolor = barcolor
-        morningcolor = barcolor
-        afternooncolor = barcolor
-        eveningcolor = barcolor
+        nightcolor = self.BUSYBAR
+        morningcolor = self.BUSYBAR
+        afternooncolor = self.BUSYBAR
+        eveningcolor = self.BUSYBAR
 
         conf_ids = []
         self.today_id = None
@@ -2294,8 +2290,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
         for i in range(7):
             fill = "SteelBlue4"
-            # flagcolor = "white"
-            flagcolor = self.BGCOLOR
+            flagcolor = None
             busytimes = 0
             start_x = l + i * x_
             end_x = start_x + x_
@@ -2318,7 +2313,6 @@ Enter the shortest time period you want displayed in minutes.""")
             monthid2date[id] = thisdate
             today = (thisdate == self.current_day)
             if today:
-                flagcolor = CURRENTFILL
                 tags.append('current_day')
             if loop.occasions is not None and isokey in loop.occasions:
                 bt = []
@@ -2336,7 +2330,6 @@ Enter the shortest time period you want displayed in minutes.""")
                 occasion_lst.append(bt)
                 if bt:
                     if not today:
-                        flagcolor = OCCASIONFILL
                         tags.append('occasion')
                     self.busyHsh.setdefault(id, []).extend(["^ {0}".format(x[0]) for x in bt])
             else:
@@ -2370,7 +2363,7 @@ Enter the shortest time period you want displayed in minutes.""")
                             overlap = True
                         lastend = pts[1]
                     if overlap:
-                        flagcolor = "red"
+                        flagcolor = self.CONFLICTFILL
                     tags.append('busy')
 
                     busylines = [[], [], [], []]
@@ -2439,16 +2432,16 @@ Enter the shortest time period you want displayed in minutes.""")
                 busy_dates.append(thisdate.strftime("%a %d"))
 
             if 'current_day' in tags:
-                self.canvas.itemconfig(id, tag='current_day', fill=CURRENTFILL)
+                self.canvas.itemconfig(id, tag='current_day', fill=self.CURRENTFILL)
             elif 'occasion' in tags:
-                self.canvas.itemconfig(id, tag='occasion', fill=OCCASIONFILL)
+                self.canvas.itemconfig(id, tag='occasion', fill=self.OCCASIONFILL)
             elif 'busy' in tags:
                 self.canvas.itemconfig(id, tag='busy', fill=self.BGCOLOR)
             else:
                 self.canvas.itemconfig(id, tag='default', fill=self.BGCOLOR)
 
             # if fill:
-            self.canvas.create_text(p, text="{0}".format(weekdates[i]), fill=barcolor)
+            self.canvas.create_text(p, text="{0}".format(weekdates[i]), fill=self.BUSYBAR)
 
         busy_ids = list(busy_ids)
 
@@ -2462,11 +2455,11 @@ Enter the shortest time period you want displayed in minutes.""")
         # verticals
         for i in range(1, 7):
             xy = int(l + x_ * i), int(t-18), int(l + x_ * i), int(t + y_)
-            self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
+            self.canvas.create_line(xy, fill=self.GRIDCOLOR, tag="grid")
 
         for i in range(7):
             p = int(l + x_ / 2 + x_ * i), int(t - 10)
-            self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=barcolor)
+            self.canvas.create_text(p, text="{0}".format(weekdays[i]), fill=self.BUSYBAR)
 
         self.busy_info = (theweek, busy_dates, busy_lst, occasion_lst)
         self.busy_ids = busy_ids
@@ -2614,26 +2607,16 @@ Enter the shortest time period you want displayed in minutes.""")
         busywidth = 2
         offset = 6
         indent = 7
-        # barcolor = "PaleGreen3"
-        # barcolor = "SkyBlue3"
-        # barcolor = "SlateBlue4"
-        # barcolor = "SlateGray3"
 
-        # nightcolor = "indianred1"
-        # morningcolor = "khaki3"
-        # afternooncolor = "PaleGreen3"
-        # eveningcolor = "SteelBlue3"
-
-        barcolor = "SteelBlue3"
-        nightcolor = barcolor
-        morningcolor = barcolor
-        afternooncolor = barcolor
-        eveningcolor = barcolor
+        nightcolor = self.BUSYBAR
+        morningcolor = self.BUSYBAR
+        afternooncolor = self.BUSYBAR
+        eveningcolor = self.BUSYBAR
 
         for j in range(num_weeks):
             for i in range(7):
                 busytimes = 0
-                flagcolor = self.BGCOLOR
+                flagcolor = None
                 start_x = l + i * x_
                 end_x = start_x + x_
                 start_y = int(t + y_ * j)
@@ -2654,16 +2637,15 @@ Enter the shortest time period you want displayed in minutes.""")
                 month = thisdate.month
                 tags = []
                 if (month != self.year_month[1]):
-                    fill = "gray70"
+                    fill = self.OTHERDATE
                 else:
-                    fill = "SteelBlue4"
+                    fill = self.CURRDATE
                     id = self.canvas.create_rectangle(xy, outline="", width=0)
                     busy_ids.add(id)
                     monthid2date[id] = thisdate
                     today = (thisdate == self.current_day.date())
                     bt = []
                     if today:
-                        flagcolor = CURRENTFILL
                         tags.append('current_day')
                     if loop.occasions is not None and isokey in loop.occasions:
                         bt = []
@@ -2681,7 +2663,6 @@ Enter the shortest time period you want displayed in minutes.""")
                         occasion_lst.append(bt)
                         if bt:
                             if not today:
-                                flagcolor = OCCASIONFILL
                                 tags.append('occasion')
                             self.busyHsh.setdefault(id, []).extend(["^ {0}".format(x[0]) for x in bt])
                     else:
@@ -2715,7 +2696,7 @@ Enter the shortest time period you want displayed in minutes.""")
                                     overlap = True
                                 lastend = pts[1]
                             if overlap:
-                                flagcolor = "red"
+                                flagcolor = self.CONFLICTFILL
                             tags.append('busy')
 
                             busylines = [[], [], [], []]
@@ -2781,9 +2762,9 @@ Enter the shortest time period you want displayed in minutes.""")
                         busy_lst.append([])
                         busy_dates.append(thisdate.strftime("%a %d"))
                 if 'current_day' in tags:
-                    self.canvas.itemconfig(id, tag='current_day', fill=CURRENTFILL)
+                    self.canvas.itemconfig(id, tag='current_day', fill=self.CURRENTFILL)
                 elif 'occasion' in tags:
-                    self.canvas.itemconfig(id, tag='occasion', fill=OCCASIONFILL)
+                    self.canvas.itemconfig(id, tag='occasion', fill=self.OCCASIONFILL)
                 elif 'busy' in tags:
                     self.canvas.itemconfig(id, tag='busy', fill=self.BGCOLOR)
 
@@ -2802,16 +2783,16 @@ Enter the shortest time period you want displayed in minutes.""")
         # verticals
         for i in range(1, 7):
             xy = int(l + x_ * i), int(t-18), int(l + x_ * i), int(t + y_ * num_weeks)
-            self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
+            self.canvas.create_line(xy, fill=self.GRIDCOLOR, tag="grid")
         # horizontals
         for j in range(1, num_weeks):
             xy = int(l), int(t + y_ * j), int(l + x_ * 7), int(t + y_ * j)
-            self.canvas.create_line(xy, fill=LINECOLOR, tag="grid")
+            self.canvas.create_line(xy, fill=self.GRIDCOLOR, tag="grid")
 
         # days
         for i in range(7):
             p = int(l + x_ / 2 + x_ * i), int(t - 10)
-            self.canvas.create_text(p, text="{0}".format(weekdays[i]),fill = "SteelBlue4")
+            self.canvas.create_text(p, text="{0}".format(weekdays[i]),fill = self.CURRDATE)
 
         self.busy_info = (themonth, busy_dates, busy_lst, occasion_lst)
         self.busy_ids = busy_ids
@@ -2830,15 +2811,13 @@ Enter the shortest time period you want displayed in minutes.""")
             if old_id in ids:
                 tags = self.canvas.gettags(old_id)
                 if 'current_day' in tags:
-                    self.canvas.itemconfig(old_id, fill=CURRENTFILL)
+                    self.canvas.itemconfig(old_id, fill=self.CURRENTFILL)
                 elif 'occasion' in tags:
-                    self.canvas.itemconfig(old_id, fill=OCCASIONFILL)
-                elif 'other' in tags:
-                    self.canvas.itemconfig(old_id, fill=OTHERFILL)
+                    self.canvas.itemconfig(old_id, fill=self.OCCASIONFILL)
                 elif self.weekly:
-                    self.canvas.itemconfig(old_id, fill=DEFAULTFILL)
+                    self.canvas.itemconfig(old_id, fill=self.DEFAULTFILL)
             else:
-                self.canvas.itemconfig(old_id, fill=OCCASIONFILL)
+                self.canvas.itemconfig(old_id, fill=self.OCCASIONFILL)
                 self.canvas.tag_lower(old_id)
             if d == -1:
                 self.canvas_idpos -= 1
@@ -2854,9 +2833,9 @@ Enter the shortest time period you want displayed in minutes.""")
         if old_id is not None and old_id in self.busy_ids:
             tags = self.canvas.gettags(old_id)
             if 'current_day' in tags:
-                self.canvas.itemconfig(old_id, fill=CURRENTFILL)
+                self.canvas.itemconfig(old_id, fill=self.CURRENTFILL)
             elif 'occasion' in tags:
-                self.canvas.itemconfig(old_id, fill=OCCASIONFILL)
+                self.canvas.itemconfig(old_id, fill=self.OCCASIONFILL)
             elif 'busy' in tags:
                 self.canvas.itemconfig(old_id, fill=self.BGCOLOR)
             else:
@@ -2870,7 +2849,7 @@ Enter the shortest time period you want displayed in minutes.""")
         self.scrollToDate(self.active_date)
         self.canvas_idpos = self.canvas_ids.index(id)
         if id in self.busy_ids:
-            self.canvas.itemconfig(id, fill=ACTIVEFILL)
+            self.canvas.itemconfig(id, fill=self.ACTIVEFILL)
         if id in self.busyHsh:
             txt = "\n".join(self.busyHsh[id])
             self.content.delete("1.0", END)
@@ -2890,9 +2869,9 @@ Enter the shortest time period you want displayed in minutes.""")
             if old_id in self.busy_ids:
                 tags = self.canvas.gettags(old_id)
                 if 'current_day' in tags:
-                    self.canvas.itemconfig(old_id, fill=CURRENTFILL)
+                    self.canvas.itemconfig(old_id, fill=self.CURRENTFILL)
                 elif 'occasion' in tags:
-                    self.canvas.itemconfig(old_id, fill=OCCASIONFILL)
+                    self.canvas.itemconfig(old_id, fill=self.OCCASIONFILL)
                 else:
                     self.canvas.itemconfig(old_id, fill=self.BGCOLOR)
         self.selectedId = id = self.canvas.find_withtag(CURRENT)[0]
@@ -2900,7 +2879,7 @@ Enter the shortest time period you want displayed in minutes.""")
         self.canvas_date = self.monthid2date[id]
         self.canvas_idpos = self.canvas_ids.index(id)
         if id in self.busy_ids:
-            self.canvas.itemconfig(id, fill=ACTIVEFILL)
+            self.canvas.itemconfig(id, fill=self.ACTIVEFILL)
         if id in self.busyHsh:
             txt = "\n".join(self.busyHsh[id])
             self.content.delete("1.0", END)
@@ -2914,33 +2893,13 @@ Enter the shortest time period you want displayed in minutes.""")
         if id in self.busy_ids:
             tags = self.canvas.gettags(id)
             if 'current_date' in tags:
-                self.canvas.itemconfig(id, fill=CURRENTFILL)
+                self.canvas.itemconfig(id, fill=self.CURRENTFILL)
             elif 'occasion' in tags:
-                self.canvas.itemconfig(id, fill=OCCASIONFILL)
+                self.canvas.itemconfig(id, fill=self.OCCASIONFILL)
             else:
                 self.canvas.itemconfig(id, fill=self.BGCOLOR)
         else:
             self.canvas.itemconfig(id, fill=self.BGCOLOR)
-
-    # def on_clear_item(self, e=None):
-    #     if not self.weekly or self.monthly:
-    #         return
-    #     if self.selectedId:
-    #         id = self.selectedId
-    #         if id in self.busy_ids:
-    #             tags = self.canvas.gettags(id)
-    #             if 'other' in tags:
-    #                 self.canvas.itemconfig(id, fill=OTHERFILL)
-    #             else:
-    #                 self.canvas.itemconfig(id, fill=DEFAULTFILL)
-    #         else:
-    #             self.canvas.itemconfig(id, fill=OCCASIONFILL)
-    #     self.canvas.tag_raise('conflict')
-    #     self.canvas.tag_raise('grid')
-    #     self.canvas.tag_lower('occasion')
-    #     self.selectedId = None
-    #     self.OnSelect()
-    #     self.canvas.focus("")
 
     def on_select_item(self, event):
         if self.monthly or self.weekly:
@@ -2981,9 +2940,9 @@ Enter the shortest time period you want displayed in minutes.""")
     def showCalendar(self, e=None):
         cal_year = 0
         opts = loop.options
-        cal_pastcolor = '#FFCCCC'
-        cal_currentcolor = '#FFFFCC'
-        cal_futurecolor = '#99CCFF'
+        cal_pastcolor = self.YEARPAST
+        cal_currentcolor = self.YEARCURRENT
+        cal_futurecolor = self.YEARFUTURE
 
         def showYear(x=0):
             global cal_year
@@ -2998,7 +2957,7 @@ Enter the shortest time period you want displayed in minutes.""")
                 col = cal_pastcolor
             else:
                 col = cal_currentcolor
-            t.configure(bg=col)
+            t.configure(fg=col)
             t.delete("0.0", END)
             t.insert("0.0", cal)
 
@@ -3550,7 +3509,7 @@ Relative dates and fuzzy parsing are supported.""")
         self.filter_active = True
         # self.motionmenu.entryconfig(6, state="disabled")
         # self.motionmenu.entryconfig(7, state="normal")
-        self.fltr.configure(bg=self.BGCOLOR, state="normal")
+        self.fltr.configure(bg=self.BGCOLOR, fg=self.FGCOLOR, state="normal")
         self.fltr.focus_set()
 
     def clearFilter(self, e=None):
@@ -3560,7 +3519,7 @@ Relative dates and fuzzy parsing are supported.""")
         # self.motionmenu.entryconfig(6, state="normal")
         # self.motionmenu.entryconfig(7, state="disabled")
         self.filterValue.set('')
-        self.fltr.configure(bg=self.BGCOLOR)
+        self.fltr.configure(bg=self.BGCOLOR, fg=self.FGCOLOR)
         self.tree.focus_set()
         if self.rowSelected:
             self.tree.focus(self.rowSelected)

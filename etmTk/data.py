@@ -16,7 +16,7 @@ logger = logging.getLogger()
 this_dir, this_filename = os.path.split(__file__)
 LANGUAGES = os.path.normpath(os.path.join(this_dir, "locale"))
 
-BGCOLOR = None
+BGCOLOR = FGCOLOR = CALENDAR_COLORS = None
 
 def setup_logging(level, etmdir=None):
     """
@@ -1267,7 +1267,7 @@ def get_options(d=''):
     """
     """
     logger.debug('starting get_options with directory: "{0}"'.format(d))
-    global parse, lang, trans, s2or3, term_encoding, file_encoding, local_timezone, NONE, YESTERDAY, TODAY, TOMORROW, BGCOLOR
+    global parse, lang, trans, s2or3, term_encoding, file_encoding, local_timezone, NONE, YESTERDAY, TODAY, TOMORROW, BGCOLOR, FGCOLOR, tstr2SCI, CALENDAR_COLORS
 
     from locale import getpreferredencoding
     from sys import stdout
@@ -1295,6 +1295,27 @@ def get_options(d=''):
     datafile = os.path.join(etmdir, ".etmtkdata.pkl")
     default_datadir = os.path.normpath(os.path.join(etmdir, 'data'))
     logger.debug('checking first for: {0}; then: {1}'.format(newconfig, oldconfig))
+
+    colors_cfg = os.path.normpath(os.path.join(etmdir, 'colors.cfg'))
+    # the default colors
+    FGCOLOR = BASE_COLORS['foreground']
+    BGCOLOR = BASE_COLORS['background']
+    item_colors = ITEM_COLORS
+    if os.path.isfile(colors_cfg):
+        logger.info('using colors file: {0}'.format(colors_cfg))
+        fo = codecs.open(colors_cfg, 'r', dfile_encoding)
+        use_colors = yaml.load(fo)
+        fo.close()
+
+        if use_colors:
+            FGCOLOR = use_colors['base']['foreground']
+            BGCOLOR = use_colors['base']['background']
+            CALENDAR_COLORS = use_colors['calendar']
+            item_colors = use_colors['item']
+
+    for key in tstr2SCI:
+        # update the item colors
+        tstr2SCI[key][1] = item_colors[key]
 
     locale_cfg = os.path.normpath(os.path.join(etmdir, 'locale.cfg'))
     if os.path.isfile(locale_cfg):
@@ -1364,8 +1385,6 @@ def get_options(d=''):
 
         'ampm': True,
         'completions_width': 36,
-
-        'background_color': "#f5f5f5",
 
         'calendars': [],
 
@@ -1709,7 +1728,9 @@ def get_options(d=''):
     term_encoding = options['encoding']['term']
     file_encoding = options['encoding']['file']
     local_timezone = options['local_timezone']
-    BGCOLOR = options['background_color']
+    options['background_color'] = BGCOLOR
+    options['foreground_color'] = FGCOLOR
+    options['calendar_colors'] = CALENDAR_COLORS
     logger.debug("ending get_options")
     return user_options, options, use_locale
 
@@ -1847,39 +1868,77 @@ id2Type = {
 # tomato transparent turquoise violet wheat white whitesmoke yellow
 # yellowgreen
 
-# type string to Sort Color Icon
+# Default colors for the GUI
+BASE_COLORS = {'foreground': "black", 'background': "#F2F3F4"}
+
+ITEM_COLORS = {
+    "ac": "darkorchid",
+    "av": "slateblue2",
+    "by": "gold3",
+    "cs": "slateblue2",
+    "cu": "gray65",
+    "dl": "gray70",
+    "ds": "darkslategray",
+    "du": "darkslategray",
+    "ev": "springgreen4",
+    "fn": "gray70",
+    "ib": "firebrick3",
+    "ns": "saddlebrown",
+    "nu": "saddlebrown",
+    "oc": "peachpuff4",
+    "pc": "orangered",
+    "pu": "firebrick3",
+    "pd": "orangered",
+    "pt": "orangered",
+    "rm": "seagreen",
+    "so": "slateblue1",
+    "un": "slateblue2",
+    }
+
+CALENDAR_COLORS = {
+    "date": "SteelBlue4",
+    "grid": "gray80",
+    "busybar": "SteelBlue3",
+    "current": "#DCEAFC",
+    "active": "#FCFCD9",
+    "occasion": "gray92",
+    "default": "#D4DCFC",
+    # "other": "#C7EDC8",
+    "conflict": "#FF3300",
+    "year_past": "springgreen4",
+    "year_current": 'black',
+    "year_future": 'SteelBlue4',
+}
+
+# type string to Sort Color Icon. The color will be added in
+# get_options either from colors.cfg or from the above defaults
 tstr2SCI = {
     #   TStr  TNum Forground Color   Icon         view
-    "ac": [23, "darkorchid", "action", "day"],
-    "av": [16, "slateblue2", "task", "day"],
-    "by": [19, "gold3", "beginby", "now"],
-    "cs": [18, "slateblue2", "child", "day"],
-    "cu": [22, "gray65", "child", "day"],
-    "dl": [28, "gray70", "delete", "folder"],
-    "ds": [17, "darkslategray", "delegated", "day"],
-    "du": [21, "darkslategrey", "delegated", "day"],
-    # "ev": [12, "forestgreen", "event", "day"],
-    "ev": [12, "springgreen4", "event", "day"],
-    "fn": [27, "gray70", "finished", "day"],
-
-    "ib": [10, "firebrick3", "inbox", "now"],
-    "ns": [24, "saddlebrown", "note", "day"],
-    "nu": [25, "saddlebrown", "note", "day"],
-    "oc": [11, "peachpuff4", "occasion", "day"],
-    "pc": [15, "orangered", "child", "now"],
-
-    "pu": [15, "firebrick3", "child", "now"],
-
-    "pd": [14, "orangered", "delegated", "now"],
-    "pt": [13, "orangered", "task", "now"],
-    "rm": [12, "seagreen", "reminder", "day"],
-    "so": [26, "slateblue1", "someday", "now"],
-    "un": [20, "slateblue2", "task", "next"],
+    "ac": [23, "", "action", "day"],
+    "av": [16, "", "task", "day"],
+    "by": [19, "", "beginby", "now"],
+    "cs": [18, "", "child", "day"],
+    "cu": [22, "", "child", "day"],
+    "dl": [28, "", "delete", "folder"],
+    "ds": [17, "", "delegated", "day"],
+    "du": [21, "", "delegated", "day"],
+    "ev": [12, "", "event", "day"],
+    "fn": [27, "", "finished", "day"],
+    "ib": [10, "", "inbox", "now"],
+    "ns": [24, "", "note", "day"],
+    "nu": [25, "", "note", "day"],
+    "oc": [11, "", "occasion", "day"],
+    "pc": [15, "", "child", "now"],
+    "pu": [15, "", "child", "now"],
+    "pd": [14, "", "delegated", "now"],
+    "pt": [13, "", "task", "now"],
+    "rm": [12, "", "reminder", "day"],
+    "so": [26, "", "someday", "now"],
+    "un": [20, "", "task", "next"],
 }
 
 
 def fmt_period(td, parent=None, short=False):
-    # logger.debug('td: {0}, {1}'.format(td, type(td)))
     if td < oneminute * 0:
         return '0m'
     if td == oneminute * 0:
