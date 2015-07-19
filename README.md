@@ -1,5 +1,33 @@
 ## Screen shots ##
 
+### Custom colors in 3.1.35+
+
+<table align="center" hspace="10" vspace="10" width="100%">
+<tr>
+    <td>
+    <center><img src="images/dark_agenda.gif" /></a></center>
+    </td>
+    <td>
+    <center><img src="images/dark_week.gif"/></a></center>
+    </td>
+</tr>
+</table>
+
+### Internationalization in 3.1.20+
+
+<table align="center" hspace="10" vspace="10" width="100%">
+<tr>
+    <td>
+    <center><img src="images/international.gif" /></a></center>
+    </td>
+</tr>
+<tr>
+    <td>
+    <center><img src="images/poedit.gif"/></a></center>
+    </td>
+</tr>
+</table>
+
 ### New in 3.1.x
 
 <table align="center" hspace="10" vspace="10" width="100%">
@@ -17,21 +45,6 @@
     </td>
     <td>
     <center><img src="images/new_custom.gif"/></a></center>
-    </td>
-</tr>
-</table>
-
-### Internationalization in 3.1.20+
-
-<table align="center" hspace="10" vspace="10" width="100%">
-<tr>
-    <td>
-    <center><img src="images/international.gif" /></a></center>
-    </td>
-</tr>
-<tr>
-    <td>
-    <center><img src="images/poedit.gif"/></a></center>
     </td>
 </tr>
 </table>

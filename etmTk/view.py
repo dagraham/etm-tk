@@ -2804,10 +2804,10 @@ Enter the shortest time period you want displayed in minutes.""")
 
     def selectId(self, event, d=1):
         ids = self.busy_ids
+        old_id = None
         if self.canvas_idpos is None:
             self.canvas_idpos = 0
-            old_id = None
-        else:
+        elif self.canvas_idpos in self.canvas_ids:
             old_id = self.canvas_ids[self.canvas_idpos]
             if old_id in ids:
                 tags = self.canvas.gettags(old_id)
@@ -3495,8 +3495,8 @@ Relative dates and fuzzy parsing are supported.""")
         logger.debug('day: {0}'.format(day))
         if day is None:
             return
-        self.chosen_date = day
-
+        self.chosen_date = day.date()
+        self.active_date = day.date()
         if self.weekly:
             self.showWeek(event=e, week=None)
         elif self.monthly:
