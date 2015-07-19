@@ -172,6 +172,8 @@ class App(Tk):
         self.options = loop.options
         BGCOLOR = self.options['background_color']
         self.BGCOLOR = BGCOLOR
+        HLCOLOR = self.options['highlight_color']
+        self.HLCOLOR = HLCOLOR
         FGCOLOR = self.options['foreground_color']
         self.FGCOLOR = FGCOLOR
         CALENDAR_COLORS = self.options['calendar_colors']
@@ -190,7 +192,7 @@ class App(Tk):
         self.YEARCURRENT = CALENDAR_COLORS['year_current']
         self.YEARFUTURE = CALENDAR_COLORS['year_future']
 
-        self.configure(background=BGCOLOR)
+        self.configure(background=BGCOLOR, highlightcolor=HLCOLOR, takefocus=False)
         self.option_add('*tearOff', False)
         self.menu_lst = []
         self.menutree = MenuTree()
@@ -220,7 +222,7 @@ class App(Tk):
         s.theme_use(style)
         loop.tkstyle = style
 
-        ttk.Style().configure("bg.TButton", background=BGCOLOR, activebackground=BGCOLOR, highlightbackground=BGCOLOR, foreground=FGCOLOR, relief=RAISED)
+        ttk.Style().configure("bg.TButton", background=BGCOLOR, activebackground=BGCOLOR, highlightcolor=HLCOLOR, foreground=FGCOLOR, relief=RAISED, takefocus=False)
 
         tkfixedfont = tkFont.nametofont("TkFixedFont")
         if 'fontsize_fixed' in self.options and self.options['fontsize_fixed']:
@@ -256,13 +258,13 @@ class App(Tk):
         self.outline_depths[AGENDA] = 0
         self.outline_depths[CUSTOM] = 0
 
-        self.topbar = topbar = Frame(self, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR, takefocus=False)
+        self.topbar = topbar = Frame(self, bd=0, relief="flat", highlightcolor=HLCOLOR, background=BGCOLOR, takefocus=False)
         topbar.pack(side="top", fill="x", expand=0, padx=0, pady=0)
 
         self.box_value = StringVar()
         self.custom_box = ttk.Combobox(self.topbar, textvariable=self.box_value, font=self.tkfixedfont)
 
-        self.statusbar = Frame(self, bd=0, relief="flat", highlightbackground=BGCOLOR, background=BGCOLOR, takefocus=False)
+        self.statusbar = Frame(self, bd=0, relief="flat", highlightcolor=HLCOLOR, background=BGCOLOR, takefocus=False)
         self.statusbar.pack(side="bottom", fill="x", expand=0, padx=4, pady=2)
 
         self.topwindow = topwindow = PanedWindow(self, orient="vertical", sashwidth=4, sashrelief='flat', background=BGCOLOR)
@@ -272,12 +274,17 @@ class App(Tk):
         self.toppane = toppane = Frame(
             topwindow, bd=0, relief="flat",
             highlightthickness=0,
-            highlightbackground=BGCOLOR, background=BGCOLOR)
+            highlightcolor=HLCOLOR,
+            highlightbackground=BGCOLOR,
+            background=BGCOLOR,
+            takefocus=False)
         self.toppane.pack(side="top", fill=BOTH, expand=1)
 
         self.canvas = Canvas(
             self.toppane, background=BGCOLOR, bd=2, relief="flat",
-            highlightthickness=2, highlightbackground=BGCOLOR)
+            highlightthickness=3,
+            highlightbackground=BGCOLOR,
+            highlightcolor=HLCOLOR)
         self.canvas.pack(fill=BOTH, expand=1, padx=0, pady=0)
 
 
@@ -286,9 +293,11 @@ class App(Tk):
 
         self.treepane = treepane = Frame(
             botwindow, bd=0, relief="flat",
-            highlightthickness=2,
+            highlightthickness=3,
+            highlightcolor=HLCOLOR,
             highlightbackground=BGCOLOR,
-            background=BGCOLOR)
+            background=BGCOLOR,
+            takefocus=False)
         botwindow.add(treepane, padx=0, pady=0, stretch="first")
 
         self.content = ReadOnlyText(
@@ -296,9 +305,10 @@ class App(Tk):
             wrap="word", padx=3, bd=2, relief="sunken",
             height=loop.options['details_rows'],
             width=46, takefocus=False,
-            # highlightthickness=8,
-            highlightbackground=BGCOLOR,
+            highlightthickness=3,
+            highlightcolor=HLCOLOR,
             background=BGCOLOR,
+            highlightbackground=BGCOLOR,
             foreground=FGCOLOR
             )
         botwindow.add(self.content, padx=3, pady=0, stretch="never")
@@ -308,6 +318,7 @@ class App(Tk):
         ttk.Style().configure("Treeview",
                               background=BGCOLOR,
                               foreground=FGCOLOR,
+                              highlightcolor=HLCOLOR,
                               fieldbackground=BGCOLOR,
                               )
         self.tree.pack(fill="both", expand=1, padx=1, pady=0)
@@ -444,6 +455,15 @@ class App(Tk):
         openmenu.add_command(label=label, command=self.editScratch)
         self.bindTop(c, self.editScratch)
         openmenu.entryconfig(3, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        l = "Shift-G"
+        c = "G"
+        file = loop.options['colors']
+        label = relpath(file, loop.options['etmdir'])
+        openmenu.add_command(label=label, command=self.editColors)
+        self.bindTop(c, self.editColors)
+        openmenu.entryconfig(4, accelerator=l)
         self.add2menu(path, (label, l))
 
         filemenu.add_cascade(label=OPEN, menu=openmenu)
@@ -911,15 +931,13 @@ class App(Tk):
         windowtitle = Label(topbar, textvariable=self.currentView, bd=1, relief="flat",  padx=8, pady=0)
         windowtitle.pack(side="left")
         windowtitle.configure(background=BGCOLOR, foreground=FGCOLOR)
-        self.currentView.set("Agenda")
-
 
         # filter
         self.filterValue = StringVar(self)
         self.filterValue.set('')
         self.filterValue.trace_variable("w", self.filterView)
 
-        self.fltr = Entry(topbar, textvariable=self.filterValue, width=14, highlightbackground=BGCOLOR, bg=BGCOLOR, foreground=FGCOLOR, takefocus=False)
+        self.fltr = Entry(topbar, textvariable=self.filterValue, width=14, bg=BGCOLOR, highlightcolor=HLCOLOR, highlightbackground=BGCOLOR, foreground=FGCOLOR, highlightthickness=3, bd=0, takefocus=False)
         self.fltr.pack(side="left", padx=0, expand=1, fill=X)
         self.fltr.bind("<FocusIn>", self.setFilter)
         self.fltr.bind("<Escape>", self.clearFilter)
@@ -962,7 +980,8 @@ class App(Tk):
                               textvariable=self.pendingAlerts,
                               command=self.showAlerts,
                               style="bg.TButton",
-                              width=0
+                              width=0,
+                              takefocus=False
                               )
         self.pending.pack(side="right", expand=0, padx=2, pady=2)
 
@@ -970,14 +989,14 @@ class App(Tk):
         self.timerStatus.set("")
         self.timer_status = timer_status = Label(self.statusbar, textvariable=self.timerStatus, bd=0, relief="flat", anchor=W, justify=LEFT, padx=2, pady=0)
         timer_status.pack(side="right", expand=1, fill=X, padx=6)
-        timer_status.configure(background=BGCOLOR, highlightthickness=0)
+        timer_status.configure(background=BGCOLOR, highlightthickness=3)
 
         self.timerTitle = StringVar(self)
         self.timerTitle.set("")
         self.timer_title = timer_title = Label(self.statusbar, textvariable=self.timerTitle, bd=0, relief="flat", anchor=W, justify=LEFT, padx=2, pady=0)
 
         timer_title.pack(side="left", expand=1, fill=X, padx=0)
-        timer_title.configure(background=BGCOLOR, foreground=FGCOLOR, highlightthickness=0)
+        timer_title.configure(background=BGCOLOR, foreground=FGCOLOR, highlightthickness=3)
 
         # set cal_regex here and update it in updateCalendars
         self.cal_regex = None
@@ -1007,7 +1026,8 @@ class App(Tk):
         self.etmgeo = os.path.normpath(os.path.join(loop.options['etmdir'], ".etmgeo"))
         self.restoreGeometry()
         self.etmtimers = os.path.normpath(os.path.join(loop.options['etmdir'], ".etmtimers"))
-        self.tree.focus_set()
+        self.showWeekly() # hack to fix focus issue in agenda
+        self.agendaView()
 
     def bindTop(self, c, cmd, e=None):
         if e and e.char != c:
@@ -1669,6 +1689,10 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
 
     def editScratch(self, e=None):
         file = loop.options['scratchpad']
+        self.editFile(e, file=file)
+
+    def editColors(self, e=None):
+        file = loop.options['colors']
         self.editFile(e, file=file)
 
     def editData(self, e=None):
@@ -2786,7 +2810,7 @@ Enter the shortest time period you want displayed in minutes.""")
             xy = int(l + x_ * i), int(t-18), int(l + x_ * i), int(t + y_ * num_weeks)
             self.canvas.create_line(xy, fill=self.GRIDCOLOR, tag="grid")
         # horizontals
-        for j in range(1, num_weeks):
+        for j in range(0, num_weeks):
             xy = int(l), int(t + y_ * j), int(l + x_ * 7), int(t + y_ * j)
             self.canvas.create_line(xy, fill=self.GRIDCOLOR, tag="grid")
 
@@ -2804,11 +2828,14 @@ Enter the shortest time period you want displayed in minutes.""")
 
     def selectId(self, event, d=1):
         ids = self.busy_ids
-        old_id = None
         if self.canvas_idpos is None:
             self.canvas_idpos = 0
-        elif self.canvas_idpos in self.canvas_ids:
-            old_id = self.canvas_ids[self.canvas_idpos]
+            old_id = None
+        else:
+            if self.canvas_idpos < len(self.canvas_ids):
+                old_id = self.canvas_ids[self.canvas_idpos]
+            else:
+                old_id = self.canvas_ids[0]
             if old_id in ids:
                 tags = self.canvas.gettags(old_id)
                 if 'current_day' in tags:
@@ -2820,16 +2847,16 @@ Enter the shortest time period you want displayed in minutes.""")
             else:
                 self.canvas.itemconfig(old_id, fill=self.OCCASIONFILL)
                 self.canvas.tag_lower(old_id)
-            if d == -1:
-                self.canvas_idpos -= 1
-                if self.canvas_idpos < 0:
-                    self.priorWeekMonth(event=event)
-                    self.canvas_idpos = len(self.canvas_ids) - 1
-            elif d == 1:
-                self.canvas_idpos += 1
-                if self.canvas_idpos > len(self.canvas_ids) - 1:
-                    self.nextWeekMonth(event=event)
-                    self.canvas_idpos = 0
+        if d == -1:
+            self.canvas_idpos -= 1
+            if self.canvas_idpos < 0:
+                self.priorWeekMonth(event=event)
+                self.canvas_idpos = len(self.canvas_ids) - 1
+        elif d == 1:
+            self.canvas_idpos += 1
+            if self.canvas_idpos > len(self.canvas_ids) - 1:
+                self.nextWeekMonth(event=event)
+                self.canvas_idpos = 0
 
         if old_id is not None and old_id in self.busy_ids:
             tags = self.canvas.gettags(old_id)
@@ -2962,7 +2989,7 @@ Enter the shortest time period you want displayed in minutes.""")
             t.delete("0.0", END)
             t.insert("0.0", cal)
 
-        win = Toplevel(highlightbackground=self.BGCOLOR, background=self.BGCOLOR)
+        win = Toplevel(highlightcolor=self.HLCOLOR, background=self.BGCOLOR)
         win.title(_("Calendar"))
         f = Frame(win)
         # pack the button first so that it doesn't disappear with resizing
@@ -2975,7 +3002,7 @@ Enter the shortest time period you want displayed in minutes.""")
                          font=self.tkfixedfont,
                          takefocus=False,
                          background=self.BGCOLOR,
-                         highlightbackground=self.BGCOLOR)
+                         highlightcolor=self.HLCOLOR)
         win.bind('<Left>', (lambda e: showYear(-1)))
         win.bind('<Right>', (lambda e: showYear(1)))
         win.bind('<Home>', (lambda e: showYear()))
@@ -3504,7 +3531,7 @@ Relative dates and fuzzy parsing are supported.""")
         self.scrollToDate(day.date())
         return
 
-    def setFilter(self, *args):
+    def setFilter(self, e=None):
         if self.view in [CUSTOM]:
             return
         self.filter_active = True

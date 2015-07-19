@@ -16,7 +16,7 @@ logger = logging.getLogger()
 this_dir, this_filename = os.path.split(__file__)
 LANGUAGES = os.path.normpath(os.path.join(this_dir, "locale"))
 
-BGCOLOR = FGCOLOR = CALENDAR_COLORS = None
+BGCOLOR = HLCOLOR = FGCOLOR = CALENDAR_COLORS = None
 
 def setup_logging(level, etmdir=None):
     """
@@ -1299,6 +1299,7 @@ def get_options(d=''):
     colors_cfg = os.path.normpath(os.path.join(etmdir, 'colors.cfg'))
     # the default colors
     FGCOLOR = BASE_COLORS['foreground']
+    HLCOLOR = BASE_COLORS['highlight']
     BGCOLOR = BASE_COLORS['background']
     item_colors = ITEM_COLORS
     if os.path.isfile(colors_cfg):
@@ -1309,6 +1310,7 @@ def get_options(d=''):
 
         if use_colors:
             FGCOLOR = use_colors['base']['foreground']
+            HLCOLOR = use_colors['base']['highlight']
             BGCOLOR = use_colors['base']['background']
             CALENDAR_COLORS = use_colors['calendar']
             item_colors = use_colors['item']
@@ -1678,6 +1680,7 @@ def get_options(d=''):
     options['config'] = newconfig
     options['datafile'] = datafile
     options['scratchpad'] = os.path.normpath(os.path.join(options['etmdir'], _("scratchpad")))
+    options['colors'] = os.path.normpath(os.path.join(options['etmdir'], "colors.cfg"))
 
     if options['action_minutes'] not in [1, 6, 12, 15, 30, 60]:
         term_print(
@@ -1729,6 +1732,7 @@ def get_options(d=''):
     file_encoding = options['encoding']['file']
     local_timezone = options['local_timezone']
     options['background_color'] = BGCOLOR
+    options['highlight_color'] = HLCOLOR
     options['foreground_color'] = FGCOLOR
     options['calendar_colors'] = CALENDAR_COLORS
     logger.debug("ending get_options")
@@ -1869,7 +1873,7 @@ id2Type = {
 # yellowgreen
 
 # Default colors for the GUI
-BASE_COLORS = {'foreground': "black", 'background': "#F2F3F4"}
+BASE_COLORS = {'foreground': "black", 'highlight': "#B2B2AF", 'background': "#FEFEFA"}
 
 ITEM_COLORS = {
     "ac": "darkorchid",
