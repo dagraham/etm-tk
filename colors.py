@@ -1,5 +1,12 @@
 import tkinter as tk
 
+# set whatever background color you like here and then run to see
+# how various font colors appear against the specified background
+# background_color = "#663300"
+# background_color = "blue4"
+# background_color = "dark green"
+background_color = "#f2f3f4"
+
 COLORS = ['snow', 'ghost white', 'white smoke', 'gainsboro', 'floral white', 'old lace',
           'linen', 'antique white', 'papaya whip', 'blanched almond', 'bisque', 'peach puff',
           'navajo white', 'lemon chiffon', 'mint cream', 'azure', 'alice blue', 'lavender',
@@ -77,109 +84,11 @@ COLORS = ['snow', 'ghost white', 'white smoke', 'gainsboro', 'floral white', 'ol
           'gray84', 'gray85', 'gray86', 'gray87', 'gray88', 'gray89', 'gray90', 'gray91', 'gray92',
           'gray93', 'gray94', 'gray95', 'gray97', 'gray98', 'gray99']
 
-tstr2SCI = {
-    #   TStr  TNum Forground Color   Icon         view
-    "ac": [23, "darkorchid", "action", "day"],
-    "av": [16, "slateblue2", "task", "day"],
-    "by": [19, "gold3", "beginby", "now"],
-    "cs": [18, "slateblue2", "child", "day"],
-    "cu": [22, "gray65", "child", "day"],
-    "dl": [28, "gray70", "delete", "folder"],
-    "ds": [17, "darkslategray", "delegated", "day"],
-    "du": [21, "darkslategray", "delegated", "day"],
-    # "ev": [12, "forestgreen", "event", "day"],
-    "ev": [12, "springgreen4", "event", "day"],
-    "fn": [27, "gray70", "finished", "day"],
-
-    "ib": [10, "firebrick3", "inbox", "now"],
-    "ns": [24, "saddlebrown", "note", "day"],
-    "nu": [25, "saddlebrown", "note", "day"],
-    "oc": [11, "peachpuff4", "occasion", "day"],
-    "pc": [15, "orangered", "child", "now"],
-
-    "pu": [15, "firebrick3", "child", "now"],
-
-    "pd": [14, "orangered", "delegated", "now"],
-    "pt": [13, "orangered", "task", "now"],
-    "rm": [12, "seagreen", "reminder", "day"],
-    "so": [26, "slateblue1", "someday", "now"],
-    "un": [20, "slateblue2", "task", "next"],
-}
-
-lightcolorsHsh = {
-    "ac": "darkorchid",
-    "av": "slateblue2",
-    "by": "gold3",
-    "cs": "slateblue2",
-    "cu": "gray65",
-    "dl": "gray70",
-    "ds": "darkslategray",
-    "du": "darkslategray",
-    "ev": "springgreen4",
-    "fn": "gray70",
-    "ib": "firebrick3",
-    "ns": "saddlebrown",
-    "nu": "saddlebrown",
-    "oc": "peachpuff4",
-    "pc": "orangered",
-    "pu": "firebrick3",
-    "pd": "orangered",
-    "pt": "orangered",
-    "rm": "seagreen",
-    "so": "slateblue1",
-    "un": "slateblue2",
-}
-
-darkcolorsHsh = {
-    "ac": "MediumOrchid1",
-    "av": "SteelBlue2",
-    "by": "light goldenrod",
-    "cs": "SteelBlue2",
-    "cu": "gray80",
-    "dl": "gray90",
-    "ds": "DarkSlateGray2",
-    "du": "DarkSlateGray2",
-    "ev": "SpringGreen2",
-    "fn": "gray90",
-    "ib": "IndianRed1",
-    "ns": "sandybrown",
-    "nu": "sandybrown",
-    "oc": "PeachPuff2",
-    "pc": "IndianRed1",
-    "pu": "IndianRed1",
-    "pd": "IndianRed1",
-    "pt": "IndianRed1",
-    "rm": "medium sea green",
-    "so": "SteelBlue1",
-    "un": "SteelBlue2",
-}
-
-dark = {
-    "darkorchid" : "MediumOrchid1",
-    "gold3": "light goldenrod",
-    "gray65": "gray80",
-    "gray70": "gray90",
-    "darkslategray": "DarkSlateGray2",
-    "springgreen4": "SpringGreen2",
-    "firebrick3": "IndianRed1",
-    "saddlebrown": "sandybrown",
-    "peachpuff4": "PeachPuff2",
-    "orangered": "IndianRed1",
-    "seagreen": "medium sea green",
-    "slateblue1": "SteelBlue1",
-    "slateblue2": "SteelBlue2",
-}
-
-keys = [x for x in tstr2SCI.keys()]
-keys.sort()
-colors = [dark[tstr2SCI[x][1]] for x in keys]
-
-
 class ColorChart(tk.Frame):
 
     MAX_ROWS = 36
     FONT_SIZE = 13
-    BGCOLOR = "#663300"
+    BGCOLOR = background_color
 
     def __init__(self, root):
         tk.Frame.__init__(self, root)

@@ -192,6 +192,7 @@ class App(Tk):
         self.YEARCURRENT = CALENDAR_COLORS['year_current']
         self.YEARFUTURE = CALENDAR_COLORS['year_future']
 
+        self.bind("<Configure>", self.on_resize)
         self.configure(background=BGCOLOR, highlightcolor=HLCOLOR, takefocus=False)
         self.option_add('*tearOff', False)
         self.menu_lst = []
@@ -267,8 +268,8 @@ class App(Tk):
         self.statusbar = Frame(self, bd=0, relief="flat", highlightcolor=HLCOLOR, background=BGCOLOR, takefocus=False)
         self.statusbar.pack(side="bottom", fill="x", expand=0, padx=4, pady=2)
 
-        self.topwindow = topwindow = PanedWindow(self, orient="vertical", sashwidth=4, sashrelief='flat', background=BGCOLOR)
-        self.topwindow.pack(side="top", fill=BOTH, expand=1)
+        self.topwindow = topwindow = PanedWindow(self, orient="vertical", sashwidth=2, sashrelief='flat', background=BGCOLOR)
+        self.topwindow.pack(side="top", padx=0, fill=BOTH, expand=1)
 
 
         self.toppane = toppane = Frame(
@@ -285,11 +286,11 @@ class App(Tk):
             highlightthickness=3,
             highlightbackground=BGCOLOR,
             highlightcolor=HLCOLOR)
-        self.canvas.pack(fill=BOTH, expand=1, padx=0, pady=0)
+        self.canvas.pack(fill=BOTH, expand=1, padx=3, pady=0)
 
 
-        self.botwindow = botwindow = PanedWindow(topwindow, orient="vertical", sashwidth=4, sashrelief='flat', background=BGCOLOR)
-        topwindow.add(botwindow)
+        self.botwindow = botwindow = PanedWindow(topwindow, orient="vertical", sashwidth=0, sashpad=0, bd=0, sashrelief='flat', background=BGCOLOR )
+        topwindow.add(botwindow, padx=0)
 
         self.treepane = treepane = Frame(
             botwindow, bd=0, relief="flat",
@@ -298,7 +299,22 @@ class App(Tk):
             highlightbackground=BGCOLOR,
             background=BGCOLOR,
             takefocus=False)
+
         botwindow.add(treepane, padx=0, pady=0, stretch="first")
+
+        ttk.Style().configure("Treeview",
+            bd=0,
+            padding=2,
+            highlightthickness=0,
+            background=BGCOLOR,
+            foreground=FGCOLOR,
+            highlightcolor=HLCOLOR,
+            fieldbackground=BGCOLOR,
+            )
+
+        self.tree = ttk.Treeview(treepane, show='tree', columns=["#1", "#2"], selectmode='browse')
+
+        self.tree.pack(fill="both", expand=1, padx=0, pady=2)
 
         self.content = ReadOnlyText(
             botwindow, font=self.tkfixedfont,
@@ -311,18 +327,7 @@ class App(Tk):
             highlightbackground=BGCOLOR,
             foreground=FGCOLOR
             )
-        botwindow.add(self.content, padx=3, pady=0, stretch="never")
-
-
-        self.tree = ttk.Treeview(treepane, show='tree', columns=["#1", "#2"], selectmode='browse')
-        ttk.Style().configure("Treeview",
-                              background=BGCOLOR,
-                              foreground=FGCOLOR,
-                              highlightcolor=HLCOLOR,
-                              fieldbackground=BGCOLOR,
-                              )
-        self.tree.pack(fill="both", expand=1, padx=1, pady=0)
-
+        botwindow.add(self.content, padx=2, pady=2, stretch="never")
 
         self.canvas.bind('<Button-1>', (lambda e: self.selectId(event=e, d=0)))
         self.canvas.bind("<Control-Button-1>", self.on_select_item)
@@ -1029,6 +1034,12 @@ class App(Tk):
         self.showWeekly() # hack to fix focus issue in agenda
         self.agendaView()
 
+    def on_resize(self, event):
+        if self.weekly:
+            self.after_idle(self.showWeek, )
+        elif self.monthly:
+            self.after_idle(self.showMonth, )
+
     def bindTop(self, c, cmd, e=None):
         if e and e.char != c:
             # ignore Control-c
@@ -1108,7 +1119,7 @@ class App(Tk):
         self.menutree.create_node(leaf, id, parent=parent)
 
     def confirm(self, parent=None, title="", prompt="", instance="xyz"):
-        ok, value = OptionsDialog(parent=parent, title=_("confirm").format(instance), prompt=prompt).getValue()
+        ok, value = OptionsDialog(parent=self, title=_("confirm").format(instance), prompt=prompt).getValue()
         return ok
 
     def selectCalendars(self):
@@ -2262,10 +2273,10 @@ Enter the shortest time period you want displayed in minutes.""")
         self.scrollToDate(scrolldate)
         self.OnSelect()
         self.canvas.delete("all")
-        l = 4
-        r = 4
+        l = 5
+        r = 5
         t = 22
-        b = 4
+        b = 5
         if event:
             logger.debug('event: {0}'.format(event))
             w, h = event.width, event.height
@@ -2478,7 +2489,7 @@ Enter the shortest time period you want displayed in minutes.""")
         # self.canvas.create_rectangle(xy, tag="grid")
 
         # verticals
-        for i in range(1, 7):
+        for i in range(0, 8):
             xy = int(l + x_ * i), int(t-18), int(l + x_ * i), int(t + y_)
             self.canvas.create_line(xy, fill=self.GRIDCOLOR, tag="grid")
 
@@ -2590,10 +2601,10 @@ Enter the shortest time period you want displayed in minutes.""")
         weekdays = [s2or3(x.strftime("%a")) for x in weeks[0]]
         themonth = weeks[1][0].strftime("%B %Y")
         self.canvas.delete("all")
-        l = 4
-        r = 4
+        l = 5
+        r = 5
         t = 22
-        b = 4
+        b = 5
         if event:
             logger.debug('event: {0}'.format(event))
             w, h = event.width, event.height
@@ -2806,7 +2817,7 @@ Enter the shortest time period you want displayed in minutes.""")
         # self.canvas.create_rectangle(xy, tag="grid")
 
         # verticals
-        for i in range(1, 7):
+        for i in range(0, 8):
             xy = int(l + x_ * i), int(t-18), int(l + x_ * i), int(t + y_ * num_weeks)
             self.canvas.create_line(xy, fill=self.GRIDCOLOR, tag="grid")
         # horizontals

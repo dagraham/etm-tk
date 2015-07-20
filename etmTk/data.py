@@ -1873,13 +1873,13 @@ id2Type = {
 # yellowgreen
 
 # Default colors for the GUI
-BASE_COLORS = {'foreground': "black", 'highlight': "#B2B2AF", 'background': "#FEFEFA"}
+BASE_COLORS = {'foreground': "black", 'highlight': "#B2B2AF", 'background': "#FEFEFC"}
 
 ITEM_COLORS = {
     "ac": "darkorchid",
-    "av": "slateblue2",
-    "by": "gold3",
-    "cs": "slateblue2",
+    "av": "royal blue",
+    "by": "DarkGoldenRod3",
+    "cs": "royal blue",
     "cu": "gray65",
     "dl": "gray70",
     "ds": "darkslategray",
@@ -1895,23 +1895,22 @@ ITEM_COLORS = {
     "pd": "orangered",
     "pt": "orangered",
     "rm": "seagreen",
-    "so": "slateblue1",
-    "un": "slateblue2",
+    "so": "SteelBlue3",
+    "un": "royal blue",
     }
 
 CALENDAR_COLORS = {
     "date": "SteelBlue4",
-    "grid": "gray80",
-    "busybar": "SteelBlue3",
+    "grid": "gray85",
+    "busybar": "royal blue",
     "current": "#DCEAFC",
     "active": "#FCFCD9",
     "occasion": "gray92",
     "default": "#D4DCFC",
-    # "other": "#C7EDC8",
     "conflict": "#FF3300",
     "year_past": "springgreen4",
     "year_current": 'black',
-    "year_future": 'SteelBlue4',
+    "year_future": 'royal blue',
 }
 
 # type string to Sort Color Icon. The color will be added in
