@@ -192,7 +192,6 @@ class App(Tk):
         self.YEARCURRENT = CALENDAR_COLORS['year_current']
         self.YEARFUTURE = CALENDAR_COLORS['year_future']
 
-        self.bind("<Configure>", self.on_resize)
         self.configure(background=BGCOLOR, highlightcolor=HLCOLOR, takefocus=False)
         self.option_add('*tearOff', False)
         self.menu_lst = []
@@ -286,8 +285,7 @@ class App(Tk):
             highlightthickness=3,
             highlightbackground=BGCOLOR,
             highlightcolor=HLCOLOR)
-        self.canvas.pack(fill=BOTH, expand=1, padx=3, pady=0)
-
+        self.canvas.pack(fill=BOTH, expand=1, padx=2, pady=0)
 
         self.botwindow = botwindow = PanedWindow(topwindow, orient="vertical", sashwidth=0, sashpad=0, bd=0, sashrelief='flat', background=BGCOLOR )
         topwindow.add(botwindow, padx=0)
@@ -300,7 +298,7 @@ class App(Tk):
             background=BGCOLOR,
             takefocus=False)
 
-        botwindow.add(treepane, padx=0, pady=0, stretch="first")
+        botwindow.add(treepane, padx=2, pady=0, stretch="first")
 
         ttk.Style().configure("Treeview",
             bd=0,
@@ -314,14 +312,14 @@ class App(Tk):
 
         self.tree = ttk.Treeview(treepane, show='tree', columns=["#1", "#2"], selectmode='browse')
 
-        self.tree.pack(fill="both", expand=1, padx=0, pady=2)
+        self.tree.pack(fill="both", expand=1, padx=0, pady=0)
 
         self.content = ReadOnlyText(
             botwindow, font=self.tkfixedfont,
             wrap="word", padx=3, bd=2, relief="sunken",
             height=loop.options['details_rows'],
             width=46, takefocus=False,
-            highlightthickness=3,
+            highlightthickness=0,
             highlightcolor=HLCOLOR,
             background=BGCOLOR,
             highlightbackground=BGCOLOR,
@@ -339,6 +337,7 @@ class App(Tk):
         self.canvas.bind('<Up>', (lambda e: self.selectId(event=e, d=-1)))
         self.canvas.bind('<Down>', (lambda e: self.selectId(event=e, d=1)))
         self.canvas.bind('<space>', self.goHome)
+        self.canvas.bind("<Configure>", self.on_resize)
 
         self.canvas.bind("b", lambda event: self.after(AFTER, self.showBusyPeriods))
         self.canvas.bind("f", lambda event: self.after(AFTER, self.showFreePeriods))
@@ -1036,9 +1035,9 @@ class App(Tk):
 
     def on_resize(self, event):
         if self.weekly:
-            self.after_idle(self.showWeek, )
+            self.canvas.after_idle(self.showWeek, )
         elif self.monthly:
-            self.after_idle(self.showMonth, )
+            self.canvas.after_idle(self.showMonth, )
 
     def bindTop(self, c, cmd, e=None):
         if e and e.char != c:
