@@ -461,12 +461,11 @@ class App(Tk):
         openmenu.entryconfig(3, accelerator=l)
         self.add2menu(path, (label, l))
 
-        l = "Shift-G"
-        c = "G"
-        file = loop.options['colors']
-        label = relpath(file, loop.options['etmdir'])
+        l = ""
+        # c = "G"
+        label = _("colors")
         openmenu.add_command(label=label, command=self.editColors)
-        self.bindTop(c, self.editColors)
+        # self.bindTop(c, self.editColors)
         openmenu.entryconfig(4, accelerator=l)
         self.add2menu(path, (label, l))
 
@@ -774,16 +773,6 @@ class App(Tk):
         toolsmenu.entryconfig(13, accelerator=l)
         self.add2menu(path, (label, l))
 
-        # load data
-        l = "Shift-L"
-        c = "L"
-        label = _("Reload data from files")
-        toolsmenu.add_command(label=label, underline=1, command=loop.loadData)
-        self.bind(c, loop.loadData)
-
-        toolsmenu.entryconfig(14, accelerator=l)
-        self.add2menu(path, (label, l))
-
         # changes
         if loop.options['vcs_system']:
 
@@ -793,7 +782,7 @@ class App(Tk):
             toolsmenu.add_command(label=label, underline=1, command=self.showChanges)
             self.bind(c, lambda event: self.after(AFTER, self.showChanges))
 
-            toolsmenu.entryconfig(15, accelerator=l)
+            toolsmenu.entryconfig(14, accelerator=l)
             self.add2menu(path, (label, l))
 
         menubar.add_cascade(label=path, menu=toolsmenu, underline=0)
