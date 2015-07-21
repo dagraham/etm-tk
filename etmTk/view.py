@@ -2181,7 +2181,6 @@ Enter the shortest time period you want displayed in minutes.""")
         if chosen_day is not None:
             self.chosen_date = chosen_day
         elif self.active_date:
-            # self.chosen_day = datetime.combine(self.active_date, time())
             self.chosen_date = self.active_date
         else:
             self.chosen_date = get_current_time().date()
@@ -2212,7 +2211,6 @@ Enter the shortest time period you want displayed in minutes.""")
             self.showMonth(event=event, month=1)
 
     def showWeek(self, event=None, week=None):
-        # self.canvas.focus_set()
         self.selectedId = None
 
         matching = self.cal_regex is not None and self.default_regex is not None
@@ -2289,8 +2287,6 @@ Enter the shortest time period you want displayed in minutes.""")
         busy_ids = set([])
         monthid2date = {}
 
-        # self.canvas.bind('<Escape>', self.on_leave_item)
-
         # weekdays
         intervals = [360, 720, 1080, 1440]
         busywidth = 2
@@ -2307,8 +2303,6 @@ Enter the shortest time period you want displayed in minutes.""")
         self.timeline = None
         self.last_minutes = None
 
-        # x_ = x
-        # y_ = y
 
         for i in range(7):
             fill = "SteelBlue4"
