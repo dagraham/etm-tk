@@ -2833,7 +2833,7 @@ Enter the shortest time period you want displayed in minutes.""")
                 elif 'occasion' in tags:
                     self.canvas.itemconfig(old_id, fill=self.OCCASIONFILL)
                 elif self.weekly:
-                    self.canvas.itemconfig(old_id, fill=self.DEFAULTFILL)
+                    self.canvas.itemconfig(old_id, fill=self.BGCOLOR)
             else:
                 self.canvas.itemconfig(old_id, fill=self.OCCASIONFILL)
                 self.canvas.tag_lower(old_id)
