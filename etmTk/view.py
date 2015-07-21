@@ -264,7 +264,7 @@ class App(Tk):
         self.box_value = StringVar()
         self.custom_box = ttk.Combobox(self.topbar, textvariable=self.box_value, font=self.tkfixedfont)
 
-        self.statusbar = Frame(self, bd=0, relief="flat", highlightcolor=HLCOLOR, background=BGCOLOR, takefocus=False)
+        self.statusbar = Frame(self, bd=0, relief="flat", highlightcolor=HLCOLOR, highlightthickness=0, background=BGCOLOR, takefocus=False)
         self.statusbar.pack(side="bottom", fill="x", expand=0, padx=4, pady=2)
 
         self.topwindow = topwindow = PanedWindow(self, orient="vertical", sashwidth=2, sashrelief='flat', background=BGCOLOR)
@@ -982,14 +982,14 @@ class App(Tk):
         self.timerStatus.set("")
         self.timer_status = timer_status = Label(self.statusbar, textvariable=self.timerStatus, bd=0, relief="flat", anchor=W, justify=LEFT, padx=2, pady=0)
         timer_status.pack(side="right", expand=1, fill=X, padx=6)
-        timer_status.configure(background=BGCOLOR, highlightthickness=3)
+        timer_status.configure(background=BGCOLOR, highlightthickness=0)
 
         self.timerTitle = StringVar(self)
         self.timerTitle.set("")
         self.timer_title = timer_title = Label(self.statusbar, textvariable=self.timerTitle, bd=0, relief="flat", anchor=W, justify=LEFT, padx=2, pady=0)
 
         timer_title.pack(side="left", expand=1, fill=X, padx=0)
-        timer_title.configure(background=BGCOLOR, foreground=FGCOLOR, highlightthickness=3)
+        timer_title.configure(background=BGCOLOR, foreground=FGCOLOR, highlightthickness=0)
 
         # set cal_regex here and update it in updateCalendars
         self.cal_regex = None
