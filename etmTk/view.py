@@ -157,8 +157,6 @@ ICONSETTINGS = os.path.normpath(os.path.join(this_dir, "icons", "icon_settings.g
 ICONPLUS = os.path.normpath(os.path.join(this_dir, "icons", "icon_plus.gif"))
 # ICONLOGO = os.path.normpath(os.path.join(this_dir, "icons", "etmlogo.gif"))
 
-# STYLE = "default"
-
 class App(Tk):
     def __init__(self, path=None):
         Tk.__init__(self, className="EtmTk")
