@@ -396,7 +396,7 @@ class App(Tk):
         l = "Shift-T"
         c = "T"
         timermenu.add_command(label=label, command=self.finishActionTimer)
-        self.bind(c, self.finishActionTimer)
+        self.bindTop(c, self.finishActionTimer)
         timermenu.entryconfig(1, accelerator=l)
         self.add2menu(path, (label, l))
 
@@ -532,7 +532,8 @@ class App(Tk):
             else:
                 l, c = commandShortcut(k)
                 viewmenu.add_command(label=label, command=self.view2cmd[k])
-                self.bind(c, lambda e, x=k: self.after(AFTER, self.view2cmd[x]))
+                # self.bind(c, lambda e, x=k: self.after(AFTER, self.view2cmd[x]))
+                self.bindTop(c, self.view2cmd[k])
                 viewmenu.entryconfig(i, accelerator=l)
                 self.add2menu(path, (label, l))
 
