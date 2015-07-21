@@ -176,13 +176,11 @@ class App(Tk):
         self.FGCOLOR = FGCOLOR
         CALENDAR_COLORS = self.options['calendar_colors']
 
-        self.ACTIVEFILL = CALENDAR_COLORS['active'] # "#FCFCD9"
-        self.DEFAULTFILL = CALENDAR_COLORS['default'] # "#D4DCFC"  # blue
-        # self.OTHERFILL = CALENDAR_COLORS['other'] # "#C7EDC8"  # green
-        self.CONFLICTFILL = CALENDAR_COLORS['conflict'] # "#C1C4C9"
-        self.CURRENTFILL = CALENDAR_COLORS['current'] # "#DCEAFC"
-        self.GRIDCOLOR = CALENDAR_COLORS['grid'] # "gray80"
-        self.OCCASIONFILL = CALENDAR_COLORS['occasion'] # "gray92"
+        self.ACTIVEFILL = CALENDAR_COLORS['active']
+        self.CONFLICTFILL = CALENDAR_COLORS['conflict']
+        self.CURRENTFILL = CALENDAR_COLORS['current']
+        self.GRIDCOLOR = CALENDAR_COLORS['grid']
+        self.OCCASIONFILL = CALENDAR_COLORS['occasion']
         self.BUSYBAR = CALENDAR_COLORS['busybar']
         self.CURRDATE = CALENDAR_COLORS['date']
         self.OTHERDATE = CALENDAR_COLORS['grid']
@@ -2306,7 +2304,7 @@ Enter the shortest time period you want displayed in minutes.""")
 
 
         for i in range(7):
-            fill = "SteelBlue4"
+            fill = self.CURRDATE
             flagcolor = None
             busytimes = 0
             start_x = l + i * x_

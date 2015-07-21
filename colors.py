@@ -2,7 +2,7 @@ import tkinter as tk
 
 # set whatever background color you like here and then run to see
 # how various font colors appear against the specified background
-background_color = "#663300"
+background_color = "#604000"
 # background_color = "blue4"
 # background_color = "dark green"
 # background_color = "#f2f3f4"
