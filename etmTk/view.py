@@ -2175,7 +2175,6 @@ Enter the shortest time period you want displayed in minutes.""")
         if self.monthly:
             self.closeMonthly()
         self.content.delete("1.0", END)
-        self.weekly = True
 
         self.setView(DAY)
 
@@ -2198,6 +2197,7 @@ Enter the shortest time period you want displayed in minutes.""")
         for i in range(4, 6):
             self.toolsmenu.entryconfig(i, state="normal")
         self.showWeek(event=event, week=0)
+        self.weekly = True
         self.canvas.focus_set()
         tt.stop()
 
@@ -2518,7 +2518,6 @@ Enter the shortest time period you want displayed in minutes.""")
         if self.weekly:
             self.closeWeekly()
         self.content.delete("1.0", END)
-        self.monthly = True
         for i in range(4, 6):
             self.toolsmenu.entryconfig(i, state="normal")
 
@@ -2537,6 +2536,7 @@ Enter the shortest time period you want displayed in minutes.""")
         self.topwindow.add(self.toppane, padx=0, pady=0, before=self.botwindow, height=self.month_height)
 
         self.showMonth(event=event)
+        self.monthly = True
         self.canvas.focus_set()
         tt.stop()
 
