@@ -1258,6 +1258,7 @@ def setConfig(options):
 # noinspection PyGlobalUndefined
 term_encoding = None
 file_encoding = None
+gui_encoding = None
 local_timezone = None
 
 NONE = YESTERDAY = TODAY = TOMORROW = ""
@@ -1267,7 +1268,7 @@ def get_options(d=''):
     """
     """
     logger.debug('starting get_options with directory: "{0}"'.format(d))
-    global parse, lang, trans, s2or3, term_encoding, file_encoding, local_timezone, NONE, YESTERDAY, TODAY, TOMORROW, BGCOLOR, FGCOLOR, tstr2SCI, CALENDAR_COLORS
+    global parse, lang, trans, s2or3, term_encoding, file_encoding, gui_encoding, local_timezone, NONE, YESTERDAY, TODAY, TOMORROW, BGCOLOR, FGCOLOR, tstr2SCI, CALENDAR_COLORS
 
     from locale import getpreferredencoding
     from sys import stdout
@@ -1734,6 +1735,7 @@ def get_options(d=''):
     setup_parse(options['dayfirst'], options['yearfirst'])
     term_encoding = options['encoding']['term']
     file_encoding = options['encoding']['file']
+    gui_encoding = options['encoding']['gui']
     local_timezone = options['local_timezone']
     options['background_color'] = BGCOLOR
     options['highlight_color'] = HLCOLOR
@@ -7209,6 +7211,7 @@ Show items grouped and sorted by tag, optionally limited to those containing a c
             'tkversion': self.tkversion,
             'tkstyle': self.tkstyle,
             'file_encoding': file_encoding,
+            'gui_encoding': gui_encoding,
             'term_encoding': term_encoding,
             'github': 'https://github.com/dagraham/etm-tk',
         }
@@ -7232,6 +7235,7 @@ System Information:
      Style:   {0[tkstyle]}
   Encodings
      File:    {0[file_encoding]}
+     GUI:     {0[gui_encoding]}
      Term:    {0[term_encoding]}
 
 ETM Information:
