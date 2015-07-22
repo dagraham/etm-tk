@@ -1847,33 +1847,58 @@ id2Type = {
     "un": '-',
 }
 
-# named colors: aliceblue antiquewhite aqua aquamarine azure beige
-# bisque black blanchedalmond blue blueviolet brown burlywood
-# cadetblue chartreuse chocolate coral cornflowerblue cornsilk crimson
-# cyan darkblue darkcyan darkgoldenrod darkgray darkgreen darkgrey
-# darkkhaki darkmagenta darkolivegreen darkorange darkorchid darkred
-# darksalmon darkseagreen darkslateblue darkslategray darkslategrey
-# darkturquoise darkviolet deeppink deepskyblue dimgray dimgrey
-# dodgerblue firebrick floralwhite forestgreen fuchsia gainsboro
-# ghostwhite gold goldenrod gray green greenyellow grey honeydew
-# hotpink indianred indigo ivory khaki lavender lavenderblush
-# lawngreen lemonchiffon lightblue lightcoral lightcyan
-# lightgoldenrodyellow lightgray lightgreen lightgrey lightpink
-# lightsalmon lightseagreen lightskyblue lightslategray lightslategrey
-# lightsteelblue lightyellow lime limegreen linen magenta maroon
-# mediumaquamarine mediumblue mediumorchid mediumpurple mediumseagreen
-# mediumslateblue mediumspringgreen mediumturquoise mediumvioletred
-# midnightblue mintcream mistyrose moccasin navajowhite navy oldlace
-# olive olivedrab orange orangered orchid palegoldenrod palegreen
-# paleturquoise palevioletred papayawhip peachpuff peru pink plum
-# powderblue purple red rosybrown royalblue saddlebrown salmon
-# sandybrown seagreen seashell sienna silver skyblue slateblue
-# slategray slategrey snow springgreen steelblue tan teal thistle
-# tomato transparent turquoise violet wheat white whitesmoke yellow
-# yellowgreen
+# the named colors are listed in colors.py.
 
-# Default colors for the GUI
-BASE_COLORS = {'foreground': "black", 'highlight': "#B2B2AF", 'background': "#FEFEFC"}
+# the contents of colors_light.cfg:
+# base:
+#   foreground: 'black'           # default font color
+#   highlight: '#B2B2AF'          # default highlight color
+#   background: '#FEFEFC'         # default background color
+#
+# item:                           # font colors for items in tree views
+#   ac: 'darkorchid'              # action
+#   av: 'RoyalBlue3'              # scheduled, available task
+#   by: 'DarkGoldenRod3'          # begin by
+#   cs: 'RoyalBlue3'              # scheduled job
+#   cu: 'gray65'                  # scheduled job with unfinished prereqs
+#   dl: 'gray70'                  # hidden (folder view)
+#   ds: 'darkslategray'           # scheduled, delegated task
+#   du: 'darkslategray'           # unscheduled, delegated task
+#   ev: 'springgreen4'            # event
+#   fn: 'gray70'                  # finished task
+#   ib: 'coral2'                  # inbox
+#   ns: 'saddlebrown'             # note
+#   nu: 'saddlebrown'             # unscheduled noted
+#   oc: 'peachpuff4'              # occasion
+#   pc: 'firebrick1'              # pastdue job
+#   pu: 'firebrick1'              # pastdue job with unfinished prereqs
+#   pd: 'firebrick1'              # pastdue, delegated task
+#   pt: 'firebrick1'              # pastdue task
+#   rm: 'seagreen'                # reminder
+#   so: 'SteelBlue3'              # someday
+#   un: 'RoyalBlue3'              # unscheduled task (next)
+#
+# calendar:
+#   date: 'RoyalBlue3'            # week/month calendar dates
+#   grid: 'gray85'                # week/month calendar grid lines
+#   busybar: 'RoyalBlue3'         # week/month busy bars
+#   current: '#DCEAFC'            # current date calendar background
+#   active: '#FCFCD9'             # active/selected date background
+#   occasion: 'gray92'            # occasion background
+#   conflict: '#FF3300'           # conflict flag
+#   year_past: 'springgreen4'     # calendar, past years font color
+#   year_current: 'black'         # calendar, current year font color
+#   year_future: 'RoyalBlue3'     # calendar, future years font color
+
+# The contents of colors_light.cfg should duplicate the default
+# colors below.
+
+# default colors
+BASE_COLORS = {
+    'foreground': "black",
+    'highlight': "#B2B2AF",
+    'background': "#FEFEFC"
+}
 
 ITEM_COLORS = {
     "ac": "darkorchid",
@@ -1897,10 +1922,10 @@ ITEM_COLORS = {
     "rm": "seagreen",
     "so": "SteelBlue3",
     "un": "RoyalBlue3",
-    }
+}
 
 CALENDAR_COLORS = {
-    "date": "SteelBlue4",
+    "date": "RoyalBlue3",
     "grid": "gray85",
     "busybar": "RoyalBlue3",
     "current": "#DCEAFC",
@@ -1938,7 +1963,6 @@ tstr2SCI = {
     "so": [26, "", "someday", "now"],
     "un": [20, "", "task", "next"],
 }
-
 
 def fmt_period(td, parent=None, short=False):
     if td < oneminute * 0:
