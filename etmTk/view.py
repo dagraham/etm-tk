@@ -972,7 +972,7 @@ class App(Tk):
         self.timerStatus.set("")
         self.timer_status = timer_status = Label(self.statusbar, textvariable=self.timerStatus, bd=0, relief="flat", anchor=W, justify=LEFT, padx=2, pady=0)
         timer_status.pack(side="right", expand=1, fill=X, padx=6)
-        timer_status.configure(background=BGCOLOR, highlightthickness=0)
+        timer_status.configure(background=BGCOLOR, foreground=FGCOLOR, highlightthickness=0)
 
         self.timerTitle = StringVar(self)
         self.timerTitle.set("")

@@ -922,6 +922,12 @@ class Timer():
         self.parent = parent
         self.options = options
         self.loop = parent.loop
+        BGCOLOR = self.loop.options['background_color']
+        HLCOLOR = self.loop.options['highlight_color']
+        FGCOLOR = self.loop.options['foreground_color']
+        self.BGCOLOR = BGCOLOR
+        self.HLCOLOR = HLCOLOR
+        self.FGCOLOR = FGCOLOR
         self.timermenu = parent.timermenu
         self.match = ""
         self.etmtimers = os.path.normpath(os.path.join(options['etmdir'], ".etmtimers"))
@@ -981,7 +987,7 @@ class Timer():
         else:
             master = self.parent.tree
         master=self.parent
-        self.timerswindow = win = Toplevel(master=master)
+        self.timerswindow = win = Toplevel(master=master, highlightcolor=self.HLCOLOR, background=self.BGCOLOR)
         self.timerswindow.title(title)
 
         self.filterValue = StringVar(master)
@@ -993,11 +999,25 @@ class Timer():
         self.filterValue = StringVar(master)
         self.filterValue.set("")
         self.filterValue.trace_variable("w", self.setCompletions)
-        self.fltr = Entry(self.timerswindow, textvariable=self.filterValue)
+        self.fltr = Entry(self.timerswindow,
+                          highlightcolor=self.HLCOLOR,
+                          highlightbackground=self.BGCOLOR,
+                          background=self.BGCOLOR,
+                          foreground=self.FGCOLOR,
+                          highlightthickness=3,
+                          textvariable=self.filterValue)
         self.fltr.pack(side="top", fill="x")
         self.fltr.icursor(END)
 
-        self.listbox = listbox = Listbox(self.timerswindow, exportselection=False)
+        self.listbox = listbox = Listbox(self.timerswindow,
+                        highlightcolor=self.HLCOLOR,
+                        highlightbackground=self.BGCOLOR,
+                        background=self.BGCOLOR,
+                        foreground=self.FGCOLOR,
+                        selectbackground=self.FGCOLOR,
+                        selectforeground=self.BGCOLOR,
+                        highlightthickness=3,
+                    exportselection=False)
         listbox.pack(side="bottom", fill=BOTH, expand=True)
 
         self.timerswindow.bind("<Double-1>", self.completionSelected)
