@@ -458,14 +458,6 @@ class App(Tk):
         openmenu.entryconfig(3, accelerator=l)
         self.add2menu(path, (label, l))
 
-        l = "Z"
-        c = "z"
-        label = _("colors")
-        openmenu.add_command(label=label, command=self.editColors)
-        self.bindTop(c, self.editColors)
-        openmenu.entryconfig(4, accelerator=l)
-        self.add2menu(path, (label, l))
-
         filemenu.add_cascade(label=OPEN, menu=openmenu)
 
         path = FILE
@@ -1662,6 +1654,8 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
 
     def editCfgFiles(self, e=None):
         other = []
+        if 'colors' in loop.options:
+            other.append(loop.options['colors'])
         if 'cfg_files' in loop.options:
             for key in ['completions', 'reports', 'users']:
                 other.extend(loop.options['cfg_files'][key])
