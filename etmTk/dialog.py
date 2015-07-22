@@ -922,6 +922,8 @@ class Timer():
         self.parent = parent
         self.options = options
         self.loop = parent.loop
+        self.idletime = 0 * ONEMINUTE
+        self.idlestart = None
         BGCOLOR = self.loop.options['background_color']
         HLCOLOR = self.loop.options['highlight_color']
         FGCOLOR = self.loop.options['foreground_color']
@@ -1004,7 +1006,7 @@ class Timer():
                           highlightbackground=self.BGCOLOR,
                           background=self.BGCOLOR,
                           foreground=self.FGCOLOR,
-                          highlightthickness=3,
+                          highlightthickness=0,
                           textvariable=self.filterValue)
         self.fltr.pack(side="top", fill="x")
         self.fltr.icursor(END)
@@ -1016,7 +1018,7 @@ class Timer():
                         foreground=self.FGCOLOR,
                         selectbackground=self.FGCOLOR,
                         selectforeground=self.BGCOLOR,
-                        highlightthickness=3,
+                        highlightthickness=0,
                     exportselection=False)
         listbox.pack(side="bottom", fill=BOTH, expand=True)
 
@@ -1100,6 +1102,8 @@ class Timer():
             self.currentTimer,
             self.currentStatus,
             self.currentMinutes,
+            self.idlestart,
+            self.idletime
         )
         fo = codecs.open(self.etmtimers, 'w', self.dfile_encoding)
         yaml.dump(tmp, fo)
@@ -1113,7 +1117,7 @@ class Timer():
         fo = codecs.open(self.etmtimers, 'r', self.dfile_encoding)
         tmp = yaml.load(fo)
         fo.close()
-        (self.activeDate, self.activeTimers, self.currentTimer, self.currentStatus, self.currentMinutes) = tmp
+        (self.activeDate, self.activeTimers, self.currentTimer, self.currentStatus, self.currentMinutes, self.idlestart, self.idletime) = tmp
         if self.activeDate != datetime.now().date():
             self.newDay()
         self.updateMenu()
@@ -1122,6 +1126,11 @@ class Timer():
         self.pauseTimer()
         if not self.selected:
             return
+
+        if self.currentStatus == PAUSED:
+            if self.idlestart:
+                self.idletime += datetime.now() - self.idlestart
+            print(self.idletime)
 
         summary = self.selected
         if summary not in self.activeTimers:
@@ -1234,11 +1243,16 @@ class Timer():
         if self.currentStatus == RUNNING:
             hsh['total'] += datetime.now() - hsh['start']
             hsh['stop'] = datetime.now()
+            self.idlestart = datetime.now()
             self.currentStatus = PAUSED
 
         elif self.currentStatus == PAUSED:
             hsh['start'] = datetime.now()
+            if self.idlestart:
+                self.idletime += datetime.now() - self.idlestart
             self.currentStatus = RUNNING
+
+        print(self.idletime)
 
         self.activeTimers[self.currentTimer] = hsh
 
@@ -1269,23 +1283,42 @@ class Timer():
         """
         Return the status of the timers for the status bar
         """
+        print("getStatus")
+        idlestatus = ""
+        now = datetime.now()
         if self.currentTimer and self.currentStatus:
             hsh = self.activeTimers[self.currentTimer]
-            now = datetime.now()
             if self.currentStatus == RUNNING:
+                status='\u279c'
+                idlestatus='\u2716'
                 hsh['total'] = hsh['total'] + (now - hsh['start'])
                 hsh['start'] = now
-                self.activeTimers[self.currentTimer] = hsh
+            else:
+                status='\u2716'
+                idlestatus='\u279c'
+            ret1 = "{0}: {1} {2}".format(self.currentTimer, fmt_period(hsh['total']), status)
+
             total = hsh['total']
             self.currentMinutes = total.seconds // 60
 
-            ret1 = "{0}".format(self.currentTimer)
-            ret2 = "{0} - {1} ({2})".format(self.currentStatus, fmt_period(hsh['total']), len(self.activeTimers.keys()))
         elif self.activeTimers:
-            ret1 = "all paused ({0})".format(len(self.activeTimers))
-            ret2 = ""
+            ret1 = "{0}".format(_("all paused"))
+            idlestatus='\u279c'
         else:
-            ret1 = ret2 = ""
+            ret1 = ""
+
+        if self.idlestart:
+            idle = (now - self.idlestart) + self.idletime
+        elif self.idletime:
+            idle = self.idletime
+        else:
+            idle = None
+
+        if idle:
+            ret2 = "{0}: {1} {2}".format(_("idle"), fmt_period(idle), idlestatus)
+        else:
+            ret2 = ""
+
         logger.debug("timer: {0} {1}".format(ret1, ret2))
         return ret1, ret2
 
