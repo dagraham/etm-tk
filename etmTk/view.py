@@ -441,7 +441,7 @@ class App(Tk):
 
         l = "Shift-P"
         c = "P"
-        label = "preferences"
+        label = _("preferences")
         openmenu.add_command(label=label, command=self.editConfig)
         self.bindTop(c, self.editConfig)
 
@@ -451,17 +451,18 @@ class App(Tk):
         l = "Shift-S"
         c = "S"
         file = loop.options['scratchpad']
-        label = relpath(file, loop.options['etmdir'])
+        # label = relpath(file, loop.options['etmdir'])
+        label = _("scratchpad")
         openmenu.add_command(label=label, command=self.editScratch)
         self.bindTop(c, self.editScratch)
         openmenu.entryconfig(3, accelerator=l)
         self.add2menu(path, (label, l))
 
-        l = ""
-        # c = "G"
+        l = "Z"
+        c = "z"
         label = _("colors")
         openmenu.add_command(label=label, command=self.editColors)
-        # self.bindTop(c, self.editColors)
+        self.bindTop(c, self.editColors)
         openmenu.entryconfig(4, accelerator=l)
         self.add2menu(path, (label, l))
 
