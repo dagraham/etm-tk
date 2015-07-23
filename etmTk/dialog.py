@@ -976,8 +976,15 @@ class Timer():
 
     def clearIdle(self, e=None):
         # reset idle
-        self.idlestart = None
         self.idletime = 0 * ONEMINUTE
+        if self.activeTimers:
+            if self.currentStatus == RUNNING:
+                self.idlestart = None
+            else:
+                self.idlestart = datetime.now()
+        else:
+            self.idlestart = None
+            self.idleactive = False
         self.saveTimers()
         if self.parent:
             self.parent.updateTimerStatus()
@@ -1162,6 +1169,7 @@ class Timer():
         if self.currentStatus == PAUSED:
             if self.idlestart:
                 self.idletime += datetime.now() - self.idlestart
+                self.idlestart = None
 
         summary = self.selected
         if summary not in self.activeTimers:
