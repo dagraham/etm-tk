@@ -1524,7 +1524,7 @@ def get_options(d=''):
                 # we want to allow 0 as an entry
                 options[key] = default_options[key]
                 changed = True
-        elif key in ['ampm', 'dayfirst', 'yearfirst', 'retain_ids']:
+        elif key in ['ampm', 'dayfirst', 'yearfirst', 'retain_ids', 'display_idletime']:
             if key not in user_options:
                 # we want to allow False as an entry
                 options[key] = default_options[key]
