@@ -1111,6 +1111,7 @@ class App(Tk):
             leaf = "{0}::{1}".format(child[0], child[1])
         else:
             leaf = "{0}::".format(child[0])
+
         self.menutree.create_node(leaf, id, parent=parent)
 
     def confirm(self, parent=None, title="", prompt="", instance="xyz"):
