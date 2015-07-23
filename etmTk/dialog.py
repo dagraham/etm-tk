@@ -976,6 +976,8 @@ class Timer():
             self.parent.update_idletasks()
 
     def toggleIdle(self, e=None):
+        if not self.activeTimers:
+            return
         self.showIdle = not self.showIdle
         if self.parent:
             self.parent.updateTimerStatus()
@@ -1333,16 +1335,14 @@ class Timer():
         elif self.idletime:
             idle = self.idletime
         else:
-            idle = None
+            idle = 0 * ONEMINUTE
 
-        if idle:
+        if self.showIdle and idle is not None:
             ret2 = "{0}: {1} {2}".format(_("idle"), fmt_period(idle), idlestatus)
         else:
             ret2 = ""
 
         logger.debug("timer: {0} {1}".format(ret1, ret2))
-        if not self.showIdle:
-            ret2 = ""
         return ret1, ret2
 
 
