@@ -3345,7 +3345,7 @@ or 0 to display all changes.""").format(title)
 
         self.updateAlerts()
 
-        if self.actionTimer.currentStatus != STOPPED:
+        if self.actionTimer.currentStatus == RUNNING or (self.actionTimer.idleactive and self.actionTimer.showIdle):
             title, status = self.actionTimer.getStatus()
             self.timerTitle.set(title)
             self.timerStatus.set(status)

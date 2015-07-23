@@ -1147,6 +1147,8 @@ class Timer():
         tmp = yaml.load(fo)
         fo.close()
         (self.activeDate, self.activeTimers, self.currentTimer, self.currentStatus, self.currentMinutes, self.idlestart, self.idletime) = tmp
+        if self.idlestart or self.idletime:
+            self.idleactive = True
         if self.activeDate != datetime.now().date():
             self.newDay()
         self.updateMenu()
@@ -1339,15 +1341,13 @@ class Timer():
         else:
             ret1 = ""
 
-        idle = None
-        if self.idlestart:
-            idle = (now - self.idlestart) + self.idletime
-        elif self.idletime:
-            idle = self.idletime
-        else:
-            idle = 0 * ONEMINUTE
-
-        if self.showIdle and idle is not None:
+        if self.showIdle:
+            if self.idlestart:
+                idle = (now - self.idlestart) + self.idletime
+            elif self.idletime:
+                idle = self.idletime
+            else:
+                idle = 0 * ONEMINUTE
             ret2 = "{0}: {1} {2}".format(_("idle"), fmt_period(idle), idlestatus)
         else:
             ret2 = ""
