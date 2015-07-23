@@ -924,6 +924,7 @@ class Timer():
         self.loop = parent.loop
         self.idletime = 0 * ONEMINUTE
         self.idlestart = None
+        self.showIdle = self.loop.options['display_idletime']
         BGCOLOR = self.loop.options['background_color']
         HLCOLOR = self.loop.options['highlight_color']
         FGCOLOR = self.loop.options['foreground_color']
@@ -945,10 +946,14 @@ class Timer():
             else:
                 self.timermenu.entryconfig(2, state="disabled")
             self.timermenu.entryconfig(3, state="active")
+            self.timermenu.entryconfig(4, state="active")
+            self.timermenu.entryconfig(5, state="active")
         else:
             self.timermenu.entryconfig(1, state="disabled")
             self.timermenu.entryconfig(2, state="disabled")
             self.timermenu.entryconfig(3, state="disabled")
+            self.timermenu.entryconfig(4, state="disabled")
+            self.timermenu.entryconfig(5, state="disabled")
 
     def resetTimers(self):
         try:
@@ -961,6 +966,20 @@ class Timer():
             self.currentStatus = STOPPED
             self.currentMinutes = 0
             logger.info("reset timer data")
+
+    def clearIdle(self, e=None):
+        # reset idle
+        self.idlestart = None
+        self.idletime = 0 * ONEMINUTE
+        if self.parent:
+            self.parent.updateTimerStatus()
+            self.parent.update_idletasks()
+
+    def toggleIdle(self, e=None):
+        self.showIdle = not self.showIdle
+        if self.parent:
+            self.parent.updateTimerStatus()
+            self.parent.update_idletasks()
 
     def selectTimer(self, e=None, new=True, title=None, name=None):
         """
@@ -1133,7 +1152,6 @@ class Timer():
         if self.currentStatus == PAUSED:
             if self.idlestart:
                 self.idletime += datetime.now() - self.idlestart
-            print(self.idletime)
 
         summary = self.selected
         if summary not in self.activeTimers:
@@ -1323,6 +1341,8 @@ class Timer():
             ret2 = ""
 
         logger.debug("timer: {0} {1}".format(ret1, ret2))
+        if not self.showIdle:
+            ret2 = ""
         return ret1, ret2
 
 

@@ -414,6 +414,23 @@ class App(Tk):
         timermenu.entryconfig(3, accelerator=l)
         self.add2menu(path, (label, l))
 
+        label = _("Toggle Idle Timer Display")
+        l, c = commandShortcut('i')
+        timermenu.add_command(label=label,
+                              command=self.actionTimer.toggleIdle)
+        # self.bindTop(c, self.actionTimer.toggleIdle)
+        timermenu.entryconfig(4, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        label = _("Reset Idle Timer")
+        # l, c = commandShortcut('i')
+        l = ""
+        timermenu.add_command(label=label,
+                              command=self.actionTimer.clearIdle)
+        self.bindTop(c, self.actionTimer.clearIdle)
+        timermenu.entryconfig(5, accelerator=l)
+        self.add2menu(path, (label, l))
+
         self.actionTimer.updateMenu()
 
         path = FILE

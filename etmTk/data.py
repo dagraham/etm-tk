@@ -1410,6 +1410,8 @@ def get_options(d=''):
 
         'details_rows': 4,
 
+        'display_idletime': True,
+
         'early_hour': 6,
 
         'edit_cmd': '',
