@@ -922,8 +922,7 @@ class Timer():
         self.parent = parent
         self.options = options
         self.loop = parent.loop
-        self.idletime = 0 * ONEMINUTE
-        self.idlestart = None
+        self.idleactive = False
         self.showIdle = self.loop.options['display_idletime']
         BGCOLOR = self.loop.options['background_color']
         HLCOLOR = self.loop.options['highlight_color']
@@ -948,7 +947,7 @@ class Timer():
             self.timermenu.entryconfig(3, state="active")
             self.timermenu.entryconfig(4, state="active")
             self.timermenu.entryconfig(5, state="active")
-        elif self.idlestart or self.idletime:
+        elif self.idleactive:
             self.timermenu.entryconfig(1, state="disabled")
             self.timermenu.entryconfig(2, state="disabled")
             self.timermenu.entryconfig(3, state="disabled")
@@ -971,18 +970,21 @@ class Timer():
             self.currentTimer = None # summary
             self.currentStatus = STOPPED
             self.currentMinutes = 0
+            self.idletime = 0 * ONEMINUTE
+            self.idlestart = None
             logger.info("reset timer data")
 
     def clearIdle(self, e=None):
         # reset idle
         self.idlestart = None
         self.idletime = 0 * ONEMINUTE
+        self.saveTimers()
         if self.parent:
             self.parent.updateTimerStatus()
             self.parent.update_idletasks()
 
     def toggleIdle(self, e=None):
-        if not self.activeTimers and not self.idlestart and not self.idletime:
+        if not self.idleactive:
             return
         self.showIdle = not self.showIdle
         if self.parent:
@@ -1151,6 +1153,7 @@ class Timer():
 
     def startTimer(self, e=None):
         self.pauseTimer()
+        self.idleactive = True
         if not self.selected:
             return
 
@@ -1220,10 +1223,11 @@ class Timer():
     def newDay(self, e=None):
         now = datetime.now()
         self.activeDate = now.date()
-        # reset idle
         self.idlestart = None
         self.idletime = 0 * ONEMINUTE
+
         if not self.activeTimers:
+            self.idleactive = False
             self.activeTimers = {} # summary -> { total, start, stop }
             self.currentTimer = None # summary
             self.currentStatus = STOPPED

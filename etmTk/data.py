@@ -1293,7 +1293,6 @@ def get_options(d=''):
         etmdir = os.path.normpath(os.path.join(homedir, ".etm"))
     newconfig = os.path.normpath(os.path.join(etmdir, NEWCFG))
     oldconfig = os.path.normpath(os.path.join(etmdir, OLDCFG))
-    datafile = os.path.join(etmdir, ".etmtkdata.pkl")
     default_datadir = os.path.normpath(os.path.join(etmdir, 'data'))
     logger.debug('checking first for: {0}; then: {1}'.format(newconfig, oldconfig))
 
@@ -1685,7 +1684,6 @@ def get_options(d=''):
      options['reprdatetimefmt'], options['etmdatetimefmt'],
      options['rfmt'], options['efmt']) = get_fmts(options)
     options['config'] = newconfig
-    options['datafile'] = datafile
     options['scratchpad'] = os.path.normpath(os.path.join(options['etmdir'], _("scratchpad")))
     options['colors'] = os.path.normpath(os.path.join(options['etmdir'], "colors.cfg"))
 
