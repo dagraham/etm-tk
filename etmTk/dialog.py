@@ -948,6 +948,12 @@ class Timer():
             self.timermenu.entryconfig(3, state="active")
             self.timermenu.entryconfig(4, state="active")
             self.timermenu.entryconfig(5, state="active")
+        elif self.idlestart or self.idletime:
+            self.timermenu.entryconfig(1, state="disabled")
+            self.timermenu.entryconfig(2, state="disabled")
+            self.timermenu.entryconfig(3, state="disabled")
+            self.timermenu.entryconfig(4, state="active")
+            self.timermenu.entryconfig(5, state="active")
         else:
             self.timermenu.entryconfig(1, state="disabled")
             self.timermenu.entryconfig(2, state="disabled")
@@ -976,7 +982,7 @@ class Timer():
             self.parent.update_idletasks()
 
     def toggleIdle(self, e=None):
-        if not self.activeTimers:
+        if not self.activeTimers and not self.idlestart and not self.idletime:
             return
         self.showIdle = not self.showIdle
         if self.parent:
@@ -1141,9 +1147,6 @@ class Timer():
         (self.activeDate, self.activeTimers, self.currentTimer, self.currentStatus, self.currentMinutes, self.idlestart, self.idletime) = tmp
         if self.activeDate != datetime.now().date():
             self.newDay()
-        if not self.activeTimers:
-            self.idlestart = None
-            self.idletime = 0 * ONEMINUTE
         self.updateMenu()
 
     def startTimer(self, e=None):
@@ -1197,13 +1200,13 @@ class Timer():
 
     def deleteTimer(self, e=None, timer=None):
         # self.timerswindow.title("Delete")
+        self.pauseTimer()
         if timer is None:
             self.selectTimer(new=False, title="Delete Timer")
             timer = self.selected
         if not timer or timer not in self.activeTimers:
             return
         if self.currentTimer == timer:
-            self.pauseTimer()
             self.currentTimer = None
             self.currentMinutes = 0
             self.currentStatus = STOPPED
@@ -1308,7 +1311,7 @@ class Timer():
         """
         Return the status of the timers for the status bar
         """
-        if not self.activeTimers:
+        if not self.activeTimers and not self.idlestart and not self.idletime:
             return "", ""
         idlestatus = ""
         now = datetime.now()
@@ -1327,9 +1330,12 @@ class Timer():
             total = hsh['total']
             self.currentMinutes = total.seconds // 60
 
-        else:
+        elif self.activeTimers:
             ret1 = "{0}".format(_("all paused"))
+        else:
+            ret1 = ""
 
+        idle = None
         if self.idlestart:
             idle = (now - self.idlestart) + self.idletime
         elif self.idletime:
