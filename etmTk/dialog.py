@@ -1120,6 +1120,9 @@ class Timer():
         (self.activeDate, self.activeTimers, self.currentTimer, self.currentStatus, self.currentMinutes, self.idlestart, self.idletime) = tmp
         if self.activeDate != datetime.now().date():
             self.newDay()
+        if not self.activeTimers:
+            self.idlestart = None
+            self.idletime = 0 * ONEMINUTE
         self.updateMenu()
 
     def startTimer(self, e=None):
@@ -1194,6 +1197,9 @@ class Timer():
     def newDay(self, e=None):
         now = datetime.now()
         self.activeDate = now.date()
+        # reset idle
+        self.idlestart = None
+        self.idletime = 0 * ONEMINUTE
         if not self.activeTimers:
             self.activeTimers = {} # summary -> { total, start, stop }
             self.currentTimer = None # summary
@@ -1250,9 +1256,8 @@ class Timer():
             hsh['start'] = datetime.now()
             if self.idlestart:
                 self.idletime += datetime.now() - self.idlestart
+                self.idlestart = None
             self.currentStatus = RUNNING
-
-        print(self.idletime)
 
         self.activeTimers[self.currentTimer] = hsh
 
@@ -1283,7 +1288,8 @@ class Timer():
         """
         Return the status of the timers for the status bar
         """
-        print("getStatus")
+        if not self.activeTimers:
+            return "", ""
         idlestatus = ""
         now = datetime.now()
         if self.currentTimer and self.currentStatus:
@@ -1301,11 +1307,8 @@ class Timer():
             total = hsh['total']
             self.currentMinutes = total.seconds // 60
 
-        elif self.activeTimers:
-            ret1 = "{0}".format(_("all paused"))
-            idlestatus='\u279c'
         else:
-            ret1 = ""
+            ret1 = "{0}".format(_("all paused"))
 
         if self.idlestart:
             idle = (now - self.idlestart) + self.idletime
