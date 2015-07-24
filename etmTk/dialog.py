@@ -2020,7 +2020,7 @@ class GetInteger(DialogWindow):
                 msg.append(_("no less than {0}".format(minvalue)))
                 conj = _("and ")
             if maxvalue is not None:
-                msg.append(_("{0}no greater than {0}").format(conj, maxvalue))
+                msg.append(_("{0}no greater than {1}").format(conj, maxvalue))
             msg.append(_("is required"))
             self.error_message = "\n".join(msg)
             return False

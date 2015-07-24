@@ -382,7 +382,7 @@ class App(Tk):
 
         self.actionTimer = Timer(self, options=loop.options)
 
-        label = _("Start Action Timer")
+        label = _("Start action timer")
         l = "T"
         c = 't'
         timermenu.add_command(label=label, command=self.actionTimer.selectTimer)
@@ -390,7 +390,7 @@ class App(Tk):
         timermenu.entryconfig(0, accelerator=l)
         self.add2menu(path, (label, l))
 
-        label = _("Finish Action Timer")
+        label = _("Finish action timer")
         l = "Shift-T"
         c = "T"
         timermenu.add_command(label=label, command=self.finishActionTimer)
@@ -398,7 +398,7 @@ class App(Tk):
         timermenu.entryconfig(1, accelerator=l)
         self.add2menu(path, (label, l))
 
-        label = _("Toggle Current Timer")
+        label = _("Toggle current timer")
         l = "I"
         c = 'i'
         timermenu.add_command(label=label, command=self.actionTimer.toggleCurrent)
@@ -406,7 +406,7 @@ class App(Tk):
         timermenu.entryconfig(2, accelerator=l)
         self.add2menu(path, (label, l))
 
-        label = _("Delete Action Timer")
+        label = _("Delete action timer")
         l = "Shift-I"
         c = "I"
         timermenu.add_command(label=label, command=self.actionTimer.deleteTimer)
@@ -414,7 +414,7 @@ class App(Tk):
         timermenu.entryconfig(3, accelerator=l)
         self.add2menu(path, (label, l))
 
-        label = _("Adjust idle time")
+        label = _("Assign idle time")
         l, c = commandShortcut('i')
         timermenu.add_command(label=label,
                               command=self.adjustIdle)
@@ -422,17 +422,17 @@ class App(Tk):
         timermenu.entryconfig(4, accelerator=l)
         self.add2menu(path, (label, l))
 
-        label = _("Toggle Idle Timer Display")
-        l = ""
-        timermenu.add_command(label=label,
-                              command=self.actionTimer.toggleIdle)
-        timermenu.entryconfig(5, accelerator=l)
-        self.add2menu(path, (label, l))
-
-        label = _("Reset Idle Timer")
+        label = _("Reset idle to zero minutes")
         l = ""
         timermenu.add_command(label=label,
                               command=self.actionTimer.clearIdle)
+        timermenu.entryconfig(5, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        label = _("Toggle idle timer display")
+        l = ""
+        timermenu.add_command(label=label,
+                              command=self.actionTimer.toggleIdle)
         timermenu.entryconfig(6, accelerator=l)
         self.add2menu(path, (label, l))
 
@@ -463,7 +463,7 @@ class App(Tk):
 
         l = "Shift-P"
         c = "P"
-        label = _("preferences")
+        label = _("Preferences")
         openmenu.add_command(label=label, command=self.editConfig)
         self.bindTop(c, self.editConfig)
 
@@ -474,7 +474,7 @@ class App(Tk):
         c = "S"
         file = loop.options['scratchpad']
         # label = relpath(file, loop.options['etmdir'])
-        label = _("scratchpad")
+        label = _("Scratchpad")
         openmenu.add_command(label=label, command=self.editScratch)
         self.bindTop(c, self.editScratch)
         openmenu.entryconfig(3, accelerator=l)
@@ -1950,7 +1950,7 @@ Currently "{0}" has an elapsed time of {1}.
 Enter the number of minutes that you would like to add to
 this timer and subtract from idle time, currently {2}.""".format(timer, fmt_period(tot), fmt_period(idle)))
 
-        mm = GetInteger(parent=self, title=_("Adjust timer"), prompt=prompt, opts=[1, im], default=1).value
+        mm = GetInteger(parent=self, title=_("Adjust timer"), prompt=prompt, opts=[1,im], default=1).value
         if not mm:
             return
 
