@@ -414,19 +414,26 @@ class App(Tk):
         timermenu.entryconfig(3, accelerator=l)
         self.add2menu(path, (label, l))
 
-        label = _("Toggle Idle Timer Display")
+        label = _("Adjust idle time")
         l, c = commandShortcut('i')
         timermenu.add_command(label=label,
-                              command=self.actionTimer.toggleIdle)
-        self.bindTop(c, self.actionTimer.toggleIdle)
+                              command=self.adjustIdle)
+        self.bindTop(c, self.adjustIdle)
         timermenu.entryconfig(4, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        label = _("Toggle Idle Timer Display")
+        l = ""
+        timermenu.add_command(label=label,
+                              command=self.actionTimer.toggleIdle)
+        timermenu.entryconfig(5, accelerator=l)
         self.add2menu(path, (label, l))
 
         label = _("Reset Idle Timer")
         l = ""
         timermenu.add_command(label=label,
                               command=self.actionTimer.clearIdle)
-        timermenu.entryconfig(5, accelerator=l)
+        timermenu.entryconfig(6, accelerator=l)
         self.add2menu(path, (label, l))
 
         self.actionTimer.updateMenu()
@@ -1911,6 +1918,53 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         else:
             s = _("None                                 ")
         self.textWindow(self, t, s, opts=self.options)
+
+    def adjustIdle(self, e=None):
+        if not self.actionTimer.currentTimer:
+            return
+        timer = self.actionTimer.currentTimer
+        now = datetime.now()
+        restart = False
+        if self.actionTimer.idlestart:
+            idle = (now - self.actionTimer.idlestart) + self.actionTimer.idletime
+            restart = True
+        elif self.actionTimer.idletime:
+            idle = self.actionTimer.idletime
+        else:
+            idle = 0 * ONEMINUTE
+
+        if idle < ONEMINUTE:
+            return
+
+        # get idle time in integer minutes
+        im = idle.days * 24 * 60
+        im += idle.seconds // 60
+
+        hsh = self.actionTimer.activeTimers[timer]
+        tot = hsh['total']
+        if self.actionTimer.currentStatus == RUNNING:
+            tot += now - hsh['start']
+
+        prompt = _("""\
+Currently "{0}" has an elapsed time of {1}.
+Enter the number of minutes that you would like to add to
+this timer and subtract from idle time, currently {2}.""".format(timer, fmt_period(tot), fmt_period(idle)))
+
+        mm = GetInteger(parent=self, title=_("Adjust timer"), prompt=prompt, opts=[1, im], default=1).value
+        if not mm:
+            return
+
+        d = mm * ONEMINUTE
+
+        if restart:
+            self.actionTimer.idlestart = now
+            self.actionTimer.idletime = idle
+
+        self.actionTimer.idletime -= d
+        self.actionTimer.activeTimers[timer]['total'] += d
+        self.updateTimerStatus()
+        self.actionTimer.saveTimers()
+
 
     def agendaView(self, e=None):
         self.setView(AGENDA)

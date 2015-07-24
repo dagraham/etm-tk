@@ -947,18 +947,21 @@ class Timer():
             self.timermenu.entryconfig(3, state="active")
             self.timermenu.entryconfig(4, state="active")
             self.timermenu.entryconfig(5, state="active")
+            self.timermenu.entryconfig(6, state="active")
         elif self.idleactive:
             self.timermenu.entryconfig(1, state="disabled")
             self.timermenu.entryconfig(2, state="disabled")
             self.timermenu.entryconfig(3, state="disabled")
             self.timermenu.entryconfig(4, state="active")
             self.timermenu.entryconfig(5, state="active")
+            self.timermenu.entryconfig(6, state="active")
         else:
             self.timermenu.entryconfig(1, state="disabled")
             self.timermenu.entryconfig(2, state="disabled")
             self.timermenu.entryconfig(3, state="disabled")
             self.timermenu.entryconfig(4, state="disabled")
             self.timermenu.entryconfig(5, state="disabled")
+            self.timermenu.entryconfig(6, state="disabled")
 
     def resetTimers(self):
         try:
@@ -1004,6 +1007,7 @@ class Timer():
         """
         self.selected = None
         self.new = new
+        now = datetime.now()
         if not self.activeTimers:
             if not new:
                 return False
@@ -1017,7 +1021,17 @@ class Timer():
             tmp = [(self.activeTimers[x]['stop'], x) for x in self.activeTimers]
             # put the most recently stopped timers at the top
             sort = sorted(tmp, reverse=True)
-            self.completions = [x[1] for x in sort]
+            self.completions = []
+            for x in sort:
+                timer = x[1]
+                h = self.activeTimers[timer]
+                if timer == self.currentTimer and self.currentStatus == RUNNING:
+                    t = fmt_period(h['total'] + now - h['start'])
+                    s = '\u279c'
+                else:
+                    t = fmt_period(h['total'])
+                    s = '\u2716'
+                self.completions.append(" {0} {1} {2} {3} ".format(timer, '\u25aa', t, s))
 
         # return the focus to the right place
         if self.parent.weekly or self.parent.monthly:
@@ -1025,7 +1039,7 @@ class Timer():
         else:
             master = self.parent.tree
         master=self.parent
-        self.timerswindow = win = Toplevel(master=master, highlightcolor=self.HLCOLOR, background=self.BGCOLOR)
+        self.timerswindow = win = Toplevel(master=master, highlightcolor=self.HLCOLOR, background=self.BGCOLOR, highlightbackground=self.BGCOLOR, bd=4)
         self.timerswindow.title(title)
 
         self.filterValue = StringVar(master)
@@ -1038,12 +1052,14 @@ class Timer():
         self.filterValue.set("")
         self.filterValue.trace_variable("w", self.setCompletions)
         self.fltr = Entry(self.timerswindow,
-                          highlightcolor=self.HLCOLOR,
-                          highlightbackground=self.BGCOLOR,
-                          background=self.BGCOLOR,
-                          foreground=self.FGCOLOR,
-                          highlightthickness=0,
-                          textvariable=self.filterValue)
+                        highlightcolor=self.HLCOLOR,
+                        highlightbackground=self.BGCOLOR,
+                        background=self.BGCOLOR,
+                        foreground=self.FGCOLOR,
+                        highlightthickness=0,
+                        selectbackground=self.FGCOLOR,
+                        selectforeground=self.BGCOLOR,
+                        textvariable=self.filterValue)
         self.fltr.pack(side="top", fill="x")
         self.fltr.icursor(END)
 
@@ -1055,7 +1071,7 @@ class Timer():
                         selectbackground=self.FGCOLOR,
                         selectforeground=self.BGCOLOR,
                         highlightthickness=0,
-                    exportselection=False)
+                        exportselection=False)
         listbox.pack(side="bottom", fill=BOTH, expand=True)
 
         self.timerswindow.bind("<Double-1>", self.completionSelected)
@@ -1107,7 +1123,7 @@ class Timer():
         logger.debug("cursel: {0}; match: {1}".format(cursel, self.match))
         self.hideCompletions(e=event)
         if cursel is not None:
-            self.selected = cursel
+            self.selected = cursel.split('\u25aa')[0].strip()
             if self.new:
                 self.startTimer()
 
@@ -1779,7 +1795,14 @@ class TextVariableWindow(Dialog):
 class DialogWindow(Dialog):
     # master will be a frame in Dialog
     def body(self, master):
-        self.entry = Entry(master, highlightcolor=self.HLCOLOR, background=self.BGCOLOR, foreground=self.FGCOLOR)
+        self.entry = Entry(master,
+            highlightthickness=0,
+            highlightcolor=self.HLCOLOR,
+            highlightbackground=self.BGCOLOR,
+            selectbackground=self.FGCOLOR,
+            selectforeground=self.BGCOLOR,
+            background=self.BGCOLOR,
+            foreground=self.FGCOLOR)
         self.entry.pack(side="bottom", padx=5, pady=2, fill=X)
         tkfixedfont = self.font
         lines = self.prompt.split('\n')
@@ -1793,6 +1816,7 @@ class DialogWindow(Dialog):
             width=width,
             background=self.BGCOLOR,
             highlightcolor=self.HLCOLOR,
+            highlightbackground=self.BGCOLOR,
             foreground=self.FGCOLOR,
             takefocus=False)
         self.text.insert("1.1", self.prompt)
@@ -1818,6 +1842,7 @@ class TextDialog(Dialog):
             height=height,
             width=width,
             background=self.BGCOLOR,
+            highlightbackground=self.BGCOLOR,
             highlightcolor=self.HLCOLOR,
             foreground=self.FGCOLOR,
             takefocus=False)
