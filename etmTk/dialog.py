@@ -185,8 +185,11 @@ class SimpleEditor(Toplevel):
         self.parent = parent
         self.loop = parent.loop
         BGCOLOR = self.loop.options['background_color']
+        self.BGCOLOR = BGCOLOR
         HLCOLOR = self.loop.options['highlight_color']
+        self.HLCOLOR = HLCOLOR
         FGCOLOR = self.loop.options['foreground_color']
+        self.FGCOLOR = FGCOLOR
         self.configure(background=BGCOLOR, highlightcolor=HLCOLOR)
         self.messages = self.loop.messages
         self.messages = []
@@ -688,7 +691,10 @@ class SimpleEditor(Toplevel):
             logger.debug('done')
 
     def messageWindow(self, title, prompt, opts=None, height=8, width=52):
-        win = Toplevel(self)
+        win = Toplevel(self,
+                highlightcolor=self.HLCOLOR,
+                background=self.BGCOLOR,
+                highlightbackground=self.BGCOLOR)
         win.title(title)
         win.geometry("+%d+%d" % (self.text.winfo_rootx() + 50, self.text.winfo_rooty() + 50))
         f = Frame(win)
@@ -705,9 +711,9 @@ class SimpleEditor(Toplevel):
             f, wrap="word", padx=2, pady=2, bd=2, relief="sunken",
             font=tkfixedfont,
             height=height,
-            background=BGCOLOR,
-            highlightcolor=HLCOLOR,
-            foreground=FGCOLOR,
+            background=self.BGCOLOR,
+            highlightcolor=self.HLCOLOR,
+            foreground=self.FGCOLOR,
             width=width,
             takefocus=False)
         t.insert("0.0", prompt)
@@ -1645,9 +1651,11 @@ class FileChoice(object):
 class Dialog(Toplevel):
 
     BGCOLOR = None
+    HLCOLOR = None
+    FGCOLOR = None
 
     def __init__(self, parent, title=None, prompt=None, opts=None, default=None, modal=True, xoffset=50, yoffset=50, event=None, process=None, font=None):
-        global BGCOLOR
+        global BGCOLOR, HLCOLOR, FGCOLOR
         self.parent = parent
         self.loop = parent.loop
         BGCOLOR = self.loop.options['background_color']
