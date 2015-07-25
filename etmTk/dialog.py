@@ -1228,17 +1228,23 @@ class Timer():
         return hsh
 
     def deleteTimer(self, e=None, timer=None):
-        # self.timerswindow.title("Delete")
-        self.pauseTimer()
         if timer is None:
-            self.selectTimer(new=False, title="Delete Timer")
+            self.selectTimer(new=False, title=_("Delete Timer"))
             timer = self.selected
         if not timer or timer not in self.activeTimers:
             return
+        self.pauseTimer()
         if self.currentTimer == timer:
             self.currentTimer = None
             self.currentMinutes = 0
             self.currentStatus = STOPPED
+        if self.idlestart:
+            idle = (datetime.now() - self.idlestart) + self.idletime
+        elif self.idletime:
+            idle = self.idletime
+        else:
+            idle = 0 * ONEMINUTE
+        self.idletime = idle + self.activeTimers[timer]['total']
         del self.activeTimers[timer]
         self.saveTimers()
         if self.parent:
@@ -1332,10 +1338,7 @@ class Timer():
         if self.parent:
             self.parent.updateTimerStatus()
             self.parent.update_idletasks()
-
         return False
-
-
 
     def getStatus(self):
         """
