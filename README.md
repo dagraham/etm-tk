@@ -1,5 +1,18 @@
 ## Screen shots ##
 
+### Idle timer in 3.1.43+
+
+<table align="center" hspace="10" vspace="10" width="100%">
+<tr>
+    <td>
+    <center><img src="images/timer_running.gif" /></a></center>
+    </td>
+    <td>
+    <center><img src="images/timer_paused.gif"/></a></center>
+    </td>
+</tr>
+</table>
+
 ### Custom colors in 3.1.35+
 
 <table align="center" hspace="10" vspace="10" width="100%">
