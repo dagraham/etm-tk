@@ -1650,12 +1650,12 @@ class FileChoice(object):
 
 class Dialog(Toplevel):
 
-    BGCOLOR = None
-    HLCOLOR = None
-    FGCOLOR = None
+    # BGCOLOR = None
+    # HLCOLOR = None
+    # FGCOLOR = None
 
     def __init__(self, parent, title=None, prompt=None, opts=None, default=None, modal=True, xoffset=50, yoffset=50, event=None, process=None, font=None):
-        global BGCOLOR, HLCOLOR, FGCOLOR
+        # global BGCOLOR, HLCOLOR, FGCOLOR
         self.parent = parent
         self.loop = parent.loop
         BGCOLOR = self.loop.options['background_color']
