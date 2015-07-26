@@ -1,47 +1,7 @@
 ## Screen shots ##
 
-### Idle timer in 3.1.43+
 
-<table align="center" hspace="10" vspace="10" width="100%">
-<tr>
-    <td>
-    <center><img src="images/timer_running.gif" /></a></center>
-    </td>
-    <td>
-    <center><img src="images/timer_paused.gif"/></a></center>
-    </td>
-</tr>
-</table>
-
-### Custom colors in 3.1.35+
-
-<table align="center" hspace="10" vspace="10" width="100%">
-<tr>
-    <td>
-    <center><img src="images/dark_agenda.gif" /></a></center>
-    </td>
-    <td>
-    <center><img src="images/dark_week.gif"/></a></center>
-    </td>
-</tr>
-</table>
-
-### Internationalization in 3.1.20+
-
-<table align="center" hspace="10" vspace="10" width="100%">
-<tr>
-    <td>
-    <center><img src="images/international.gif" /></a></center>
-    </td>
-</tr>
-<tr>
-    <td>
-    <center><img src="images/poedit.gif"/></a></center>
-    </td>
-</tr>
-</table>
-
-### New in 3.1.x
+### Combined views in 3.1.0+
 
 <table align="center" hspace="10" vspace="10" width="100%">
 <tr>
@@ -62,68 +22,43 @@
 </tr>
 </table>
 
-### Original
+### Internationalization in 3.1.20+
 
 <table align="center" hspace="10" vspace="10" width="100%">
 <tr>
     <td>
-    <center><img src="images/agenda.gif" /></a></center>
-    </td>
-    <td>
-    <center><img src="images/day.gif"/></a></center>
+    <center><img src="images/international.gif" /></a></center>
     </td>
 </tr>
 <tr>
     <td>
-    <center><img src="images/week.gif"/></a></center>
-    </td>
-    <td>
-    <center><img src="images/monthly.gif"/></a></center>
+    <center><img src="images/poedit.gif"/></a></center>
     </td>
 </tr>
+</table>
+
+### Custom colors in 3.1.35+
+
+<table align="center" hspace="10" vspace="10" width="100%">
 <tr>
     <td>
-    <center><img src="images/finishitem.gif"/></a></center>
+    <center><img src="images/dark_agenda.gif" /></a></center>
     </td>
     <td>
-    <center><img src="images/completion.gif"/></a></center>
+    <center><img src="images/dark_week.gif"/></a></center>
     </td>
 </tr>
+</table>
+
+### Idle timer in 3.1.43+
+
+<table align="center" hspace="10" vspace="10" width="100%">
 <tr>
     <td>
-    <center><img src="images/openfile.gif"/></a></center>
+    <center><img src="images/timer_running.gif" /></a></center>
     </td>
     <td>
-    <center><img src="images/newfile.gif"/></a></center>
-    </td>
-</tr>
-<tr>
-    <td>
-    <center><img src="images/date_calculator_entry.gif"/></a></center>
-    </td>
-    <td>
-    <center><img src="images/date_calculator_result.gif"/></a></center>
-    </td>
-</tr>
-<tr>
-    <td>
-    <center><img src="images/availabledates1.gif"/></a></center>
-    </td>
-    <td>
-    <center><img src="images/availabledates2.gif"/></a></center>
-    </td>
-</tr>
-<tr>
-    <td>
-    <center><img src="images/custom0.gif"/></a></center>
-    </td>
-    <td>
-    <center><img src="images/custom3.gif"/></a></center
-    </td>
-</tr>
-<tr>
-    <td colspan=2>
-    <center><img src="images/customCSV.gif"/></a></center>
+    <center><img src="images/timer_paused.gif"/></a></center>
     </td>
 </tr>
 </table>
@@ -165,15 +100,9 @@ Items in *etm* begin with a type character such as an asterisk (event) and conti
 
 * Move the water sprinkler (a reminder) every thirty mi[n]utes on Sunday afternoons using the default alert zero minutes before each reminder:
 
-        * Move sprinkler @s 1 @r w &w SU &h 14, 15, 16, 17 &n 0, 30 @a 0
+        * Move sprinkler @s 1 @r n &i 30 &w SU &h 14, 15, 16, 17 @a 0
 
-    To limit the sprinkler movement reminders to the [M]onths of April through September each year change the @r entry to this:
-
-        @r w &w SU &h 14, 15, 16, 17 &n 0, 30 &M 4, 5, 6, 7, 8, 9
-
-     or this:
-
-        @r n &i 30 &w SU &h 14, 15, 16, 17 &M 4, 5, 6, 7, 8, 9
+    To limit the sprinkler movement reminders to the [M]onths of April through September each year, append `&M 4, 5, 6, 7, 8, 9` to the @r entry.
 
 * Presidential election day (an occasion) every four years on the first Tuesday after a Monday in November:
 
