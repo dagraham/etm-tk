@@ -2738,7 +2738,7 @@ def parse_dtstr(dtstr, timezone="", f=rfmt):
                 dt = parse(dtstr)
             except:
                 msg = _("Could not parse: {0}".format(dtstr))
-                logger.exception(msg)
+                # logger.exception(msg)
                 return msg
     elif dtstr.utcoffset() is None:
         dt = dtstr.replace(tzinfo=tzlocal())
@@ -2774,6 +2774,7 @@ def parse_date_period(s):
     """
     fuzzy_date [ (+|-) period string]
     e.g. mon + 7d: the 2nd Monday on or after today
+    used in reports to handle begin and end options
     """
     parts = [x.strip() for x in rsplit(' [+-] ', s)]
     try:
@@ -4432,7 +4433,7 @@ def str2hsh(s, uid=None, options=None):
                     parse_datetime(
                         hsh['q'], hsh['z'])).replace(tzinfo=None)
             except:
-                err = "error: could not parse '@s {0}'".format(hsh['s'])
+                err = "error: could not parse '@q {0}'".format(hsh['q'])
                 msg.append(err)
         if '+' in hsh:
             tmp = []
@@ -5653,9 +5654,9 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 else: # sm == 0
                     # midnight task - show extent only
                     # use 11:59pm as the sorting datetime
-                    dtl = dtl + 1439 * oneminute
+                    dtm = dtl + 1439 * oneminute
                     item = [
-                        ('day', dtl.strftime(sortdatefmt), tstr2SCI[typ][0],
+                        ('day', dtm.strftime(sortdatefmt), tstr2SCI[typ][0],
                          hsh['_p'], '', f),
                         (fmt_date(dt, short=True),),
                         (uid, typ, summary, tmpl_hsh['e'], dtl)]
@@ -6831,6 +6832,8 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
                         if d < dtn:
                             tmp_rev.append(d)
                     hsh_rev['-'] = tmp_rev
+                    if not hsh_rev['-']:
+                        del hsh_rev['-']
                 self.replace_item(hsh_rev)
 
             elif choice == 4:
