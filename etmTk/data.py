@@ -6800,6 +6800,14 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
             if choice == 1:
                 # delete this instance only by removing it from @+
                 # or adding it to @-
+
+                if 'f' in hsh_rev:
+                    for i in range(len(hsh_rev['f'])):
+                        d = hsh_rev['f'][i][0]
+                        if d == dtn:
+                            hsh_rev['f'].pop(i)
+                            break
+
                 if '+' in hsh_rev and dtn in hsh_rev['+']:
                     hsh_rev['+'].remove(dtn)
                     if not hsh_rev['+'] and hsh_rev['r'] == 'l':
@@ -6814,46 +6822,74 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
                 # delete this and all subsequent instances by adding
                 # this instance - one minute to &u for each @r
 
+                if 'f' in hsh_rev:
+                    for i in range(len(hsh_rev['f'])):
+                        d = hsh_rev['f'][i][0]
+                        if d >= dtn:
+                            hsh_rev['f'].pop(i)
+
                 tmp = []
                 for h in hsh_rev['_r']:
                     if 'f' in h and h['f'] != u'l':
                         h['u'] = dtn - oneminute
                     tmp.append(h)
                 hsh_rev['_r'] = tmp
+
                 if u'+' in hsh:
                     tmp_rev = []
                     for d in hsh_rev['+']:
                         if d < dtn:
                             tmp_rev.append(d)
-                    hsh_rev['+'] = tmp_rev
+                    if tmp_rev:
+                        hsh_rev['+'] = tmp_rev
+                    else:
+                        del hsh_rev['+']
+
                 if u'-' in hsh:
                     tmp_rev = []
                     for d in hsh_rev['-']:
                         if d < dtn:
                             tmp_rev.append(d)
-                    hsh_rev['-'] = tmp_rev
-                    if not hsh_rev['-']:
+                    if tmp_rev:
+                        hsh_rev['-'] = tmp_rev
+                    else:
                         del hsh_rev['-']
                 self.replace_item(hsh_rev)
 
             elif choice == 4:
                 # delete all previous instances
+
+                if 'f' in hsh_rev:
+                    for i in range(len(hsh_rev['f'])):
+                        d = hsh_rev['f'][i][0]
+                        if d < dtn:
+                            hsh_rev['f'].pop(i)
+
                 if u'+' in hsh:
                     logger.debug('starting @+: {0}'.format(hsh['+']))
                     tmp_rev = []
                     for d in hsh_rev['+']:
                         if d >= dtn:
                             tmp_rev.append(d)
-                    hsh_rev['+'] = tmp_rev
-                    logger.debug('ending @+: {0}'.format(hsh['+']))
+                    if tmp_rev:
+                        hsh_rev['+'] = tmp_rev
+                        logger.debug('ending @+: {0}'.format(hsh['+']))
+                    else:
+                        del hsh_rev['+']
+                        logger.debug('removed @+')
+
                 if u'-' in hsh:
                     logger.debug('starting @-: {0}'.format(hsh['-']))
                     tmp_rev = []
                     for d in hsh_rev['-']:
                         if d >= dtn:
                             tmp_rev.append(d)
-                    hsh_rev['-'] = tmp_rev
-                    logger.debug('ending @-: {0}'.format(hsh['-']))
+                    if tmp_rev:
+                        hsh_rev['-'] = tmp_rev
+                        logger.debug('ending @-: {0}'.format(hsh['-']))
+                    else:
+                        del hsh_rev['-']
+                        logger.debug('removed @-')
                 hsh_rev['s'] = dtn
                 self.replace_item(hsh_rev)
         else:

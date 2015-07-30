@@ -626,8 +626,8 @@ class SimpleEditor(Toplevel):
                         reps = SOMEREPS
                     prompt = "{0}, {1}:\n\n  {2}".format(prompt, reps, "\n  ".join(repsfmt))
             else:
-                repetitions = "No repetitions were generated."
-                self.loop.messages.append(repetitions)
+                warn = "No repetitions were generated.\nConsider removing the @r entry."
+                prompt = prompt + "\n\n" + warn
             if self.loop.messages:
                 messages = "{0}".format("\n".join(self.loop.messages))
                 logger.debug("messages: {0}".format(messages))

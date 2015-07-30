@@ -558,7 +558,7 @@ class App(Tk):
         l, c = commandShortcut('f')
         label = _("Set outline filter")
         viewmenu.add_command(label=label, underline=1, command=self.setFilter)
-        self.bind(c, self.setFilter)
+        self.bindTop(c, self.setFilter)
 
         viewmenu.entryconfig(10, accelerator=l)
         self.add2menu(path, (label, l))
@@ -1471,6 +1471,8 @@ returns:
             self.tree.focus_set()
             self.showView(row=self.topSelected)
 
+        self.filterView()
+
     def moveItem(self, e=None):
         if not self.itemSelected:
             return
@@ -1553,6 +1555,13 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
 
             if choice == 1:
                 # this instance
+                if 'f' in hsh_rev:
+                    for i in range(len(hsh_rev['f'])):
+                        d = hsh_rev['f'][i][0]
+                        if d == dtn:
+                            hsh_cpy['f'] = hsh_rev['f'].pop(i)
+                            break
+
                 if '+' in hsh_rev and dtn in hsh_rev['+']:
                     hsh_rev['+'].remove(dtn)
                     if not hsh_rev['+'] and hsh_rev['r'] == 'l':
@@ -1567,12 +1576,31 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
 
             elif choice == 2:
                 # this and all subsequent instances
-                tmp = []
+                tmp_cpy = []
+                if 'f' in hsh_rev:
+                    for i in range(len(hsh_rev['f'])):
+                        d = hsh_rev['f'][i][0]
+                        if d >= dtn:
+                            tmp_cpy.append(hsh_rev['f'].pop(i))
+                    if tmp_cpy:
+                        hsh_cpy['f'] = tmp_cpy
+                        # dtn will be the done date, we need the due date for the copy
+                        dtn = hsh_cpy['f'][0][1]
+
+                        print('got dtn', dtn)
+                    else:
+                        del hsh_cpy['f']
+
+                tmp_rev = []
                 for h in hsh_rev['_r']:
                     if 'f' in h and h['f'] != u'l':
-                        h['u'] = dt - ONEMINUTE
-                    tmp.append(h)
-                hsh_rev['_r'] = tmp
+                        h['u'] = dtn - ONEMINUTE
+                    tmp_rev.append(h)
+                if tmp_rev:
+                    hsh_rev['_r'] = tmp_rev
+                else:
+                    del hsh_rev['_r']
+
                 if u'+' in hsh_rev:
                     tmp_rev = []
                     tmp_cpy = []
@@ -1581,8 +1609,15 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
                             tmp_rev.append(d)
                         else:
                             tmp_cpy.append(d)
-                    hsh_rev['+'] = tmp_rev
-                    hsh_cpy['+'] = tmp_cpy
+                    if tmp_rev:
+                        hsh_rev['+'] = tmp_rev
+                    else:
+                        del hsh_rev['+']
+                    if tmp_copy:
+                        hsh_cpy['+'] = tmp_cpy
+                    else:
+                        del hsh_cpy['+']
+
                 if u'-' in hsh_rev:
                     tmp_rev = []
                     tmp_cpy = []
@@ -1591,8 +1626,14 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
                             tmp_rev.append(d)
                         else:
                             tmp_cpy.append(d)
-                    hsh_rev['-'] = tmp_rev
-                    hsh_cpy['-'] = tmp_cpy
+                    if tmp_rev:
+                        hsh_rev['-'] = tmp_rev
+                    else:
+                        del hsh_rev['-']
+                    if tmp_cpy:
+                        hsh_cpy['-'] = tmp_cpy
+                    else:
+                        del hsh_cpy['-']
                 hsh_cpy['s'] = dtn
         else:  # replace
             self.mode = 2
@@ -1625,6 +1666,7 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
             else:
                 self.tree.focus_set()
         logger.debug('ending editItem')
+        self.filterView()
         return
 
     def editItemFile(self, e=None):
@@ -1779,6 +1821,7 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
         else:
             self.tree.focus_set()
             self.showView(row=self.topSelected)
+        self.filterView()
 
     def rescheduleItem(self, e=None):
         if e and e.char != 'r':
@@ -2026,7 +2069,7 @@ this timer and subtract from idle time, currently {2}.""".format(timer, fmt_peri
         logger.debug("setView view: {0}. Calling showView.".format(view))
         self.showView(row=row)
 
-    def filterView(self, e, *args):
+    def filterView(self, e=None, *args):
         self.depth2id = {}
         fltr = self.filterValue.get()
         cn = self.vm_options[self.vm_opts.index(self.view)][1]
