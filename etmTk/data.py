@@ -5560,7 +5560,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     continue
                     # other dated items
             if hsh['itemtype'] in ['+', '-', '%']:
-                if 'f' in hsh and hsh['f'][-1][1] == dtl:
+                if 'f' in hsh and hsh['f'] and hsh['f'][-1][1] == dtl:
                     typ = 'fn'
                 else:
                     if hsh['itemtype'] == '%':
@@ -6860,10 +6860,12 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
                 # delete all previous instances
 
                 if 'f' in hsh_rev:
-                    for i in range(len(hsh_rev['f'])):
-                        d = hsh_rev['f'][i][0]
+                    for i in range(len(hsh_rev['f']), 0, -1):
+                        d = hsh_rev['f'][i-1][1]
                         if d < dtn:
-                            hsh_rev['f'].pop(i)
+                            hsh_rev['f'].pop(i-1)
+                    if not hsh_rev['f']:
+                        del hsh_rev['f']
 
                 if u'+' in hsh:
                     logger.debug('starting @+: {0}'.format(hsh['+']))
