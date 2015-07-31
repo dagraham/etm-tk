@@ -1079,7 +1079,7 @@ day_regex = re.compile(r'[+-]?(\d+)d', flags=re.I)
 hour_regex = re.compile(r'[+-]?(\d+)h', flags=re.I)
 minute_regex = re.compile(r'[+-]?(\d+)m', flags=re.I)
 date_calc_regex = re.compile(r'^\s*(.+)\s+([+-])\s+(.+)\s*$')
-period_string_regex = re.compile(r'^\s*([+-]?(\d+[wWdDhHmM]?)+\s*$)')
+period_string_regex = re.compile(r'^\s*([+-]?(\d+[wWdDhHmM])+\s*$)')
 timezone_regex = re.compile(r'^(.+)\s+([A-Za-z]+/[A-Za-z]+)$')
 int_regex = re.compile(r'^\s*([+-]?\d+)\s*$')
 leadingzero = re.compile(r'(?<!(:|\d|-))0+(?=\d)')
@@ -4402,12 +4402,14 @@ def str2hsh(s, uid=None, options=None):
         if '+' in hsh:
             tmp = []
             for part in hsh['+']:
-                tmp.append(parse_str(part, fmt=sfmt))
+                r = parse_str(part, hsh['z']).replace(tzinfo=None)
+                tmp.append(r)
             hsh['+'] = tmp
         if '-' in hsh:
             tmp = []
             for part in hsh['-']:
-                tmp.append(parse_str(part, fmt=sfmt))
+                r = parse_str(part, hsh['z']).replace(tzinfo=None)
+                tmp.append(r)
             hsh['-'] = tmp
         if 'b' in hsh:
             try:
@@ -5868,7 +5870,7 @@ def hsh2ical(hsh):
         for r in rlst:
             if r['f'] == 'l':
                 if '+' not in hsh:
-                    logger.warn("An entry for '@=' is required but missing.")
+                    logger.warn("An entry for '@+' is required but missing.")
                     continue
                     # list only kludge: make it repeat daily for a count of 1
                 # using the first element from @+ as the starting datetime
@@ -5898,9 +5900,11 @@ def hsh2ical(hsh):
             element.add('rrule', chsh)
         if '+' in hsh:
             for pd in hsh['+']:
+                print('+', type(pd), pd)
                 element.add('rdate', pd)
         if '-' in hsh:
             for md in hsh['-']:
+                print('-', type(md), md)
                 element.add('exdate', md)
 
     element.add('summary', summary)
