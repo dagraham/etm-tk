@@ -96,7 +96,7 @@ from etmTk.data import (
     getFileTuples,
     hsh2str,
     import_ical,
-    parse_dt,
+    parse_str,
     parse_period,
     relpath,
     rrulefmt,
@@ -2050,7 +2050,7 @@ class GetDateTime(DialogWindow):
         else:
             try:
                 # val = parse(parse_datetime(res))
-                val = parse_dt(res)
+                val = parse_str(res)
                 ok = True
             except:
                 val = None
