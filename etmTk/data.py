@@ -5900,11 +5900,9 @@ def hsh2ical(hsh):
             element.add('rrule', chsh)
         if '+' in hsh:
             for pd in hsh['+']:
-                print('+', type(pd), pd)
                 element.add('rdate', pd)
         if '-' in hsh:
             for md in hsh['-']:
-                print('-', type(md), md)
                 element.add('exdate', md)
 
     element.add('summary', summary)
