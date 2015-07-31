@@ -2751,11 +2751,6 @@ def parse_str(dt, timezone=None, fmt=None):
         return dtz.strftime(fmt)
 
 
-def parse_dt(s, timezone=None, f=rfmt):
-    dt = parse_str(s, timezone)
-    return(dt)
-
-
 def parse_date_period(s):
     """
     fuzzy_date [ (+|-) period string]
@@ -4052,8 +4047,7 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                             else:
                                 dt = hsh['rrule'].after(hsh['s'], inc=True)
                         else:
-                            dt = parse(
-                                parse_dtstr(hsh['s'], hsh['z'])).replace(tzinfo=None)
+                            dt = parse_str(hsh['s'], hsh['z']).replace(tzinfo=None)
                     else:
                         # undated
                         dt = ''
@@ -4744,15 +4738,11 @@ def getDoneAndTwo(hsh, keep=False):
     if 'f' in hsh and hsh['f']:
         if type(hsh['f']) in [str, unicode]:
             parts = str(hsh['f']).split(';')
-            done = parse(
-                parse_dtstr(
-                    parts[0], hsh['z']).replace(tzinfo=None))
+            done = parse_str(parts[0], hsh['z']).replace(tzinfo=None)
             if len(parts) < 2:
                 due = done
             else:
-                due = parse(
-                    parse_dtstr(
-                        parts[1], hsh['z']).replace(tzinfo=None))
+                due = parse_str(parts[1], hsh['z']).replace(tzinfo=None)
         elif type(hsh['f'][-1]) in [list, tuple]:
             done, due = hsh['f'][-1]
         else:
@@ -5882,9 +5872,7 @@ def hsh2ical(hsh):
                     continue
                     # list only kludge: make it repeat daily for a count of 1
                 # using the first element from @+ as the starting datetime
-                dz = parse(
-                    parse_dtstr(
-                        hsh['+'].pop(0), hsh['z'])).replace(tzinfo=tzinfo)
+                dz = parse_str(hsh['+'].pop(0), hsh['z']).replace(tzinfo=tzinfo)
                 dt = dz
                 dd = dz.date()
 
