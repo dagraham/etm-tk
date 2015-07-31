@@ -1860,6 +1860,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         else:
             self.tree.focus_set()
             self.showView(row=self.topSelected)
+        self.filterView()
 
     def scheduleNewItem(self, e=None):
         if e and e.char != 's':
@@ -1897,6 +1898,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         else:
             self.tree.focus_set()
             self.showView(row=self.topSelected)
+        self.filterView()
 
     def showDateTimeDetails(self, e=None):
         if not self.itemSelected:
