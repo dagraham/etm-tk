@@ -689,16 +689,13 @@ def term_print(s):
 parse = None
 
 def setup_parse(day_first, year_first):
-    """
-
-    :param day_first: bool
-    :param year_first: bool
-    :return: func
-    """
     global parse
 
     # noinspection PyRedeclaration
     def parse(s):
+        """
+        Return a datetime object
+        """
         try:
             res = dparse(str(s), dayfirst=day_first, yearfirst=year_first)
         except:
@@ -961,7 +958,7 @@ def date_calculator(s, options=None):
     windoz_epoch = _("Warning: any timezone information in dates prior to 1970 is ignored under Windows.")
     warn = ""
     try:
-        dt_x = parse(parse_dtstr(x, timezone=xzs))
+        dt_x = parse_str(x, timezone=xzs)
         pmy = "%s%s" % (pm, y)
         if period_string_regex.match(pmy):
             dt = (dt_x + parse_period(pmy))
@@ -974,7 +971,7 @@ def date_calculator(s, options=None):
             prompt = "{0}:\n\n{1}{2}".format(s.strip(), res.strip(), warn)
             return prompt
         else:
-            dt_y = parse(parse_dtstr(y, timezone=yzs))
+            dt_y = parse_str(y, timezone=yzs)
             if windoz and (dt_x.year < 1970 or dt_y.year < 1970):
                 warn = "\n\n{0}".format(windoz_epoch)
                 dt_x = dt_x.replace(tzinfo=None)
@@ -2718,6 +2715,90 @@ def parse_datetime(dt, timezone='', f=rfmt):
         logger.exception('Could not parse "{0}"'.format(dt))
         return None
 
+def parse_str(dt, timezone=None, fmt=None):
+    """
+    E.g., ('2/5/12', 'US/Pacific', rfmt) => "20120205T0000-0800"
+    Return datetime object if fmt is None
+    Return
+    """
+    msg = ""
+    if type(dt) in [str, unicode]:
+        if dt == 'now':
+            if timezone is None:
+                dt = datetime.now()
+            else:
+                dt = datetime.now().replace(
+                    tzinfo=tzlocal()).astimezone(
+                    gettz(timezone)).replace(tzinfo=None)
+        else:
+            now = datetime.now()
+
+            estr = estr_regex.search(dt)
+            rel_mnth = rel_month_regex.search(dt)
+            rel_date = rel_date_regex.search(dt)
+
+            if estr:
+                y = estr.group(1)
+                e = easter(int(y))
+                E = e.strftime("%Y-%m-%d")
+                dt = estr_regex.sub(E, dt)
+
+            if rel_mnth:
+                new_y = now.year
+                now_m = now.month
+                mnth, day = map(int, rel_mnth.groups())
+                new_m = now_m + mnth
+                new_d = day
+                if new_m <= 0:
+                    new_y -= 1
+                    new_m += 12
+                elif new_m > 12:
+                    new_y += 1
+                    new_m -= 12
+                new_date = "%s-%02d-%02d" % (new_y, new_m, new_d)
+                dt = rel_month_regex.sub(new_date, dt)
+            elif rel_date:
+                days = int(rel_date.group(0))
+                new_date = (now + days * oneday).strftime("%Y-%m-%d")
+                dt = rel_date_regex.sub(new_date, dt)
+
+
+            try:
+                dt = parse(dt)
+            except:
+                msg = _("Could not parse: {0}".format(dt))
+                # logger.exception(msg)
+                return msg
+    else:
+        # dt is a datetime
+        if dt.utcoffset() is None:
+            dt = dt.replace(tzinfo=tzlocal())
+
+    if timezone is None:
+        dtz = dt.replace(tzinfo=tzlocal())
+    else:
+        dtz = dt.replace(tzinfo=gettz(timezone))
+
+    if windoz and dtz.year < 1970:
+        y = dtz.year
+        m = dtz.month
+        d = dtz.day
+        H = dtz.hour
+        M = dtz.minute
+        dtz = datetime(y, m, d, H, M, 0, 0)
+        epoch = datetime(1970, 1, 1, 0, 0, 0, 0)
+
+        # dtz.replace(tzinfo=None)
+        td = epoch - dtz
+        seconds = td.days * 24 * 60 * 60 + td.seconds
+        dtz = epoch - timedelta(seconds=seconds)
+
+    if fmt is None:
+        return dtz
+    else:
+        return dtz.strftime(fmt)
+
+
 
 def parse_dtstr(dtstr, timezone="", f=rfmt):
     """
@@ -2765,8 +2846,8 @@ def parse_dtstr(dtstr, timezone="", f=rfmt):
     return dtz.strftime(f)
 
 
-def parse_dt(s, timezone='', f=rfmt):
-    dt = parse(parse_datetime(s, timezone, ))
+def parse_dt(s, timezone=None, f=rfmt):
+    dt = parse_str(s, timezone)
     return(dt)
 
 
@@ -2778,7 +2859,7 @@ def parse_date_period(s):
     """
     parts = [x.strip() for x in rsplit(' [+-] ', s)]
     try:
-        dt = parse(parse_datetime(parts[0]))
+        dt = parse_str(parts[0])
     except Exception:
         return 'error: could not parse date "{0}"'.format(parts[0])
     if len(parts) > 1:
@@ -3522,8 +3603,7 @@ def get_rrulestr(hsh, key_hsh=rrule_hsh):
                         m = threeday_regex.search(v)
                 l.append("%s=%s" % (rrule_hsh[k], v))
         if 'u' in h:
-            dt = parse(parse_dtstr(
-                h['u'], hsh['z'])).replace(tzinfo=None)
+            dt = parse_str(h['u'], hsh['z']).replace(tzinfo=None)
             l.append("UNTIL=%s" % dt.strftime(sfmt))
         ret.append(";".join(l))
     return "\n".join(ret)
@@ -3544,8 +3624,7 @@ def get_rrule(hsh):
     if 'o' in hsh and hsh['o'] == 'r' and 'f' in hsh:
         dtstart = hsh['f'][-1][0].replace(tzinfo=gettz(hsh['z']))
     elif 's' in hsh:
-        dtstart = parse(parse_dtstr(
-            hsh['s'], hsh['z'])).replace(tzinfo=None)
+        dtstart = parse_str(hsh['s'], hsh['z']).replace(tzinfo=None)
     else:
         dtstart = datetime.now()
     if 'r' in hsh:
@@ -3569,14 +3648,14 @@ def get_rrule(hsh):
             parts = [parts]
         if parts:
             for part in map(str, parts):
-                thisdatetime = parse(parse_datetime(part, f=sfmt))
+                thisdatetime = parse_str(part, hsh['z']).replace(tzinfo=None)
+                print(thisdatetime)
                 beforedatetime = tmprule.before(thisdatetime, inc=True)
                 if beforedatetime != thisdatetime:
                     warn.append(_(
                         "{0} is listed in @- but doesn't match any datetimes generated by @r.").format(
                         thisdatetime.strftime(rfmt)))
-                rlst.append("EXDATE:%s" % parse_datetime(
-                    part, f=sfmt))
+                rlst.append("EXDATE:%s" % parse_str(part, fmt=sfmt))
     rulestr = "\n".join(rlst)
     try:
         rule = dtR.rrulestr(rulestr)
@@ -3585,13 +3664,6 @@ def get_rrule(hsh):
         warn.append("{0}".format(e))
         # raise ValueError("could not create rule from", rulestr)
     return rulestr, rule, warn
-
-# checks
-#     all require @i
-#     *      -> @s
-#     %      -> @u
-#     @a, @r -> @s
-#     @+, @- -> @r
 
 
 def checkhsh(hsh):
@@ -4011,7 +4083,7 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                     if next:
                         start = next
                 else:
-                    start = parse(parse_dtstr(hsh['s'], hsh['z'])).astimezone(tzlocal()).replace(tzinfo=None)
+                    start = parse_str(hsh['s'], hsh['z']).astimezone(tzlocal()).replace(tzinfo=None)
                 if 'rrule' in hsh:
                     if dated['b'] > start:
                         start = dated['b']
@@ -4024,8 +4096,8 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                         bisect.insort(dates, start)
                         # datesSL.insert(start)
                 if 'f' in hsh and hsh['f']:
-                    dt = parse(parse_dtstr(
-                        hsh['f'][-1][0], hsh['z'])).astimezone(
+                    dt = parse_str(
+                        hsh['f'][-1][0], hsh['z']).astimezone(
                         tzlocal()).replace(tzinfo=None)
                     if dt <= dated['e'] and dt >= dated['b']:
                         bisect.insort(dates, dt)
@@ -4420,30 +4492,28 @@ def str2hsh(s, uid=None, options=None):
                 hsh['z'] = ''
         if 's' in hsh:
             try:
-                hsh['s'] = parse(
-                    parse_datetime(
-                        hsh['s'], hsh['z'])).replace(tzinfo=None)
+                # hsh['s'] = parse(
+                #     parse_datetime(
+                #         hsh['s'], hsh['z'])).replace(tzinfo=None)
+                hsh['s'] = parse_str(hsh['s'], hsh['z']).replace(tzinfo=None)
             except:
                 err = "error: could not parse '@s {0}'".format(hsh['s'])
                 msg.append(err)
         if 'q' in hsh:
             try:
-                # hsh['q'] = parse(parse_datetime(part, f=sfmt))
-                hsh['q'] = parse(
-                    parse_datetime(
-                        hsh['q'], hsh['z'])).replace(tzinfo=None)
+                hsh['q'] = parse_str(hsh['q'], hsh['z']).replace(tzinfo=None)
             except:
                 err = "error: could not parse '@q {0}'".format(hsh['q'])
                 msg.append(err)
         if '+' in hsh:
             tmp = []
             for part in hsh['+']:
-                tmp.append(parse(parse_datetime(part, f=sfmt)))
+                tmp.append(parse_str(part, fmt=sfmt))
             hsh['+'] = tmp
         if '-' in hsh:
             tmp = []
             for part in hsh['-']:
-                tmp.append(parse(parse_datetime(part, f=sfmt)))
+                tmp.append(parse_str(part, fmt=sfmt))
             hsh['-'] = tmp
         if 'b' in hsh:
             try:
@@ -4461,13 +4531,10 @@ def str2hsh(s, uid=None, options=None):
             hsh['f'] = []
             for pair in pairs:
                 pair = pair.split(';')
-                done = parse(
-                    parse_datetime(
-                        pair[0], hsh['z'])).replace(tzinfo=None)
+                done = parse_str(
+                        pair[0], hsh['z']).replace(tzinfo=None)
                 if len(pair) > 1:
-                    due = parse(
-                        parse_datetime(
-                            pair[1], hsh['z'])).replace(tzinfo=None)
+                    due = parse_str(pair[1], hsh['z']).replace(tzinfo=None)
                 else:
                     due = done
                     # logger.debug("appending {0} to {1}".format(done, hsh['entry']))
@@ -5189,8 +5256,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     else:
                         dt = hsh['rrule'].after(hsh['s'], inc=True)
                 else:
-                    dt = parse(parse_dtstr(hsh['s'],
-                                           hsh['z'])).replace(tzinfo=None)
+                    dt = parse_str(hsh['s'], hsh['z']).replace(tzinfo=None)
                     # dt = hsh['s'].replace(tzinfo=None)
             else:
                 dt = None
@@ -5940,7 +6006,7 @@ def hsh2ical(hsh):
                         else:
                             rhsh[ical_hsh[k]] = r[k].upper()
                     elif k == 'u':
-                        uz = parse(parse_dtstr(r[k], hsh['z'])).replace(tzinfo=tzinfo)
+                        uz = parse_str(r[k], hsh['z']).replace(tzinfo=tzinfo)
                         rhsh[ical_hsh[k]] = uz
                     else:
                         rhsh[ical_hsh[k]] = r[k]
@@ -6765,7 +6831,7 @@ Either ITEM must be provided or edit_cmd must be specified in etmtk.cfg.
         uid, dtstr = self.count2id[count].split('::')
         hsh = self.uuid2hash[uid]
         if dtstr:
-            hsh['_dt'] = parse(parse_dtstr(dtstr, hsh['z']))
+            hsh['_dt'] = parse_str(dtstr, hsh['z'])
         return hsh
 
     def do_a(self, arg_str):
