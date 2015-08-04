@@ -2848,7 +2848,7 @@ def lst2str(l):
     tmp = []
     for item in l:
         if type(item) in [datetime]:
-            tmp.append(parse_dtstr(item, f=zfmt))
+            tmp.append(parse_str(item, fmt=zfmt))
         elif type(item) in [timedelta]:
             tmp.append(timedelta2Str(item))
         else:  # type(i) in [unicode, str]:
