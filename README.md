@@ -130,6 +130,14 @@ Tk and the python module tkinter are also required but are typically already ins
 
 ### Installing etm
 
+#### From PyPi
+
+If you have *pip* installed on your system you can install etm with any needed dependencies with the single command
+ 
+    sudo pip install etmtk
+
+#### From source
+
 Download 'etmtk-x.x.x.tar.gz' from this site, unpack the tarball, cd to the resulting directory and do the normal
 
     sudo python setup.py install

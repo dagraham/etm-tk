@@ -2049,7 +2049,6 @@ class GetDateTime(DialogWindow):
             ok = True
         else:
             try:
-                # val = parse(parse_datetime(res))
                 val = parse_str(res)
                 ok = True
             except:

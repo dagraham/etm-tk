@@ -3782,11 +3782,9 @@ def str2opts(s, options=None, cli=True):
                 filters['pos_fields'].append((
                     key, re.compile(r'%s' % value, re.IGNORECASE)))
     if 'b' not in dated:
-        dated['b'] = parse(
-            parse_datetime(options['report_begin'])).replace(tzinfo=None)
+        dated['b'] = parse_str(options['report_begin']).replace(tzinfo=None)
     if 'e' not in dated:
-        dated['e'] = parse(
-            parse_datetime(options['report_end'])).replace(tzinfo=None)
+        dated['e'] = parse_str(options['report_end']).replace(tzinfo=None)
     if 'colors' not in grpby or grpby['colors'] not in [0, 1, 2]:
         grpby['colors'] = options['report_colors']
     if 'width1' not in grpby:
@@ -4197,7 +4195,7 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
             dt = tup[-2]
             dtl = tup[-3]
         if dtl:
-            etmdt = parse_datetime(dtl, hsh['z'])
+            etmdt = parse_str(dtl, hsh['z'], fmt=rfmt)
             if etmdt is None:
                 etmdt = ""
         else:
@@ -4444,13 +4442,11 @@ def str2hsh(s, uid=None, options=None):
             hsh['h'] = []
             for pair in pairs:
                 pair = pair.split(';')
-                done = parse(
-                    parse_datetime(
-                        pair[0], hsh['z'])).replace(tzinfo=None)
+                done = parse_str(
+                        pair[0], hsh['z']).replace(tzinfo=None)
                 if len(pair) > 1:
-                    due = parse(
-                        parse_datetime(
-                            pair[1], hsh['z'])).replace(tzinfo=None)
+                    due = parse_str(
+                            pair[1], hsh['z']).replace(tzinfo=None)
                 else:
                     due = done
                     # logger.debug("appending {0} to {1}".format(done, hsh['entry']))
@@ -4466,13 +4462,11 @@ def str2hsh(s, uid=None, options=None):
                         hsh['z'] = options['local_timezone']
 
                     pair = job['f'].split(';')
-                    done = parse(
-                        parse_datetime(
-                            pair[0], hsh['z'])).replace(tzinfo=None)
+                    done = parse_str(
+                            pair[0], hsh['z']).replace(tzinfo=None)
                     if len(pair) > 1:
-                        due = parse(
-                            parse_datetime(
-                                pair[1], hsh['z'])).replace(tzinfo=None)
+                        due = parse_str(
+                                pair[1], hsh['z']).replace(tzinfo=None)
                     else:
                         due = ''
 
@@ -4495,14 +4489,12 @@ def str2hsh(s, uid=None, options=None):
                         logger.debug('splitting pair: {0}'.format(pair))
                         pair = pair.split(';')
                         logger.debug('processing done, due: {0}'.format(pair))
-                        done = parse(
-                            parse_datetime(
-                                pair[0], hsh['z'])).replace(tzinfo=None)
+                        done = parse_str(
+                                pair[0], hsh['z']).replace(tzinfo=None)
                         if len(pair) > 1:
                             logger.debug('parsing due: {0}, {1}'.format(pair[1], type(pair[1])))
-                            due = parse(
-                                parse_datetime(
-                                    pair[1], hsh['z'])).replace(tzinfo=None)
+                            due = parse_str(
+                                    pair[1], hsh['z']).replace(tzinfo=None)
                         else:
                             due = done
                         logger.debug("appending ({0}, {1}) to {2} ".format(done, due, job['j']))
