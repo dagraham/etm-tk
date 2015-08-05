@@ -116,9 +116,34 @@ Items in *etm* begin with a type character such as an asterisk (event) and conti
 
 ## Installation ##
 
-### Source installation under OS X, Linux or Windows
-
 Python 2.7.x or python >= 3.3.0 is required.
+
+### Installing etm
+
+#### From PyPi - the Python Software Foundation Package Index
+
+If you have [pip] installed on your system you can install etm with the single command:
+ 
+    sudo pip install etmtk
+    
+and later update to the latest version with
+
+    sudo pip install -U etmtk
+    
+Alternatively, [easy_install] can be used in a similar manner:
+
+    sudo easy_install etmtk
+    
+or
+
+    sudo easy_install -U etmtk
+
+
+[pip]: https://pypi.python.org/pypi/pip
+
+[easy_install]: https://pypi.python.org/pypi/setuptools
+
+#### From source
 
 The following python packages are required for etm but are not included in the python standard library:
 
@@ -127,16 +152,6 @@ The following python packages are required for etm but are not included in the p
 -   icalendar (>=3.5 for python 2, >= 3.6 for python 3)
 
 Tk and the python module tkinter are also required but are typically already installed on most modern operating systems. If needed, installation instructions are given at www.tkdocs.com/tutorial/install.html.
-
-### Installing etm
-
-#### From PyPi
-
-If you have *pip* installed on your system you can install etm with any needed dependencies with the single command
- 
-    sudo pip install etmtk
-
-#### From source
 
 Download 'etmtk-x.x.x.tar.gz' from this site, unpack the tarball, cd to the resulting directory and do the normal
 
@@ -166,11 +181,9 @@ or
 
 from this directory.
 
-### Installing Git or Mercurial
+### Install Git or Mercurial (optional)
 
-*Having one of these version control systems is optional but strongly recommended!*
-
-With either progam installed, etm will automatically commit any change made to any data file. You can see the history of your changes either to a specific file or to any file from the GUI and, of course, you have the entire range of possibilities for showing changes, restoring previous versions and so forth from the command line.
+With either program installed, etm will automatically commit any change made to any data file. You can see the history of your changes either to a specific file or to any file from the GUI and, of course, you have the entire range of possibilities for showing changes, restoring previous versions and so forth from the command line.
 
 #### Git
 

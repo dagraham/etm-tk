@@ -2332,7 +2332,7 @@ def makeTree(tree_rows, view=None, calendars=None, sort=True, fltr=None, hide_fi
 
 
 def truncate(s, l):
-    if len(s) > l:
+    if l > 0 and len(s) > l:
         if re.search(' ~ ', s):
             s = s.split(' ~ ')[0]
         s = "%s.." % s[:l - 2]
@@ -2364,7 +2364,10 @@ def tree2Html(tree, indent=2, width1=54, width2=20, colors=2):
                         s_c = '<font color="black">'
                 else:
                     s_c = ''
-                rmlft = width1 - indent * level
+                if width1 > 0:
+                    rmlft = width1 - indent * level
+                else:
+                    rmlft = 0
                 s = "%s%s%s %-*s %s%s" % (tab * level, s_c, unicode(t),
                                           rmlft, unicode(truncate(node[1][2], rmlft)),
                                           col2, e_c)
@@ -2467,7 +2470,10 @@ def tree2Text(tree, indent=4, width1=43, width2=20, colors=0,
                 else:
                     col2 = ""
                 if number:
-                    rmlft = width1 - indent * level - 2 - len(str(args[0]))
+                    if width1 > 0:
+                        rmlft = width1 - indent * level - 2 - len(str(args[0]))
+                    else:
+                        rmlft = 0
                     s = u"{0:s}{1:s}{2:s} [{3:s}] {4:<*s} {5:s}{6:s}".format(
                         tab * level,
                         s_c,
@@ -2477,7 +2483,10 @@ def tree2Text(tree, indent=4, width1=43, width2=20, colors=0,
                         unicode(truncate(node[1][2], rmlft)),
                         col2, e_c)
                 else:
-                    rmlft = width1 - indent * level
+                    if width1 > 0:
+                        rmlft = width1 - indent * level
+                    else:
+                        rmlft = 0
                     s = "%s%s%s %-*s %s%s" % (tab * level, s_c, unicode(t), rmlft, unicode(truncate(node[1][2], rmlft)), col2, e_c)
                 text_lst.append(s)
             else:
@@ -4213,10 +4222,12 @@ def getReportData(s, file2uuids, uuid2hash, options=None, export=False,
                     rowcpy = deepcopy(item)
                     rowcpy[position] = tag
                     rowcpy.append(
-                        (tup[-1], tup[-4], setSummary(hsh, parse(dtl)), dt, etmdt))
+                        (tup[-1], tup[-4],
+                         setSummary(hsh, parse(dtl)), dt, etmdt))
                     items.append(rowcpy)
             else:
-                item.append((tup[-1], tup[-4], setSummary(hsh, parse(dtl)), dt, etmdt))
+                item.append((tup[-1], tup[-4],
+                             setSummary(hsh, parse(dtl)), dt, etmdt))
                 items.append(item)
         else:  # action report
             summary = format(setSummary(hsh, parse(dt)))
@@ -7317,8 +7328,8 @@ def main(etmdir='', argv=[]):
             elif options:
                 if 'report_width1' in options:
                     width1 = options['report_width1']
-                elif 'agenda_width2' in options:
-                    width2 = options['agenda_width2']
+                elif 'agenda_width1' in options:
+                    width1 = options['agenda_width1']
 
             width2 = 20
             if opts and 'width2' in opts:
