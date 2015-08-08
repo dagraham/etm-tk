@@ -1019,18 +1019,11 @@ def send_mail(smtp_to, subject, message, files=None, smtp_from=None, smtp_server
     if not files:
         files = []
     import smtplib
-    if windoz:
-        from email.mime.multipart import MIMEMultipart
-        from email.mime.base import MIMEBase
-        from email.mime.text import MIMEText
-        from email.utils import COMMASPACE, formatdate
-        from email import encoders as Encoders
-    else:
-        from email.MIMEMultipart import MIMEMultipart
-        from email.MIMEBase import MIMEBase
-        from email.MIMEText import MIMEText
-        from email.Utils import COMMASPACE, formatdate
-        from email import Encoders
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.base import MIMEBase
+    from email.mime.text import MIMEText
+    from email.utils import COMMASPACE, formatdate
+    from email import encoders as Encoders
     assert type(smtp_to) == list
     assert type(files) == list
     msg = MIMEMultipart()

@@ -916,7 +916,11 @@ class App(Tk):
             self.custom_box['values'] = self.specs
             self.custom_box.current(0)
             self.saved_specs = deepcopy(self.specs)
-        self.custom_box.configure(width=30, background=BGCOLOR, foreground=FGCOLOR, takefocus=False)
+        self.custom_box.configure(
+            width=30,
+            # background=FGCOLOR,
+            # foreground=BGCOLOR,
+            takefocus=False)
 
 
         iconsize = "22"
