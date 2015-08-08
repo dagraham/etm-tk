@@ -3541,6 +3541,10 @@ from your etmtk.cfg: %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
                                 self.options['email_template'], hsh)
                             arguments = hsh['_alert_argument']
                             recipients = [str(x).strip() for x in arguments[0]]
+                            if 'i' in hsh and hsh['i']:
+                                # invitees
+                                for invitee in hsh['i']:
+                                    recipients.append(str(invitee).strip())
                             if len(arguments) > 1:
                                 attachments = [str(x).strip()
                                                for x in arguments[1]]

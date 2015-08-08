@@ -5298,7 +5298,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 hsh, dtl, etl, options=options)
             tmpl_hsh['busy_span'] = setItemPeriod(
                 hsh, dtl, etl, True, options=options)
-            for k in ['c', 'd', 'k', 'l', 'm', 'uid', 'z']:
+            for k in ['c', 'd', 'i', 'k', 'l', 'm', 'uid', 'z']:
                 if k in hsh:
                     tmpl_hsh[k] = hsh[k]
                 else:
