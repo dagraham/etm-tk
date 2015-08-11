@@ -1386,6 +1386,9 @@ def get_options(d=''):
 
         'cfg_files': {'completions': [], 'reports': [], 'users': []},
 
+        'countdown_command': '',
+        'countdown_minutes': 10,
+
         'current_textfile': '',
         'current_htmlfile': '',
         'current_icsfolder': '',

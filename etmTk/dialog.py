@@ -1403,13 +1403,13 @@ class ReadOnlyText(Text):
 class MessageWindow():
     # noinspection PyShadowingNames
     def __init__(self, parent, title, prompt, opts={}):
-        self.win = Toplevel(parent)
-        self.win.protocol("WM_DELETE_WINDOW", self.cancel)
-        self.parent = parent
         self.loop = parent.loop
         BGCOLOR = self.loop.options['background_color']
         HLCOLOR = self.loop.options['highlight_color']
         FGCOLOR = self.loop.options['foreground_color']
+        self.win = Toplevel(parent, highlightcolor=HLCOLOR, background=BGCOLOR)
+        self.win.protocol("WM_DELETE_WINDOW", self.cancel)
+        self.parent = parent
         self.options = opts
         self.win.title(title)
         tkfixedfont = tkFont.nametofont("TkFixedFont")

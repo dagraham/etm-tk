@@ -168,6 +168,8 @@ class App(Tk):
 
         self.loop = loop
         self.options = loop.options
+        self.countdownActive = False
+        self.countdownMinutes = self.loop.options['countdown_minutes']
         BGCOLOR = self.options['background_color']
         self.BGCOLOR = BGCOLOR
         HLCOLOR = self.options['highlight_color']
@@ -434,6 +436,16 @@ class App(Tk):
         timermenu.add_command(label=label,
                               command=self.actionTimer.toggleIdle)
         timermenu.entryconfig(6, accelerator=l)
+        self.add2menu(path, (label, l))
+
+        label = _("Countdown timer")
+        l = "Z"
+        c = "z"
+        timermenu.add_command(label=label,
+                              command=self.setcountdownTimer)
+        timermenu.entryconfig(7, accelerator=l)
+        self.bind(c, self.setcountdownTimer)
+
         self.add2menu(path, (label, l))
 
         self.actionTimer.updateMenu()
@@ -994,6 +1006,12 @@ class App(Tk):
                               )
         self.pending.pack(side="right", expand=0, padx=2, pady=2)
 
+        self.countdownStatus = StringVar(self)
+        self.countdownStatus.set("")
+        self.countdown_time = countdown_time = Label(self.statusbar, textvariable=self.countdownStatus, bd=0, relief="flat", anchor=W, justify=LEFT, padx=2, pady=0)
+        countdown_time.pack(side="right", expand=0, fill=X, padx=6)
+        countdown_time.configure(background=BGCOLOR, foreground=FGCOLOR, highlightthickness=0)
+
         self.timerStatus = StringVar(self)
         self.timerStatus.set("")
         self.timer_status = timer_status = Label(self.statusbar, textvariable=self.timerStatus, bd=0, relief="flat", anchor=W, justify=LEFT, padx=2, pady=0)
@@ -1435,6 +1453,55 @@ returns:
                 self.canvas.focus_set()
             else:
                 self.tree.focus_set()
+
+    def setcountdownTimer(self, e=None):
+        """
+        get time period, default integer minutes, start timer
+        """
+        if self.countdownActive:
+            # prompt to cancel
+            ans = self.confirm(
+                title=_('Confirm'),
+                prompt=_("Cancel the countdown?"),
+                parent=self.tree)
+            if ans:
+                self.after_cancel(self.countdownActive)
+                self.countdownActive = False
+                self.countdownStatus.set("")
+                self.countdownMinutes = loop.options['countdown_minutes']
+            return
+        prompt = _("""\
+Enter the number of minutes for the countdown.""")
+
+        mm = GetInteger(parent=self, title=_("Countdown timer"), prompt=prompt, opts=[1,], default=self.countdownMinutes).value
+        if not mm:
+            # reset the default
+            self.countdownMinutes = loop.options['countdown_minutes']
+            return
+        self.countdownMinutes = mm
+        ms = mm * 60 * 1000
+        due = datetime.now() + mm * ONEMINUTE
+        if loop.options['ampm']:
+            ds = due.strftime("%I:%M:%S%p")
+        else:
+            ds = due.strftime("%H:%M:%S")
+        if ds[0] == "0":
+            ds = ds[1:]
+        if ds[-1] == "M":
+            ds = ds[:-1].lower()
+
+        self.countdownStatus.set(ds)
+        self.countdownActive = self.after(ms, self.clearcountdownTimer)
+
+    def clearcountdownTimer(self, e=None):
+        self.countdownActive = False
+        self.countdownStatus.set("")
+        if ('countdown_command' in self.options and self.options['countdown_command']):
+            ccmd = self.options['countdown_command']
+            subprocess.call(ccmd, shell=True)
+        else:
+            Tk.bell(self)
+        self.setcountdownTimer()
 
     def deleteItem(self, e=None):
         if not self.itemSelected:
