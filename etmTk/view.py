@@ -438,7 +438,7 @@ class App(Tk):
         timermenu.entryconfig(6, accelerator=l)
         self.add2menu(path, (label, l))
 
-        label = _("Countdown timer")
+        label = _("Snooze/Countdown timer")
         l = "Z"
         c = "z"
         timermenu.add_command(label=label,
@@ -1473,7 +1473,7 @@ returns:
         prompt = _("""\
 Enter the number of minutes for the countdown.""")
 
-        mm = GetInteger(parent=self, title=_("Countdown timer"), prompt=prompt, opts=[1,], default=self.countdownMinutes).value
+        mm = GetInteger(parent=self, title=_("Snooze/Countdown timer"), prompt=prompt, opts=[1,], default=self.countdownMinutes).value
         if not mm:
             # reset the default
             self.countdownMinutes = loop.options['countdown_minutes']
