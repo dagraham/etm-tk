@@ -2900,18 +2900,18 @@ For editing one or more, but not all, instances of an item. Needed:
             prefix = ""
         if key == 'a' and '_a' in hsh:
             alerts = []
-            for alert in hsh["_a"]:
-                triggers, acts, arguments = alert
-                _ = "@a %s" % ", ".join([fmt_period(x) for x in triggers])
-                if acts:
-                    _ += ": %s" % ", ".join(acts)
-                    if arguments:
-                        arg_strings = []
-                        for arg in arguments:
-                            arg_strings.append(", ".join(arg))
-                        _ += "; %s" % "; ".join(arg_strings)
-                alerts.append(_)
-            sl.extend(alerts)
+                for alert in hsh["_a"]:
+                    triggers, acts, arguments = alert
+                    _ = "@a %s" % ", ".join([fmt_period(x) for x in triggers])
+                    if acts:
+                        _ += ": %s" % ", ".join(acts)
+                        if arguments:
+                            arg_strings = []
+                            for arg in arguments:
+                                arg_strings.append(", ".join(arg))
+                            _ += "; %s" % "; ".join(arg_strings)
+                    alerts.append(_)
+                sl.extend(alerts)
         elif key in ['r', 'j']:
             at_key = key
             keys = amp_keys[key]
@@ -4304,7 +4304,14 @@ def str2hsh(s, uid=None, options=None):
                 # alert_parts = at_val.split(':', maxsplit=1)
                 alert_parts = re.split(':', at_val, maxsplit=1)
                 t_lst = alert_parts.pop(0).split(',')
-                periods = tuple([parse_period(x) for x in t_lst])
+                periods = []
+                for x in t_lst:
+                    p = parse_period(x)
+                    if type(p) is timedelta:
+                        periods.append(p)
+                    else:
+                        msg.append(p)
+                periods = tuple(periods)
                 triggers = [x for x in periods]
                 if alert_parts:
                     action_parts = [
