@@ -170,6 +170,12 @@ class App(Tk):
         self.options = loop.options
         self.countdownActive = False
         self.countdownMinutes = self.loop.options['countdown_minutes']
+        self.countdownTime = None
+        self.alertActive = False
+        self.alertTitle = ""
+        self.alertTime = None
+        self.alertStack = []
+
         BGCOLOR = self.options['background_color']
         self.BGCOLOR = BGCOLOR
         HLCOLOR = self.options['highlight_color']
@@ -1454,6 +1460,32 @@ returns:
             else:
                 self.tree.focus_set()
 
+    def setmessageAlert(self, e=None):
+        if self.alertActive:
+            # cancel exising snooze
+            self.after_cancel(self.alertActive)
+            self.alertActive = False
+            self.alertTime = ""
+            self.countdownStatus.set(self.countdownTime)
+            print('canceled active snooze')
+        Tk.bell(self)
+        print('title', self.alertTitle)
+        prompt = _("""\
+Enter the number of minutes to snooze this alert.""")
+        mm = GetInteger(parent=self, title=self.alertTitle, prompt=prompt, opts=[1,], default=10).value
+        if not mm:
+            return
+        ms = mm * 60 * 1000
+        self.alertTime = datetime.now() + mm * ONEMINUTE
+        self.setcountdownStatus()
+        self.alertActive = self.after(ms, self.clearmessageAlert)
+
+    def clearmessageAlert(self, e=None, hsh={}):
+        self.alertActive = False
+        self.alertTime = None
+        self.setcountdownStatus()
+        self.setmessageAlert()
+
     def setcountdownTimer(self, e=None):
         """
         get time period, default integer minutes, start timer
@@ -1467,7 +1499,8 @@ returns:
             if ans:
                 self.after_cancel(self.countdownActive)
                 self.countdownActive = False
-                self.countdownStatus.set("")
+                self.countdownTime = None
+                self.setcountdownStatus()
                 self.countdownMinutes = loop.options['countdown_minutes']
             return
         prompt = _("""\
@@ -1480,7 +1513,28 @@ Enter the number of minutes for the countdown.""")
             return
         self.countdownMinutes = mm
         ms = mm * 60 * 1000
-        due = datetime.now() + mm * ONEMINUTE
+        self.countdownTime = datetime.now() + mm * ONEMINUTE
+        self.setcountdownStatus()
+        self.countdownActive = self.after(ms, self.clearcountdownTimer)
+
+    def setcountdownStatus(self, e=None):
+        if self.countdownTime and self.alertTime:
+            if self.countdownTime <= self.alertTime:
+                pre = '-'
+                due = self.countdownTime
+            else:
+                pre = '+'
+                due = self.alertTime
+        elif self.countdownTime:
+            pre = '-'
+            due = self.countdownTime
+        elif self.alertTime:
+            pre = '+'
+            due = self.alertTime
+        else:
+            self.countdownStatus.set("")
+            return
+        # we have pre and due
         if loop.options['ampm']:
             ds = due.strftime("%I:%M:%S%p")
         else:
@@ -1489,13 +1543,13 @@ Enter the number of minutes for the countdown.""")
             ds = ds[1:]
         if ds[-1] == "M":
             ds = ds[:-1].lower()
+        self.countdownStatus.set("{0}{1}".format(pre, ds))
 
-        self.countdownStatus.set(ds)
-        self.countdownActive = self.after(ms, self.clearcountdownTimer)
 
     def clearcountdownTimer(self, e=None):
         self.countdownActive = False
-        self.countdownStatus.set("")
+        self.countdownTime = None
+        self.setcountdownStatus()
         if ('countdown_command' in self.options and self.options['countdown_command']):
             ccmd = self.options['countdown_command']
             subprocess.call(ccmd, shell=True)
@@ -3662,12 +3716,10 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
                         subprocess.call(cmd, shell=True)
                     if 'm' in actions:
                         # put this last since the internal message window is modal and thus blocking
-                        MessageWindow(
-                            self,
-                            title=expand_template('!summary!', hsh),
-                            prompt=expand_template(
-                                self.options['alert_template'], hsh))
-
+                        t = expand_template('!start_time!', hsh)
+                        s = expand_template('!summary!', hsh)
+                        self.alertTitle = "{0}: {1}".format(t, s)
+                        self.setmessageAlert()
                     if not alerts:
                         break
                     td = alerts[0][0] - curr_minutes
