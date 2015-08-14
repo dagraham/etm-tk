@@ -1103,6 +1103,7 @@ oneweek = timedelta(weeks=1)
 
 rel_date_regex = re.compile(r'(?<![0-9])([-+][0-9]+)')
 rel_month_regex = re.compile(r'(?<![0-9])([-+][0-9]+)/([0-9]+)')
+blank_lines_regex = re.compile(r'^(\s*$){2,}', re.MULTILINE)
 
 fmt = "%a %Y-%m-%d %H:%M %Z"
 
@@ -1436,6 +1437,9 @@ def get_options(d=''):
         'report_width2': 17,
 
         'show_finished': 1,
+
+        'snooze_command': '',
+        'snooze_minutes': 7,
 
         'smtp_from': '',
         'smtp_id': '',
@@ -4582,7 +4586,9 @@ def expand_template(template, hsh, lbls=None, complain=False):
 
     parts = template.split(marker)
     parts[1::2] = map(lookup, parts[1::2])
-    return ''.join(parts)
+    s = ''.join(parts).strip()
+    return blank_lines_regex.sub('', s)
+
 
 
 def getToday():
