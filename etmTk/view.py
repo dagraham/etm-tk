@@ -445,7 +445,7 @@ class App(Tk):
         timermenu.entryconfig(6, accelerator=l)
         self.add2menu(path, (label, l))
 
-        label = _("Snooze/Countdown timer")
+        label = _("Countdown timer")
         l = "Z"
         c = "z"
         timermenu.add_command(label=label,
