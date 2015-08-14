@@ -1465,7 +1465,8 @@ returns:
         prompt = _("""\
 {0}
 
-Repeat this alert?
+------------------------------------------------
+               Repeat this alert?
 Enter an integer number of minutes to wait below.""".format(self.alertMessage))
         mm = GetInteger(parent=self, title=_("alert"), prompt=prompt, opts=[1,], default=loop.options['snooze_minutes']).value
         if not mm:
@@ -3654,7 +3655,7 @@ An email alert failed. The setting for 'alert_voicecmd' is missing from \
 your etmtk.cfg."""), opts=self.options)
                     if 'e' in actions:
                         missing = []
-                        for field in ['smtp_from', 'smtp_id', 'smtp_pw', 'smtp_server', 'smtp_to']:
+                        for field in ['smtp_from', 'smtp_id', 'smtp_pw', 'smtp_server']:
                             if not self.options[field]:
                                     missing.append(field)
                         if missing:

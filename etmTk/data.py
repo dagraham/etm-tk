@@ -1445,7 +1445,6 @@ def get_options(d=''):
         'smtp_id': '',
         'smtp_pw': '',
         'smtp_server': '',
-        'smtp_to': '',
 
         'sms_from': '',
         'sms_message': '!summary!',
