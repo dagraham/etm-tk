@@ -5326,11 +5326,17 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     tmpl_hsh['alert_email'] = tmpl_hsh['alert_process'] = ''
                     tmpl_hsh["_alert_action"] = acts
                     tmpl_hsh["_alert_argument"] = arguments
-
-                    for td in time_deltas:
+                    num_deltas = len(time_deltas)
+                    for i in range(num_deltas):
+                        td = time_deltas[i]
                         adt = dtl - td
                         if adt.date() == today_date:
                             this_hsh = deepcopy(tmpl_hsh)
+                            if i == num_deltas - 1:
+                                this_hsh['next'] = None
+                            else:
+                                this_hsh['next'] = time_deltas[i+1]
+                            this_hsh['td'] = td
                             this_hsh['alert_time'] = fmt_time(
                                 adt, True, options=options)
                             this_hsh['time_left'] = timedelta2Str(td)
