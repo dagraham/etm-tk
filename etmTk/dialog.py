@@ -1858,12 +1858,7 @@ class TextDialog(Dialog):
             foreground=self.FGCOLOR,
             takefocus=False)
         self.text.insert("1.1", self.prompt)
-        self.text.pack(side='left', fill=tkinter.BOTH, expand=1, padx=5,
-                       pady=2)
-        # ysb = Scrollbar(master, orient='vertical', command=self.text
-        #                     .yview, width=8)
-        # ysb.pack(side='right', fill=tkinter.Y, expand=0, padx=0, pady=0)
-        # self.text.configure(yscroll=ysb.set)
+        self.text.pack(side='left', fill=tkinter.BOTH, expand=1, padx=5, pady=2)
         return self.text
 
     def buttonbox(self):
