@@ -175,6 +175,7 @@ class App(Tk):
         self.alertMessage = ""
         self.alertTime = None
         self.snoozeMessage = ""
+        self.snoozeMinutes = self.loop.options['snooze_minutes']
         self.snoozeTime = None
 
         BGCOLOR = self.options['background_color']
@@ -1468,9 +1469,11 @@ returns:
 ------------------------------------------------
                Repeat this alert?
 Enter an integer number of minutes to wait below.""".format(self.alertMessage))
-        mm = GetInteger(parent=self, title=_("alert"), prompt=prompt, opts=[1,], default=loop.options['snooze_minutes']).value
+        mm = GetInteger(parent=self, title=_("alert"), prompt=prompt, opts=[1,], default=self.snoozeMinutes).value
         if not mm:
+            self.snoozeMinutes = loop.options['snooze_minutes']
             return
+        self.snoozeMinutes = mm
         if self.alertActive:
             # replace exising snooze
             self.after_cancel(self.alertActive)
@@ -1510,9 +1513,10 @@ Enter an integer number of minutes to wait below.""".format(self.alertMessage))
                 self.countdownMinutes = loop.options['countdown_minutes']
             return
         prompt = _("""\
-Enter the number of minutes for the countdown.""")
+               Start a countdown timer?
+Enter an integer number of minutes for the timer below.""")
 
-        mm = GetInteger(parent=self, title=_("Snooze/Countdown timer"), prompt=prompt, opts=[1,], default=self.countdownMinutes).value
+        mm = GetInteger(parent=self, title=_("Countdown timer"), prompt=prompt, opts=[1,], default=self.countdownMinutes).value
         if not mm:
             # reset the default
             self.countdownMinutes = loop.options['countdown_minutes']

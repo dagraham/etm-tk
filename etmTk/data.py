@@ -2903,18 +2903,18 @@ For editing one or more, but not all, instances of an item. Needed:
             prefix = ""
         if key == 'a' and '_a' in hsh:
             alerts = []
-                for alert in hsh["_a"]:
-                    triggers, acts, arguments = alert
-                    _ = "@a %s" % ", ".join([fmt_period(x) for x in triggers])
-                    if acts:
-                        _ += ": %s" % ", ".join(acts)
-                        if arguments:
-                            arg_strings = []
-                            for arg in arguments:
-                                arg_strings.append(", ".join(arg))
-                            _ += "; %s" % "; ".join(arg_strings)
-                    alerts.append(_)
-                sl.extend(alerts)
+            for alert in hsh["_a"]:
+                triggers, acts, arguments = alert
+                _ = "@a %s" % ", ".join([fmt_period(x) for x in triggers])
+                if acts:
+                    _ += ": %s" % ", ".join(acts)
+                    if arguments:
+                        arg_strings = []
+                        for arg in arguments:
+                            arg_strings.append(", ".join(arg))
+                        _ += "; %s" % "; ".join(arg_strings)
+                alerts.append(_)
+            sl.extend(alerts)
         elif key in ['r', 'j']:
             at_key = key
             keys = amp_keys[key]
