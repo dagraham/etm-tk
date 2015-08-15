@@ -1466,10 +1466,12 @@ returns:
         prompt = _("""\
 {0}
 
---------------------------------------------------
-               Repeat this alert?
+---------------------------------------------------
+              Repeat this alert?
 This is the last alert for this item. To repeat it,
-enter an integer number of minutes to delay below.""".format(self.alertMessage))
+    enter the number of minutes to wait below.
+---------------------------------------------------\
+""".format(self.alertMessage))
         mm = GetInteger(parent=self, title=_("alert"), prompt=prompt, opts=[1,], default=self.snoozeMinutes).value
         if not mm:
             self.snoozeMinutes = loop.options['snooze_minutes']
@@ -3732,7 +3734,7 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
                             # last alert for this item
                             self.setmessageAlert()
                         else:
-                            MessageWindow(
+                            TextDialog(
                                 self,
                                 title=_("alert"),
                                 prompt=self.alertMessage)
