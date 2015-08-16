@@ -3732,9 +3732,9 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
 {2}
 
 ---------------------------------------------------
-              Repeat this alert?
+                Repeat this alert?
 This is the last alert for this item. To repeat it,
-    enter the number of minutes to wait below.\
+     enter the number of minutes to wait below.\
 """.format(
         expand_template('!summary!', hsh),
         expand_template('!when!', hsh),
