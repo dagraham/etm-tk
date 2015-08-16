@@ -5335,7 +5335,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                             if i == num_deltas - 1:
                                 this_hsh['next'] = None
                             else:
-                                this_hsh['next'] = time_deltas[i+1]
+                                this_hsh['next'] = timedelta2Str(time_deltas[i+1])
                             this_hsh['td'] = td
                             this_hsh['alert_time'] = fmt_time(
                                 adt, True, options=options)

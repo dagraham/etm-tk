@@ -1463,16 +1463,12 @@ returns:
                 self.tree.focus_set()
 
     def setmessageAlert(self, e=None):
-        prompt = _("""\
-{0}
-
----------------------------------------------------
-              Repeat this alert?
-This is the last alert for this item. To repeat it,
-    enter the number of minutes to wait below.
----------------------------------------------------\
-""".format(self.alertMessage))
-        mm = GetInteger(parent=self, title=_("alert"), prompt=prompt, opts=[1,], default=self.snoozeMinutes).value
+        mm = GetInteger(
+            parent=self,
+            title=_("alert - {0}".format(fmt_time(self.now, options=loop.options))),
+            prompt=self.alertMessage,
+            opts=[1,],
+            default=self.snoozeMinutes).value
         if not mm:
             self.snoozeMinutes = loop.options['snooze_minutes']
             return
@@ -3729,14 +3725,38 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
                         subprocess.call(cmd, shell=True)
                     if 'm' in actions:
                         # put this last since the internal message window is modal and thus blocking
-                        self.alertMessage = "{0}\n{1}".format(expand_template('!summary!', hsh), expand_template(self.options['alert_template'], hsh))
                         if hsh['next'] is None:
                             # last alert for this item
+                            self.alertMessage = _("""\
+{0} ({1})
+{2}
+
+---------------------------------------------------
+              Repeat this alert?
+This is the last alert for this item. To repeat it,
+    enter the number of minutes to wait below.\
+""".format(
+        expand_template('!summary!', hsh),
+        expand_template('!when!', hsh),
+        expand_template(self.options['alert_template'], hsh),
+                            ))
                             self.setmessageAlert()
                         else:
+                            self.alertMessage = """\
+{0} ({1})
+{2}
+
+---------------------------------------------------
+Next alert: {3} before the starting time.\
+""".format(
+        expand_template('!summary!', hsh),
+        expand_template('!when!', hsh),
+        expand_template(self.options['alert_template'], hsh),
+        hsh['next'])
+
                             TextDialog(
                                 self,
-                                title=_("alert"),
+                                title=_("alert - {0}".format(fmt_time( self.now, options=loop.options))),
                                 prompt=self.alertMessage)
 
                     if not alerts:
