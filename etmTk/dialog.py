@@ -2032,6 +2032,22 @@ class GetInteger(DialogWindow):
             return False
 
 
+class GetRepeat(GetInteger):
+
+    def buttonbox(self):
+        # add standard button box. override if you don't want the
+        # standard buttons
+        box = Frame(self, background=self.BGCOLOR, highlightcolor=self.HLCOLOR)
+        w = ttk.Button(box, text=_("Repeat"), style="bg.TButton",  command=self.ok, default=ACTIVE)
+        w.pack(side="right", padx=5, pady=2)
+        w = ttk.Button(box, text=_("Close"), style="bg.TButton",  command=self.cancel)
+        w.pack(side="right", padx=5, pady=2)
+        self.bind("<Return>", self.ok)
+        self.bind("<Escape>", self.cancel)
+
+        box.pack(side='bottom')
+
+
 class GetDateTime(DialogWindow):
     def validate(self):
         res = self.entry.get()

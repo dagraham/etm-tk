@@ -101,7 +101,7 @@ from decimal import Decimal
 from etmTk.data import (
     fmt_weekday, fmt_dt, fmt_date, str2hsh, hsh2str, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type,     fmt_shortdatetime, get_reps, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical_active, fmt_time, fmt_period, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, availableDates, syncTxt, update_subscription)
 
-from etmTk.dialog import MenuTree, Timer, ReadOnlyText, MessageWindow, TextDialog, OptionsDialog, GetInteger, GetDateTime, GetString, FileChoice, FINISH, STOPPED, PAUSED, RUNNING, ONEDAY, ONEMINUTE, SOMEREPS, ALLREPS, type2Text, SimpleEditor
+from etmTk.dialog import MenuTree, Timer, ReadOnlyText, MessageWindow, TextDialog, OptionsDialog, GetInteger, GetRepeat, GetDateTime, GetString, FileChoice, FINISH, STOPPED, PAUSED, RUNNING, ONEDAY, ONEMINUTE, SOMEREPS, ALLREPS, type2Text, SimpleEditor
 
 from datetime import datetime, time, date
 
@@ -1463,7 +1463,7 @@ returns:
                 self.tree.focus_set()
 
     def setmessageAlert(self, e=None):
-        mm = GetInteger(
+        mm = GetRepeat(
             parent=self,
             title=_("alert - {0}".format(fmt_time(self.now, options=loop.options))),
             prompt=self.alertMessage,
