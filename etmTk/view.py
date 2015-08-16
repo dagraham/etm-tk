@@ -3742,17 +3742,21 @@ This is the last alert for this item. To repeat it,
                             ))
                             self.setmessageAlert()
                         else:
+                            if hsh['next'] == 'none':
+                                next = "at the starting time"
+                            else:
+                                next = "{0} before the starting time"
                             self.alertMessage = """\
 {0} ({1})
 {2}
 
 ---------------------------------------------------
-Next alert: {3} before the starting time.\
+Next alert: {3}.\
 """.format(
         expand_template('!summary!', hsh),
         expand_template('!when!', hsh),
         expand_template(self.options['alert_template'], hsh),
-        hsh['next'])
+        next)
 
                             TextDialog(
                                 self,
