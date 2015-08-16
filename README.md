@@ -65,6 +65,35 @@
 
 <hr/>
 
+### Countdown timer in 3.1.60+
+
+<table align="center" hspace="10" vspace="10" width="100%">
+<tr>
+    <td>
+    <center><img src="images/countdown_set.gif" /></a></center>
+    </td>
+    <td>
+    <center><img src="images/countdown_running.gif"/></a></center>
+    </td>
+</tr>
+</table>
+
+
+### Snooze message alert in 3.2.0+
+
+<table align="center" hspace="10" vspace="10" width="100%">
+<tr>
+    <td>
+    <center><img src="images/alert_next.gif" /></a></center>
+    </td>
+    <td>
+    <center><img src="images/alert_last.gif"/></a></center>
+    </td>
+</tr>
+</table>
+
+<hr/>
+
 ## Sample entries ##
 
 Items in *etm* begin with a type character such as an asterisk (event) and continue on one or more lines either until the end of the file is reached or another line is found that begins with a type character. The beginning type character for each item is followed by the item summary and then, perhaps, by one or more `@key value` pairs. The order in which such pairs are entered does not matter.
