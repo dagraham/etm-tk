@@ -3745,7 +3745,7 @@ This is the last alert for this item. To repeat it,
                             if hsh['next'] == 'none':
                                 next = "at the starting time"
                             else:
-                                next = "{0} before the starting time"
+                                next = "{0} before the starting time".format(hsh['next'])
                             self.alertMessage = """\
 {0} ({1})
 {2}
