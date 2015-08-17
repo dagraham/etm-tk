@@ -1054,7 +1054,7 @@ class App(Tk):
         self.add2menu(root, (EDIT, ))
         self.add2menu(EDIT, (_("Show completions"), "Ctrl-Space"))
         self.add2menu(EDIT, (_("Cancel"), "Escape"))
-        self.add2menu(EDIT, (FINISH, "Ctrl-W"))
+        self.add2menu(EDIT, (FINISH, "Ctrl-S"))
 
         # start clock
         self.updateClock()

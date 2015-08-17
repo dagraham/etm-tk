@@ -110,7 +110,7 @@ ALLREPS = _('all repetitions')
 MESSAGES = _('Error messages')
 VALID = _("Valid entry")
 FOUND = "found"  # for found text marking
-FINISH = _("Finish")
+FINISH = _("Save and Close")
 
 # MAKE = _("Make")
 PRINT = _("Print")
@@ -232,8 +232,7 @@ class SimpleEditor(Toplevel):
         # finish will evaluate the item entry and, if repeating, show reps
         finish = ttk.Button(frame, text=FINISH, style="bg.TButton", command=self.onFinish)
         finish.pack(side=RIGHT, padx=4)
-        # self.bind("<Control-w>", self.onCheck)
-        self.bind("<Control-w>", self.onFinish)
+        self.bind("<Control-s>", self.onFinish)
 
 
         # find
