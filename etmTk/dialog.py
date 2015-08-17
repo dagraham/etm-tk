@@ -1650,10 +1650,6 @@ class FileChoice(object):
 
 class Dialog(Toplevel):
 
-    # BGCOLOR = None
-    # HLCOLOR = None
-    # FGCOLOR = None
-
     def __init__(self, parent, title=None, prompt=None, opts=None, default=None, modal=True, xoffset=50, yoffset=50, event=None, process=None, font=None):
         # global BGCOLOR, HLCOLOR, FGCOLOR
         self.parent = parent
@@ -1717,6 +1713,7 @@ class Dialog(Toplevel):
         w = ttk.Button(box, text="Cancel", style="bg.TButton",  command=self.cancel)
         w.pack(side="right", padx=5, pady=2)
         self.bind("<Return>", self.ok)
+        self.bind("<KP_Enter>", self.ok)
         self.bind("<Escape>", self.cancel)
 
         box.pack(side='bottom')
@@ -1788,6 +1785,7 @@ class TextVariableWindow(Dialog):
         w = ttk.Button(box, text=CLOSE, style="bg.TButton",  command=self.ok, default=ACTIVE)
         w.pack(side=LEFT, padx=5, pady=5)
         self.bind("<Return>", self.ok)
+        self.bind("<KP_Enter>", self.ok)
         self.bind("<Escape>", self.ok)
         box.pack(side='bottom')
 
@@ -1871,6 +1869,7 @@ class TextDialog(Dialog):
         w.pack(side=LEFT, padx=5, pady=0)
 
         self.bind("<Return>", self.ok)
+        self.bind("<KP_Enter>", self.ok)
         self.bind("<Escape>", self.ok)
 
         box.pack(side='bottom')
@@ -1944,6 +1943,7 @@ class OptionsDialog():
         o.pack(side=LEFT, padx=5, pady=5)
         box.pack()
         self.win.bind('<Return>', (lambda e, o=o: o.invoke()))
+        self.win.bind('<KP_Enter>', (lambda e, o=o: o.invoke()))
         self.win.bind('<Control-w>', self.Ok)
         self.win.bind('<Escape>', (lambda e, c=c: c.invoke()))
         logger.debug('parent: {0}'.format(parent))
@@ -2043,6 +2043,7 @@ class GetRepeat(GetInteger):
         w = ttk.Button(box, text=_("Close"), style="bg.TButton",  command=self.cancel)
         w.pack(side="right", padx=5, pady=2)
         self.bind("<Return>", self.ok)
+        self.bind("<KP_Enter>", self.ok)
         self.bind("<Escape>", self.cancel)
 
         box.pack(side='bottom')

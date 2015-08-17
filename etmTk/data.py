@@ -5812,7 +5812,7 @@ def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
         fo.writelines('<!DOCTYPE html> <html> <head> <meta charset="utf-8">\
             </head><body><pre>%s</pre></body>' % "\n".join(txt))
         fo.close()
-    if options['current_icsfolder']:
+    if has_icalendar and options['current_icsfolder']:
         res = export_ical(file2uuids, uuid2hash, options['current_icsfolder'], options['calendars'])
     return res
 

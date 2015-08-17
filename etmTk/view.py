@@ -338,6 +338,7 @@ class App(Tk):
         self.canvas.bind("<Double-1>", self.on_select_item)
 
         self.canvas.bind("<Return>", lambda e: self.on_activate_item(event=e))
+        self.canvas.bind("<KP_Enter>", lambda e: self.on_activate_item(event=e))
         self.canvas.bind('<Left>', (lambda e: self.priorWeekMonth(event=e)))
         self.canvas.bind('<Right>', (lambda e: self.nextWeekMonth(event=e)))
         self.canvas.bind('<Up>', (lambda e: self.selectId(event=e, d=-1)))
@@ -928,6 +929,7 @@ class App(Tk):
         # report
         self.custom_box.bind("<<ComboboxSelected>>", self.newselection)
         self.bind("<Return>", self.makeReport)
+        self.bind("<KP_Enter>", self.makeReport)
         self.bind("<Control-q>", self.quit)
         self.saved_specs = ['']
         self.getSpecs()
@@ -988,6 +990,7 @@ class App(Tk):
         self.tree.bind('<<TreeviewSelect>>', self.OnSelect)
         self.tree.bind('<Double-1>', self.OnActivate)
         self.tree.bind('<Return>', self.OnActivate)
+        self.tree.bind('<KP_Enter>', self.OnActivate)
         self.tree.bind('<Control-Down>', self.nextItem)
         self.tree.bind('<Control-Up>', self.prevItem)
 
@@ -3230,6 +3233,7 @@ Enter the shortest time period you want displayed in minutes.""")
         b = ttk.Button(win, text=_('OK'), style="bg.TButton",  command=win.destroy, default='active')
         b.pack(side='bottom', fill=tkinter.NONE, expand=0, pady=0)
         win.bind('<Return>', (lambda e, b=b: b.invoke()))
+        win.bind('<KP_Enter>', (lambda e, b=b: b.invoke()))
         win.bind('<Escape>', (lambda e, b=b: b.invoke()))
 
         t = ReadOnlyText(f, wrap="word", padx=2, pady=2, bd=2, relief="sunken",
