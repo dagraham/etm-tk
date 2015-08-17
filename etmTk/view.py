@@ -1319,8 +1319,7 @@ returns:
         # hack to avoid Ctrl-n activation
         if e and e.char != "n":
             return
-        # if self.weekly or self.monthly:
-        if self.canvas == self.canvas.focus_get():
+        if self.weekly or self.monthly:
             master = self.canvas
         else:
             master = self.tree
@@ -1414,6 +1413,12 @@ returns:
                 self.tree.focus_set()
                 return
             choice = 3
+
+        if self.weekly or self.monthly:
+            master = self.canvas
+        else:
+            master = self.tree
+
         hsh_cpy = deepcopy(self.itemSelected)
         hsh_cpy['fileinfo'] = None
 
@@ -1448,7 +1453,7 @@ returns:
                     hsh_cpy['-'] = tmp_cpy
                 hsh_cpy['s'] = dtn
 
-        changed = SimpleEditor(parent=self, newhsh=hsh_cpy, rephsh=None, options=loop.options, title=title, modified=True).changed
+        changed = SimpleEditor(parent=self, master=master, newhsh=hsh_cpy, rephsh=None, options=loop.options, title=title, modified=True).changed
         if changed:
             self.updateAlerts()
             if self.weekly:
@@ -1652,7 +1657,7 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
             return
         logger.debug('starting editItem: {0}; {1}, {2}'.format(self.itemSelected['_summary'], self.dtSelected, type(self.dtSelected)))
 
-        if self.canvas == self.canvas.focus_get():
+        if self.weekly or self.monthly:
             master = self.canvas
         else:
             master = self.tree

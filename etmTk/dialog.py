@@ -702,6 +702,7 @@ class SimpleEditor(Toplevel):
         b = ttk.Button(win, text=_('OK'),style="bg.TButton", command=win.destroy)
         b.pack(side='bottom', fill=tkinter.NONE, expand=0, pady=0)
         win.bind('<Return>', (lambda e, b=b: b.invoke()))
+        win.bind('<KP_Enter>', (lambda e, b=b: b.invoke()))
         win.bind('<Escape>', (lambda e, b=b: b.invoke()))
         tkfixedfont = tkFont.nametofont("TkFixedFont")
         if 'fontsize_fixed' in self.loop.options and self.loop.options['fontsize_fixed']:
