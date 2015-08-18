@@ -174,6 +174,7 @@ class App(Tk):
         self.alertActive = False
         self.alertMessage = ""
         self.alertTime = None
+        self.alertId = None
         self.snoozeMessage = ""
         self.snoozeMinutes = self.loop.options['snooze_minutes']
         self.snoozeTime = None
@@ -1949,6 +1950,14 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
             return ()
         logger.debug('completion date: {0}'.format(chosen_day))
         loop.item_hsh = self.itemSelected
+        if (self.alertId is not None
+            and self.itemSelected['I'] == self.alertId):
+            # cancel exising snooze
+            self.after_cancel(self.alertActive)
+            self.alertId = self.alertTime = None
+            self.alertActive = False
+            self.setcountdownStatus()
+
         loop.cmd_do_finish(chosen_day, options=loop.options)
 
         self.updateAlerts()
@@ -3736,6 +3745,7 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
                         # put this last since the internal message window is modal and thus blocking
                         if hsh['next'] is None:
                             # last alert for this item
+                            self.alertId = hsh['I']
                             self.alertMessage = _("""\
 {0} ({1})
 {2}
