@@ -99,7 +99,7 @@ from calendar import Calendar
 from decimal import Decimal
 
 from etmTk.data import (
-    fmt_weekday, fmt_dt, fmt_date, str2hsh, hsh2str, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type,     fmt_shortdatetime, get_reps, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical_active, fmt_time, fmt_period, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, availableDates, syncTxt, update_subscription)
+    fmt_weekday, fmt_dt, fmt_date, str2hsh, hsh2str, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, fmt_shortdatetime, get_reps, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical_active, fmt_time, fmt_period, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, availableDates, syncTxt, update_subscription)
 
 from etmTk.dialog import MenuTree, Timer, ReadOnlyText, MessageWindow, TextDialog, OptionsDialog, GetInteger, GetRepeat, GetDateTime, GetString, FileChoice, FINISH, STOPPED, PAUSED, RUNNING, ONEDAY, ONEMINUTE, SOMEREPS, ALLREPS, type2Text, SimpleEditor
 
@@ -171,6 +171,9 @@ class App(Tk):
         self.countdownActive = False
         self.countdownMinutes = self.loop.options['countdown_minutes']
         self.countdownTime = None
+
+        self.alerts = {}
+        self.alertHsh = {}
         self.alertActive = False
         self.alertMessage = ""
         self.alertTime = None
@@ -1472,35 +1475,61 @@ returns:
                 self.tree.focus_set()
 
     def setmessageAlert(self, e=None):
-        mm = GetRepeat(
+        hsh = self.alertHsh
+        id = hsh['I']
+        if id in self.alerts:
+            default_minutes = self.alerts[id][0]
+            # del self.alerts[id]
+        else:
+            default_minutes = loop.options['snooze_minutes']
+        msg = _("""\
+----------------------------------------------------
+                Repeat this alert?
+This is the last alert for this item. To repeat it,
+     enter the number of minutes to wait below.\
+""")
+        alert_msg = _("""\
+{0} ({1})
+{2}
+
+{3}
+""".format(
+            expand_template('!summary!', hsh),
+            expand_template('!when!', hsh),
+            expand_template(self.options['alert_template'], hsh),
+            msg))
+
+        minutes = GetRepeat(
             parent=self,
             title=_("alert - {0}".format(fmt_time(self.now, options=loop.options))),
-            prompt=self.alertMessage,
+            prompt=alert_msg,
             opts=[1,],
-            default=self.snoozeMinutes).value
-        if not mm:
-            self.snoozeMinutes = loop.options['snooze_minutes']
+            default=default_minutes).value
+        if not minutes:
+            if id in self.alerts: del self.alerts[id]
             return
-        self.snoozeMinutes = mm
-        if self.alertActive:
-            # replace exising snooze
-            self.after_cancel(self.alertActive)
-        self.snoozeMessage = self.alertMessage
-        ms = mm * 60 * 1000
-        self.alertTime = datetime.now() + mm * ONEMINUTE
+        # we're snoozing
+        ms = minutes * 60 * 1000
+        at = datetime.now() + minutes * ONEMINUTE
+        if self.alertTime:
+            self.alertTime = min(at, self.alertTime)
+        else:
+            self.alertTime = at
         self.setcountdownStatus()
-        self.alertActive = self.after(ms, self.clearmessageAlert)
+        hsh['at'] = at
+        self.alerts[id] = [minutes, hsh]
+        self.alertActive = self.after(ms, self.clearmessageAlert, id)
 
-    def clearmessageAlert(self, e=None, hsh={}):
-        self.alertActive = False
-        self.alertTime = None
+    def clearmessageAlert(self, id):
+        # alert_time, alert_msg = self.alerts[id]
         self.setcountdownStatus()
         if ('snooze_command' in self.options and self.options['snooze_command']):
             ccmd = self.options['snooze_command']
             subprocess.call(ccmd, shell=True)
         else:
             Tk.bell(self)
-        self.alertMessage = self.snoozeMessage
+        self.alertHsh = self.alerts[id][1]
+        # del self.alerts[id]
         self.setmessageAlert()
 
     def setcountdownTimer(self, e=None):
@@ -2097,20 +2126,30 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         if e and e.char != "a":
             return
         t = _('remaining alerts for today')
-        header = "{0:^7}\t{1:^7}\t{2:<8}{3:<26}".format(
+        header = "{0:^10}\t{1:^7}\t{2:<8}{3:<26}".format(
             _('alert'),
             _('event'),
             _('type'),
             _('summary'))
         divider = '-' * 52
-        if self.activeAlerts:
 
+        alerts = [(x[2]['at'], x[2]['alert_time'], x[2]['_event_time'], ", ".join(x[2]['_alert_action']), x[2]['summary'][:26]) for x in self.activeAlerts]
+
+        for id in self.alerts:
+            x = self.alerts[id]
+            at = fmt_time(x[1]['at'], seconds=True, options=self.options)
+            alerts.append((x[1]['at'], at, x[1]['_event_time'], 'snooze', x[1]['summary'][:26]))
+
+        if self.countdownActive:
+            at = fmt_time(self.countdownTime, seconds=True, options=self.options)
+            alerts.append((self.countdownTime, at, '', '', 'countdown'))
+        alerts.sort()
+
+        # print([x for x in alerts])
+        if alerts:
             s = '%s\n%s\n%s' % (
                 header, divider, "\n".join(
-                    ["{0:^7}\t{1:^7}\t{2:<8}{3:<26}".format(
-                        x[2]['alert_time'], x[2]['_event_time'],
-                        ", ".join(x[2]['_alert_action']),
-                        utf8(x[2]['summary'][:26])) for x in self.activeAlerts]))
+                    ["{0:^10}\t{1:^7}\t{2:<8}{3:<26}".format(x[1], x[2], x[3], x[4]) for x in alerts]))
         else:
             s = _("None                                 ")
         self.textWindow(self, t, s, opts=self.options)
@@ -3628,6 +3667,7 @@ or 0 to display all changes.""").format(title)
         if alerts and loop.options['calendars']:
             alerts = [x for x in alerts if self.cal_regex.match(x[-1])]
         if alerts:
+            # alerts = [(minutes, id, hsh), ...]
             curr_minutes = datetime2minutes(self.now)
             td = -1
             # pop old alerts
@@ -3745,20 +3785,7 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
                         # put this last since the internal message window is modal and thus blocking
                         if hsh['next'] is None:
                             # last alert for this item
-                            self.alertId = hsh['I']
-                            self.alertMessage = _("""\
-{0} ({1})
-{2}
-
----------------------------------------------------
-                Repeat this alert?
-This is the last alert for this item. To repeat it,
-     enter the number of minutes to wait below.\
-""".format(
-        expand_template('!summary!', hsh),
-        expand_template('!when!', hsh),
-        expand_template(self.options['alert_template'], hsh),
-                            ))
+                            self.alertHsh = hsh
                             self.setmessageAlert()
                         else:
                             if hsh['next'] == 'none':
@@ -3786,7 +3813,8 @@ Next alert: {3}.\
                         break
                     td = alerts[0][0] - curr_minutes
         if alerts and len(alerts) > 0:
-            self.pendingAlerts.set(len(alerts))
+            self.pendingAlerts.set("{1} ({0})".format(len(alerts), alerts[0][2]['alert_time']))
+            # self.pendingAlerts.set(len(alerts))
             # self.pending.configure(state="normal")
             self.activeAlerts = alerts
         else:

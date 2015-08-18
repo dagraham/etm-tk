@@ -1676,8 +1676,7 @@ def get_options(d=''):
         vcs_str = ""
     logger.info('using vcs {0}; options:\n      {1}'.format(options['vcs_system'], vcs_str))
 
-    (options['daybegin_fmt'], options['dayend_fmt'], options['reprtimefmt'],
-     options['reprdatetimefmt'], options['etmdatetimefmt'],
+    (options['daybegin_fmt'], options['dayend_fmt'], options['reprtimefmt'], options['longreprtimefmt'], options['reprdatetimefmt'], options['etmdatetimefmt'],
      options['rfmt'], options['efmt']) = get_fmts(options)
     options['config'] = newconfig
     options['scratchpad'] = os.path.normpath(os.path.join(options['etmdir'], _("scratchpad")))
@@ -1747,6 +1746,7 @@ def get_fmts(options):
     ef = "%a %b %d"
     if 'ampm' in options and options['ampm']:
         reprtimefmt = "%I:%M%p"
+        longreprtimefmt = "%I:%M:%S%p"
         daybegin_fmt = "12am"
         dayend_fmt = "11:59pm"
         rfmt = "{0} %I:%M%p %z".format(df)
@@ -1754,6 +1754,7 @@ def get_fmts(options):
 
     else:
         reprtimefmt = "%H:%M"
+        longreprtimefmt = "%H:%M:%S"
         daybegin_fmt = "0:00"
         dayend_fmt = "23:59"
         rfmt = "{0} %H:%M%z".format(df)
@@ -1761,8 +1762,7 @@ def get_fmts(options):
 
     reprdatetimefmt = "%s %s %%Z" % (reprdatefmt, reprtimefmt)
     etmdatetimefmt = "%s %s" % (etmdatefmt, reprtimefmt)
-    return (daybegin_fmt, dayend_fmt, reprtimefmt, reprdatetimefmt,
-            etmdatetimefmt, rfmt, efmt)
+    return (daybegin_fmt, dayend_fmt, reprtimefmt, longreprtimefmt, reprdatetimefmt, etmdatetimefmt, rfmt, efmt)
 
 
 def checkForNewerVersion():
@@ -1998,7 +1998,7 @@ def fmt_period(td, parent=None, short=False):
     return "".join(until)
 
 
-def fmt_time(dt, omitMidnight=False, options=None):
+def fmt_time(dt, omitMidnight=False, seconds=False, options=None):
     # fmt time, omit leading zeros and, if ampm, convert to lowercase
     # and omit trailing m's
     if not options:
@@ -2006,7 +2006,10 @@ def fmt_time(dt, omitMidnight=False, options=None):
     if omitMidnight and dt.hour == 0 and dt.minute == 0:
         return u''
     # logger.debug('dt before fmt: {0}'.format(dt))
-    dt_fmt = dt.strftime(options['reprtimefmt'])
+    if seconds:
+        dt_fmt = dt.strftime(options['longreprtimefmt'])
+    else:
+        dt_fmt = dt.strftime(options['reprtimefmt'])
     # logger.debug('dt dt_fmt: {0}'.format(dt_fmt))
     if dt_fmt[0] == "0":
         dt_fmt = dt_fmt[1:]
@@ -5337,6 +5340,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                             else:
                                 this_hsh['next'] = timedelta2Str(time_deltas[i+1])
                             this_hsh['td'] = td
+                            this_hsh['at'] = adt
                             this_hsh['alert_time'] = fmt_time(
                                 adt, True, options=options)
                             this_hsh['time_left'] = timedelta2Str(td)
