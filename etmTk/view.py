@@ -174,14 +174,6 @@ class App(Tk):
         self.countdownTime = None
 
         self.messageAlerts = {}
-        self.alertHsh = {}
-        self.alertActive = False
-        self.alertMessage = ""
-        self.alertTime = None
-        self.alertId = None
-        self.snoozeMessage = ""
-        self.snoozeMinutes = self.loop.options['snooze_minutes']
-        self.snoozeTime = None
 
         BGCOLOR = self.options['background_color']
         self.BGCOLOR = BGCOLOR
@@ -1486,13 +1478,13 @@ returns:
 ----------------------------------------------------
                 Repeat this alert?
 This is the last alert for this item. To repeat it,
-     enter the number of minutes to wait below.\
-""")
+enter the number of minutes to wait after {0}.\
+""".format(fmt_time(hsh['at'], options=self.options)))
         alert_msg = _("""\
 {0} ({1})
 {2}
 
-{3}
+{3}\
 """.format(
             expand_template('!summary!', hsh),
             expand_template('!when!', hsh),
@@ -1510,12 +1502,14 @@ This is the last alert for this item. To repeat it,
                 del self.messageAlerts[alertId]
                 self.updateAlerts()
             return
-        # we're snoozing for minutes after the current alert time
-        ms = minutes * 60 * 1000
-        hsh['at'] = hsh['at'] + minutes * ONEMINUTE
+        # we're snoozing for "minutes" after the alert triggered
+        # make sure this is at least 40 seconds after hitting snooze
+        mins = max(minutes, ((datetime.now() - hsh['at']).seconds + 100) // 60)
+        hsh['at'] = hsh['at'] + mins * ONEMINUTE
         wait = (hsh['at'] - datetime.now()).seconds * 1000
         alert_id = self.after(wait, self.clearmessageAlert, alertId)
         self.messageAlerts[alertId] = [minutes, hsh, alert_id]
+        self.updateAlertList()
 
     def clearmessageAlert(self, alertId):
         if ('snooze_command' in self.options and self.options['snooze_command']):
@@ -3799,7 +3793,7 @@ Next alert: {3}.\
                 self.pendingAlerts.set("{0}".format(self.activeAlterts[0][1]))
                 self.activeAlerts = self.activeAlterts
         else:
-            self.pendingAlerts.set('')
+            self.pendingAlerts.set('~')
             self.activeAlerts = []
 
     def textWindow(self, parent, title=None, prompt=None, opts=None, modal=True):

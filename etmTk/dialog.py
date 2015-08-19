@@ -2000,6 +2000,7 @@ class OptionsDialog():
 
 
 class GetInteger(DialogWindow):
+
     def validate(self):
         minvalue = maxvalue = None
         if len(self.options) > 0:
