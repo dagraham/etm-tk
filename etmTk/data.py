@@ -1968,6 +1968,8 @@ tstr2SCI = {
 }
 
 def fmt_period(td, parent=None, short=False):
+    if type(td) is not timedelta:
+        return td
     if td < oneminute * 0:
         return '0m'
     if td == oneminute * 0:
@@ -2832,6 +2834,8 @@ def parse_period(s, minutes=True):
     m = minute_regex.search(s)
     if m:
         td += int(m.group(1)) * oneminute
+    if type(td) is not timedelta:
+        return "Could not parse {0}".format(s)
     m = sign_regex.match(s)
     if m and m.group(1) == '-':
         return -1 * td
@@ -4353,7 +4357,11 @@ def str2hsh(s, uid=None, options=None):
                             msg.append('Bad entry "{0}" given for "&{1}". An integer is required.'.format(amp_val, amp_key))
                             logger.exception('Bad entry "{0}" given for "&{1}" in "{2}". An integer is required.'.format(amp_val, amp_key, hsh['entry']))
                     elif amp_key == 'e':
-                        part_hsh['e'] = parse_period(amp_val)
+                        p = parse_period(amp_val)
+                        if type(p) is timedelta:
+                            part_hsh['e'] = p
+                        else:
+                            msg.append(p)
                     else:
                         m = range_regex.search(amp_val)
                         if m:
@@ -4388,7 +4396,12 @@ def str2hsh(s, uid=None, options=None):
                 elif at_key == 'k':
                     hsh['k'] = ":".join([x.strip() for x in at_val.split(':')])
                 elif at_key == 'e':
-                    hsh['e'] = parse_period(at_val)
+                    p = parse_period(at_val)
+                    if type(p) is timedelta:
+                        hsh['e'] = p
+                    else:
+                        msg.append(p)
+
                 elif at_key == 'p':
                     hsh['p'] = int(at_val)
                     if hsh['p'] <= 0 or hsh['p'] >= 10:
