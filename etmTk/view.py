@@ -1946,11 +1946,14 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
             return ()
         logger.debug('completion date: {0}'.format(chosen_day))
         loop.item_hsh = self.itemSelected
-        alertId = (self.itemSelected['_summary'], self.itemSelected['s'])
+        if 's' in self.itemSelected:
+            alertId = (self.itemSelected['_summary'], self.itemSelected['s'])
+        else:
+            alertId = None
 
         loop.cmd_do_finish(chosen_day, options=loop.options)
 
-        if alertId in self.messageAlerts:
+        if alertId and alertId in self.messageAlerts:
             # cancel exising snooze - no need to updateAlerts
             self.after_cancel(self.messageAlerts[alertId][2])
             del self.messageAlerts[alertId]
