@@ -3791,11 +3791,15 @@ Next alert: {3}.\
 
         self.activeAlterts.sort()
 
-        if self.activeAlterts and len(self.activeAlterts) > 0:
-            self.pendingAlerts.set("{1} ({0})".format(len(self.activeAlterts), self.activeAlterts[0][1]))
-            self.activeAlerts = self.activeAlterts
+        if self.activeAlterts:
+            if len(self.activeAlterts) > 1:
+                self.pendingAlerts.set("{0} +{1}".format(self.activeAlterts[0][1], len(self.activeAlterts) - 1))
+                self.activeAlerts = self.activeAlterts
+            else:
+                self.pendingAlerts.set("{0}".format(self.activeAlterts[0][1]))
+                self.activeAlerts = self.activeAlterts
         else:
-            self.pendingAlerts.set(0)
+            self.pendingAlerts.set('')
             self.activeAlerts = []
 
     def textWindow(self, parent, title=None, prompt=None, opts=None, modal=True):
