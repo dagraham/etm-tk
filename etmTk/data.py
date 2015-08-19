@@ -5295,10 +5295,9 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 st_fmt = ''
             else:
                 st_fmt = fmt_time(st, options=options)
+            alertId = (hsh['_summary'], hsh['s'])
             summary = setSummary(hsh, dtl)
-            tmpl_hsh = {'I': uid, 'summary': summary,
-                        'start_date': fmt_date(dtl, True),
-                        'start_time': fmt_time(dtl, True, options=options)}
+            tmpl_hsh = {'alertId': alertId, 'I': uid, 'summary': summary, 'start_date': fmt_date(dtl, True), 'start_time': fmt_time(dtl, True, options=options)}
             if 't' in hsh:
                 tmpl_hsh['t'] = ', '.join(hsh['t'])
             else:

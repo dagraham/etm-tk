@@ -164,6 +164,7 @@ class App(Tk):
         self.uuidSelected = None
         self.timerItem = None
         self.monthly_calendar = Calendar()
+        self.itemAlerts = []
         self.activeAlerts = []
 
         self.loop = loop
@@ -172,7 +173,7 @@ class App(Tk):
         self.countdownMinutes = self.loop.options['countdown_minutes']
         self.countdownTime = None
 
-        self.alerts = {}
+        self.messageAlerts = {}
         self.alertHsh = {}
         self.alertActive = False
         self.alertMessage = ""
@@ -1476,10 +1477,9 @@ returns:
 
     def setmessageAlert(self, e=None):
         hsh = self.alertHsh
-        id = hsh['I']
-        if id in self.alerts:
-            default_minutes = self.alerts[id][0]
-            # del self.alerts[id]
+        alertId = hsh['alertId'] # (summary, s)
+        if alertId in self.messageAlerts:
+            default_minutes = self.messageAlerts[alertId][0]
         else:
             default_minutes = loop.options['snooze_minutes']
         msg = _("""\
@@ -1506,30 +1506,24 @@ This is the last alert for this item. To repeat it,
             opts=[1,],
             default=default_minutes).value
         if not minutes:
-            if id in self.alerts: del self.alerts[id]
+            if alertId in self.messageAlerts:
+                del self.messageAlerts[alertId]
+                self.updateAlerts()
             return
-        # we're snoozing
+        # we're snoozing for minutes after the current alert time
         ms = minutes * 60 * 1000
-        at = datetime.now() + minutes * ONEMINUTE
-        if self.alertTime:
-            self.alertTime = min(at, self.alertTime)
-        else:
-            self.alertTime = at
-        self.setcountdownStatus()
-        hsh['at'] = at
-        self.alerts[id] = [minutes, hsh]
-        self.alertActive = self.after(ms, self.clearmessageAlert, id)
+        hsh['at'] = hsh['at'] + minutes * ONEMINUTE
+        wait = (hsh['at'] - datetime.now()).seconds * 1000
+        alert_id = self.after(wait, self.clearmessageAlert, alertId)
+        self.messageAlerts[alertId] = [minutes, hsh, alert_id]
 
-    def clearmessageAlert(self, id):
-        # alert_time, alert_msg = self.alerts[id]
-        self.setcountdownStatus()
+    def clearmessageAlert(self, alertId):
         if ('snooze_command' in self.options and self.options['snooze_command']):
             ccmd = self.options['snooze_command']
             subprocess.call(ccmd, shell=True)
         else:
             Tk.bell(self)
-        self.alertHsh = self.alerts[id][1]
-        # del self.alerts[id]
+        self.alertHsh = self.messageAlerts[alertId][1]
         self.setmessageAlert()
 
     def setcountdownTimer(self, e=None):
@@ -1576,32 +1570,11 @@ Enter an integer number of minutes for the timer below.""")
         self.setcountdownTimer()
 
     def setcountdownStatus(self, e=None):
-        if self.countdownTime and self.alertTime:
-            if self.countdownTime <= self.alertTime:
-                pre = '-'
-                due = self.countdownTime
-            else:
-                pre = '+'
-                due = self.alertTime
-        elif self.countdownTime:
-            pre = '-'
-            due = self.countdownTime
-        elif self.alertTime:
-            pre = '+'
-            due = self.alertTime
+        if self.countdownTime:
+            ds = fmt_time(self.countdownTime, seconds=True, options=self.options)
+            self.countdownStatus.set(ds)
         else:
             self.countdownStatus.set("")
-            return
-        # we have pre and due
-        if loop.options['ampm']:
-            ds = due.strftime("%I:%M:%S%p")
-        else:
-            ds = due.strftime("%H:%M:%S")
-        if ds[0] == "0":
-            ds = ds[1:]
-        if ds[-1] == "M":
-            ds = ds[:-1].lower()
-        self.countdownStatus.set("{0}{1}".format(pre, ds))
 
 
     def deleteItem(self, e=None):
@@ -1979,17 +1952,18 @@ use the current date. Relative dates and fuzzy parsing are supported.""")
             return ()
         logger.debug('completion date: {0}'.format(chosen_day))
         loop.item_hsh = self.itemSelected
-        if (self.alertId is not None
-            and self.itemSelected['I'] == self.alertId):
-            # cancel exising snooze
-            self.after_cancel(self.alertActive)
-            self.alertId = self.alertTime = None
-            self.alertActive = False
-            self.setcountdownStatus()
+        alertId = (self.itemSelected['_summary'], self.itemSelected['s'])
 
         loop.cmd_do_finish(chosen_day, options=loop.options)
 
-        self.updateAlerts()
+        if alertId in self.messageAlerts:
+            # cancel exising snooze - no need to updateAlerts
+            self.after_cancel(self.messageAlerts[alertId][2])
+            del self.messageAlerts[alertId]
+            self.updateAlertList()
+        else:
+            self.updateAlerts()
+
         if self.weekly:
             self.canvas.focus_set()
             self.updateDay()
@@ -2126,30 +2100,17 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         if e and e.char != "a":
             return
         t = _('remaining alerts for today')
-        header = "{0:^10}\t{1:^7}\t{2:<8}{3:<26}".format(
+        header = "{0:^10}\t{1:^7}\t{2:^10}{3:<26}".format(
             _('alert'),
             _('event'),
             _('type'),
             _('summary'))
-        divider = '-' * 52
+        divider = '-' * 55
 
-        alerts = [(x[2]['at'], x[2]['alert_time'], x[2]['_event_time'], ", ".join(x[2]['_alert_action']), x[2]['summary'][:26]) for x in self.activeAlerts]
-
-        for id in self.alerts:
-            x = self.alerts[id]
-            at = fmt_time(x[1]['at'], seconds=True, options=self.options)
-            alerts.append((x[1]['at'], at, x[1]['_event_time'], 'snooze', x[1]['summary'][:26]))
-
-        if self.countdownActive:
-            at = fmt_time(self.countdownTime, seconds=True, options=self.options)
-            alerts.append((self.countdownTime, at, '', '', 'countdown'))
-        alerts.sort()
-
-        # print([x for x in alerts])
-        if alerts:
+        if self.activeAlerts:
             s = '%s\n%s\n%s' % (
                 header, divider, "\n".join(
-                    ["{0:^10}\t{1:^7}\t{2:<8}{3:<26}".format(x[1], x[2], x[3], x[4]) for x in alerts]))
+                    ["{0:^10}\t{1:^7}\t{2:^10}{3:<26}".format(x[1], x[2], x[3], x[4]) for x in self.activeAlerts]))
         else:
             s = _("None                                 ")
         self.textWindow(self, t, s, opts=self.options)
@@ -3783,11 +3744,13 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
                         subprocess.call(cmd, shell=True)
                     if 'm' in actions:
                         # put this last since the internal message window is modal and thus blocking
+                        id = hsh['I']
                         if hsh['next'] is None:
-                            # last alert for this item
+                            # last alert for this item - add an alertId
                             self.alertHsh = hsh
                             self.setmessageAlert()
                         else:
+                            # normal alert - no snooze
                             if hsh['next'] == 'none':
                                 next = "at the starting time"
                             else:
@@ -3812,15 +3775,28 @@ Next alert: {3}.\
                     if not alerts:
                         break
                     td = alerts[0][0] - curr_minutes
-        if alerts and len(alerts) > 0:
-            self.pendingAlerts.set("{1} ({0})".format(len(alerts), alerts[0][2]['alert_time']))
-            # self.pendingAlerts.set(len(alerts))
-            # self.pending.configure(state="normal")
-            self.activeAlerts = alerts
+
+        self.itemAlerts = alerts
+
+        self.updateAlertList()
+
+
+    def updateAlertList(self):
+        self.activeAlterts = [(x[2]['at'], x[2]['alert_time'], x[2]['_event_time'], ", ".join(x[2]['_alert_action']), x[2]['summary'][:26]) for x in self.itemAlerts]
+
+        for id in self.messageAlerts:
+            x = self.messageAlerts[id]
+            at = fmt_time(x[1]['at'], seconds=True, options=self.options)
+            self.activeAlterts.append((x[1]['at'], at, x[1]['_event_time'], _('snooze'), x[1]['summary'][:26]))
+
+        self.activeAlterts.sort()
+
+        if self.activeAlterts and len(self.activeAlterts) > 0:
+            self.pendingAlerts.set("{1} ({0})".format(len(self.activeAlterts), self.activeAlterts[0][1]))
+            self.activeAlerts = self.activeAlterts
         else:
             self.pendingAlerts.set(0)
             self.activeAlerts = []
-            # self.pending.configure(state="disabled")
 
     def textWindow(self, parent, title=None, prompt=None, opts=None, modal=True):
         TextDialog(parent, title=title, prompt=prompt, opts=opts, modal=modal)
