@@ -2188,6 +2188,7 @@ at_keys = [
     'o',  # overdue
     'd',  # description
     'm',  # memo
+    'n',  # noshow, tasks only. list of views in a, d, k, t.
     'z',  # time zone
     'I',  # id',
     'v',  # action rate key
@@ -2197,7 +2198,8 @@ at_keys = [
 all_keys = at_keys + ['entry', 'fileinfo', 'itemtype', 'rrule', '_summary', '_group_summary', '_a', '_j', '_p', '_r', 'prereqs']
 
 all_types = [u'=', u'^', u'*', u'-', u'+', u'%', u'~', u'$',  u'?', u'!',  u'#']
-job_types = [u'-', u'+', u'%', u'$', u'?', u'#']
+# job_types = [u'-', u'+', u'%', u'$', u'?', u'#']
+job_types = [u'-', u'+', u'%']
 any_types = [u'=', u'$', u'?', u'#']
 
 # @key to item types - used to check for valid key usage
@@ -2219,6 +2221,7 @@ key2type = {
     u'l': all_types,
     u'm': all_types,
     u'o': job_types + any_types,
+    u'n': [u'-'] + any_types,
     u'p': job_types + any_types,
     u'q': job_types + any_types,
     u'r': all_types,
@@ -4335,7 +4338,7 @@ def str2hsh(s, uid=None, options=None):
                             tmp = action_part.split(',')
                             arguments.append(tmp)
                 alerts.append([triggers, actns, arguments])
-            elif at_key in ['+', '-', 'i']:
+            elif at_key in ['+', '-', 'i', 'n']:
                 parts = comma_regex.split(at_val)
                 tmp = []
                 for part in parts:
@@ -5043,24 +5046,23 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 # add a finished entry to day view
                 # only show the last 'show_finished' completions
                 for d0, d1 in hsh[hist_key][-options['show_finished']:]:
-                    item = [
-                        ('day', d0.strftime(sortdatefmt),
-                         tstr2SCI[typ][0], hsh['_p'], '', f),
-                        (fmt_date(d0, short=True), ),
-                        (uid, typ, setSummary(hsh, d0), '', d0)]
-                    items.append(item)
-                    # add2Dates(datetimes, (d0, f))
-                    # add2list("datetimes", (d0, f))
-                    datetimes.append((d0, f))
-                    # datetimes.append((d0, f))
-                    if 'k' in hsh:
-                        keywords = [x.strip() for x in hsh['k'].split(':')]
+                    if 'n' not in hsh or 'd' not in hsh['n']:
                         item = [
-                            ('keyword', (hsh['k'], tstr2SCI[typ][0]),
-                             d0, hsh['_summary'], f), tuple(keywords),
-                            (uid, typ,
-                             setSummary(hsh, d0), fmt_date(d0, True), d0)]
+                            ('day', d0.strftime(sortdatefmt),
+                             tstr2SCI[typ][0], hsh['_p'], '', f),
+                            (fmt_date(d0, short=True), ),
+                            (uid, typ, setSummary(hsh, d0), '', d0)]
                         items.append(item)
+                        datetimes.append((d0, f))
+                    if 'k' in hsh:
+                        if 'n' not in hsh or 'k' not in hsh['n']:
+                            keywords = [x.strip() for x in hsh['k'].split(':')]
+                            item = [
+                                ('keyword', (hsh['k'], tstr2SCI[typ][0]),
+                                 d0, hsh['_summary'], f), tuple(keywords),
+                                (uid, typ,
+                                 setSummary(hsh, d0), fmt_date(d0, True), d0)]
+                            items.append(item)
 
                 if not due:
                     # add the last completion to folder view
@@ -5115,21 +5117,23 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     (uid, typ, setSummary(hsh, due), time_str, dtl)]
                 items.append(item)
                 if 'k' in hsh and hsh['itemtype'] != '#':
-                    keywords = [x.strip() for x in hsh['k'].split(':')]
-                    item = [
-                        ('keyword', (hsh['k'], tstr2SCI[typ][0]),
-                         due, hsh['_summary'], f), tuple(keywords),
-                        (uid, typ,
-                         setSummary(hsh, due), time_str, dtl)]
-                    items.append(item)
-                if 't' in hsh and hsh['itemtype'] != "#":
-                    for tag in hsh['t']:
+                    if 'n' not in hsh or 'k' not in hsh['n']:
+                        keywords = [x.strip() for x in hsh['k'].split(':')]
                         item = [
-                            ('tag', (tag, tstr2SCI[typ][0]), due,
-                             hsh['_summary'], f), (tag,),
+                            ('keyword', (hsh['k'], tstr2SCI[typ][0]),
+                             due, hsh['_summary'], f), tuple(keywords),
                             (uid, typ,
                              setSummary(hsh, due), time_str, dtl)]
                         items.append(item)
+                if 't' in hsh and hsh['itemtype'] != "#":
+                    if 'n' not in hsh or 't' not in hsh['n']:
+                        for tag in hsh['t']:
+                            item = [
+                                ('tag', (tag, tstr2SCI[typ][0]), due,
+                                 hsh['_summary'], f), (tag,),
+                                (uid, typ,
+                                 setSummary(hsh, due), time_str, dtl)]
+                            items.append(item)
             if not due and not done:  # undated
                 # dts = "none"
                 dtl = today_datetime
@@ -5148,19 +5152,21 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 items.append(item)
 
                 if 'k' in hsh and hsh['itemtype'] != "#":
-                    keywords = [x.strip() for x in hsh['k'].split(':')]
-                    item = [
-                        ('keyword', (hsh['k'], tstr2SCI[typ][0]), dtl,
-                         hsh['_summary'], f), tuple(keywords),
-                        (uid, typ, setSummary(hsh, ''), extstr, dtl)]
-                    items.append(item)
-                if 't' in hsh and hsh['itemtype'] != "#":
-                    for tag in hsh['t']:
+                    if 'n' not in hsh or 'k' not in hsh['n']:
+                        keywords = [x.strip() for x in hsh['k'].split(':')]
                         item = [
-                            ('tag', (tag, tstr2SCI[typ][0]), dtl,
-                             hsh['_summary'], f), (tag,),
+                            ('keyword', (hsh['k'], tstr2SCI[typ][0]), dtl,
+                             hsh['_summary'], f), tuple(keywords),
                             (uid, typ, setSummary(hsh, ''), extstr, dtl)]
                         items.append(item)
+                if 't' in hsh and hsh['itemtype'] != "#":
+                    if 'n' not in hsh or 't' not in hsh['n']:
+                        for tag in hsh['t']:
+                            item = [
+                                ('tag', (tag, tstr2SCI[typ][0]), dtl,
+                                 hsh['_summary'], f), (tag,),
+                                (uid, typ, setSummary(hsh, ''), extstr, dtl)]
+                            items.append(item)
 
         else:  # not a task type
             if 's' in hsh:
@@ -5230,6 +5236,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
             if hsh['itemtype'] == '#':
                 # don't include hidden items in any other views
                 continue
+        # could be anything
         # make in basket and someday entries #
         # sort numbers for now view --- we'll add the typ num to
         if hsh['itemtype'] == '$':
@@ -5279,12 +5286,12 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 typ = 'du'
             else:
                 typ = type2Str[hsh['itemtype']]
-
-            item = [
-                ('next', (1, hsh['c'], hsh['_p'], exttd),
-                 tstr2SCI[typ][0], hsh['_p'], hsh['_summary'], f),
-                (hsh['c'],), (uid, typ, hsh['_summary'], extstr)]
-            items.append(item)
+            if 'n' not in hsh or 'a' not in hsh['n']:
+                item = [
+                    ('next', (1, hsh['c'], hsh['_p'], exttd),
+                     tstr2SCI[typ][0], hsh['_p'], hsh['_summary'], f),
+                    (hsh['c'],), (uid, typ, hsh['_summary'], extstr)]
+                items.append(item)
             continue
         # make entries for day view and friends
         dates = []
@@ -5411,31 +5418,33 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 if 'f' in hsh and 'rrule' not in hsh:
                     continue
                 else:
-                    if 'rrule' in hsh and 'o' in hsh and hsh['o'] == 'r':
-                        # only nag about the oldest instance
-                        if uid in pastduerepeating:
-                            continue
-                        pastduerepeating.append(uid)
-                    item = [
-                        ('now', sn, dtl, hsh['_p'], summary, f), (cat,),
-                        (uid, typ, summary, time_str, dtl)]
-                items.append(item)
+                    if 'n' not in hsh or 'a' not in hsh['n']:
+                        if 'rrule' in hsh and 'o' in hsh and hsh['o'] == 'r':
+                            # only nag about the oldest instance
+                            if uid in pastduerepeating:
+                                continue
+                            pastduerepeating.append(uid)
+                        item = [
+                            ('now', sn, dtl, hsh['_p'], summary, f), (cat,),
+                            (uid, typ, summary, time_str, dtl)]
+                        items.append(item)
 
             if 'b' in hsh:
                 time_diff = (dtl - today_datetime).days
                 if time_diff > 0 and time_diff <= hsh['b']:
-                    extstr = '%dd' % time_diff
-                    exttd = 0 * oneday
-                    item = [('day',
-                             today_datetime.strftime(sortdatefmt),
-                             tstr2SCI['by'][0],
-                             # tstr2SCI[typ][0],
-                             time_diff,
-                             hsh['_p'],
-                             f),
-                            (fmt_date(today_datetime, short=True),),
-                            (uid, 'by', summary, extstr, dtl)]
-                    items.append(item)
+                    if 'n' not in hsh or 'd' not in hsh['n']:
+                        extstr = '%dd' % time_diff
+                        exttd = 0 * oneday
+                        item = [('day',
+                                 today_datetime.strftime(sortdatefmt),
+                                 tstr2SCI['by'][0],
+                                 # tstr2SCI[typ][0],
+                                 time_diff,
+                                 hsh['_p'],
+                                 f),
+                                (fmt_date(today_datetime, short=True),),
+                                (uid, 'by', summary, extstr, dtl)]
+                        items.append(item)
 
             if hsh['itemtype'] == '!':
                 typ = 'ns'
@@ -5546,7 +5555,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     busytimes.append([sd, sm, em, evnt_summary, uid, f])
                     continue
                     # other dated items
-            if hsh['itemtype'] in ['+', '-', '%']:
+            if (hsh['itemtype'] == '-' and ('n' not in hsh or 'd' not in hsh['n'])) or hsh['itemtype'] in ['+', '%']:
                 if 'f' in hsh and hsh['f'] and hsh['f'][-1][1] == dtl:
                     typ = 'fn'
                 else:
