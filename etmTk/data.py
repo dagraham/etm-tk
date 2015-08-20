@@ -2174,6 +2174,7 @@ at_keys = [
     'k',  # keyword
     't',  # tags
     'l',  # location
+    'n',  # noshow, tasks only. list of views in a, d, k, t.
     'u',  # user
     'f',  # finish date
     'h',  # history (task group)
@@ -2188,7 +2189,6 @@ at_keys = [
     'o',  # overdue
     'd',  # description
     'm',  # memo
-    'n',  # noshow, tasks only. list of views in a, d, k, t.
     'z',  # time zone
     'I',  # id',
     'v',  # action rate key
