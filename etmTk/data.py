@@ -2221,7 +2221,7 @@ key2type = {
     u'l': all_types,
     u'm': all_types,
     u'o': job_types + any_types,
-    u'n': [u'-'] + any_types,
+    u'n': [u'-', u'%'] + any_types,
     u'p': job_types + any_types,
     u'q': job_types + any_types,
     u'r': all_types,
@@ -3596,17 +3596,17 @@ def checkhsh(hsh):
         messages.extend(
             ["An entry for @r is required for items with",
              "either @+ or @- entries."])
-    if ('n' in hsh):
-        if hsh['itemtype'] not in ['-', '%']:
-            messages.extend(
-                ["An entry for @n can only be used with items",
-                 "of type '-' or '%'."])
+    if ('n' in hsh and hsh['n']):
         n_views = ['d', 't', 'k']
+        bad = []
         for v in hsh['n']:
             if v not in n_views:
-                messages.extend(
-                ["An entry for @n cannot only include values in ",
-                 "{0}.".format(", ".join(n_views))])
+                bad.append(v)
+        if bad:
+            messages.extend(
+                ["Not allowed in @n: {0}. Only values from".format(', '.join(bad)),
+                "{0} are allowed.".format(", ".join(n_views)),
+                 ])
     return messages
 
 
