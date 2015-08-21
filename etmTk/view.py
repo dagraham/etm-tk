@@ -1597,6 +1597,17 @@ Enter an integer number of minutes for the timer below.""")
         loop.item_hsh = self.itemSelected
         loop.cmd_do_delete(indx)
 
+        if 's' in self.itemSelected:
+            alertId = (self.itemSelected['_summary'], self.itemSelected['s'])
+        else:
+            alertId = None
+
+        if alertId and alertId in self.messageAlerts:
+            # cancel exising snooze - no need to updateAlerts
+            self.after_cancel(self.messageAlerts[alertId][2])
+            del self.messageAlerts[alertId]
+            self.updateAlertList()
+
         self.updateAlerts()
         if self.weekly:
             self.canvas.focus_set()
@@ -1784,6 +1795,18 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
         if changed:
             logger.debug("starting if changed")
             loop.do_update = True
+
+            if 's' in self.itemSelected:
+                alertId = (self.itemSelected['_summary'], self.itemSelected['s'])
+            else:
+                alertId = None
+
+            if alertId and alertId in self.messageAlerts:
+                # cancel exising snooze - no need to updateAlerts
+                self.after_cancel(self.messageAlerts[alertId][2])
+                del self.messageAlerts[alertId]
+                self.updateAlertList()
+
             self.updateAlerts()
             if self.weekly:
                 self.canvas.focus_set()
@@ -1995,6 +2018,20 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         new_dt = dt.value
         if new_dt is None:
             return
+
+        if 's' in self.itemSelected:
+            alertId = (self.itemSelected['_summary'], self.itemSelected['s'])
+        else:
+            alertId = None
+
+        if alertId and alertId in self.messageAlerts:
+            # cancel exising snooze - no need to updateAlerts
+            self.after_cancel(self.messageAlerts[alertId][2])
+            del self.messageAlerts[alertId]
+            self.updateAlertList()
+        else:
+            self.updateAlerts()
+
         new_dtn = new_dt.astimezone(gettz(self.itemSelected['z'])).replace(tzinfo=None)
         logger.debug('rescheduled from {0} to {1}'.format(self.dtSelected, new_dtn))
         loop.cmd_do_reschedule(new_dtn)
