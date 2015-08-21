@@ -3596,6 +3596,17 @@ def checkhsh(hsh):
         messages.extend(
             ["An entry for @r is required for items with",
              "either @+ or @- entries."])
+    if ('n' in hsh):
+        if hsh['itemtype'] not in ['-', '%']:
+            messages.extend(
+                ["An entry for @n can only be used with items",
+                 "of type '-' or '%'."])
+        n_views = ['d', 't', 'k']
+        for v in hsh['n']:
+            if v not in n_views:
+                messages.extend(
+                ["An entry for @n cannot only include values in ",
+                 "{0}.".format(", ".join(n_views))])
     return messages
 
 
@@ -5286,7 +5297,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 typ = 'du'
             else:
                 typ = type2Str[hsh['itemtype']]
-            if 'n' not in hsh or 'a' not in hsh['n']:
+            if 'n' not in hsh or 'd' not in hsh['n']:
                 item = [
                     ('next', (1, hsh['c'], hsh['_p'], exttd),
                      tstr2SCI[typ][0], hsh['_p'], hsh['_summary'], f),
@@ -5418,7 +5429,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 if 'f' in hsh and 'rrule' not in hsh:
                     continue
                 else:
-                    if 'n' not in hsh or 'a' not in hsh['n']:
+                    if 'n' not in hsh or 'd' not in hsh['n']:
                         if 'rrule' in hsh and 'o' in hsh and hsh['o'] == 'r':
                             # only nag about the oldest instance
                             if uid in pastduerepeating:
@@ -5555,7 +5566,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                     busytimes.append([sd, sm, em, evnt_summary, uid, f])
                     continue
                     # other dated items
-            if (hsh['itemtype'] == '-' and ('n' not in hsh or 'd' not in hsh['n'])) or hsh['itemtype'] in ['+', '%']:
+            if (hsh['itemtype'] in ['-', '%'] and ('n' not in hsh or 'd' not in hsh['n'])) or hsh['itemtype'] in ['+']:
                 if 'f' in hsh and hsh['f'] and hsh['f'][-1][1] == dtl:
                     typ = 'fn'
                 else:
