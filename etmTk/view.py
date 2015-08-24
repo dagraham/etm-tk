@@ -1497,7 +1497,7 @@ enter the number of minutes to wait after {0}.\
             prompt=alert_msg,
             opts=[1,],
             default=default_minutes,
-            close=self.options['message_snooze_seconds']*1000
+            close=self.options['message_last']*1000
         ).value
         if not minutes:
             if alertId in self.messageAlerts:
@@ -3802,7 +3802,7 @@ Next alert: {3}.\
                                 self,
                                 title=_("alert - {0}".format(fmt_time( self.now, options=loop.options))),
                                 prompt=self.alertMessage,
-                                close=self.options['message_alert_seconds']*1000
+                                close=self.options['message_next']*1000
                             )
 
                     if not alerts:
