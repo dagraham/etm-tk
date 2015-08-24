@@ -1496,7 +1496,9 @@ enter the number of minutes to wait after {0}.\
             title=_("alert - {0}".format(fmt_time(self.now, options=loop.options))),
             prompt=alert_msg,
             opts=[1,],
-            default=default_minutes).value
+            default=default_minutes,
+            close=self.options['message_snooze_seconds']*1000
+        ).value
         if not minutes:
             if alertId in self.messageAlerts:
                 del self.messageAlerts[alertId]
@@ -3784,11 +3786,6 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
                             self.alertHsh = hsh
                             self.setmessageAlert()
                         else:
-                            # normal alert - no snooze
-                            if hsh['next'] == 'none':
-                                next = "at the starting time"
-                            else:
-                                next = "{0} before the starting time".format(hsh['next'])
                             self.alertMessage = """\
 {0} ({1})
 {2}
@@ -3799,12 +3796,14 @@ Next alert: {3}.\
         expand_template('!summary!', hsh),
         expand_template('!when!', hsh),
         expand_template(self.options['alert_template'], hsh),
-        next)
+        hsh['next'])
 
                             TextDialog(
                                 self,
                                 title=_("alert - {0}".format(fmt_time( self.now, options=loop.options))),
-                                prompt=self.alertMessage)
+                                prompt=self.alertMessage,
+                                close=self.options['message_alert_seconds']*1000
+                            )
 
                     if not alerts:
                         break

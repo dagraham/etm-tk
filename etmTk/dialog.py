@@ -1650,7 +1650,7 @@ class FileChoice(object):
 
 class Dialog(Toplevel):
 
-    def __init__(self, parent, title=None, prompt=None, opts=None, default=None, modal=True, xoffset=50, yoffset=50, event=None, process=None, font=None):
+    def __init__(self, parent, title=None, prompt=None, opts=None, default=None, modal=True, xoffset=50, yoffset=50, event=None, process=None, font=None, close=0):
         # global BGCOLOR, HLCOLOR, FGCOLOR
         self.parent = parent
         self.loop = parent.loop
@@ -1695,9 +1695,12 @@ class Dialog(Toplevel):
         self.protocol("WM_DELETE_WINDOW", self.quit)
         if parent:
             self.geometry("+%d+%d" % (parent.winfo_rootx() + xoffset, parent.winfo_rooty() + yoffset))
+        if close:
+            self.after(close, lambda: self.cancel())
         if modal:
             self.grab_set()
             self.wait_window(self)
+
 
     def body(self, master):
         # create dialog body.  return widget that should have

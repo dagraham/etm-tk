@@ -1424,6 +1424,9 @@ def get_options(d=''):
 
         'local_timezone': time_zone,
 
+        'message_alert_seconds': 0,
+        'message_snooze_seconds': 0,
+
         # 'monthly': os.path.join('personal', 'monthly'),
         'monthly': os.path.join('personal', 'monthly'),
         'outline_depth': 0,
@@ -1514,7 +1517,7 @@ def get_options(d=''):
     # logger.debug("user_options: {0}".format(user_options))
 
     for key in default_options:
-        if key in ['action_keys', 'show_finished', 'fontsize_busy', 'fontsize_fixed', 'fontsize_tree', 'outline_depth', 'prefix', 'prefix_uses', 'icssyc_folder', 'ics_subscriptions', 'agenda_days']:
+        if key in ['action_keys', 'show_finished', 'fontsize_busy', 'fontsize_fixed', 'fontsize_tree', 'outline_depth', 'prefix', 'prefix_uses', 'icssyc_folder', 'ics_subscriptions', 'agenda_days', 'message_alert_seconds', 'message_snooze_seconds']:
             if key not in user_options:
                 # we want to allow 0 as an entry
                 options[key] = default_options[key]
@@ -5366,9 +5369,18 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         if adt.date() == today_date:
                             this_hsh = deepcopy(tmpl_hsh)
                             if i == num_deltas - 1:
+                                this_hsh['next_alert'] = _("This is the last alert.")
                                 this_hsh['next'] = None
                             else:
-                                this_hsh['next'] = timedelta2Str(time_deltas[i+1])
+                                nxt = timedelta2Str(time_deltas[i+1])
+                                strt = _("start time")
+                                if nxt == 'none':
+                                    this_hsh['next'] = _("at the {0}".format(strt))
+                                    this_hsh['next_alert'] = _("The next alert is at the {0}.".format(strt))
+                                else:
+                                    this_hsh['next'] = _("{0} before the {1}".format(nxt, strt))
+                                    this_hsh['next_alert'] = _("The next alert is {0} before the {1}.".format(nxt, strt))
+
                             this_hsh['td'] = td
                             this_hsh['at'] = adt
                             this_hsh['alert_time'] = fmt_time(
