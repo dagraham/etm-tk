@@ -537,8 +537,8 @@ def get_week(dt):
         days = dn - 1
     else:
         days = 0
-    weekbeg = dt - days * oneday
-    weekend = dt + (6 - days) * oneday
+    weekbeg = dt - days * ONEDAY
+    weekend = dt + (6 - days) * ONEDAY
     ybeg = weekbeg.year
     yend = weekend.year
     mbeg = weekbeg.month
@@ -1096,10 +1096,10 @@ completion_regex = re.compile(r'((?:[\@\&][a-zA-Z]? ?)?(?:\b[a-zA-Z0-9_/:]+)?)$'
 threeday_regex = re.compile(r'(MON|TUE|WED|THU|FRI|SAT|SUN)',
                             re.IGNORECASE)
 
-oneminute = timedelta(minutes=1)
-onehour = timedelta(hours=1)
-oneday = timedelta(days=1)
-oneweek = timedelta(weeks=1)
+ONEMINUTE = timedelta(minutes=1)
+ONEHOUR = timedelta(hours=1)
+ONEDAY = timedelta(days=1)
+ONEWEEK = timedelta(weeks=1)
 
 rel_date_regex = re.compile(r'(?<![0-9])([-+][0-9]+)')
 rel_month_regex = re.compile(r'(?<![0-9])([-+][0-9]+)/([0-9]+)')
@@ -1127,8 +1127,8 @@ rrulefmt = "%a %b %d %Y %H:%M %Z %z"
 
 today = datetime.now(tzlocal()).replace(
     hour=0, minute=0, second=0, microsecond=0)
-yesterday = today - oneday
-tomorrow = today + oneday
+yesterday = today - ONEDAY
+tomorrow = today + ONEDAY
 
 day_begin = time(0, 0)
 day_end = time(23, 59)
@@ -1739,6 +1739,19 @@ def get_options(d=''):
     options['highlight_color'] = HLCOLOR
     options['foreground_color'] = FGCOLOR
     options['calendar_colors'] = CALENDAR_COLORS
+
+    # set 'bef' here and update on newday in updateClock
+    now = datetime.now()
+    year, wn, dn = now.isocalendar()
+    weeks_after = options['weeks_after']
+    if dn > 1:
+        days = dn - 1
+    else:
+        days = 0
+    week_beg = now - days * ONEDAY
+    bef = (week_beg + (7 * (weeks_after + 1)) * ONEDAY)
+    options['bef'] = bef
+
     logger.debug("ending get_options")
     return user_options, options, use_locale
 
@@ -1973,9 +1986,9 @@ tstr2SCI = {
 def fmt_period(td, parent=None, short=False):
     if type(td) is not timedelta:
         return td
-    if td < oneminute * 0:
+    if td < ONEMINUTE * 0:
         return '0m'
-    if td == oneminute * 0:
+    if td == ONEMINUTE * 0:
         return '0m'
     until = []
     td_days = td.days
@@ -2036,9 +2049,9 @@ def fmt_date(dt, short=False):
             dt = dt.date()
         if dt == tdy.date():
             dt_fmt = "%s" % TODAY
-        elif dt == tdy.date() - oneday:
+        elif dt == tdy.date() - ONEDAY:
             dt_fmt = "%s" % YESTERDAY
-        elif dt == tdy.date() + oneday:
+        elif dt == tdy.date() + ONEDAY:
             dt_fmt = "%s" % TOMORROW
         elif dt.year == tdy.year:
             dt_fmt = dt.strftime(shortyearlessfmt)
@@ -2061,9 +2074,9 @@ def fmt_shortdatetime(dt, options=None):
     tdy = datetime.today()
     if dt.date() == tdy.date():
         dt_fmt = "%s %s" % (fmt_time(dt, options=options), TODAY)
-    elif dt.date() == tdy.date() - oneday:
+    elif dt.date() == tdy.date() - ONEDAY:
         dt_fmt = "%s %s" % (fmt_time(dt, options=options), YESTERDAY)
-    elif dt.date() == tdy.date() + oneday:
+    elif dt.date() == tdy.date() + ONEDAY:
         dt_fmt = "%s %s" % (fmt_time(dt, options=options), TOMORROW)
     elif dt.year == tdy.year:
         try:
@@ -2733,7 +2746,7 @@ def parse_str(dt, timezone=None, fmt=None):
                 dt = rel_month_regex.sub(new_date, dt)
             elif rel_date:
                 days = int(rel_date.group(0))
-                new_date = (now + days * oneday).strftime("%Y-%m-%d")
+                new_date = (now + days * ONEDAY).strftime("%Y-%m-%d")
                 dt = rel_date_regex.sub(new_date, dt)
 
             dt = parse(dt)
@@ -2813,9 +2826,9 @@ def parse_period(s, minutes=True):
     """
     td = timedelta(seconds=0)
     if minutes:
-        unitperiod = oneminute
+        unitperiod = ONEMINUTE
     else:
-        unitperiod = oneday
+        unitperiod = ONEDAY
     try:
         m = int(s)
         return m * unitperiod
@@ -2830,16 +2843,16 @@ def parse_period(s, minutes=True):
         return "Invalid period string: '{0}'".format(s)
     m = week_regex.search(s)
     if m:
-        td += int(m.group(1)) * oneweek
+        td += int(m.group(1)) * ONEWEEK
     m = day_regex.search(s)
     if m:
-        td += int(m.group(1)) * oneday
+        td += int(m.group(1)) * ONEDAY
     m = hour_regex.search(s)
     if m:
-        td += int(m.group(1)) * onehour
+        td += int(m.group(1)) * ONEHOUR
     m = minute_regex.search(s)
     if m:
-        td += int(m.group(1)) * oneminute
+        td += int(m.group(1)) * ONEMINUTE
     if type(td) is not timedelta:
         return "Could not parse {0}".format(s)
     m = sign_regex.match(s)
@@ -4125,8 +4138,8 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
         eb = ""
     # show day items starting with beg and ending with lst
     beg = datetime.today()
-    tom = beg + oneday
-    lst = beg + (days - 1)*oneday
+    tom = beg + ONEDAY
+    lst = beg + (days - 1)*ONEDAY
     beg_fmt = beg.strftime("%Y%m%d")
     tom_fmt = tom.strftime("%Y%m%d")
     lst_fmt = lst.strftime("%Y%m%d")
@@ -4724,7 +4737,7 @@ def getPrevNext(l, cal_regex):
             curr = last_prev
             prev = last_prev
         prevnext[d] = [l[prev], l[curr], l[nxt]]
-        d += oneday
+        d += ONEDAY
     return prevnext
 
 
@@ -4842,7 +4855,7 @@ def timeValue(hsh, options):
         Return rounded integer minutes and float value.
     """
     minutes = value = 0
-    if 'e' not in hsh or hsh['e'] <= oneminute * 0:
+    if 'e' not in hsh or hsh['e'] <= ONEMINUTE * 0:
         return 0, 0.0
     td_minutes = hsh['e'].seconds // 60 + (hsh['e'].seconds % 60 > 0)
 
@@ -4883,7 +4896,7 @@ def expenseCharge(hsh, options):
 def timedelta2Str(td, short=False):
     """
     """
-    if td <= oneminute * 0:
+    if td <= ONEMINUTE * 0:
         return 'none'
     until = []
     td_days = td.days
@@ -5290,7 +5303,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 exttd = hsh['e']
             else:
                 extstr = ''
-                exttd = 0 * oneday
+                exttd = 0 * ONEDAY
             if hsh['itemtype'] == '+':
                 if 'prereqs' in hsh and hsh['prereqs']:
                     typ = 'cu'
@@ -5457,7 +5470,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 if time_diff > 0 and time_diff <= hsh['b']:
                     if 'n' not in hsh or 'd' not in hsh['n']:
                         extstr = '%dd' % time_diff
-                        exttd = 0 * oneday
+                        exttd = 0 * ONEDAY
                         item = [('day',
                                  today_datetime.strftime(sortdatefmt),
                                  tstr2SCI['by'][0],
@@ -5527,7 +5540,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                                              options['dayend_fmt']), dtl)]
                     items.append(item)
                     busytimes.append([sd, sm, day_end_minutes, evnt_summary, uid, f])
-                    sd += oneday
+                    sd += ONEDAY
                     i = 0
                     item_copy = []
                     while sd < ed:
@@ -5546,7 +5559,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                         # add2list("items", item_copy[i])
                         items.append(item_copy[i])
                         busytimes.append([sd, 0, day_end_minutes, evnt_summary, uid, f])
-                        sd += oneday
+                        sd += ONEDAY
                         i += 1
                         # the last day tuple
                     if em:
@@ -5620,7 +5633,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                                                  options['dayend_fmt']), dtl)]
                         items.append(item)
                         busytimes.append([sd, sm, day_end_minutes, evnt_summary, uid, f])
-                        sd += oneday
+                        sd += ONEDAY
                         i = 0
                         item_copy = []
                         while sd < ed:
@@ -5639,7 +5652,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                             # add2list("items", item_copy[i])
                             items.append(item_copy[i])
                             busytimes.append([sd, 0, day_end_minutes, evnt_summary, uid, f])
-                            sd += oneday
+                            sd += ONEDAY
                             i += 1
                             # the last day tuple
                         if em:
@@ -5673,7 +5686,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                 else: # sm == 0
                     # midnight task - show extent only
                     # use 11:59pm as the sorting datetime
-                    dtm = dtl + 1439 * oneminute
+                    dtm = dtl + 1439 * ONEMINUTE
                     item = [
                         ('day', dtm.strftime(sortdatefmt), tstr2SCI[typ][0],
                          hsh['_p'], '', f),
@@ -6610,15 +6623,7 @@ class ETMCmd():
     def loadData(self, e=None):
         self.count2id = {}
         now = datetime.now()
-        year, wn, dn = now.isocalendar()
-        weeks_after = self.options['weeks_after']
-        if dn > 1:
-            days = dn - 1
-        else:
-            days = 0
-        week_beg = now - days * oneday
-        bef = (week_beg + (7 * (weeks_after + 1)) * oneday)
-        self.options['bef'] = bef
+        bef = self.options['bef']
         self.file2data = {}
         logger.debug('calling get_data')
         uuid2hash, uuid2labels, file2uuids, self.file2lastmodified, bad_datafiles, messages = get_data(options=self.options)
@@ -6652,15 +6657,7 @@ class ETMCmd():
         logger.debug('starting updateDataFromFile: {0}; {1}'.format(fp, rp))
         self.count2id = {}
         now = datetime.now()
-        year, wn, dn = now.isocalendar()
-        weeks_after = self.options['weeks_after']
-        if dn > 1:
-            days = dn - 1
-        else:
-            days = 0
-        week_beg = now - days * oneday
-        bef = (week_beg + (7 * (weeks_after + 1)) * oneday)
-        self.options['bef'] = bef
+        bef = self.options['bef']
         if rp in self.file2uuids:
             ids = self.file2uuids[rp]
         else:
@@ -6848,7 +6845,7 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
                 tmp = []
                 for h in hsh_rev['_r']:
                     if 'f' in h and h['f'] != u'l':
-                        h['u'] = dtn - oneminute
+                        h['u'] = dtn - ONEMINUTE
                     tmp.append(h)
                 hsh_rev['_r'] = tmp
 
@@ -6932,7 +6929,7 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
                 # check starting time
                 if new_dtn < hsh_rev['s']:
                     d = (hsh_rev['s'] - new_dtn).days
-                    hsh_rev['s'] = hsh_rev['s'] - (d + 1) * oneday
+                    hsh_rev['s'] = hsh_rev['s'] - (d + 1) * ONEDAY
             else:  # dated but not repeating
                 hsh_rev['s'] = new_dtn
         else:  # either undated or not repeating
@@ -6955,7 +6952,7 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
                 # check starting time
                 if new_dtn < hsh_rev['s']:
                     d = (hsh_rev['s'] - new_dtn).days
-                    hsh_rev['s'] = hsh_rev['s'] - (d + 1) * oneday
+                    hsh_rev['s'] = hsh_rev['s'] - (d + 1) * ONEDAY
             else:  # dated but not repeating
                 if hsh_rev['s'] == new_dtn:
                     return

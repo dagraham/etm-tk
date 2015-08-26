@@ -3587,6 +3587,16 @@ or 0 to display all changes.""").format(title)
                 logger.info('newday')
                 self.actionTimer.newDay()
 
+                year, wn, dn = self.now.isocalendar()
+                weeks_after = self.options['weeks_after']
+                if dn > 1:
+                    days = dn - 1
+                else:
+                    days = 0
+                week_beg = now - days * ONEDAY
+                bef = (week_beg + (7 * (weeks_after + 1)) * ONEDAY)
+                self.options['bef'] = bef
+
             logger.info("new: {0}; modified: {1}; deleted: {2}".format(len(new), len(modified), len(deleted)))
             logger.debug('calling loadData')
             loop.loadData()
