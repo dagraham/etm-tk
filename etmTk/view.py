@@ -3593,7 +3593,7 @@ or 0 to display all changes.""").format(title)
                     days = dn - 1
                 else:
                     days = 0
-                week_beg = now - days * ONEDAY
+                week_beg = self.now - days * ONEDAY
                 bef = (week_beg + (7 * (weeks_after + 1)) * ONEDAY)
                 self.options['bef'] = bef
 
