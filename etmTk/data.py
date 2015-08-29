@@ -1740,7 +1740,7 @@ def get_options(d=''):
     options['foreground_color'] = FGCOLOR
     options['calendar_colors'] = CALENDAR_COLORS
 
-    # set 'bef' here and update on newday in updateClock
+    # set 'bef' here and update on newday using a naive datetime
     now = datetime.now()
     year, wn, dn = now.isocalendar()
     weeks_after = options['weeks_after']

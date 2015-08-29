@@ -3587,13 +3587,15 @@ or 0 to display all changes.""").format(title)
                 logger.info('newday')
                 self.actionTimer.newDay()
 
-                year, wn, dn = self.now.isocalendar()
+                # update 'bef' using a naive datetime
+                now = datetime.now()
+                year, wn, dn = now.isocalendar()
                 weeks_after = self.options['weeks_after']
                 if dn > 1:
                     days = dn - 1
                 else:
                     days = 0
-                week_beg = self.now - days * ONEDAY
+                week_beg = now - days * ONEDAY
                 bef = (week_beg + (7 * (weeks_after + 1)) * ONEDAY)
                 self.options['bef'] = bef
 
