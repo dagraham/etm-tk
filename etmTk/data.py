@@ -1372,6 +1372,7 @@ def get_options(d=''):
         'agenda_indent': 3,
         'agenda_width1': 32,
         'agenda_width2': 18,
+        'agenda_omit': ['ac', 'fn', 'ns'],
 
         'alert_default': ['m'],
         'alert_displaycmd': '',
@@ -1505,6 +1506,11 @@ def get_options(d=''):
     options = deepcopy(default_options)
     changed = False
     if user_options:
+        if 'agenda_omit' in user_options:
+            tmp = [x for x in user_options['agenda_omit'] if x in ['ac', 'by', 'fn', 'ns', 'oc']]
+            if tmp != user_options['agenda_omit']:
+                user_options['agenda_omit'] = tmp
+                changed = True
         if ('actions_timercmd' in user_options and
                 user_options['actions_timercmd']):
             user_options['action_timer']['running'] = \
@@ -1517,7 +1523,7 @@ def get_options(d=''):
     # logger.debug("user_options: {0}".format(user_options))
 
     for key in default_options:
-        if key in ['action_keys', 'show_finished', 'fontsize_busy', 'fontsize_fixed', 'fontsize_tree', 'outline_depth', 'prefix', 'prefix_uses', 'icssyc_folder', 'ics_subscriptions', 'agenda_days', 'message_next', 'message_last']:
+        if key in ['action_keys', 'show_finished', 'fontsize_busy', 'fontsize_fixed', 'fontsize_tree', 'outline_depth', 'prefix', 'prefix_uses', 'icssyc_folder', 'ics_subscriptions', 'agenda_days', 'message_next', 'message_last', 'agenda_omit']:
             if key not in user_options:
                 # we want to allow 0 as an entry
                 options[key] = default_options[key]
@@ -4121,7 +4127,7 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
 
 
 def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
-              width2=14, calendars=None, mode='html', fltr=None):
+              width2=14, calendars=None, omit=[], mode='html', fltr=None):
     if not calendars:
         calendars = []
     items = deepcopy(allrows)
@@ -4148,8 +4154,9 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
     for item in items:
         if item[0][0] == 'day':
             if item[0][1] >= beg_fmt and item[0][1] <= lst_fmt:
-                if item[2][1] in ['fn', 'ac', 'ns']:
-                    # skip finished tasks, actions and notes
+                # if item[2][1] in ['fn', 'ac', 'ns']:
+                if omit and item[2][1] in omit:
+                    # skip omitted items
                     continue
                 if item[0][1] == beg_fmt:
                     item[1] = TODAY
@@ -5839,6 +5846,7 @@ def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
                 width1=options['current_width1'],
                 width2=options['current_width2'],
                 calendars=options['calendars'],
+                omit=options['agenda_omit'],
                 mode='text'
             )
         # logger.debug('text colors: {0}'.format(options['agenda_colors']))
@@ -5865,6 +5873,7 @@ def updateCurrentFiles(allrows, file2uuids, uuid2hash, options):
                 width1=options['current_width1'],
                 width2=options['current_width2'],
                 calendars=options['calendars'],
+                omit=options['agenda_omit'],
                 mode='html')
         txt = tree2Html(tree, colors=options['agenda_colors'], indent=options['current_indent'], width1=options['current_width1'], width2=options['current_width2'])
         if not txt[0].strip():
@@ -6584,17 +6593,18 @@ class ETMCmd():
                     f = arg_str[1:].strip()
                 else:
                     f = None
+                    return (getAgenda(
+                        self.rows,
+                        colors=self.options['agenda_colors'],
+                        days=self.options['agenda_days'],
+                        indent=self.options['agenda_indent'],
+                        width1=self.options['agenda_width1'],
+                        width2=self.options['agenda_width2'],
+                        omit=self.options['agenda_omit'],
+                        calendars=self.calendars,
+                        mode=self.output,
+                        fltr=f))
                 logger.debug('calling getAgenda')
-                return (getAgenda(
-                    self.rows,
-                    colors=self.options['agenda_colors'],
-                    days=self.options['agenda_days'],
-                    indent=self.options['agenda_indent'],
-                    width1=self.options['agenda_width1'],
-                    width2=self.options['agenda_width2'],
-                    calendars=self.calendars,
-                    mode=self.output,
-                    fltr=f))
             elif cmd in views:
                 view = views[cmd]
                 if len(arg_str) > 2:
