@@ -7269,7 +7269,7 @@ Show items grouped and sorted by tag, optionally limited to those containing a c
             'group': "groups.google.com/group/eventandtaskmanager",
             'gpl': 'www.gnu.org/licenses/gpl.html',
             'etmversion': fullversion,
-            'platform': platform.system(),
+            'platform': platform.platform(terse=1),
             'python': platform.python_version(),
             'dateutil': dateutil_version,
             'pyyaml': yaml.__version__,
