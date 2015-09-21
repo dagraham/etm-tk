@@ -5488,6 +5488,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                                 (fmt_date(today_datetime, short=True),),
                                 (uid, 'by', summary, extstr, dtl)]
                         items.append(item)
+                        datetimes.append((today_datetime, f))
 
             if hsh['itemtype'] == '!':
                 typ = 'ns'
