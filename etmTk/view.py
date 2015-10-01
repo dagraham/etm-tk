@@ -160,7 +160,7 @@ ICONPLUS = os.path.normpath(os.path.join(this_dir, "icons", "icon_plus.gif"))
 class App(Tk):
     def __init__(self, path=None):
         Tk.__init__(self, className="EtmTk")
-        self.minsize(400, 460)
+        self.minsize(360, 460)
         self.uuidSelected = None
         self.timerItem = None
         self.monthly_calendar = Calendar()
@@ -210,8 +210,8 @@ class App(Tk):
         self.protocol("WM_DELETE_WINDOW", self.quit)
         root = "_"
 
-        self.week_height = 80
-        self.month_height = 260
+        self.week_height = 76
+        self.month_height = 280
 
 
         style = self.options['style']

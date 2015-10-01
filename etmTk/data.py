@@ -18,6 +18,9 @@ LANGUAGES = os.path.normpath(os.path.join(this_dir, "locale"))
 
 BGCOLOR = HLCOLOR = FGCOLOR = CALENDAR_COLORS = None
 
+def _(x):
+    return(x)
+
 def setup_logging(level, etmdir=None):
     """
     Setup logging configuration. Override root:level in
@@ -511,6 +514,7 @@ def optionShortcut(s):
     else:
         return "{0}Alt-{1}".format(shift, s.upper()), "<{0}Alt-{1}>".format(shift, s)
 
+
 def d_to_str(d, s):
     for key, val in qt2dt:
         s = s.replace(key, val)
@@ -674,6 +678,7 @@ import codecs
 import shutil
 import fnmatch
 
+
 def term_print(s):
     if python_version2:
         try:
@@ -684,9 +689,8 @@ def term_print(s):
         print(s)
 
 
-
-
 parse = None
+
 
 def setup_parse(day_first, year_first):
     global parse
@@ -1088,7 +1092,7 @@ group_regex = re.compile(r'^\s*(.*)\s+(\d+)/(\d+):\s*(.*)')
 groupdate_regex = re.compile(r'\by{2}\b|\by{4}\b|\b[dM]{1,4}\b|\bw\b')
 options_regex = re.compile(r'^\s*(!?[fk](\[[:\d]+\])?)|(!?[clostu])\s*$')
 # completion_regex = re.compile(r'(?:^.*?)((?:\@[a-zA-Z] ?)?\b\S*)$')
-completion_regex = re.compile(r'((?:[\@\&][a-zA-Z]? ?)?(?:\b[a-zA-Z0-9_/:]+)?)$')
+completion_regex = re.compile(r'((?:[@&][a-zA-Z]? ?)?(?:\b[a-zA-Z0-9_/:]+)?)$')
 
 # what about other languages?
 # lun mar mer jeu ven sam dim
@@ -2303,6 +2307,13 @@ amp_keys = {
 
 @memoize
 def makeTree(tree_rows, view=None, calendars=None, sort=True, fltr=None, hide_finished=False):
+    """
+    e.g. row:
+    [('now', (1, 13), datetime.datetime(2015, 8, 20, 0, 0), 10, 'Call Saul', 'personal/dag/monthly/2015/08.txt'),
+      'Now',
+      'Available',
+      ('e2d85baae43140d5966f63ccabe455dcetm', 'pt', 'Call Saul', '-38d', datetime.datetime(2015, 8, 20, 0, 0))]
+    """
     tree = {}
     lofl = []
     root = '_'
@@ -2320,6 +2331,8 @@ def makeTree(tree_rows, view=None, calendars=None, sort=True, fltr=None, hide_fi
         logger.debug('filter: {0} ({1})'.format(fltr, mtch))
     else:
         filter_regex = None
+    root_key = tuple(["", root])
+    tree.setdefault(root_key, [])
     for pc in tree_rows:
         if hide_finished and pc[-1][1] == 'fn':
             continue
@@ -2333,8 +2346,6 @@ def makeTree(tree_rows, view=None, calendars=None, sort=True, fltr=None, hide_fi
             m = filter_regex.search(s)
             if not ((mtch and m) or (not mtch and not m)):
                 continue
-        root_key = tuple(["", root])
-        tree.setdefault(root_key, [])
         if sort:
             pc.pop(0)
         empty = False
@@ -2712,7 +2723,6 @@ def parse_str(dt, timezone=None, fmt=None):
     Return datetime object if fmt is None
     Return
     """
-    msg = ""
     if type(dt) in [str, unicode]:
         if dt == 'now':
             if timezone is None:
@@ -3154,6 +3164,9 @@ def getAllFiles(root, include=r'*', exclude=r'.*', other=[]):
 
 
 def getFileTuples(root, include=r'*.txt', exclude=r'.*', all=False, other=[]):
+    """
+    Used in view to get config files
+    """
     if all:
         common_prefix, filelist = getAllFiles(root, include, exclude, other=other)
     else:
@@ -3185,38 +3198,6 @@ def os_path_splitall(path, debug=False):
         path = newpath
     parts.reverse()
     return drive, parts
-
-
-def lines2Items(lines):
-    """
-        Group the lines into logical items and return them.
-    """
-    # make sure we have a trailing new-line. Yes, we really need this.
-    lines.append('\n')
-    linenum = 0
-    linenums = []
-    logical_line = []
-    for line in lines:
-        linenums.append(linenum)
-        linenum += 1
-        # preserve new lines and leading whitespace within logical lines
-        stripped = line.rstrip()
-        m = item_regex.match(stripped) # this requires item char to be followed by a whitespace char
-        if m or stripped=='=':
-            if logical_line:
-                yield (''.join(logical_line))
-            logical_line = []
-            linenums = []
-            logical_line.append("%s\n" % line.rstrip())
-        elif stripped:
-            # a line which does not continue, end of logical line
-            logical_line.append("%s\n" % line.rstrip())
-        elif logical_line:
-            # preserve interior empty lines
-            logical_line.append("\n")
-    if logical_line:
-        # end of sequence implies end of last logical line
-        yield (''.join(logical_line))
 
 
 def getFileItems(full_name, rel_name, append_newline=True):
@@ -3507,6 +3488,8 @@ def get_rrulestr(hsh, key_hsh=rrule_hsh):
     """
         Parse the rrule relevant information in hsh and return a
         corresponding RRULE string.
+
+        First pass - replace hsh['r'] with an equivalent rrulestr.
     """
     if 'r' not in hsh:
         return ()
@@ -3555,7 +3538,8 @@ def get_rrule(hsh):
         will be datetimes with offsets. Parameters *aft* and *bef* are
         UTC datetimes. Datetimes from *rule* will be returned as local
         times.
-    :param hsh: item hash
+
+        Second pass - use the hsh['r'] rrulestr entry
     """
     rlst = []
     warn = []
@@ -4336,9 +4320,7 @@ def str2hsh(s, uid=None, options=None):
             hsh['I'] = uid
         if itemtype == u'+':
             hsh['_group_summary'] = summary
-        # drop the @i line
-        lines = [x for x in s.split('\n') if not x.startswith('@i')]
-        hsh['entry'] = "\n".join(lines)
+        hsh['entry'] = s
         for at_part in at_parts:
             at_key = unicode(at_part[0])
             at_val = at_part[1:].strip()
@@ -5393,7 +5375,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
                                 this_hsh['next'] = None
                             else:
                                 nxt = timedelta2Str(time_deltas[i+1])
-                                strt = _("start time")
+                                strt = _("starting time")
                                 if nxt == 'none':
                                     this_hsh['next'] = _("at the {0}".format(strt))
                                     this_hsh['next_alert'] = _("The next alert is at the {0}.".format(strt))
@@ -6940,7 +6922,7 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
                 # check starting time
                 if new_dtn < hsh_rev['s']:
                     d = (hsh_rev['s'] - new_dtn).days
-                    hsh_rev['s'] = hsh_rev['s'] - (d + 1) * ONEDAY
+                    hsh_rev['s'] -= (d + 1) * ONEDAY
             else:  # dated but not repeating
                 hsh_rev['s'] = new_dtn
         else:  # either undated or not repeating
@@ -6963,7 +6945,7 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
                 # check starting time
                 if new_dtn < hsh_rev['s']:
                     d = (hsh_rev['s'] - new_dtn).days
-                    hsh_rev['s'] = hsh_rev['s'] - (d + 1) * ONEDAY
+                    hsh_rev['s'] -= (d + 1) * ONEDAY
             else:  # dated but not repeating
                 if hsh_rev['s'] == new_dtn:
                     return
