@@ -5,13 +5,13 @@ import glob
 
 import sys
 if sys.version_info >= (3, 2):
-    REQUIRES = ["tkinter>=8.5.11", "python-dateutil>=1.5", "PyYaml>=3.10","icalendar>=3.6", "pytz"]
+    REQUIRES = ["tkinter>=8.5.11", "python-dateutil>=1.5", "PyYaml>=3.10"]
 else:
-    REQUIRES = ["Tkinter>=8.5.11", "python>=2.7.6,<3.0", "python-dateutil>=1.5", "PyYaml>=3.10", "icalendar>=3.5", "pytz"]
+    REQUIRES = ["Tkinter>=8.5.11", "python>=2.7.6,<3.0", "python-dateutil>=1.5", "PyYaml>=3.10"]
 
 APP = ['etm']
 
-# includefiles = ["etmTk/etmlogo.gif", "etmTk/etmlogo.icns", "etmTk/etmlogo.ico"]
+EXTRAS = {"icalendar": ["icalendar>=3.8.4"], "pytz": ["pytz>=2015.1"]},
 
 OPTIONS = {'build': {'build_exe': 'releases/etmtk-{0}'.format(version)},
               'build_exe': {'icon': 'etmTk/etmlogo.gif', 'optimize': '2',
@@ -57,9 +57,8 @@ setup(
         'Topic :: Office/Business :: Scheduling'],
     packages=['etmTk'],
     scripts=['etm'],
-    # install_requires=REQUIRES,
-    # extras_require={"icalendar": EXTRAS},
-    # package_data={'etmTk': ['etmlogo.*', 'CHANGES', 'etmtk.desktop', 'etmtk.1', 'etmtk.xpm']},
+    install_requires=REQUIRES,
+    extras_require={"icalendar": ["icalendar>=3.8.4"]},
     package_data={
         'etmTk': ['icons/*', 'etm.desktop', 'etm.appdata.xml', 'CHANGES', 'etm.1', 'etm.xpm'],
         'etmTk/help' : ['help/UserManual.html'],
