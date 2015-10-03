@@ -1456,7 +1456,7 @@ returns:
             if self.weekly:
                 self.updateDay()
                 self.showWeek()
-            elif self.weekly:
+            elif self.monthly:
                 self.updateDay()
                 self.showMonth()
             else:
