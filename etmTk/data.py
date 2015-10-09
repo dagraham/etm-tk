@@ -3024,7 +3024,7 @@ For editing one or more, but not all, instances of an item. Needed:
                 except:
                     msg.append("problem with @{0}: {1}".format(key, value))
             elif key == 'q':
-                # TODO: figure out what q is about
+                # Added this for abused women to record place in a queue - value should be the datetime the person entered the queue. Entering "now" would record the current datetime.
                 if type(value) is datetime:
                     sl.append("%s@%s %s" % (
                         prefix, key,
@@ -4431,7 +4431,7 @@ def str2hsh(s, uid=None, options=None):
         if alerts:
             hsh['_a'] = alerts
         if 'z' not in hsh:
-            if 's' in hsh or 'f' in hsh:
+            if 's' in hsh or 'f' in hsh or 'q' in hsh:
                 hsh['z'] = options['local_timezone']
         if 'z' in hsh:
             z = gettz(hsh['z'])
