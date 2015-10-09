@@ -1477,8 +1477,8 @@ returns:
         msg = _("""\
 ----------------------------------------------------
                 Repeat this alert?
-This is the last alert for this item. To repeat it,
-enter the number of minutes to wait after {0}.\
+This is the last alert scheduled for this item. To repeat it,
+enter the number of minutes after {0} for the repetition.\
 """.format(fmt_time(hsh['at'], options=self.options)))
         alert_msg = _("""\
 {0} ({1})

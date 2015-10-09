@@ -2187,7 +2187,7 @@ ical_freq_hsh = {
 
 amp_hsh = {
     'r': 'f',    # the starting value for an @r entry is frequency
-    'a': 't'     # the starting value for an @a enotry is *triggers*
+    'a': 't'     # the starting value for an @a entry is *triggers*
 }
 
 at_keys = [
@@ -3024,6 +3024,7 @@ For editing one or more, but not all, instances of an item. Needed:
                 except:
                     msg.append("problem with @{0}: {1}".format(key, value))
             elif key == 'q':
+                # TODO: figure out what q is about
                 if type(value) is datetime:
                     sl.append("%s@%s %s" % (
                         prefix, key,
