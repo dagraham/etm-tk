@@ -2249,7 +2249,7 @@ key2type = {
     u'o': job_types + any_types,
     u'n': [u'-', u'%'] + any_types,
     u'p': job_types + any_types,
-    u'q': job_types + any_types,
+    u'q': all_types,
     u'r': all_types,
     u's': all_types,
     u't': all_types,

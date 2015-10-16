@@ -210,7 +210,7 @@ or
 
 from this directory.
 
-### Install Git or Mercurial (optional)
+### Optionally Install Git (preferred) or Mercurial
 
 With either program installed, etm will automatically commit any change made to any data file. You can see the history of your changes either to a specific file or to any file from the GUI and, of course, you have the entire range of possibilities for showing changes, restoring previous versions and so forth from the command line.
 
