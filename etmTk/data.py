@@ -4373,9 +4373,13 @@ def str2hsh(s, uid=None, options=None):
                     if amp_key in ['q', 'i', 't']:
                         try:
                             part_hsh[amp_key] = int(amp_val)
-                        except:
-                            msg.append('Bad entry "{0}" given for "&{1}". An integer is required.'.format(amp_val, amp_key))
+                        except ValueError:
+                            msg.append('"&{0} {1}" is invalid - a positive integer is required.'.format(amp_key, amp_val))
                             logger.exception('Bad entry "{0}" given for "&{1}" in "{2}". An integer is required.'.format(amp_val, amp_key, hsh['entry']))
+                        else:
+                            if part_hsh[amp_key] < 1:
+                                msg.append('"&{0} {1}" is invalid - a positive integer is required.'.format(amp_key, amp_val))
+
                     elif amp_key == 'e':
                         p = parse_period(amp_val)
                         if type(p) is timedelta:
@@ -4467,8 +4471,12 @@ def str2hsh(s, uid=None, options=None):
                 hsh['b'] = int(hsh['b'])
             except:
                 msg.append(
-                    "the value of @b should be an integer: '@b {0}'".format(
-                        hsh['b']))
+                    '"@b {0}" is invalid - a positive integer is required'.format(hsh['b']))
+            else:
+                if hsh['b'] < 1:
+                    msg.append(
+                        '"@b {0}" is invalid - a positive integer is required'.format(hsh['b']))
+
         if 'f' in hsh:
             # this will be a list of done:due pairs
             # 20120201T1325;20120202T1400, ...
