@@ -4,10 +4,14 @@ from etmTk.v import version
 import glob
 
 import sys
-if sys.version_info >= (3, 2):
-    REQUIRES = ["python-dateutil>=1.5", "PyYaml>=3.10"]
-else:
-    REQUIRES = ["python>=2.7.6,<3.0", "python-dateutil>=1.5", "PyYaml>=3.10"]
+
+REQUIRES = ["python-dateutil>=1.5", "PyYaml>=3.10"]
+
+# I doubt the following is needed
+# if sys.version_info >= (3, 0):
+#     REQUIRES.append("python>=3.2.0")
+# else:
+#     REQUIRES.append("python>=2.7.6")
 
 APP = ['etm']
 
