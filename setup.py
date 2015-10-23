@@ -5,17 +5,11 @@ import glob
 
 import sys
 
-REQUIRES = ["python-dateutil>=1.5", "PyYaml>=3.10"]
-
-# I doubt the following is needed
-# if sys.version_info >= (3, 0):
-#     REQUIRES.append("python>=3.2.0")
-# else:
-#     REQUIRES.append("python>=2.7.6")
+INSTALL_REQUIRES = ["python-dateutil>=1.5", "PyYaml>=3.10"]
+EXTRAS_REQUIRE = {"icalendar": ["icalendar>=3.8.4", "pytz>=2015.1"]}
 
 APP = ['etm']
 
-EXTRAS = {"icalendar": ["icalendar>=3.8.4"], "pytz": ["pytz>=2015.1"]},
 
 OPTIONS = {'build': {'build_exe': 'releases/etmtk-{0}'.format(version)},
               'build_exe': {'icon': 'etmTk/etmlogo.gif', 'optimize': '2',
@@ -37,7 +31,6 @@ setup(
     license='License :: OSI Approved :: GNU General Public License (GPL)',
     author='Daniel A Graham',
     author_email='daniel.graham@duke.edu',
-    # options=OPTIONS,
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
@@ -62,8 +55,9 @@ setup(
         'Topic :: Office/Business :: Scheduling'],
     packages=['etmTk'],
     scripts=['etm'],
-    install_requires=REQUIRES,
-    extras_require={"icalendar": ["icalendar>=3.8.4"]},
+    install_requires=INSTALL_REQUIRES,
+    extras_require=EXTRAS_REQUIRE,
+    # extras_require={"icalendar": ["icalendar>=3.8.4"]},
     package_data={
         'etmTk': ['icons/*', 'etm.desktop', 'etm.appdata.xml', 'CHANGES', 'etm.1', 'etm.xpm'],
         'etmTk/help' : ['help/UserManual.html'],
