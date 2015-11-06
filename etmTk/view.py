@@ -1475,11 +1475,11 @@ returns:
         else:
             default_minutes = loop.options['snooze_minutes']
         msg = _("""\
-----------------------------------------------------
+-----------------------------------------------------------
                 Repeat this alert?
-This is the last alert scheduled for this item. To repeat it,
-enter the number of minutes after {0} for the repetition.\
-""".format(fmt_time(hsh['at'], options=self.options)))
+This is the last alert scheduled for this item. To repeat
+it, enter the number of minutes to wait for the repetition.\
+""")
         alert_msg = _("""\
 {0} ({1})
 {2}
@@ -1504,10 +1504,12 @@ enter the number of minutes after {0} for the repetition.\
                 del self.messageAlerts[alertId]
                 self.updateAlerts()
             return
-        # we're snoozing for "minutes" after the alert triggered
-        # make sure this is at least 40 seconds after hitting snooze
-        mins = max(minutes, ((datetime.now() - hsh['at']).seconds + 100) // 60)
-        hsh['at'] = hsh['at'] + mins * ONEMINUTE
+        # we're snoozing for "minutes" after hitting snooze
+        now = datetime.now()
+        if now.second > 30:
+            now = now + ONEMINUTE
+        now = now.replace(second=0, microsecond=0)
+        hsh['at'] = now + minutes * ONEMINUTE
         wait = (hsh['at'] - datetime.now()).seconds * 1000
         alert_id = self.after(wait, self.clearmessageAlert, alertId)
         self.messageAlerts[alertId] = [minutes, hsh, alert_id]
@@ -1765,7 +1767,7 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
                         hsh_rev['+'] = tmp_rev
                     else:
                         del hsh_rev['+']
-                    if tmp_copy:
+                    if tmp_cpy:
                         hsh_cpy['+'] = tmp_cpy
                     else:
                         del hsh_cpy['+']
