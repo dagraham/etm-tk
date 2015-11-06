@@ -1476,9 +1476,9 @@ returns:
             default_minutes = loop.options['snooze_minutes']
         msg = _("""\
 -----------------------------------------------------------
-                Repeat this alert?
-This is the last alert scheduled for this item. To repeat
-it, enter the number of minutes to wait for the repetition.\
+                    Repeat this alert?
+This is the last alert scheduled for this item. To repeat it,
+  enter the number of minutes from now for the repetition.\
 """)
         alert_msg = _("""\
 {0} ({1})
