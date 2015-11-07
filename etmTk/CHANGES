@@ -1,10 +1,19 @@
-# Recent changes as of Fri Nov  6 16:06:12 EST 2015:
-- 82 minutes ago (HEAD -> master, tag: 3.2.21) Dan Graham
-    4c3acfb 2015-11-06 14:44:23 -0500
+# Recent changes as of Sat Nov  7 10:55:52 EST 2015:
+- 60 minutes ago (HEAD -> master, tag: 3.2.22) Dan Graham
+    29c9630 2015-11-07 09:55:57 -0500
+    Added CHANGES and etm.1 to repository to satisfy setup.py. Tagged
+    version 3.2.22 [2015-11-07 09:55:57 -0500].
+
+- 20 hours ago Dan Graham
+    3412ab3 2015-11-06 14:44:23 -0500
     Snooze message modification. Tagged version 3.2.21 [2015-11-06
     14:44:23 -0500].
 
-- 5 hours ago Dan Graham
+- 20 hours ago Dan Graham
+    39ba0f5 2015-11-06 14:44:23 -0500
+    Snooze message modification.
+
+- 24 hours ago Dan Graham
     a6bfc81 2015-11-06 10:39:05 -0500
     Change snooze behavior to wait from the time the snooze button is
     pressed with seconds are rounded off to the nearest minute. Fixed
@@ -95,7 +104,7 @@
     'by', 'fn', 'ns', 'oc' to hide from the agenda day view. Tagged
     version 3.2.16 [2015-09-11 13:57:23 -0400].
 
-- 10 weeks ago (tag: 3.2.15) Dan Graham
+- 2 months ago (tag: 3.2.15) Dan Graham
     0fe0e4b 2015-08-29 07:57:43 -0400
     Use naive datetime in setting 'bef' in updateClock. Tagged version
     3.2.14p6 [2015-08-29 07:57:43 -0400]. Tagged version 3.2.15
@@ -117,13 +126,13 @@
     all uppercase to be consistent. Tagged version 3.2.13 [2015-08-26
     12:07:13 -0400].
 
-- 2 months ago (tag: 3.2.12) Dan Graham
+- 3 months ago (tag: 3.2.12) Dan Graham
     5a76ce8 2015-08-24 17:44:04 -0400
     Changed the options for when/if to close the alert message box to
     message_next and message_last. Tagged version 3.2.12 [2015-08-24
     17:44:04 -0400].
 
-- 2 months ago Dan Graham
+- 3 months ago Dan Graham
     0588774 2015-08-24 12:57:07 -0400
     Added 'next' and 'next_alert' to template expansions. Added auto
     close to message box dialogs using options 'message_alert_seconds'
@@ -467,33 +476,23 @@
     d1f251c 2015-07-26 09:58:31 -0400
     Updated documentation for HEADER links and README samples.
 
-- 3 months ago Dan Graham
+- 4 months ago Dan Graham
     5762d53 2015-07-25 17:47:20 -0400
     Color fixes for dialog.py.
 
-- 3 months ago (tag: 3.1.45) Dan Graham
+- 4 months ago (tag: 3.1.45) Dan Graham
     bee920f 2015-07-25 11:28:06 -0400
     tagged version 3.1.45
 
-- 3 months ago Dan Graham
+- 4 months ago Dan Graham
     caea58c 2015-07-25 11:26:52 -0400
     When an action timer is deleted, add it's time to idle time.
 
-- 3 months ago (tag: 3.1.44) Dan Graham
+- 4 months ago (tag: 3.1.44) Dan Graham
     9335900 2015-07-25 10:56:23 -0400
     tagged version 3.1.44
 
 - 4 months ago (tag: 3.1.43p2) Dan Graham
     54e9dd6 2015-07-24 17:48:00 -0400
     Dialog formatting and view typo fixes.
-
-- 4 months ago Dan Graham
-    1f7e4b9 2015-07-24 15:53:24 -0400
-    Added time and status icon to select timer display. Added
-    adjustIdle to subtract minutes from idle time and add them to the
-    current timer.
-
-- 4 months ago (tag: 3.1.43) Dan Graham
-    1a2dc59 2015-07-23 17:14:19 -0400
-    tagged version 3.1.43
 
