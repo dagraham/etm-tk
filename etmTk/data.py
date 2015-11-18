@@ -2058,11 +2058,11 @@ def fmt_date(dt, short=False):
         if type(dt) == datetime:
             dt = dt.date()
         if dt == tdy.date():
-            dt_fmt = "%s" % TODAY
+            dt_fmt = "{0} ({1})".format(dt.strftime(shortyearlessfmt), TODAY)
         elif dt == tdy.date() - ONEDAY:
-            dt_fmt = "%s" % YESTERDAY
+            dt_fmt = "{0} ({1})".format(dt.strftime(shortyearlessfmt), YESTERDAY)
         elif dt == tdy.date() + ONEDAY:
-            dt_fmt = "%s" % TOMORROW
+            dt_fmt = "{0} ({1})".format(dt.strftime(shortyearlessfmt), TOMORROW)
         elif dt.year == tdy.year:
             dt_fmt = dt.strftime(shortyearlessfmt)
         else:
@@ -2247,7 +2247,8 @@ key2type = {
     u'l': all_types,
     u'm': all_types,
     u'o': job_types + any_types,
-    u'n': [u'-', u'%'] + any_types,
+    u'n': [u'-', u'%', u'*'] + any_types,
+    # u'n': [u'-', u'%'] + any_types,
     u'p': job_types + any_types,
     u'q': all_types,
     u'r': all_types,
@@ -4144,9 +4145,9 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
                     # skip omitted items
                     continue
                 if item[0][1] == beg_fmt:
-                    item[1] = TODAY
+                    item[1] = "{0}".format(fmt_date(beg, short=True))
                 elif item[0][1] == tom_fmt:
-                    item[1] = TOMORROW
+                    item[1] = "{0}".format(fmt_date(tom, short=True))
                 day.append(item)
         elif item[0][0] == 'inbasket':
             item.insert(1, "{0}{1}{2}".format(bb, _("In Basket"), eb))
