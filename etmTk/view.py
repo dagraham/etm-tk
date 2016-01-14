@@ -2140,7 +2140,7 @@ use the current time. Relative dates and fuzzy parsing are supported.""")
         t = _('remaining alerts for today')
         header = "{0:^10}\t{1:^7}\t{2:^10}{3:<26}".format(
             _('alert'),
-            _('event'),
+            _('start'),
             _('type'),
             _('summary'))
         divider = '-' * 55
