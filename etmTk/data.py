@@ -3989,7 +3989,7 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
         Using filtered uuids, and dates: grpby, b and e, return a sorted
         list of tuples
             (sort1, sort2, ... typenum, dt or '', uid)
-        using dt takes care of time when need or date and time when
+        using dt takes care of time when needed or date and time when
         grpby has no date specification
     """
     if not options:
@@ -4025,16 +4025,18 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                         if date < dated['e']:
                             bisect.insort(dates, date)
                 elif 's' in hsh and hsh['s'] and 'f' not in hsh:
-                    if hsh['s'] < dated['e'] and hsh['s'] >= dated['b']:
+                    if dated['b'] <= hsh['s'] < dated['e']:
                         bisect.insort(dates, start)
                         # datesSL.insert(start)
                 if 'f' in hsh and hsh['f']:
                     dt = parse_str(
                         hsh['f'][-1][0], hsh['z']).astimezone(
                         tzlocal()).replace(tzinfo=None)
-                    if dt <= dated['e'] and dt >= dated['b']:
+                    if dated['b'] <= dt <= dated['e']:
                         bisect.insort(dates, dt)
                 for dt in dates:
+                    if not (dated['b'] <= dt <= dated['e']):
+                        continue
                     item = []
                     # ('dt', type(dt), dt)
                     for g in grpby['tuples']:
@@ -4096,17 +4098,21 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                         except:
                             pass
                 if type(dt) == datetime:
-                    dtstr = reportDT(dt, grpby['include'], options)
-                    dt = dt.strftime(etmdatefmt)
+                    if dated['b'] <= dt <= dated['e']:
+                        dtstr = reportDT(dt, grpby['include'], options)
+                        dt = dt.strftime(etmdatefmt)
+                    else:
+                        dt = None
                 else:
                     dtstr = dt
-                item.extend([
-                    tstr2SCI[tstr][0],
-                    tstr,
-                    dt,
-                    dtstr,
-                    uid])
-                bisect.insort(tups, tuple(item))
+                if dt is not None:
+                    item.extend([
+                        tstr2SCI[tstr][0],
+                        tstr,
+                        dt,
+                        dtstr,
+                        uid])
+                    bisect.insort(tups, tuple(item))
         except:
             logger.exception('Error processing: {0}, {1}'.format(hsh['_summary'], hsh['fileinfo']))
     return tups
