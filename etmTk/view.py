@@ -1224,7 +1224,7 @@ class App(Tk):
             cmd = 'open' + " {0}".format(path)
         else:
             cmd = 'xdg-open' + " {0}".format(path)
-        subprocess.call(cmd, shell=True)
+        self.check_output(cmd)
         return
 
     def printWithDefault(self, s, e=None):
@@ -1238,7 +1238,7 @@ class App(Tk):
         else:
             cmd = "lp -s -o media='letter' -o cpi=12 -o lpi=8 -o page-left=48 -o page-right=48 -o page-top=48 -o page-bottom=48 {0}\n".format(loop.tmpfile)
             # cmd = "lpr -l {0}".format(loop.tmpfile)
-            subprocess.call(cmd, shell=True)
+            self.check_output(cmd)
             return
 
     def showUserDetails(self, e=None):
@@ -1518,7 +1518,7 @@ This is the last alert scheduled for this item. To repeat it,
     def clearmessageAlert(self, alertId):
         if ('snooze_command' in self.options and self.options['snooze_command']):
             ccmd = self.options['snooze_command']
-            subprocess.call(ccmd, shell=True)
+            self.check_output(ccmd)
         else:
             Tk.bell(self)
         self.alertHsh = self.messageAlerts[alertId][1]
@@ -1562,7 +1562,7 @@ Enter an integer number of minutes for the timer below.""")
         self.setcountdownStatus()
         if ('countdown_command' in self.options and self.options['countdown_command']):
             ccmd = self.options['countdown_command']
-            subprocess.call(ccmd, shell=True)
+            self.check_output(ccmd)
         else:
             Tk.bell(self)
         self.setcountdownTimer()
@@ -3326,7 +3326,7 @@ Enter the shortest time period you want displayed in minutes.""")
             cmd = 'open' + " {0}".format(path)
         else:
             cmd = 'xdg-open' + " {0}".format(path)
-        subprocess.call(cmd, shell=True)
+        self.check_output(cmd)
         return True
 
     def about(self, event=None):
@@ -3658,8 +3658,7 @@ or 0 to display all changes.""").format(title)
                                 loop.options['action_timer']['running']):
                             tcmd = loop.options['action_timer']['running']
                             logger.debug('running: {0}'.format(tcmd))
-
-                            subprocess.call(tcmd, shell=True)
+                            self.check_output(tcmd)
 
                     elif self.actionTimer.currentStatus == 'paused':
                         if ('paused' in loop.options['action_timer'] and
@@ -3667,8 +3666,15 @@ or 0 to display all changes.""").format(title)
                             tcmd = loop.options['action_timer']['paused']
 
                             logger.debug('paused: {0}'.format(tcmd))
-                            subprocess.call(tcmd, shell=True)
+                            self.check_output(tcmd)
         tt.stop()
+
+    def check_output(self, cmd):
+        try:
+            output = subprocess.check_output(cmd, stderr=STDOUT, shell=True)
+        except subprocess.CalledProcessError as exc:
+            print(exc.output)
+            logger.error("check_output: {0}".format(exc.output))
 
     def updateAlerts(self):
         self.update_idletasks()
@@ -3691,7 +3697,7 @@ or 0 to display all changes.""").format(title)
                 if ('alert_wakecmd' in loop.options and
                         loop.options['alert_wakecmd']):
                     cmd = s2or3(loop.options['alert_wakecmd'])
-                    subprocess.call(cmd, shell=True)
+                    self.check_output(cmd)
                 while td < 1.0 and alerts:
                     hsh = alerts[0][2]
                     alerts.pop(0)
@@ -3701,7 +3707,7 @@ or 0 to display all changes.""").format(title)
                                 self.options['alert_soundcmd']):
                             scmd = s2or3(expand_template(
                                 self.options['alert_soundcmd'], hsh))
-                            subprocess.call(scmd, shell=True)
+                            self.check_output(scmd)
                         else:
                             self.textWindow(parent=self, title="etm", prompt=_("""\
 A sound alert failed. The setting for 'alert_soundcmd' is missing from  your etmtk.cfg."""), opts=self.options)
@@ -3710,7 +3716,7 @@ A sound alert failed. The setting for 'alert_soundcmd' is missing from  your etm
                                 self.options['alert_displaycmd']):
                             dcmd = s2or3(expand_template(
                                 self.options['alert_displaycmd'], hsh))
-                            subprocess.call(dcmd.encode(loop.options['encoding']['gui']), shell=True)
+                            self.check_output(dcmd.encode(loop.options['encoding']['gui']))
                         else:
                             self.textWindow(parent=self, title="etm", prompt=_("""\
 A display alert failed. The setting for 'alert_displaycmd' is missing \
@@ -3720,7 +3726,7 @@ from your etmtk.cfg."""), opts=self.options)
                                 self.options['alert_voicecmd']):
                             vcmd = s2or3(expand_template(
                                 self.options['alert_voicecmd'], hsh))
-                            subprocess.call(vcmd, shell=True)
+                            self.check_output(vcmd)
                         else:
                             self.textWindow(parent=self, title="etm", prompt=_("""\
 An email alert failed. The setting for 'alert_voicecmd' is missing from \
@@ -3791,7 +3797,7 @@ from your 'emt.cfg': %s.""" % ", ".join(["'%s'" % x for x in missing])), opts=se
                         arguments = hsh['_alert_argument']
                         proc = str(arguments[0][0]).strip()
                         cmd = s2or3(expand_template(proc, hsh))
-                        subprocess.call(cmd, shell=True)
+                        self.check_output(cmd)
                     if 'm' in actions:
                         # put this last since the internal message window is modal and thus blocking
                         id = hsh['I']
