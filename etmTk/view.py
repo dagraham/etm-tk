@@ -3671,7 +3671,7 @@ or 0 to display all changes.""").format(title)
 
     def check_output(self, cmd):
         try:
-            output = subprocess.check_output(cmd, stderr=STDOUT, shell=True)
+            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
         except subprocess.CalledProcessError as exc:
             print(exc.output)
             logger.error("check_output: {0}".format(exc.output))

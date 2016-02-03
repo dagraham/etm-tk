@@ -1,46 +1,52 @@
-# Recent changes as of Fri Jan 15 09:14:01 EST 2016:
-- 37 seconds ago (HEAD -> master, tag: 3.2.23) Dan Graham
+# Recent changes as of Wed Feb  3 11:00:34 EST 2016:
+- 25 seconds ago (HEAD -> master, tag: 3.2.23p1) Dan Graham
+    8fc070e 2016-02-03 11:00:15 -0500
+    Replaced subprocess.call with check_output which calls
+    subprocess.check_output and logs the error message if an exception
+    occurs. Tagged version 3.2.23p1 [2016-02-03 11:00:15 -0500].
+
+- 3 weeks ago (tag: 3.2.23, origin/master) Dan Graham
     caf8bb4 2016-01-15 09:13:35 -0500
     Apply 'b' and 'e' settings to all items in reports. Tagged version
     3.2.23 [2016-01-15 09:13:35 -0500].
 
-- 23 hours ago Dan Graham
+- 3 weeks ago Dan Graham
     38918e1 2016-01-14 10:17:50 -0500
     Changed 'event' to 'start' in show alerts dialog.
 
-- 8 weeks ago (tag: 3.2.22p1, origin/master) Dan Graham
+- 3 months ago (tag: 3.2.22p1) Dan Graham
     b937b61 2015-11-18 14:27:23 -0500
     Use, e.g., Wed 18 Dec (Today), in short date format. Allow @n
     entries in events (reminders). Tagged version 3.2.22p1 [2015-11-18
     14:27:23 -0500].
 
-- 10 weeks ago Dan Graham
+- 3 months ago Dan Graham
     2e862aa 2015-11-08 16:57:18 -0500
     Added __init__.py to satisfy setup.py.
 
-- 10 weeks ago Dan Graham
+- 3 months ago Dan Graham
     15ede9e 2015-11-07 10:58:35 -0500
     Tagged 3.2.22
 
-- 10 weeks ago Dan Graham
+- 3 months ago Dan Graham
     546559b 2015-11-07 09:55:57 -0500
     Added CHANGES and etm.1 to repository to satisfy setup.py. Tagged
     version 3.2.22 [2015-11-07 09:55:57 -0500].
 
-- 10 weeks ago Dan Graham
+- 3 months ago Dan Graham
     c6d88f7 2015-11-07 09:55:57 -0500
     Added CHANGES and etm.1 to repository to satisfy setup.py.
 
-- 2 months ago Dan Graham
+- 3 months ago Dan Graham
     3412ab3 2015-11-06 14:44:23 -0500
     Snooze message modification. Tagged version 3.2.21 [2015-11-06
     14:44:23 -0500].
 
-- 2 months ago Dan Graham
+- 3 months ago Dan Graham
     39ba0f5 2015-11-06 14:44:23 -0500
     Snooze message modification.
 
-- 2 months ago Dan Graham
+- 3 months ago Dan Graham
     a6bfc81 2015-11-06 10:39:05 -0500
     Change snooze behavior to wait from the time the snooze button is
     pressed with seconds are rounded off to the nearest minute. Fixed
@@ -62,38 +68,38 @@
     0afa353 2015-10-22 07:00:45 -0400
     Changed REQUIRES in setup.py to eliminate the python requirement.
 
-- 3 months ago (tag: 3.2.18) Dan Graham
+- 4 months ago (tag: 3.2.18) Dan Graham
     73d73ca 2015-10-18 16:39:53 -0400
     Merge branch 'master' of https://github.com/dagraham/etm-tk Tagged
     version 3.2.18 [2015-10-18 16:39:53 -0400].
 
-- 3 months ago dagraham
+- 4 months ago dagraham
     d890da8 2015-10-18 16:33:21 -0400
     Merge pull request #49 from jeanCarloMachado/master
 
     Added solarized dark colorscheme
-- 3 months ago Jean Carlo Machado
+- 4 months ago Jean Carlo Machado
     8768a13 2015-10-18 17:31:13 -0200
     added solarized dark colorscheme
 
-- 3 months ago Dan Graham
+- 4 months ago Dan Graham
     9e99caf 2015-10-18 10:37:03 -0400
     Changed error message for integer required.
 
-- 3 months ago Dan Graham
+- 4 months ago Dan Graham
     7e22189 2015-10-15 22:41:05 -0400
     Make @q an option for all item types.
 
-- 3 months ago Dan Graham
+- 4 months ago Dan Graham
     5c2035a 2015-10-09 11:06:15 -0400
     If 'q' but not  'z' is in hsh, then add hsh['z'] using
     local_timezone.
 
-- 3 months ago Dan Graham
+- 4 months ago Dan Graham
     278a723 2015-10-09 06:30:15 -0400
     Added Python 3.5 to the setup.py classifiers.
 
-- 3 months ago Dan Graham
+- 4 months ago Dan Graham
     11fd77f 2015-10-03 12:47:31 -0400
     Fixed bug when copying an item in monthly view. Tagged version 
     [2015-10-03 12:47:31 -0400]. Tagged version ..p1 [2015-10-03
@@ -101,7 +107,7 @@
     Tagged version ..p3 [2015-10-03 12:47:31 -0400]. Tagged version
     3.2.17p4 [2015-10-03 12:47:31 -0400].
 
-- 3 months ago Dan Graham
+- 4 months ago Dan Graham
     99477f9 2015-10-03 12:47:31 -0400
     Fixed bug when copying an item in monthly view.
 
@@ -116,16 +122,16 @@
     "starting time". Reduced min sizes in view. Tagged version 3.2.17
     [2015-10-01 07:44:08 -0400].
 
-- 4 months ago Dan Graham
+- 5 months ago Dan Graham
     3bf408a 2015-09-21 11:33:23 -0400
     Add today to datetimes if there is a begin by for today.
 
-- 4 months ago Dan Graham
+- 5 months ago Dan Graham
     f6253ff 2015-09-18 10:52:38 -0400
     Changed platform information from platform.system() to
     platform.platform(terse=1).
 
-- 4 months ago (tag: 3.2.16) Dan Graham
+- 5 months ago (tag: 3.2.16) Dan Graham
     d5eca4c 2015-09-11 13:57:23 -0400
     Added 'agenda_omit' to options. Accepts a list of types from 'ac',
     'by', 'fn', 'ns', 'oc' to hide from the agenda day view. Tagged
@@ -166,28 +172,28 @@
     for next message boxes and 'message_snooze_seconds' for last
     message boxes.
 
-- 5 months ago (tag: 3.2.11) Dan Graham
+- 6 months ago (tag: 3.2.11) Dan Graham
     4d01318 2015-08-21 17:01:13 -0400
     Cancel snooze if item is rescheduled, edited or deleted. Tagged
     version 3.2.11 [2015-08-21 17:01:13 -0400].
 
-- 5 months ago (tag: 3.2.10) Dan Graham
+- 6 months ago (tag: 3.2.10) Dan Graham
     83af7b5 2015-08-21 11:25:03 -0400
     Check that @n is only used with item types "-" and "%" and only
     contains values from "d", "k" and "t". Tagged version 3.2.10
     [2015-08-21 11:25:03 -0400].
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     1c681ff 2015-08-21 10:42:34 -0400
     Check that @n is only used with item types "-" and "%" and only
     contains values from "d", "k" and "t".
 
-- 5 months ago (tag: 3.2.9) Dan Graham
+- 6 months ago (tag: 3.2.9) Dan Graham
     e119efe 2015-08-20 13:04:31 -0400
     Changed sort order for @n. Tagged version 3.2.9 [2015-08-20
     13:04:31 -0400].
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     49b11c8 2015-08-20 12:58:52 -0400
     Added @n (no show) for itemtype "-" only. Takes a list of views
     from a)genda, d)ay (week and month), t)ag, k)eyword. E.g. with "@n
@@ -195,34 +201,34 @@
     month) views but would appear in tag and keyword views. Note that
     it is not possible to exclude the item from path view.
 
-- 5 months ago (tag: 3.2.8, hidden) Dan Graham
+- 6 months ago (tag: 3.2.8, hidden) Dan Graham
     afcf5ab 2015-08-19 18:11:40 -0400
     image updates Tagged version 3.2.8 [2015-08-19 18:11:40 -0400].
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     d8ba751 2015-08-19 17:58:28 -0400
     In onFinish, skip alertId for items without starting times.
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     fac82ae 2015-08-19 17:53:46 -0400
     Trap and report errors in parse_period.
 
-- 5 months ago (tag: 3.2.7) Dan Graham
+- 6 months ago (tag: 3.2.7) Dan Graham
     a546170 2015-08-19 12:39:48 -0400
     added alert_list image Tagged version 3.2.7 [2015-08-19 12:39:48
     -0400].
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     dc16e1e 2015-08-19 12:32:23 -0400
     Removed unused variables. Show alert trigger time in snooze
     dialog. Make snooze trigger at least 40 seconds after closing
     dialog. Use '~' as show alerts label when none remain.
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     1b7b32c 2015-08-19 09:37:51 -0400
     Final tweaks for the show alerts button label.
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     abb9bbe 2015-08-19 09:11:28 -0400
     Second pass at snoozing multiple items. Since uuid changes with
     file updates, e.g., finishing a task, use (summary, s) as alertId.
@@ -230,160 +236,160 @@
     current time. When finishing a task, use the (summary, s) id to
     find the correct alert_id to cancel the snooze.
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     cc3ba53 2015-08-18 14:45:37 -0400
     First pass at snoozing multiple items. Added option seconds
     (False) to fmt_time to show seconds when True. Added
     longreprtimefmt to reprtimefmt in options to show seconds.
 
-- 5 months ago (tag: 3.2.6) Dan Graham
+- 6 months ago (tag: 3.2.6) Dan Graham
     67607eb 2015-08-18 07:12:59 -0400
     When a task is finished that has a snooze alert running, cancel
     the alert. Tagged version 3.2.6 [2015-08-18 07:12:59 -0400].
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     59b90b6 2015-08-17 17:53:23 -0400
     Changed binding for onFinish in simpleEditor from Ctrl-w to Ctrl-s
     to avoid conflicts. Changed button label from Finish to Save and
     Close.
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     ca71856 2015-08-17 15:13:55 -0400
     More KP_Enter bindings. Changed logic for setting master in
     simpleEditor.
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     67fe85a 2015-08-17 12:54:41 -0400
     Only try export_ical if has_calendar is True. Add KP_Enter to
     Return bindings.
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     8f82a3c 2015-08-16 14:04:46 -0400
     updated alert images
 
-- 5 months ago (tag: 3.2.5) Dan Graham
+- 6 months ago (tag: 3.2.5) Dan Graham
     ce4fd88 2015-08-16 12:14:42 -0400
     Fixed bug is displaying next starting time. Tagged version 3.2.5
     [2015-08-16 12:14:42 -0400].
 
-- 5 months ago (tag: 3.2.4) Dan Graham
+- 6 months ago (tag: 3.2.4) Dan Graham
     a9286a5 2015-08-16 11:36:40 -0400
     When next is "none", show "at the starting time" instead of "none
     before starting time" in the message alert. Tagged version 3.2.4
     [2015-08-16 11:36:40 -0400].
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     3fcc6cd 2015-08-16 10:54:57 -0400
     updated readme screenshots
 
-- 5 months ago (tag: 3.2.3) Dan Graham
+- 6 months ago (tag: 3.2.3) Dan Graham
     9f2ec94 2015-08-16 10:42:42 -0400
     renamed alert images Tagged version 3.2.3 [2015-08-16 10:42:42
     -0400].
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     a0efc30 2015-08-16 10:42:15 -0400
     Added GetRepeat as subclass of GetInteger with Repeat and Close
     buttons instead of OK and Cancel.
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     bf192d6 2015-08-16 09:54:13 -0400
     Message tweaks.
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     5138126 2015-08-16 09:48:54 -0400
     Show next alert in non-snooze alert and current time in title.
 
-- 5 months ago (tag: 3.2.2) Dan Graham
+- 6 months ago (tag: 3.2.2) Dan Graham
     09ecb48 2015-08-15 18:27:55 -0400
     Added snooze, no-snooze images Tagged version 3.2.2 [2015-08-15
     18:27:55 -0400].
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     af056ec 2015-08-15 17:10:19 -0400
     Message tweaks for last alert.
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     4b9c07c 2015-08-15 16:21:39 -0400
     Add the timedelta for next scheduled alert or None if this is the
     last to the hash. Only show the snooze message alert if it is the
     last.
 
-- 5 months ago (tag: 3.2.1) Dan Graham
+- 6 months ago (tag: 3.2.1) Dan Graham
     2e1323b 2015-08-15 07:46:45 -0400
     Use the last snooze minutes as the default for the next. Changed
     the prompt for countdown to mirror the snooze question. Changed
     "Snooze/Countdown" to "Countdown". Tagged version 3.2.1
     [2015-08-15 07:46:45 -0400].
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     a2e0e13 2015-08-14 15:25:09 -0400
     Merge branch 'countdown'
 
-- 5 months ago (tag: 3.2.0) Dan Graham
+- 6 months ago (tag: 3.2.0) Dan Graham
     30774fd 2015-08-14 14:53:03 -0400
     Label and shortcut menu fixes. Tagged version 3.2.0 [2015-08-14
     14:53:03 -0400].
 
-- 5 months ago (tag: 3.1.61) Dan Graham
+- 6 months ago (tag: 3.1.61) Dan Graham
     44471c2 2015-08-14 14:44:27 -0400
     added snooze screen shot Tagged version 3.1.61 [2015-08-14
     14:44:27 -0400].
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     68ca92a 2015-08-14 13:06:06 -0400
     Removed smtp_to from options.
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     a891ff7 2015-08-14 07:02:43 -0400
     Added snooze to the internal message box alert. In expand
     template, replace multiple blank lines with a single blank line.
     Added snooze_command and snooze_minutes to options.
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     38891c4 2015-08-13 10:55:52 -0400
     Added snooze for message alerts. Display the time of the next
     countdown or snooze in the status bar.
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     6ab3eed 2015-08-12 15:13:39 -0400
     Trap and report errors parsing periods in str2hsh.
 
-- 5 months ago (tag: 3.1.60) Dan Graham
+- 6 months ago (tag: 3.1.60) Dan Graham
     892e228 2015-08-11 20:58:00 -0400
     Changed label for countdown timer to snooze/countdown. Bound to
     shortcut key "z". Tagged version 3.1.60 [2015-08-11 20:58:00
     -0400].
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     89f381c 2015-08-11 19:27:57 -0400
     Added countdown screenshots
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     e3c74c7 2015-08-11 19:27:15 -0400
     Added a countdown timer. Fixed colors in MessageWindow.
 
-- 5 months ago (tag: 3.1.59) Dan Graham
+- 6 months ago (tag: 3.1.59) Dan Graham
     ae31902 2015-08-08 15:43:36 -0400
     Add 'invitees' from @i entries to the list of recipients for email
     alerts. Tagged version 3.1.59 [2015-08-08 15:43:36 -0400].
 
-- 5 months ago Dan Graham
+- 6 months ago Dan Graham
     06bed7d 2015-08-08 14:27:46 -0400
     Fixed email import. Fixed font color for report combobox.
 
-- 5 months ago (tag: 3.1.58) Dan Graham
+- 6 months ago (tag: 3.1.58) Dan Graham
     2c8e83e 2015-08-05 16:40:25 -0400
     Allow the CLI report option -w to be zero and, if it is, do not
     truncate report lines. Fixed bug in setting width1. Tagged version
     3.1.58 [2015-08-05 16:40:25 -0400].
 
-- 5 months ago (tag: 3.1.57) Dan Graham
+- 6 months ago (tag: 3.1.57) Dan Graham
     6efad9e 2015-08-04 10:02:37 -0400
     Found and replaced parse_datetime commands. tagged version 3.1.57
     [2015-08-04 10:02:37 -0400]
 
-- 5 months ago (tag: 3.1.56) Dan Graham
+- 6 months ago (tag: 3.1.56) Dan Graham
     8e87bb6 2015-08-04 06:49:44 -0400
     tagged version 3.1.56 [2015-08-04 06:49:44 -0400]
 
@@ -494,8 +500,4 @@
     Added this.
 
     And this.
-
-- 6 months ago (tag: 3.1.46, tag: 3.1.45p3) Dan Graham
-    676ecb8 2015-07-26 11:39:09 -0400
-    Removed global color declarations in Dialog.
 
