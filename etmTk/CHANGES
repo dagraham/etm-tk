@@ -1,11 +1,21 @@
-# Recent changes as of Wed Feb  3 11:00:34 EST 2016:
-- 25 seconds ago (HEAD -> master, tag: 3.2.23p1) Dan Graham
+# Recent changes as of Thu Feb  4 09:29:40 EST 2016:
+- 27 seconds ago (HEAD -> master, tag: 3.2.23p3) Dan Graham
+    a3541eb 2016-02-04 09:29:19 -0500
+    Include both the passed command and the error output in
+    check_output. Tagged version 3.2.23p3 [2016-02-04 09:29:19 -0500].
+
+- 17 hours ago (tag: 3.2.23p2, origin/master) Dan Graham
+    fdd1cb1 2016-02-03 16:02:09 -0500
+    In check_output, replaced STDOUT with subprocess.STDOUT. Tagged
+    version 3.2.23p2 [2016-02-03 16:02:09 -0500].
+
+- 23 hours ago (tag: 3.2.23p1) Dan Graham
     8fc070e 2016-02-03 11:00:15 -0500
     Replaced subprocess.call with check_output which calls
     subprocess.check_output and logs the error message if an exception
     occurs. Tagged version 3.2.23p1 [2016-02-03 11:00:15 -0500].
 
-- 3 weeks ago (tag: 3.2.23, origin/master) Dan Graham
+- 3 weeks ago (tag: 3.2.23) Dan Graham
     caf8bb4 2016-01-15 09:13:35 -0500
     Apply 'b' and 'e' settings to all items in reports. Tagged version
     3.2.23 [2016-01-15 09:13:35 -0500].
@@ -64,7 +74,7 @@
     3.2.19p5 [2015-10-23 11:39:44 -0400]. Tagged version 3.2.20
     [2015-10-23 11:39:44 -0400].
 
-- 3 months ago Dan Graham
+- 4 months ago Dan Graham
     0afa353 2015-10-22 07:00:45 -0400
     Changed REQUIRES in setup.py to eliminate the python requirement.
 
@@ -486,18 +496,4 @@
     but do not raise error when rrule generates no repetitions. Fixed
     binding for setFilter.  Keep filter active after edit, delete and
     finish.
-
-- 6 months ago Dan Graham
-    52b686c 2015-07-29 17:02:42 -0400
-    Change the sort datetime to 23:59 but leave dtl 00:00 unchanged in
-    midnight tasks. When @- is empty as a result of deletions, then
-    remove @- itself.
-
-- 6 months ago Dan Graham
-    996e767 2015-07-26 13:41:36 -0400
-    Updated version info.
-
-    Added this.
-
-    And this.
 

@@ -3673,8 +3673,7 @@ or 0 to display all changes.""").format(title)
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
         except subprocess.CalledProcessError as exc:
-            print(exc.output)
-            logger.error("check_output: {0}".format(exc.output))
+            logger.error("command: {0}\n    output: {1}".format(cmd, exc.output))
 
     def updateAlerts(self):
         self.update_idletasks()
