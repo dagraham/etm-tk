@@ -1,15 +1,16 @@
-# Recent changes as of Thu Feb  4 09:29:40 EST 2016:
-- 27 seconds ago (HEAD -> master, tag: 3.2.23p3) Dan Graham
-    a3541eb 2016-02-04 09:29:19 -0500
+# Recent changes as of Thu Feb  4 15:52:06 EST 2016:
+- 6 hours ago (HEAD -> master, tag: 3.2.24) Dan Graham
+    151995a 2016-02-04 09:29:19 -0500
     Include both the passed command and the error output in
     check_output. Tagged version 3.2.23p3 [2016-02-04 09:29:19 -0500].
+    Tagged version 3.2.24 [2016-02-04 09:29:19 -0500].
 
-- 17 hours ago (tag: 3.2.23p2, origin/master) Dan Graham
+- 24 hours ago (tag: 3.2.23p2) Dan Graham
     fdd1cb1 2016-02-03 16:02:09 -0500
     In check_output, replaced STDOUT with subprocess.STDOUT. Tagged
     version 3.2.23p2 [2016-02-03 16:02:09 -0500].
 
-- 23 hours ago (tag: 3.2.23p1) Dan Graham
+- 29 hours ago (tag: 3.2.23p1) Dan Graham
     8fc070e 2016-02-03 11:00:15 -0500
     Replaced subprocess.call with check_output which calls
     subprocess.check_output and logs the error message if an exception
