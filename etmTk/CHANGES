@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Recent changes as of Thu Feb  4 15:52:06 EST 2016:
 - 6 hours ago (HEAD -> master, tag: 3.2.24) Dan Graham
     151995a 2016-02-04 09:29:19 -0500
@@ -6,11 +7,19 @@
     Tagged version 3.2.24 [2016-02-04 09:29:19 -0500].
 
 - 24 hours ago (tag: 3.2.23p2) Dan Graham
+=======
+# Recent changes as of Wed Feb  3 16:03:11 EST 2016:
+- 66 seconds ago (HEAD -> master, tag: 3.2.23p2) Dan Graham
+>>>>>>> origin/master
     fdd1cb1 2016-02-03 16:02:09 -0500
     In check_output, replaced STDOUT with subprocess.STDOUT. Tagged
     version 3.2.23p2 [2016-02-03 16:02:09 -0500].
 
+<<<<<<< HEAD
 - 29 hours ago (tag: 3.2.23p1) Dan Graham
+=======
+- 5 hours ago (tag: 3.2.23p1, origin/master) Dan Graham
+>>>>>>> origin/master
     8fc070e 2016-02-03 11:00:15 -0500
     Replaced subprocess.call with check_output which calls
     subprocess.check_output and logs the error message if an exception
@@ -498,3 +507,12 @@
     binding for setFilter.  Keep filter active after edit, delete and
     finish.
 
+<<<<<<< HEAD
+=======
+- 6 months ago Dan Graham
+    52b686c 2015-07-29 17:02:42 -0400
+    Change the sort datetime to 23:59 but leave dtl 00:00 unchanged in
+    midnight tasks. When @- is empty as a result of deletions, then
+    remove @- itself.
+
+>>>>>>> origin/master
