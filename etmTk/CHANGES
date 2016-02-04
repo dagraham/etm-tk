@@ -1,11 +1,16 @@
-# Recent changes as of Wed Feb  3 11:00:34 EST 2016:
-- 25 seconds ago (HEAD -> master, tag: 3.2.23p1) Dan Graham
+# Recent changes as of Wed Feb  3 16:03:11 EST 2016:
+- 66 seconds ago (HEAD -> master, tag: 3.2.23p2) Dan Graham
+    fdd1cb1 2016-02-03 16:02:09 -0500
+    In check_output, replaced STDOUT with subprocess.STDOUT. Tagged
+    version 3.2.23p2 [2016-02-03 16:02:09 -0500].
+
+- 5 hours ago (tag: 3.2.23p1, origin/master) Dan Graham
     8fc070e 2016-02-03 11:00:15 -0500
     Replaced subprocess.call with check_output which calls
     subprocess.check_output and logs the error message if an exception
     occurs. Tagged version 3.2.23p1 [2016-02-03 11:00:15 -0500].
 
-- 3 weeks ago (tag: 3.2.23, origin/master) Dan Graham
+- 3 weeks ago (tag: 3.2.23) Dan Graham
     caf8bb4 2016-01-15 09:13:35 -0500
     Apply 'b' and 'e' settings to all items in reports. Tagged version
     3.2.23 [2016-01-15 09:13:35 -0500].
@@ -492,12 +497,4 @@
     Change the sort datetime to 23:59 but leave dtl 00:00 unchanged in
     midnight tasks. When @- is empty as a result of deletions, then
     remove @- itself.
-
-- 6 months ago Dan Graham
-    996e767 2015-07-26 13:41:36 -0400
-    Updated version info.
-
-    Added this.
-
-    And this.
 
