@@ -1495,9 +1495,9 @@ This is the last alert scheduled for this item. To repeat it,
             parent=self,
             title=_("alert - {0}".format(fmt_time(self.now, options=loop.options))),
             prompt=alert_msg,
-            opts=[1,],
+            opts=[1, ],
             default=default_minutes,
-            close=self.options['message_last']*1000
+            close=self.options['message_last'] * 1000
         ).value
         if not minutes:
             if alertId in self.messageAlerts:
@@ -3550,7 +3550,8 @@ or 0 to display all changes.""").format(title)
         if instance is not None:
             uuid, dt = self.count2id[item].split("::")
             hsh = loop.uuid2hash[uuid]
-            dt = parse(dt)
+            if dt:
+                dt = parse(dt)
             logger.debug('returning uuid: {0}, dt: {1}'.format(uuid, dt))
             return uuid, dt, hsh
         else:
