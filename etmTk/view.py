@@ -1709,12 +1709,18 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
 
             if choice == 1:
                 # this instance
-                if 'f' in hsh_rev:
+                tmp_cpy = []
+                if 'f' in hsh_rev and hsh_rev['f']:
                     for i in range(len(hsh_rev['f'])):
                         d = hsh_rev['f'][i][0]
                         if d == dtn:
-                            hsh_cpy['f'] = hsh_rev['f'].pop(i)
-                            break
+                            tmp_cpy.append(hsh_rev['f'][i])
+                    if tmp_cpy:
+                        hsh_cpy['f'] = tmp_cpy
+                        # dtn will be the done date, we need the due date for the copy
+                        dtn = hsh_cpy['f'][0][1]
+                    else:
+                        del hsh_cpy['f']
 
                 if '+' in hsh_rev and dtn in hsh_rev['+']:
                     hsh_rev['+'].remove(dtn)
@@ -1731,17 +1737,15 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
             elif choice == 2:
                 # this and all subsequent instances
                 tmp_cpy = []
-                if 'f' in hsh_rev:
+                if 'f' in hsh_rev and hsh_rev['f']:
                     for i in range(len(hsh_rev['f'])):
                         d = hsh_rev['f'][i][0]
                         if d >= dtn:
-                            tmp_cpy.append(hsh_rev['f'].pop(i))
+                            tmp_cpy.append(hsh_rev['f'][i])
                     if tmp_cpy:
                         hsh_cpy['f'] = tmp_cpy
                         # dtn will be the done date, we need the due date for the copy
                         dtn = hsh_cpy['f'][0][1]
-
-                        print('got dtn', dtn)
                     else:
                         del hsh_cpy['f']
 
