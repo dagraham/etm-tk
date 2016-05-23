@@ -4020,8 +4020,9 @@ def makeReportTuples(uuids, uuid2hash, grpby, dated, options=None):
                 if 'rrule' in hsh:
                     if dated['b'] > start:
                         start = dated['b']
-                    for date in hsh['rrule'].between(start, dated['e'], inc=True):
-                        # on or after start but before 'e'
+                    for date in hsh['rrule'].between(dated['b'], dated['e'], inc=True):
+                        # to local time
+                        date = date.replace(tzinfo=gettz(hsh['z'])).astimezone(tzlocal()).replace(tzinfo=None)
                         if date < dated['e']:
                             bisect.insort(dates, date)
                 elif 's' in hsh and hsh['s'] and 'f' not in hsh:
