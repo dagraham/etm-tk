@@ -127,6 +127,7 @@ EDITEXISTING = _("editing an existing item")
 
 type2Text = {
     '$': _("In Basket"),
+    '=': _("Default"),
     '^': _("Occasion"),
     '*': _("Event"),
     '~': _("Action"),
@@ -566,6 +567,7 @@ class SimpleEditor(Toplevel):
         else:
             uid = None
         hsh, msg = str2hsh(text, options=self.options, uid=uid)
+        logger.debug('itemtype: "{0}"'.format(hsh.get('itemtype', 'none')))
 
         if not msg:
             # we have a good hsh
