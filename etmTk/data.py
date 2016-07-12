@@ -8,6 +8,7 @@ import os.path
 from copy import deepcopy
 from textwrap import wrap
 import platform
+import json
 
 import logging
 import logging.config
@@ -6144,6 +6145,181 @@ def export_ical_active(file2uuids, uuid2hash, vcal_file, calendars=None):
         return False
     finally:
         fo.close()
+    return True
+
+
+def export_json(file2uuids, uuid2hash, json_folder, calendars=None):
+    """
+    Export items from each calendar to a json file with @k entries corresponding to the calendar name.
+    """
+    logger.debug("json_folder: {0}; calendars: {1}".format(json_folder, calendars))
+
+    cal_tuples = []
+    calfiles = []
+    if calendars:
+        for cal in calendars:
+            logger.debug('processing cal: {0}'.format(cal))
+            name = cal[0]
+            regex = re.compile(r'^{0}'.format(cal[2]))
+            cal_tuples.append((name, regex))
+    else:
+        logger.debug('processing cal: all')
+        regex = re.compile(r'^.*')
+        cal_tuples.append(('all', regex))
+
+    if not cal_tuples:
+        return
+
+    hsh  = {}
+    logger.debug('using cal_tuples: {0}'.format(cal_tuples))
+    json_file = os.path.join(json_folder, "etm-db.json")
+
+    # [
+    #     [
+    #         [datetime.timedelta(0, 3600), datetime.timedelta(0, 2400)],
+    #         ['m'],
+    #         []
+    #     ],
+    #     [
+    #         [datetime.timedelta(2)],
+    #         ['e'],
+    #         [
+    #             ['who@where.com', ' what@when.org'],
+    #             ['file1, file2']
+    #         ]
+    #     ]
+    # ]
+
+
+    for rp in file2uuids:
+        this_calendar = None
+        this_lst = []  # for error logging
+        for name, regex in cal_tuples:
+            if regex.match(rp):
+                this_calendar = name
+                for uid in file2uuids[rp]:
+                    old_hsh = uuid2hash[uid]
+                    # print("\nold", old_hsh)
+                    new_hsh = deepcopy(old_hsh)
+                    itemtype = old_hsh['itemtype']
+                    for key in new_hsh:
+                        if type(new_hsh[key]) is datetime:
+                            new_hsh[key] = new_hsh[key].strftime("%Y%m%dT%H%M")
+                        elif type(new_hsh[key]) is timedelta:
+                            new_hsh[key] = fmt_period(new_hsh[key])
+
+                    if 'rrule' in new_hsh:
+                        del new_hsh['rrule']
+                    if 'r' in new_hsh:
+                        new_hsh['rrulestr'] = new_hsh['r'][22:]
+                        del new_hsh['r']
+                    elif 's' in new_hsh:
+                        new_hsh['rrulestr'] = "RDATE:{}".format(new_hsh['s'])
+                    for key in  ['I', 'fileinfo']:
+                        if key in new_hsh:
+                            del new_hsh[key]
+                    if '_a' in new_hsh:
+                        alerts = []
+                        for alert in new_hsh['_a']:
+                            args = []
+                            if len(alert) >= 3:
+                                for r in alert[2]:
+                                    args.extend(r)
+                            args = [x.strip() for x in args]
+                            for td in alert[0]:
+                                td = fmt_period(td)
+                                for cmd in alert[1]:
+                                    alerts.append([td, cmd] + args)
+                        new_hsh['a'] = alerts
+                        del new_hsh['_a']
+                    if 'f' in new_hsh:
+                        new_hsh['f'] = new_hsh['f'][0][0].strftime("%Y%m%dT%H%M")
+                    if 'h' in new_hsh:
+                        tmp = []
+                        for pair in new_hsh['h']:
+                            tmp.append(pair[0].strftime("%Y%m%dT%H%M"))
+                        new_hsh['h'] = tmp
+                    if '_j' in new_hsh:
+                        count = 0
+                        jobs = {}
+                        # make sure jobs are in q order
+                        for job in new_hsh['_j']:
+                            q = job['q']
+                            del job['q']
+                            jobs.setdefault(q, []).append(job)
+                        q_keys = [x for x in jobs]
+                        q_keys.sort()
+                        q_count = 0
+                        prereqs = []
+                        for q_key in q_keys:
+                            tmp = []
+                            for job in jobs[q_key]:
+                                count += 1
+                                job['i'] = str(count)
+                                job['p'] = prereqs
+                                tmp.append(job['i'])
+                            prereqs = tmp
+                            if 'h' in job:
+                                tmp = []
+                                for pair in job['h']:
+                                    tmp.append(pair[0].strftime("%Y%m%dT%H%M"))
+                                job['h'] = tmp
+                        new_hsh['j'] = []
+                        for q in q_keys:
+                            new_hsh['j'].extend(jobs[q])
+                        del new_hsh['_j']
+                    for key in ['+', '-']:
+                        if key in new_hsh:
+                            tmp = []
+                            for dt in new_hsh[key]:
+                                tmp.append(dt.strftime("%Y%m%dT%H%M"))
+                            new_hsh[key] = tmp
+
+                    if '_p' in new_hsh:
+                        if 0 < new_hsh['_p'] < 10:
+                            new_hsh['p'] = new_hsh['_p']
+                        del new_hsh['_p']
+
+
+
+                    for key in ['_entry', '_id', '_rrulestr', '_summary', '_r']:
+                        if key in new_hsh:
+                            del new_hsh[key]
+                            nkey = key[1:]
+                            new_hsh[nkey] = old_hsh[key]
+                    new_hsh['k'] = this_calendar
+                    k = old_hsh.get('k', 'none')
+                    if k != 'none':
+                        new_hsh['n'] = k
+                    if itemtype in ['+', '-', '%']:
+                        s = old_hsh.get('s', None)
+                        if s is None:
+                            # undated
+                            itemtype = '%'
+                        elif s.hour == s.minute == 0:
+                            # date-only
+                            itemtype = '+'
+                        else:
+                            # date-time
+                            itemtype = '-'
+                    new_hsh['itemtype'] = itemtype
+                    # for key in new_hsh:
+                    #     if type(new_hsh[key]) is datetime:
+                    #         new_hsh[key] = new_hsh[key].strftime("%Y%m%dT%H%M")
+                    #     elif type(new_hsh[key]) is timedelta:
+                    #         new_hsh[key] = fmt_period(new_hsh[key])
+
+                    # print("\nnew", new_hsh)
+                    id = int(datetime.now().strftime("%Y%m%d%H%M%S%f"))
+                    hsh[id] = new_hsh
+
+        if not this_calendar:
+            logger.debug('skipping {0} - no match in calendars'.format(rp))
+            print('skipping {0} - no match in calendars'.format(rp))
+
+    with open(json_file, 'w') as jo:
+        json.dump(hsh, jo, indent=1, sort_keys=True)
+
     return True
 
 
