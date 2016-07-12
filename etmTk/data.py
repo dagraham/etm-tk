@@ -6174,23 +6174,6 @@ def export_json(file2uuids, uuid2hash, json_folder, calendars=None):
     logger.debug('using cal_tuples: {0}'.format(cal_tuples))
     json_file = os.path.join(json_folder, "etm-db.json")
 
-    # [
-    #     [
-    #         [datetime.timedelta(0, 3600), datetime.timedelta(0, 2400)],
-    #         ['m'],
-    #         []
-    #     ],
-    #     [
-    #         [datetime.timedelta(2)],
-    #         ['e'],
-    #         [
-    #             ['who@where.com', ' what@when.org'],
-    #             ['file1, file2']
-    #         ]
-    #     ]
-    # ]
-
-
     for rp in file2uuids:
         this_calendar = None
         this_lst = []  # for error logging
