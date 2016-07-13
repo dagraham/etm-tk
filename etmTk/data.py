@@ -119,7 +119,7 @@ def s2or3(s):
     else:
         return s
 
-from random import random
+from random import random, uniform
 from math import log
 
 
@@ -6148,10 +6148,12 @@ def export_ical_active(file2uuids, uuid2hash, vcal_file, calendars=None):
     return True
 
 
-def export_json(file2uuids, uuid2hash, json_folder, calendars=None):
+def export_json(file2uuids, uuid2hash, options={}):
     """
     Export items from each calendar to a json file with @k entries corresponding to the calendar name.
     """
+    json_folder = options.get('datadir', None)
+    calendars = options.get('calendars', None)
     logger.debug("json_folder: {0}; calendars: {1}".format(json_folder, calendars))
 
     cal_tuples = []
@@ -6174,15 +6176,27 @@ def export_json(file2uuids, uuid2hash, json_folder, calendars=None):
     logger.debug('using cal_tuples: {0}'.format(cal_tuples))
     json_file = os.path.join(json_folder, "etm-db.json")
 
+    prefix, filelist = getFiles(options['datadir'])
+    filetimes = {}
+    for fp, rp in filelist:
+        atime = os.path.getatime(fp)
+        mtime = os.path.getmtime(fp)
+        filetimes[rp] = (mtime, max(atime - mtime, 86400))
+
     for rp in file2uuids:
         this_calendar = None
         this_lst = []  # for error logging
         for name, regex in cal_tuples:
             if regex.match(rp):
                 this_calendar = name
+                intervals = len(file2uuids[rp])
+                stime, diff = filetimes[rp]
+                delta = diff / intervals
                 for uid in file2uuids[rp]:
+                    secs = int(uniform(stime, stime + delta))
+                    id = int(datetime.fromtimestamp(secs).strftime("%Y%m%d%H%M%S%f"))
+                    stime += delta
                     old_hsh = uuid2hash[uid]
-                    # print("\nold", old_hsh)
                     new_hsh = deepcopy(old_hsh)
                     itemtype = old_hsh['itemtype']
                     for key in new_hsh:
@@ -6231,6 +6245,13 @@ def export_json(file2uuids, uuid2hash, json_folder, calendars=None):
                             q = job['q']
                             del job['q']
                             jobs.setdefault(q, []).append(job)
+
+                            if 'h' in job:
+                                tmp = []
+                                for pair in job['h']:
+                                    tmp.append(pair[0].strftime("%Y%m%dT%H%M"))
+                                job['h'] = tmp
+
                         q_keys = [x for x in jobs]
                         q_keys.sort()
                         q_count = 0
@@ -6243,11 +6264,6 @@ def export_json(file2uuids, uuid2hash, json_folder, calendars=None):
                                 job['p'] = prereqs
                                 tmp.append(job['i'])
                             prereqs = tmp
-                            if 'h' in job:
-                                tmp = []
-                                for pair in job['h']:
-                                    tmp.append(pair[0].strftime("%Y%m%dT%H%M"))
-                                job['h'] = tmp
                         new_hsh['j'] = []
                         for q in q_keys:
                             new_hsh['j'].extend(jobs[q])
@@ -6289,7 +6305,6 @@ def export_json(file2uuids, uuid2hash, json_folder, calendars=None):
                         del new_hsh['_group_summary']
 
                     new_hsh['itemtype'] = itemtype
-                    id = int(datetime.now().strftime("%Y%m%d%H%M%S%f"))
                     new_hsh['entry'] = hsh2entry(new_hsh)
                     hsh[id] = new_hsh
 
@@ -6345,7 +6360,10 @@ def hsh2entry(h):
                 for amp_key in rrule_keys:
                     if amp_key not in r:
                         continue
-                    tmp.append("&{} {}".format(amp_key, r[amp_key]))
+                    v = r[amp_key]
+                    if type(v) is list:
+                        v = ", ".join([str(x) for x in v])
+                    tmp.append("&{} {}".format(amp_key, v))
                 res.append("@r {} {}".format(frq, " ".join(tmp)))
         elif k == 'j':
             for j in v:
@@ -6366,7 +6384,10 @@ def hsh2entry(h):
                     # elif amp_key == 'f':
                     #     tmp.append("&f {}".format("; ".join(j['f'])))
                     else:
-                        tmp.append("&{} {}".format(amp_key, j[amp_key]))
+                        v = j[amp_key]
+                        if type(v) is list:
+                            v = ", ".join([str(x) for x in v])
+                        tmp.append("&{} {}".format(amp_key, v))
                 res.append("@j {} {}".format(jnm, " ".join(tmp)))
         elif k == 'a':
             for a in v:

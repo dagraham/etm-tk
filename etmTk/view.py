@@ -1300,7 +1300,7 @@ returns:
             self._exportActiveToIcal()
 
     def exportToJson(self, e=None):
-        res = export_json(loop.file2uuids, loop.uuid2hash, loop.options['datadir'], loop.calendars)
+        res = export_json(loop.file2uuids, loop.uuid2hash, loop.options)
         if res:
             prompt = _("Items successfully exported to etm-db.json")
         else:
