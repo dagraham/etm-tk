@@ -6222,6 +6222,7 @@ def export_json(file2uuids, uuid2hash, json_folder, calendars=None):
                         for pair in new_hsh['h']:
                             tmp.append(pair[0].strftime("%Y%m%dT%H%M"))
                         new_hsh['h'] = tmp
+
                     if '_j' in new_hsh:
                         count = 0
                         jobs = {}
@@ -6263,8 +6264,6 @@ def export_json(file2uuids, uuid2hash, json_folder, calendars=None):
                             new_hsh['p'] = new_hsh['_p']
                         del new_hsh['_p']
 
-
-
                     for key in ['_entry', '_id', '_rrulestr', '_summary', '_r']:
                         if key in new_hsh:
                             del new_hsh[key]
@@ -6285,15 +6284,13 @@ def export_json(file2uuids, uuid2hash, json_folder, calendars=None):
                         else:
                             # date-time
                             itemtype = '-'
-                    new_hsh['itemtype'] = itemtype
-                    # for key in new_hsh:
-                    #     if type(new_hsh[key]) is datetime:
-                    #         new_hsh[key] = new_hsh[key].strftime("%Y%m%dT%H%M")
-                    #     elif type(new_hsh[key]) is timedelta:
-                    #         new_hsh[key] = fmt_period(new_hsh[key])
+                    if '_group_summary' in new_hsh:
+                        new_hsh['summary'] = new_hsh['_group_summary']
+                        del new_hsh['_group_summary']
 
-                    # print("\nnew", new_hsh)
+                    new_hsh['itemtype'] = itemtype
                     id = int(datetime.now().strftime("%Y%m%d%H%M%S%f"))
+                    new_hsh['entry'] = hsh2entry(new_hsh)
                     hsh[id] = new_hsh
 
         if not this_calendar:
@@ -6304,6 +6301,82 @@ def export_json(file2uuids, uuid2hash, json_folder, calendars=None):
         json.dump(hsh, jo, indent=1, sort_keys=True)
 
     return True
+
+def etm2dsp(s):
+    """
+    >>> etm2dsp("20160710T1730")
+    (True, '2016-07-10 17:30')
+    >>> etm2dsp("2016710T1730")
+    (False, 'Invalid datetime: 2016710T1730')
+    """
+    dt_regex = re.compile(r'\d{8}T\d{4}')
+    d_regex = re.compile(r'\d{8}')
+    if dt_regex.match(s):
+        return True, "{}-{}-{} {}:{}".format(s[:4], s[4:6], s[6:8], s[9:11], s[11:])
+    elif d_regex.match(s):
+        return True, "{}-{}-{}".format(s[:4], s[4:6], s[6:8])
+    else:
+        return False, "Invalid datetime: {}".format(s)
+
+def hsh2entry(h):
+    """
+    """
+    all_keys = [x for x in "seabr+-cdfghijklmnopqtuvz"]
+    rrule_keys = [x for x in "iMmWwhmEtus"]
+    job_keys = [x for x in "jsabcdefhlnipq"]
+
+    res = []
+    hsh = deepcopy(h)
+    res.append("{} {}".format(hsh['itemtype'], hsh['summary']))
+    for k in all_keys:
+        if k not in hsh:
+            continue
+        v = hsh[k]
+        if k == 's':
+            res.append("@s {}".format(etm2dsp(v)[1]))
+        elif k in ['+', '-', 'h']:
+            # res.append("@{} {}".format(k, ", ".join([etm2dsp(x)[1] for x in v])))
+            res.append("@{} {}".format(k, ", ".join(v)))
+        elif k == 'r':
+            for r in v:
+                frq = r['f']
+                del r['f']
+                tmp = []
+                for amp_key in rrule_keys:
+                    if amp_key not in r:
+                        continue
+                    tmp.append("&{} {}".format(amp_key, r[amp_key]))
+                res.append("@r {} {}".format(frq, " ".join(tmp)))
+        elif k == 'j':
+            for j in v:
+                jnm = j['j']
+                del j['j']
+                tmp = []
+                for amp_key in job_keys:
+                    if amp_key not in j:
+                        continue
+                    if amp_key == 'a':
+                        for a in j['a']:
+                            tmp.append("&a {}: {}".format(a[0], " ".join(a[1:])))
+                    elif amp_key == 'p':
+                        if j['p']:
+                            tmp.append("&p {}".format(", ".join(j['p'])))
+                        # else:
+                        #     tmp.append("&p None")
+                    # elif amp_key == 'f':
+                    #     tmp.append("&f {}".format("; ".join(j['f'])))
+                    else:
+                        tmp.append("&{} {}".format(amp_key, j[amp_key]))
+                res.append("@j {} {}".format(jnm, " ".join(tmp)))
+        elif k == 'a':
+            for a in v:
+                res.append("@a {}: {}".format(a[0], ", ".join(a[1:])))
+        # elif k == 'f':
+        #     res.append(("@f {}".format("; ".join(v))))
+        else:
+            res.append("@{} {}".format(k, v))
+    return " ".join(res)
+
 
 
 def export_ical(file2uuids, uuid2hash, vcal_folder, calendars=None):
