@@ -1310,7 +1310,7 @@ def get_options(d=''):
             BGCOLOR = use_colors['base']['background']
             CALENDAR_COLORS = use_colors['calendar']
             item_colors = use_colors['item']
-    else:
+    elif os.path.isdir(etmdir):
         fo = codecs.open(colors_cfg, 'w', dfile_encoding)
         fo.writelines(colors_light)
         fo.close()
@@ -6151,7 +6151,9 @@ def export_ical_active(file2uuids, uuid2hash, vcal_file, calendars=None):
 def export_json(file2uuids, uuid2hash, options={}):
     """
     Export items from each calendar to a json file with @k entries corresponding to the calendar name.
+    New ids will be generated each time this is run.
     """
+    # TODO: export relevant config info as well
     json_folder = options.get('datadir', None)
     calendars = options.get('calendars', None)
     logger.debug("json_folder: {0}; calendars: {1}".format(json_folder, calendars))
@@ -6173,11 +6175,13 @@ def export_json(file2uuids, uuid2hash, options={}):
         return
 
     hsh  = {}
+    hsh['items'] = {}
     logger.debug('using cal_tuples: {0}'.format(cal_tuples))
     json_file = os.path.join(json_folder, "etm-db.json")
 
     prefix, filelist = getFiles(options['datadir'])
     filetimes = {}
+
     for fp, rp in filelist:
         atime = os.path.getatime(fp)
         mtime = os.path.getmtime(fp)
@@ -6306,7 +6310,7 @@ def export_json(file2uuids, uuid2hash, options={}):
 
                     new_hsh['itemtype'] = itemtype
                     new_hsh['entry'] = hsh2entry(new_hsh)
-                    hsh[id] = new_hsh
+                    hsh['items'][id] = new_hsh
 
         if not this_calendar:
             logger.debug('skipping {0} - no match in calendars'.format(rp))
