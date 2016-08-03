@@ -1309,7 +1309,7 @@ def get_options(d=''):
             BGCOLOR = use_colors['base']['background']
             CALENDAR_COLORS = use_colors['calendar']
             item_colors = use_colors['item']
-    else:
+    elif os.path.isdir(etmdir):
         fo = codecs.open(colors_cfg, 'w', dfile_encoding)
         fo.writelines(colors_light)
         fo.close()
