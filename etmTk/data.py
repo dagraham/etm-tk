@@ -3564,9 +3564,12 @@ def get_rrule(hsh):
         if type(parts) != list:
             parts = [parts]
         if parts:
+            start = parse_str(dtstart, fmt=sfmt)
             for part in map(str, parts):
                 # rlst.append("RDATE:%s" % parse(part).strftime(sfmt))
-                rlst.append("RDATE:%s" % parse_str(part, fmt=sfmt))
+                plus = parse_str(part, fmt=sfmt)
+                if plus >= start:
+                    rlst.append("RDATE:%s" % plus)
     if '-' in hsh:
         tmprule = dtR.rrulestr("\n".join(rlst))
         parts = hsh['-']
@@ -5474,7 +5477,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
 
             if 'b' in hsh:
                 time_diff = (dtl - today_datetime).days
-                if time_diff > 0 and time_diff <= hsh['b']:
+                if time_diff > 0 and time_diff <= int(hsh['b']):
                     if 'n' not in hsh or 'd' not in hsh['n']:
                         extstr = '%dd' % time_diff
                         exttd = 0 * ONEDAY
@@ -6187,6 +6190,8 @@ def export_json(file2uuids, uuid2hash, options={}):
         mtime = os.path.getmtime(fp)
         filetimes[rp] = (mtime, max(atime - mtime, 86400))
 
+    # uuids for jobs will have etm:NN appended - we only want one copy
+    # e.g., b63c362940f147a1ae8404d8265fa4bdetm:01
     for rp in file2uuids:
         this_calendar = None
         this_lst = []  # for error logging
@@ -6196,26 +6201,25 @@ def export_json(file2uuids, uuid2hash, options={}):
                 intervals = len(file2uuids[rp])
                 stime, diff = filetimes[rp]
                 delta = diff / intervals
+                last_uid = ""
                 for uid in file2uuids[rp]:
+                    if uid[:32] == last_uid[:32]:
+                        # only use the first instance of job ids
+                        continue
+                    last_uid = uid
                     secs = int(uniform(stime, stime + delta))
                     id = int(datetime.fromtimestamp(secs).strftime("%Y%m%d%H%M%S%f"))
                     stime += delta
                     old_hsh = uuid2hash[uid]
                     new_hsh = deepcopy(old_hsh)
                     itemtype = old_hsh['itemtype']
+
                     for key in new_hsh:
                         if type(new_hsh[key]) is datetime:
                             new_hsh[key] = new_hsh[key].strftime("%Y%m%dT%H%M")
                         elif type(new_hsh[key]) is timedelta:
                             new_hsh[key] = fmt_period(new_hsh[key])
 
-                    if 'rrule' in new_hsh:
-                        del new_hsh['rrule']
-                    if 'r' in new_hsh:
-                        new_hsh['rrulestr'] = new_hsh['r'][22:]
-                        del new_hsh['r']
-                    elif 's' in new_hsh:
-                        new_hsh['rrulestr'] = "RDATE:{}".format(new_hsh['s'])
                     for key in  ['I', 'fileinfo']:
                         if key in new_hsh:
                             del new_hsh[key]
@@ -6233,18 +6237,46 @@ def export_json(file2uuids, uuid2hash, options={}):
                                     alerts.append([td, cmd] + args)
                         new_hsh['a'] = alerts
                         del new_hsh['_a']
-                    if 'f' in new_hsh:
-                        new_hsh['f'] = new_hsh['f'][0][0].strftime("%Y%m%dT%H%M")
                     if 'h' in new_hsh:
                         tmp = []
                         for pair in new_hsh['h']:
                             tmp.append(pair[0].strftime("%Y%m%dT%H%M"))
                         new_hsh['h'] = tmp
 
+                    if 'f' in new_hsh:
+                        d, n, f = getDoneAndTwo(old_hsh)
+                        o = old_hsh.get('o', 'k')
+                        if n:
+                            new_hsh['s'] = n.strftime("%Y%m%dT%H:%M")
+                            # if o == 'r':
+                            #     # reset start to the finish time
+                            #     new_hsh['s'] = old_hsh['f'][0][0].strftime("%Y%m%dT%H%M")
+                            # else:
+                            #     # reset start to the next due date
+                            #     new_hsh['s'] = n.strftime("%Y%m%dT%H:%M")
+                            new_hsh.setdefault('h', []).append(new_hsh['f'][0][0].strftime("%Y%m%dT%H%M"))
+                            del new_hsh['f']
+                        else:
+                            new_hsh['f'] = new_hsh['f'][0][0].strftime("%Y%m%dT%H%M")
+
+                    if '+' in new_hsh and 's' in new_hsh:
+                        new_hsh['+'] = [x for x in new_hsh['+'] if x.strftime("%Y%m%dT%H%M") >= new_hsh['s']]
+
+                    if 'rrule' in new_hsh:
+                        del new_hsh['rrule']
+                    if 'r' in new_hsh and 's in new_hsh':
+                        # drop the old dtstart and insert the new
+                        new_hsh['rrulestr'] = "DTSTART:{}\n{}".format(new_hsh['s'], new_hsh['r'][22:])
+                        del new_hsh['r']
+                    elif 's' in new_hsh:
+                        new_hsh['rrulestr'] = "RDATE:{}".format(new_hsh['s'])
+
                     if '_j' in new_hsh:
+                        # print('jobs', new_hsh['_group_summary'], uid, new_hsh.get('f', 'unfinished'))
                         count = 0
                         jobs = {}
                         # make sure jobs are in q order
+                        finished = True
                         for job in new_hsh['_j']:
                             q = job['q']
                             del job['q']
@@ -6255,6 +6287,16 @@ def export_json(file2uuids, uuid2hash, options={}):
                                 for pair in job['h']:
                                     tmp.append(pair[0].strftime("%Y%m%dT%H%M"))
                                 job['h'] = tmp
+                            else:
+                                finished = False
+
+                            # if 'f' in job:
+                            #     job['f'] = job['f'][0][0].strftime("%Y%m%dT%H%M")
+                            # else:
+                            #     finished = False
+
+                        if 'f' in new_hsh and not finished:
+                            del new_hsh['f']
 
                         q_keys = [x for x in jobs]
                         q_keys.sort()
@@ -6266,6 +6308,8 @@ def export_json(file2uuids, uuid2hash, options={}):
                                 count += 1
                                 job['i'] = str(count)
                                 job['p'] = prereqs
+                                # job['j'] = "{} {}: {}".format(
+                                #     new_hsh['_group_summary'], job['i'], job['j'])
                                 tmp.append(job['i'])
                             prereqs = tmp
                         new_hsh['j'] = []
@@ -6289,10 +6333,14 @@ def export_json(file2uuids, uuid2hash, options={}):
                             del new_hsh[key]
                             nkey = key[1:]
                             new_hsh[nkey] = old_hsh[key]
-                    new_hsh['k'] = this_calendar
-                    k = old_hsh.get('k', 'none')
-                    if k != 'none':
+                    this_c = new_hsh.get('c', None)
+                    this_l = new_hsh.get('l', None)
+                    new_hsh['l'] = "; ".join([x for x in [this_l, this_c] if x is not None])
+                    new_hsh['c'] = this_calendar
+                    k = old_hsh.get('k', None)
+                    if k is not None:
                         new_hsh['n'] = k
+                        del new_hsh['k']
                     if itemtype in ['+', '-', '%']:
                         s = old_hsh.get('s', None)
                         if s is None:
@@ -6304,13 +6352,21 @@ def export_json(file2uuids, uuid2hash, options={}):
                         else:
                             # date-time
                             itemtype = '-'
+                    if itemtype in ['^', '+', '%'] and 'z' in new_hsh:
+                        del new_hsh['z']
                     if '_group_summary' in new_hsh:
                         new_hsh['summary'] = new_hsh['_group_summary']
                         del new_hsh['_group_summary']
 
                     new_hsh['itemtype'] = itemtype
                     new_hsh['entry'] = hsh2entry(new_hsh)
-                    hsh['items'][id] = new_hsh
+                    try:
+                        json.dumps(new_hsh)
+                        hsh['items'][id] = new_hsh
+                    except:
+                        print('bad hsh')
+                        print(new_hsh)
+
 
         if not this_calendar:
             logger.debug('skipping {0} - no match in calendars'.format(rp))
