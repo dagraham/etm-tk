@@ -2895,17 +2895,19 @@ def year2string(startyear, endyear):
 
 
 def lst2str(l):
-    if type(l) != list:
-        return l
-    tmp = []
-    for item in l:
-        if type(item) in [datetime]:
-            tmp.append(parse_str(item, fmt=zfmt))
-        elif type(item) in [timedelta]:
-            tmp.append(timedelta2Str(item))
-        else:  # type(i) in [unicode, str]:
-            tmp.append(str(item))
-    return ", ".join(tmp)
+   if type(l) != list:
+       return l
+   tmp = []
+   for item in l:
+       if type(item) in [datetime]:
+           tmp.append(parse_str(item, fmt=zfmt))
+       elif type(item) in [timedelta]:
+           tmp.append(timedelta2Str(item))
+       elif type(item) == unicode:
+           tmp.append(item)
+       else:
+           tmp.append(unicode(item))
+   return ", ".join(tmp)
 
 
 def hsh2str(hsh, options=None, include_uid=False):

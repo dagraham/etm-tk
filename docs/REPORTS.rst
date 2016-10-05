@@ -1,3 +1,5 @@
+.. _custom-label:
+
 Custom view
 ===========
 
@@ -17,7 +19,7 @@ View type
 
    Actions only. Expenditures of time and money recorded in *actions*
    with output formatted using ``action_template`` computations and
-   expansions. See `Preferences <#preferences>`__ for further details
+   expansions. See :ref:`Preferences <preferences-label>` for further details
    about the role of ``action_template`` in formatting actions output.
    Note that only *actions* are included in this view and, by default,
    all actions in your active calendars will be included.

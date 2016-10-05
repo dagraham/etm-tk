@@ -6,7 +6,7 @@ character such as an asterisk (event) and continues on one or more lines
 either until the end of the file is reached or another line is found
 that begins with a type character. The type character for each item is
 followed by the item summary and then, perhaps, by one or more
-``@key value`` pairs - see `@-Keys <#keys>`__ for details. The order in
+``@key value`` pairs - see :ref:`@Keys <keys-label>` for details. The order in
 which such pairs are entered does not matter.
 
 ~ Action
@@ -22,8 +22,8 @@ money was actually spent. Action lines begin with a tilde, ``~``.
 
 Entries such as ``@s mon 3p``, ``@e 1h15m`` and ``@x 127.32`` are
 discussed below under *Item details*. Action entries form the basis for
-time and expense billing using action type custom views - see `Custom
-view <#custom-view>`__ for details.
+time and expense billing using action type custom views - see :ref:`Custom
+view <custom-label>` for details.
 
 Tip: You can use either path or keyword or a combination of the two to
 organize your actions.
@@ -64,8 +64,8 @@ sign, ``^``.
         ^ The !1776! Independence Day @s 2010-07-04 @r y &M 7 &m 4
 
 On July 4, 2013, this would appear as ``The 237th Independence Day``.
-Here !1776!\` is an example of an *anniversary substitution* - see
-`Dates <#dates>`__ for details.
+Here !1776! is an example of an *anniversary substitution* - see
+:ref:`Dates <dates-label>` for details.
 
 ! Note
 ------
@@ -113,8 +113,8 @@ as an estimate of the time required to complete the task.
    non-midnight starting time and an extent when you want to block off a
    specific period to complete a task.]
 
-- Task
-~~~~~~
+\- Task
+~~~~~~~
 
 This is the basic task and begins with a minus sign, ``-``.
 
@@ -137,8 +137,8 @@ in an ``@u`` entry. Delegated tasks begin with a percent sign, ``%``.
 
         % make reservations for trip @u joe @s fri
 
-+ Task group
-~~~~~~~~~~~~
+\+ Task group
+~~~~~~~~~~~~~
 
 A collection of related tasks, some of which may be prerequisite for
 others. Task groups begin with a plus sign, ``+``.

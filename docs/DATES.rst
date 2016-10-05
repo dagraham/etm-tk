@@ -1,3 +1,5 @@
+.. _dates-label:
+
 Dates
 =====
 
@@ -12,20 +14,22 @@ Suppose, for example, that it is currently 8:30am on Friday, February
 15, 2013. Then, *fuzzy dates* would expand into the values illustrated
 below.
 
-::
-
-        mon 2p or mon 14h    2:00pm Monday, February 19
-        fri                  12:00am Friday, February 15
-        9a -1/1 or 9h -1/1   9:00am Tuesday, January 1
-        +2/15                12:00am Monday, April 15 2013
-        8p +7 or 20h +7      8:00pm Friday, February 22
-        -14                  8:30am Friday, February 1
-        now                  8:30am Friday, February 15
+    ========   ==============================
+    enter      result
+    ========   ==============================
+    mon 2p     2:00pm Monday, February 19
+    fri        12:00am Friday, February 15
+    9a -1/1    9:00am Tuesday, January 1
+    +2/15      12:00am Monday, April 15 2013
+    8p +7      8:00pm Friday, February 22
+    -14        8:30am Friday, February 1
+    now        8:30am Friday, February 15
+    ========   ==============================
 
 Note that expressions using ``+`` or ``-`` give datetimes relative to
 the current datetime.
 
-12am is the default time when a time is not explicity entered. E.g.,
+12am is the default time when a time is not explicitly entered. E.g.,
 ``+2/15`` in the examples above gives 12:00am on April 15.
 
 To avoid ambiguity, always append either 'a', 'p' or 'h' when entering
@@ -38,11 +42,13 @@ Time periods are entered using the format ``WwDdHhMm`` where W, D, H and
 M are integers and w, d, h and m refer to weeks, days, hours and minutes
 respectively. For example:
 
-::
-
-        2h30m                2 hours, 30 minutes
-        2w3d                 2 weeks, 3 days
-        45m                  45 minutes
+    =======   =====================
+    enter     result
+    =======   =====================
+    2h30m     2 hours, 30 minutes
+    2w3d      2 weeks, 3 days
+    45m       45 minutes
+    =======   =====================
 
 As an example, if it is currently 8:50am on Friday February 15, 2013,
 then entering ``now + 2d4h30m`` into the date calculator would give
@@ -60,15 +66,11 @@ system.
 
 For example, if it is currently 8:50am EST on Friday February 15, 2013,
 and an item is saved on a system in the ``US/Eastern`` time zone
-containing the entry
-
-::
+containing the entry::
 
     @s now @z Australia/Sydney
 
-then the data file would contain
-
-::
+then the data file would contain::
 
     @s 2013-02-16 12:50am @z Australia/Sydney
 
@@ -78,15 +80,11 @@ the system in the ``US/Eastern`` time zone.
 Tip. Need to determine the flight time when the departing timezone is
 different that the arriving timezone? The date calculator (shortcut
 Shift-D) will accept timezone information so that, e.g., entering the
-arrival time minus the departure time
-
-::
+arrival time minus the departure time::
 
     4/20 6:15p US/Central - 4/20 4:50p Asia/Shanghai
 
-into the calculator would give
-
-::
+into the calculator would give::
 
     14h25m
 
@@ -96,9 +94,7 @@ Anniversary substitutions
 -------------------------
 
 An anniversary substitution is an expression of the form ``!YYYY!`` that
-appears in an item summary. Consider, for example, the occassion
-
-::
+appears in an item summary. Consider, for example, the occasion::
 
     ^ !2010! anniversary @s 2011-02-20 @r y
 
@@ -117,9 +113,7 @@ specification in ``@s`` entries and in the datetime calculator. E.g.
 
     @s easter(2014) 4p
 
-would expand to ``2014-04-20 4pm``. Similarly, in the date calculator
-
-::
+would expand to ``2014-04-20 4pm``. Similarly, in the date calculator::
 
     easter(2014) - 48d
 

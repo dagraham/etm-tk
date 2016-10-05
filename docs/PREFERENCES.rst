@@ -1,3 +1,5 @@
+.. _preferences-label:
+
 Preferences
 ===========
 
@@ -504,7 +506,7 @@ backslashes, i.e., use ``\\`` anywhere ``\`` appears in a path.
 
    Each line in a reports file provides a possible reports
    specification. These are available when using the CLI ``m`` command
-   and in the GUI custom view. See `Custom view <#custom-view>`__ for
+   and in the GUI custom view. See :ref:`Custom view <custom-label>` for
    details.
 
 -  Users
@@ -991,8 +993,8 @@ report. E.g.
 
 In custom view these appear in the report specifications pop-up list. A
 specification from the list can be selected and, perhaps, modified or an
-entirely new specification can be entered. See `Custom
-view <#custom-view>`__ for details. See also the `agenda <#agenda>`__
+entirely new specification can be entered. See :ref:`Custom
+view <custom-label>` for details. See also the `agenda <#agenda>`__
 settings above.
 
 retain\_ids

@@ -9,114 +9,85 @@ simple, intuitive format and stored in plain text files.
 Dates in the examples below are entered using *fuzzy parsing* - e.g.,
 ``+7`` for seven days from today, ``fri`` for the first Friday on or
 after today, ``+1/1`` for the first day of next month, ``sun - 6d`` for
-Monday of the current week. See `Dates <#dates>`__ for details.
+Monday of the current week. See :ref:`Dates <dates-label>` for details.
 
 Sample entries
 --------------
 
--  A sales meeting (an event) [s]tarting seven days from today at 9:00am
-   with an [e]xtent of one hour and a default [a]lert 5 minutes before
-   the start:
+- A sales meeting (an event) [s]tarting seven days from today at 9:00am
+  with an [e]xtent of one hour and a default [a]lert 5 minutes before
+  the start::
 
-   ::
+  * sales meeting @s +7 9a @e 1h @a 5
 
-       * sales meeting @s +7 9a @e 1h @a 5
+- The sales meeting with another [a]lert 2 days before the meeting to
+  (e)mail a reminder to a list of recipients::
 
--  The sales meeting with another [a]lert 2 days before the meeting to
-   (e)mail a reminder to a list of recipients:
+  * sales meeting @s +7 9a @e 1h @a 5 @a 2d: e; who@when.com, what@where.org
 
-   ::
+- Prepare a report (a task) for the sales meeting [b]eginning 3 days
+  early::
 
-       * sales meeting @s +7 9a @e 1h @a 5
-         @a 2d: e; who@when.com, what@where.org
+  - prepare report @s +7 @b 3
 
--  Prepare a report (a task) for the sales meeting [b]eginning 3 days
-   early:
+- A period [e]xtending 35 minutes (an action) spent working on the
+  report yesterday::
 
-   ::
+  ~ report preparation @s -1 @e 35
 
-       - prepare report @s +7 @b 3
+- Get a haircut (a task) on the 24th of the current month and then
+  [r]epeatedly at (d)aily [i]ntervals of (14) days and, [o]n
+  completion, (r)estart from the completion date::
 
--  A period [e]xtending 35 minutes (an action) spent working on the
-   report yesterday:
+  - get haircut @s 24 @r d &i 14 @o r
 
-   ::
+- Payday (an occasion) on the last week day of each month. The
+  ``&s -1`` part of the entry extracts the last date which is both a
+  weekday and falls within the last three days of the month)::
 
-       ~ report preparation @s -1 @e 35
+  ^ payday @s 1/1 @r m &w MO, TU, WE, TH, FR &m -1,-2,-3 &s -1
 
--  Get a haircut (a task) on the 24th of the current month and then
-   [r]epeatedly at (d)aily [i]ntervals of (14) days and, [o]n
-   completion, (r)estart from the completion date:
+- Take a prescribed medication daily (a reminder) [s]tarting today and
+  [r]epeating (d)aily at [h]ours 10am, 2pm, 6pm and 10pm [u]ntil (12am
+  on) the fourth day from today. Trigger the default [a]lert zero
+  minutes before each reminder::
 
-   ::
+  * take Rx @s +0 @r d &h 10, 14, 18, 22 &u +4 @a 0
 
-       - get haircut @s 24 @r d &i 14 @o r
+- Move the water sprinkler (a reminder) every thirty mi[n]utes on
+  Sunday afternoons using the default alert zero minutes before each
+  reminder::
 
--  Payday (an occasion) on the last week day of each month. The
-   ``&s -1`` part of the entry extracts the last date which is both a
-   weekday and falls within the last three days of the month):
+  * Move sprinkler @s 1 @r n &i 30 &w SU &h 14,15,16,17 @a 0
 
-   ::
+  To limit the sprinkler movement reminders to the [M]onths of April
+  through September each year append ``&M 4,5,6,7,8,9`` to the @r
+  entry.
 
-       ^ payday @s 1/1 @r m &w MO, TU, WE, TH, FR
-         &m -1, -2, -3 &s -1
+- Grandparent's day (an occasion) each year on the first Sunday in
+  September after Labor day::
 
--  Take a prescribed medication daily (a reminder) [s]tarting today and
-   [r]epeating (d)aily at [h]ours 10am, 2pm, 6pm and 10pm [u]ntil (12am
-   on) the fourth day from today. Trigger the default [a]lert zero
-   minutes before each reminder:
+  ^ Grandparent's Day @s 2012-09-01 @r y &M 9 &w SU &m 7,8,9,10,11,12,13
 
-   ::
+- Presidential election day (an occasion) every four years on the first
+  Tuesday after a Monday in November::
 
-       * take Rx @s +0 @r d &h 10, 14, 18, 22 &u +4 @a 0
+  ^ Presidential Election Day @s 2012-11-06 @r y &i 4 &M 11 &w TU &m 2,3,4,5,6,7,8
 
--  Move the water sprinkler (a reminder) every thirty mi[n]utes on
-   Sunday afternoons using the default alert zero minutes before each
-   reminder:
+- Join the etm discussion group (a task) [s]tarting 14 days from today.
+  Because of the @g (goto) link, pressing *G* when this item is
+  selected in the gui would open the link using the system default
+  application which, in this case, would be your default browser::
 
-   ::
-
-       * Move sprinkler @s 1 @r n &i 30 &w SU &h 14, 15, 16, 17 @a 0
-
-   To limit the sprinkler movement reminders to the [M]onths of April
-   through September each year append ``&M 4, 5, 6, 7, 8, 9`` to the @r
-   entry.
-
--  Grandparent's day (an occasion) each year on the first Sunday in
-   September after Labor day:
-
-   ::
-
-       ^ Grandparent's Day @s 2012-09-01
-         @r y &M 9 &w SU &m 7, 8, 9, 10, 11, 12, 13 
-
--  Presidential election day (an occasion) every four years on the first
-   Tuesday after a Monday in November:
-
-   ::
-
-       ^ Presidential Election Day @s 2012-11-06
-         @r y &i 4 &M 11 &w TU &m 2, 3, 4, 5, 6, 7, 8 
-
--  Join the etm discussion group (a task) [s]tarting 14 days from today.
-   Because of the @g (goto) link, pressing *G* when this item is
-   selected in the gui would open the link using the system default
-   application which, in this case, would be your default browser:
-
-   ::
-
-       - join the etm discussion group @s +14
-         @g groups.google.com/group/eventandtaskmanager/topics
+  - join the etm discussion group @s +14 @g groups.google.com/group/eventandtaskmanager/topics
 
 Starting etm
 ------------
 
 To start the etm GUI open a terminal window and enter ``etm`` at the
-prompt:
+prompt::
 
-::
-
-    $ etm
+  $ etm
 
 If you have not done a system installation of etm you will need first to
 cd to the directory where you unpacked etm.
@@ -129,47 +100,7 @@ You can add a command to use the CLI instead of the GUI. For example, to
 get the complete command line usage information printed to the terminal
 window just add a question mark:
 
-::
-
-    $ etm ?
-    Usage:
-
-        etm [logging level] [path] [?] [acmsv]
-
-    With no arguments, etm will set logging level 3 (warn), use settings from
-    the configuration file ~/.etm/etmtk.cfg, and open the GUI.
-
-    If the first argument is an integer not less than 1 (debug) and not greater
-    than 5 (critical), then set that logging level and remove the argument.
-
-    If the first (remaining) argument is the path to a directory that contains
-    a file named etmtk.cfg, then use that configuration file and remove the
-    argument.
-
-    If the first (remaining) argument is one of the commands listed below, then
-    execute the remaining arguments without opening the GUI.
-
-        a ARG   display the agenda view using ARG, if given, as a filter.
-        c ARGS  display a custom view using the remaining arguments as the
-                specification. (Enclose ARGS in single quotes to prevent shell
-                expansion.)
-        d ARG   display the day view using ARG, if given, as a filter.
-        k ARG   display the keywords view using ARG, if given, as a filter.
-        m INT   display a custom view using the remaining argument, which 
-                must be a positive integer, to display a custom view using the 
-                corresponding entry from the file given by report_specifications 
-                in etmtk.cfg.
-                Use ? m to display the numbered list of entries from this file.
-        n ARG   display the notes view using ARG, if given, as a filter.
-        N ARGS  Create a new item using the remaining arguments as the item
-                specification. (Enclose ARGS in single quotes to prevent shell
-                expansion.)
-        p ARG   display the path view using ARG, if given, as a filter.
-        t ARG   display the tags view using ARG, if given, as a filter.
-        v       display information about etm and the operating system.
-        ? ARG   display (this) command line help information if ARGS = '' or,
-                if ARGS = X where X is one of the above commands, then display
-                details about command X. 'X ?' is equivalent to '? X'.
+.. image:: ../images/etmusage.png
 
 For example, you can print your agenda to the terminal window by adding
 the letter "a":
@@ -206,54 +137,9 @@ You can filter the output by adding a (case-insensitive) argument:
 or ``etm d mar .*2014`` to show your items for March, 2014.
 
 You can add a question mark to a command to get details about the
-commmand, e.g.:
+command, e.g.:
 
-::
-
-    Usage:
-
-        etm c <type> <groupby> [options]
-
-    Generate a custom view where type is either 'a' (action) or 'c' (composite).
-    Groupby can include *semicolon* separated date specifications and
-    elements from:
-        c context
-        f file path
-        k keyword
-        t tag
-        u user
-
-    A *date specification* is either
-        w:   week number
-    or a combination of one or more of the following:
-        yy:   2-digit year
-        yyyy:   4-digit year
-        MM:   month: 01 - 12
-        MMM:   locale specific abbreviated month name: Jan - Dec
-        MMMM:   locale specific month name: January - December
-        dd:   month day: 01 - 31
-        ddd:   locale specific abbreviated week day: Mon - Sun
-        dddd:   locale specific week day: Monday - Sunday
-
-    Options include:
-        -b begin date
-        -c context regex
-        -d depth (CLI type a only)
-        -e end date
-        -f file regex
-        -k keyword regex
-        -l location regex
-        -o omit (type c only)
-        -s summary regex
-        -S search regex
-        -t tags regex
-        -u user regex
-        -w column 1 width
-        -W column 2 width
-
-    Example:
-
-        etm c 'c ddd, MMM dd yyyy -b 1 -e +1/1'
+.. image:: ../images/etmchelp.png
 
 Note: The CLI offers the same views and reporting, with the exception of
 week and month view, as the GUI. It is also possible to create new items
@@ -268,7 +154,7 @@ command. For example,
 
 ::
 
-        etm N '123 456-7890'
+  etm N '123 456-7890'
 
 would create an entry in your inbox with this phone number. (With no
 type character an "$" would be supplied automatically to make the item
@@ -489,7 +375,7 @@ All notes grouped and sorted by keyword and summary.
 Custom
 ~~~~~~
 
-Design your own view. See `Custom view <#custom-view>`__ for details.
+Design your own view. See :ref:`Custom view <custom-label>` for details.
 
 Creating New Items
 ------------------
@@ -726,7 +612,7 @@ subscription the URL, FILE tuple would be something like:
 ::
 
       ['https://www.google.com/calendar/ical/.../basic.ics', 'personal/google.txt']
-        
+
 
 With this entry, pressing Shift-M in the gui would import the calendar
 from the URL, convert it from ics to etm format and then write the
@@ -751,7 +637,7 @@ iCalendar entry such as the following VEVENT:
     SUMMARY:8:00 AM Tennis Reservation
     LOCATION:Governors Club
     DESCRIPTION: Player 1: ...
-     
+
     URL:http://www1.foretees.com/governorsclub
     END:VEVENT
     END:VCALENDAR
@@ -760,8 +646,8 @@ When you press *Finish*, the entry will be converted to etm format
 
 ::
 
-    ^ 8:00 AM Tennis Reservation @s 2014-06-30 8am 
-    @d Player 1: ... 
+    ^ 8:00 AM Tennis Reservation @s 2014-06-30 8am
+    @d Player 1: ...
     @z US/Eastern
 
 and you can choose the file to hold it.
@@ -851,41 +737,7 @@ Yearly calendar
 
 Gives a display such as
 
-::
-
-          January 2014           February 2014             March 2014
-      Mo Tu We Th Fr Sa Su    Mo Tu We Th Fr Sa Su    Mo Tu We Th Fr Sa Su
-             1  2  3  4  5                    1  2                    1  2
-       6  7  8  9 10 11 12     3  4  5  6  7  8  9     3  4  5  6  7  8  9
-      13 14 15 16 17 18 19    10 11 12 13 14 15 16    10 11 12 13 14 15 16
-      20 21 22 23 24 25 26    17 18 19 20 21 22 23    17 18 19 20 21 22 23
-      27 28 29 30 31          24 25 26 27 28          24 25 26 27 28 29 30
-                                                      31
-
-           April 2014               May 2014               June 2014
-      Mo Tu We Th Fr Sa Su    Mo Tu We Th Fr Sa Su    Mo Tu We Th Fr Sa Su
-          1  2  3  4  5  6              1  2  3  4                       1
-       7  8  9 10 11 12 13     5  6  7  8  9 10 11     2  3  4  5  6  7  8
-      14 15 16 17 18 19 20    12 13 14 15 16 17 18     9 10 11 12 13 14 15
-      21 22 23 24 25 26 27    19 20 21 22 23 24 25    16 17 18 19 20 21 22
-      28 29 30                26 27 28 29 30 31       23 24 25 26 27 28 29
-                                                      30
-
-           July 2014              August 2014            September 2014
-      Mo Tu We Th Fr Sa Su    Mo Tu We Th Fr Sa Su    Mo Tu We Th Fr Sa Su
-          1  2  3  4  5  6                 1  2  3     1  2  3  4  5  6  7
-       7  8  9 10 11 12 13     4  5  6  7  8  9 10     8  9 10 11 12 13 14
-      14 15 16 17 18 19 20    11 12 13 14 15 16 17    15 16 17 18 19 20 21
-      21 22 23 24 25 26 27    18 19 20 21 22 23 24    22 23 24 25 26 27 28
-      28 29 30 31             25 26 27 28 29 30 31    29 30
-
-          October 2014           November 2014           December 2014
-      Mo Tu We Th Fr Sa Su    Mo Tu We Th Fr Sa Su    Mo Tu We Th Fr Sa Su
-             1  2  3  4  5                    1  2     1  2  3  4  5  6  7
-       6  7  8  9 10 11 12     3  4  5  6  7  8  9     8  9 10 11 12 13 14
-      13 14 15 16 17 18 19    10 11 12 13 14 15 16    15 16 17 18 19 20 21
-      20 21 22 23 24 25 26    17 18 19 20 21 22 23    22 23 24 25 26 27 28
-      27 28 29 30 31          24 25 26 27 28 29 30    29 30 31
+.. image:: ../images/yearlycalendar.png
 
 Left and right cursor keys move backward and forward a year at a time,
 respectively, and pressing the Home key returns to the current year.
@@ -948,7 +800,7 @@ In ``~erp/.etm/etmtk.cfg``:
 Thus, by default, both *dag* and *erp* see the entries from their
 personal files as well as the shared entries and each can optionally
 view the entries from the other's personal files as well. See the
-`Preferences <#preferences>`__ for details on the ``calendars`` entry.
+:ref:`Preferences <preferences-label>` for details on the ``calendars`` entry.
 
 Note for Windows users. The path separator needs to be "escaped" in the
 calendar paths, e.g., you should enter
@@ -1019,7 +871,7 @@ would appear in *Tag View* as
         - item 1
         - item 3
         - item 4
-    red 
+    red
         - item 1
         - item 2
         - item 4
@@ -1051,7 +903,7 @@ would appear *Agenda View* as
             - pick up milk
         phone
             - call Saul
-            
+
 
 When you are next checking email, running errands, using the phone or
 whatever, you can check *Agenda View* to see what else might be
@@ -1098,7 +950,7 @@ it to the following location in your ``etmdir``:
             fr_FR
                 LC_MESSAGES
                     fr_FR.mo
-                    
+
 
 creating the corresponding directory structure when necessary. Be sure
 to get the file with the ``.mo`` extension, not the one with the ``.po``
@@ -1182,3 +1034,4 @@ A translator can thus do as much or as little as he or she pleases and
 then send me the resulting ``.po`` file. I'll replace the current
 on-line version with this updated version so the next translator can
 improve upon prior results.
+

@@ -1,3 +1,5 @@
+.. _keys-label:
+
 @Keys
 =====
 
@@ -16,9 +18,7 @@ would trigger the alert(s) specified by ``default_alert`` in your
 ``etmtk.cfg`` at 10 and 5 minutes before the starting time and a (s)ound
 alert one hour before the starting time.
 
-The alert
-
-::
+The alert::
 
     @a 2d: e; who@what.com, where2@when.org; filepath1, filepath2
 
@@ -27,9 +27,7 @@ hours) before the starting time of the item with the item summary as the
 subject, with file1 and file2 as attachments and with the body of the
 message composed using ``email_template`` from your ``etmtk.cfg``.
 
-Similarly, the alert
-
-::
+Similarly, the alert::
 
     @a 10m: t; 9191234567@vtext.com, 9197654321@txt.att.net
 
@@ -40,8 +38,7 @@ carrier mms extension) together with the settings for ``sms`` in
 specified in ``sms.phone`` will be used. Here are the mms extensions for
 the major US carriers:
 
-::
-
+    ============    ==========================
     Alltel          @message.alltel.com
     AT&T            @txt.att.net
     Nextel          @messaging.nextel.com
@@ -50,48 +47,55 @@ the major US carriers:
     T-mobile        @tmomail.net
     VoiceStream     @voicestream.net
     Verizon         @vtext.com
+    ============    ==========================
 
-Finally,
-
-::
+Finally::
 
     @a 0: p; program_path
 
 would execute ``program_path`` at the starting time of the item.
 
-The format for each of these:
-
-::
+The format for each of these::
 
     @a <trigger times> [: action [; arguments]]
 
 In addition to the default action used when the optional ``: action`` is
 not given, there are the following possible values for ``action``:
 
-::
 
-    d   Execute alert_displaycmd in etmtk.cfg.
+``d``  
+    Execute ``alert_displaycmd`` in ``etmtk.cfg``.
 
-    e; recipients[;attachments]     Send an email to recipients 
-       (a comma separated list of email addresses) optionally 
-       attaching attachments (a comma separated list of file paths). 
-       The item summary is used as the subject of the email and 
-       the expanded value of email_template from etmtk.cfg as the 
-       body. If there is an entry for @i (invitees), these email 
-       addresses will be appended to the list of recipients.
 
-    m   Display an internal etm message box using alert_template.
+``e; recipients[;attachments]``
+    Send an email to recipients (a comma separated list of email addresses)
+    optionally attaching attachments (a comma separated list of file paths). The
+    item summary is used as the subject of the email and the expanded value of
+    email_template from etmtk.cfg as the body. If there is an entry for @i
+    (invitees), these email addresses will be appended to the list of recipients.
 
-    p; process      Execute the command given by process.
 
-    s   Execute alert_soundcmd in etmtk.cfg.
+``m``  
+    Display an internal etm message box using alert_template.
 
-    t [; phonenumbers]      Send text messages to phonenumbers 
-      (a comma separated list of 10 digit phone numbers with the 
-      sms extension of the carrier appended) with the expanded 
-      value of sms.message as the text message.
 
-    v   Execute alert_voicecmd in etmtk.cfg.
+``p; process`` 
+    Execute the command given by ``process``.
+
+
+``s``  
+    Execute ``alert_soundcmd`` in ``etmtk.cfg``.
+
+
+``t [; phonenumbers]``      
+    Send text messages to phonenumbers (a comma separated list of 10 digit phone
+    numbers with the sms extension of the carrier appended) with the expanded
+    value of sms.message as the text message.
+
+
+``v``   
+    Execute ``alert_voicecmd`` in ``etmtk.cfg``.
+
 
 Note: either ``e`` or ``p`` can be combined with other actions in a
 single alert but not with one another.
@@ -132,15 +136,11 @@ Tip. Need to determine the appropriate value for ``@e`` for a flight
 when you have the departure and arrival datetimes but the timezones are
 different? The date calculator (shortcut Shift-D) will accept timezone
 information so that, e.g., entering the arrival time minus the departure
-time
-
-::
+time::
 
     4/20 6:15p US/Central - 4/20 4:50p Asia/Shanghai
 
-into the calculator would give
-
-::
+into the calculator would give::
 
     14h25m
 
@@ -173,9 +173,7 @@ the jobs for the current repetition have been completed, then only that
 last completion of the task group itself will be displayed.
 
 Consider, for example, the following repeating task group which repeats
-monthly on the last weekday on or before the 25th.
-
-::
+monthly on the last weekday on or before the 25th::
 
     + pay bills @s 11/23 @f 10/24;10/25
       @r m &w MO,TU,WE,TH,FR &m 23,24,25 &s -1
@@ -204,18 +202,14 @@ sequence of screen shots show the effect of completing the jobs for the
 The path to a file or a URL to be opened using the system default
 application when the user presses *G* in the GUI. E.g., here's a task to
 join the etm discussion group with the URL of the group as the link. In
-this case, pressing *G* would open the URL in your default browser.
-
-::
+this case, pressing *G* would open the URL in your default browser::
 
     - join the etm discussion group @s +1/1
       @g http://groups.google.com/group/eventandtaskmanager/topics
       
 
 Template expansion is supported so it is also possible to use a
-``mailto`` link such as the following:
-
-::
+``mailto`` link such as the following::
 
     - the subject of the email @d The body of the email 
       @g mailto:sam@what.com?cc=joe@when.net\&subject=!summary!\&body=!d!
@@ -252,8 +246,7 @@ use ``&`` rather than ``@`` and apply only to the specific job.
 Many key-value pairs can be given either in the group task using ``@``
 or in the component jobs using ``&``:
 
-::
-
+    =========   =========================
     @c or &c    context
     @d or &d    description
     @e or &e    extent
@@ -261,6 +254,7 @@ or in the component jobs using ``&``:
     @k or &k    keyword
     @l or &l    location
     @u or &u    user
+    =========   =========================
 
 The key-value pair ``&h`` is used internally to track job done;due
 completions in task groups.
@@ -276,23 +270,21 @@ and their values are inherited by the component jobs.
 A heirarchical classifier for the item. Intended for actions to support
 time billing where a common format would be ``client:job:category``.
 *etm* treats such a keyword as a heirarchy so that an action report
-grouped by month and then keyword might appear as follows
+grouped by month and then keyword might appear as follows::
 
-::
-
-        27.5h) Client 1 (3)
-            4.9h) Project A (1)
-            15h) Project B (1)
-            7.6h) Project C (1)
-        24.2h) Client 2 (3)
-            3.1h) Project D (1)
-            21.1h) Project E (2)
-                5.1h) Category a (1)
-                16h) Category b (1)
-        4.2h) Client 3 (1)
-        8.7h) Client 4 (2)
-            2.1h) Project F (1)
-            6.6h) Project G (1)
+    27.5h) Client 1 (3)
+        4.9h) Project A (1)
+        15h) Project B (1)
+        7.6h) Project C (1)
+    24.2h) Client 2 (3)
+        3.1h) Project D (1)
+        21.1h) Project E (2)
+            5.1h) Category a (1)
+            16h) Category b (1)
+    4.2h) Client 3 (1)
+    8.7h) Client 4 (2)
+        2.1h) Project F (1)
+        6.6h) Project G (1)
 
 An arbitrary number of heirarchical levels in keywords is supported.
 
@@ -368,9 +360,7 @@ Either 0 (no priority) or an integer between 1 (highest priority) and 9
 -----------
 
 Used to provide a timestamp for an item. Intended primarily to provide a
-first-in-first-out queue for related, undated tasks. E.g., the following
-
-::
+first-in-first-out queue for related, undated tasks. E.g., the following::
 
     - first in queue @c queue @q 2015-10-06 10a @z US/Eastern
     - second in queue @c queue @q 2015-10-07 12p @z US/Eastern
@@ -378,9 +368,7 @@ first-in-first-out queue for related, undated tasks. E.g., the following
     - fourth in queue @c queue @q 2015-10-09 8a @z US/Eastern
 
 would appear in Agenda view at 11:35am on 2015-10-09 grouped by the
-context "queue" and ordered by age with the oldest first:
-
-::
+context "queue" and ordered by age with the oldest first::
 
     Next
        ...
@@ -400,16 +388,13 @@ datetimes are those satisfying any of the ``@r`` entries and falling
 given in ``@s`` will only be included if it matches one of the datetimes
 generated by the ``@r`` entry.
 
-A repetition rule begins with
-
-::
+A repetition rule begins with::
 
     @r frequency
 
 where ``frequency`` is one of the following characters:
-
-::
-
+    
+    ===     ======================================================
     y       yearly
     m       monthly
     w       weekly
@@ -417,86 +402,95 @@ where ``frequency`` is one of the following characters:
     h       hourly
     n       minutely
     l       list (a list of datetimes will be provided using @+)
+    ===     ======================================================
 
 The ``@r frequency`` entry can, optionally, be followed by one or more
 ``&key value`` pairs:
 
-::
+&i: interval 
+    (positive integer, default = 1) 
+    E.g, with frequency w, interval 3 would repeat every three weeks.
+&t: total 
+    (positive integer) 
+    Include no more than this number of repetitions.
+&s: bysetpos 
+    (integer). 
+    When multiple dates satisfy the rule, take the date 
+    from this position in the list, e.g, &s 1 would choose the first element 
+    and &s -1 the last. See the payday example below for an illustration of 
+    bysetpos.
+&u: until  
+    (datetime) 
+    Only include repetitions with starting times falling 
+    on before this datetime.
+&M: bymonth 
+    (1, 2, ..., 12)
 
-    &i: interval (positive integer, default = 1) E.g, with frequency w, interval
-        3 would repeat every three weeks.
-    &t: total (positive integer) Include no more than this number of repetitions.
-    &s: bysetpos (integer). When multiple dates satisfy the rule, take the date 
-        from this position in the list, e.g, &s 1 would choose the first element 
-        and &s -1 the last. See the payday example below for an illustration of 
-        bysetpos.
-    &u: until  (datetime) Only include repetitions with starting times falling 
-        on before this datetime.
-    &M: bymonth (1, 2, ..., 12)
-    &m: bymonthday (1, 2, ..., 31) Use, e.g., -1 for the last day of the month.
-    &W: byweekno (1, 2, ..., 53)
-    &w: byweekday (*English* weekday abbreviation SU ... SA). Use, e.g., 3WE 
-        for the 3rd Wednesday or -1FR, for the last Friday in the month.
-    &h: byhour (0 ... 23)
-    &n: byminute (0 ... 59)
-    &E: byeaster (integer number of days before, < 0, or after, > 0, Easter)
+&m: bymonthday 
+    (1, 2, ..., 31) 
+    Use, e.g., -1 for the last day of the month or 5, 10 for the 5th and 10th of the month.
+&W: byweekno 
+    (1, 2, ..., 53)
+    
+&w: byweekday 
+    (*English* weekday abbreviation SU ... SA). 
+    Use, e.g., 3WE for the 3rd Wednesday or -1FR, for the last Friday in the month.
+&h: byhour 
+    (0 ... 23)
+
+&n: byminute 
+    (0 ... 59)
+
+&E: byeaster 
+    integer number of days before, < 0, or after, > 0, Easter
 
 Repetition examples:
 
--  1st and 3rd Wednesdays of each month.
+- 1st and 3rd Wednesdays of each month::
 
-   ::
+    ^ 1st and 3rd Wednesdays @r m &w 1WE, 3WE
 
-       ^ 1st and 3rd Wednesdays
-         @r m &w 1WE, 3WE
+- Payday (an occasion) on the last week day of each month. (The
+  ``&s -1`` entry extracts the last date which is both a weekday and
+  falls within the last three days of the month.)::
 
--  Payday (an occasion) on the last week day of each month. (The
-   ``&s -1`` entry extracts the last date which is both a weekday and
-   falls within the last three days of the month.)
+    ^ payday @s 2010-07-01 @r m &w MO, TU, WE, TH, FR &m -1, -2, -3 &s -1
 
-   ::
+- Take a prescribed medication daily (an event) from the 23rd through
+  the 27th of the current month at 10am, 2pm, 6pm and 10pm and trigger
+  an alert zero minutes before each event::
 
-       ^ payday @s 2010-07-01
-         @r m &w MO, TU, WE, TH, FR &m -1, -2, -3 &s -1
+    * take Rx @d 10a 23  @r d &u 11p 27 &h 10, 14 18, 22 @a 0
 
--  Take a prescribed medication daily (an event) from the 23rd through
-   the 27th of the current month at 10am, 2pm, 6pm and 10pm and trigger
-   an alert zero minutes before each event.
+- Vote for president (an occasion) every four years on the first
+  Tuesday after a Monday in November. The ``&m 2,3,4,5,6,7,8`` requires
+  the month day to fall within 2 ... 8 and thus, combined with
+  ``&w TU`` to be the first Tuesday following a Monday::
 
-   ::
+    ^ Vote for president @s 2012-11-06 @r y &i 4 &M 11 &m 2,3,4,5,6,7,8 &w TU
 
-       * take Rx @d 10a 23  @r d &u 11p 27 &h 10, 14 18, 22 @a 0
+- Ash Wednesday (an occasion) that occurs 46 days before Easter each
+  year::
 
--  Vote for president (an occasion) every four years on the first
-   Tuesday after a Monday in November. (The ``&m range(2,9)`` requires
-   the month day to fall within 2 ... 8 and thus, combined with
-   ``&w TU`` to be the first Tuesday following a Monday.)
+    ^ Ash Wednesday 2010-01-01 @r y &E -46
 
-   ::
+- Easter Sunday (an occasion)::
 
-       ^ Vote for president @s 2012-11-06
-         @r y &i 4 &M 11 &m range(2,9) &w TU
-
--  Ash Wednesday (an occasion) that occurs 46 days before Easter each
-   year.
-
-   ^ Ash Wednesday 2010-01-01 @r y &E -46
-
--  Easter Sunday (an occasion).
-
-   ^ Easter Sunday 2010-01-01 @r y &E 0
+    ^ Easter Sunday 2010-01-01 @r y &E 0
 
 A repeating *task* may optionally also include an ``@o <k|s|r>`` entry
 (default = k):
 
--  ``@o k``: Keep the current due date if it becomes overdue and use the
-   next due date from the recurrence rule if it is finished early. This
-   would be appropriate, for example, for the task 'file tax return'.
-   The return due April 15, 2009 must still be filed even if it is
-   overdue and the 2010 return won't be due until April 15, 2010 even if
-   the 2009 return is finished early.
+``@o k``: 
+    Keep the current due date if it becomes overdue and use the
+    next due date from the recurrence rule if it is finished early. This
+    would be appropriate, for example, for the task 'file tax return'.
+    The return due April 15, 2009 must still be filed even if it is
+    overdue and the 2010 return won't be due until April 15, 2010 even if
+    the 2009 return is finished early.
 
--  ``@o s``: Skip overdue due dates and set the due date for the next
+``@o s``: 
+   Skip overdue due dates and set the due date for the next
    repetition to the first due date from the recurrence rule on or after
    the current date. This would be appropriate, for example, for the
    task 'put out the trash' since there is no point in putting it out on
@@ -504,7 +498,8 @@ A repeating *task* may optionally also include an ``@o <k|s|r>`` entry
    until the next Monday to put it out. There's also no point in being
    reminded until the next Monday.
 
--  ``@o r``: Restart the repetitions based on the last completion date.
+``@o r``: 
+   Restart the repetitions based on the last completion date.
    Suppose you want to mow the grass once every ten days and that when
    you mowed yesterday, you were already nine days past due. Then you
    want the next due date to be ten days from yesterday and not today.
@@ -534,14 +529,12 @@ action.
 
 Actions only. A key from ``action_rates`` in your ``etmtk.cfg`` to apply
 to the value of ``@e``. Used in actions to apply a billing rate to time
-spent in an action. E.g., with
+spent in an action. E.g., with::
 
-::
-
-        minutes: 6
-        action_rates:
-            br1: 45.0
-            br2: 60.0
+    minutes: 6
+    action_rates:
+        br1: 45.0
+        br2: 60.0
 
 then entries of ``@v br1`` and ``@e 2h25m`` in an action would entail a
 value of ``45.0 * 2.5 = 112.50``.
@@ -551,13 +544,11 @@ value of ``45.0 * 2.5 = 112.50``.
 
 A key from ``action_markups`` in your ``etmtk.cfg`` to apply to the
 value of ``@x``. Used in actions to apply a markup rate to expense in an
-action. E.g., with
+action. E.g., with::
 
-::
-
-        weights:
-            mr1: 1.5
-            mr2: 10.0
+    weights:
+        mr1: 1.5
+        mr2: 10.0
 
 then entries of ``@w mr1`` and ``@x 27.50`` in an action would entail a
 value of ``27.50 * 1.5 = 41.25``.
@@ -579,9 +570,7 @@ Tip. You live in the US/Eastern time zone but a flight that departs
 Sydney on April 20 at 9pm bound for New York with a flight duration of
 14 hours and 30 minutes. The hard way is to convert this to US/Eastern
 time and enter the flight using that time zone. The easy way is to use
-Australia/Sydney and skip the conversion:
-
-::
+Australia/Sydney and skip the conversion::
 
     * Sydney to New York @s 2014-04-23 9pm @e 14h30m @z Australia/Sydney
 
@@ -608,9 +597,7 @@ Note that to exclude a datetime from the recurrence rule, the @-
 datetime *must exactly match both the date and time* generated by one of
 the ``@r rrule`` entries.
 
-Example of using ``@-`` and ``@+``:
-
-::
+Example of using ``@-`` and ``@+``::
 
     @s 2014-02-19 4pm
     @r m &w 3WE 
