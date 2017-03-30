@@ -2059,11 +2059,14 @@ def fmt_date(dt, short=False):
         if type(dt) == datetime:
             dt = dt.date()
         if dt == tdy.date():
-            dt_fmt = "{0} ({1})".format(dt.strftime(shortyearlessfmt), TODAY)
+            dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt),
+                                                 gui_encoding, 'ignore'), TODAY)
         elif dt == tdy.date() - ONEDAY:
-            dt_fmt = "{0} ({1})".format(dt.strftime(shortyearlessfmt), YESTERDAY)
+            dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt),
+                                                 gui_encoding, 'ignore'), YESTERDAY)
         elif dt == tdy.date() + ONEDAY:
-            dt_fmt = "{0} ({1})".format(dt.strftime(shortyearlessfmt), TOMORROW)
+            dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt),
+                                                 gui_encoding, 'ignore'), TOMORROW)
         elif dt.year == tdy.year:
             dt_fmt = dt.strftime(shortyearlessfmt)
         else:
@@ -2903,10 +2906,10 @@ def lst2str(l):
            tmp.append(parse_str(item, fmt=zfmt))
        elif type(item) in [timedelta]:
            tmp.append(timedelta2Str(item))
-       elif type(item) == unicode:
+       elif isinstance(item, unicode):
            tmp.append(item)
        else:
-           tmp.append(unicode(item))
+           tmp.append(str(item))
    return ", ".join(tmp)
 
 
@@ -4144,10 +4147,10 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
     # show day items starting with beg and ending with lst
     beg = datetime.today()
     tom = beg + ONEDAY
-    lst = beg + (days - 1)*ONEDAY
-    beg_fmt = beg.strftime("%Y%m%d")
-    tom_fmt = tom.strftime("%Y%m%d")
-    lst_fmt = lst.strftime("%Y%m%d")
+    lst = beg + (days - 1) * ONEDAY
+    beg_fmt = beg.strftime(u"%Y%m%d")
+    tom_fmt = tom.strftime(u"%Y%m%d")
+    lst_fmt = lst.strftime(u"%Y%m%d")
     if not items:
         return {}
     for item in items:
@@ -4158,21 +4161,21 @@ def getAgenda(allrows, colors=2, days=4, indent=2, width1=54,
                     # skip omitted items
                     continue
                 if item[0][1] == beg_fmt:
-                    item[1] = "{0}".format(fmt_date(beg, short=True))
+                    item[1] = u"{0}".format(fmt_date(beg, short=True))
                 elif item[0][1] == tom_fmt:
-                    item[1] = "{0}".format(fmt_date(tom, short=True))
+                    item[1] = u"{0}".format(fmt_date(tom, short=True))
                 day.append(item)
         elif item[0][0] == 'inbasket':
-            item.insert(1, "{0}{1}{2}".format(bb, _("In Basket"), eb))
+            item.insert(1, u"{0}{1}{2}".format(bb, _("In Basket"), eb))
             inbasket.append(item)
         elif item[0][0] == 'now':
-            item.insert(1, "{0}{1}{2}".format(bb, _("Now"), eb))
+            item.insert(1, u"{0}{1}{2}".format(bb, _("Now"), eb))
             now.append(item)
         elif item[0][0] == 'next':
-            item.insert(1, "{0}{1}{2}".format(bb, _("Next"), eb))
+            item.insert(1, u"{0}{1}{2}".format(bb, _("Next"), eb))
             next.append(item)
         elif item[0][0] == 'someday':
-            item.insert(1, "{0}{1}{2}".format(bb, _("Someday"), eb))
+            item.insert(1, u"{0}{1}{2}".format(bb, _("Someday"), eb))
             someday.append(item)
     tree = {}
     nv = 0
