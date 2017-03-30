@@ -2059,14 +2059,11 @@ def fmt_date(dt, short=False):
         if type(dt) == datetime:
             dt = dt.date()
         if dt == tdy.date():
-            dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt),
-                                                 gui_encoding, 'ignore'), TODAY)
+            dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt), gui_encoding, 'ignore'), TODAY)
         elif dt == tdy.date() - ONEDAY:
-            dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt),
-                                                 gui_encoding, 'ignore'), YESTERDAY)
+            dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt), gui_encoding, 'ignore'), YESTERDAY)
         elif dt == tdy.date() + ONEDAY:
-            dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt),
-                                                 gui_encoding, 'ignore'), TOMORROW)
+            dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt), gui_encoding, 'ignore'), TOMORROW)
         elif dt.year == tdy.year:
             dt_fmt = dt.strftime(shortyearlessfmt)
         else:
