@@ -8,6 +8,7 @@ import os.path
 from copy import deepcopy
 from textwrap import wrap
 import platform
+import json
 
 import logging
 import logging.config
@@ -118,7 +119,7 @@ def s2or3(s):
     else:
         return s
 
-from random import random
+from random import random, uniform
 from math import log
 
 
@@ -2066,6 +2067,13 @@ def fmt_date(dt, short=False):
         elif dt == tdy.date() + ONEDAY:
             dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt),
                                                  gui_encoding, 'ignore'), TOMORROW)
+=======
+            dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt), gui_encoding, 'ignore'), TODAY)
+        elif dt == tdy.date() - ONEDAY:
+            dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt), gui_encoding, 'ignore'), YESTERDAY)
+        elif dt == tdy.date() + ONEDAY:
+            dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt), gui_encoding, 'ignore'), TOMORROW)
+>>>>>>> export-json
         elif dt.year == tdy.year:
             dt_fmt = dt.strftime(shortyearlessfmt)
         else:
@@ -3568,9 +3576,12 @@ def get_rrule(hsh):
         if type(parts) != list:
             parts = [parts]
         if parts:
+            start = parse_str(dtstart, fmt=sfmt)
             for part in map(str, parts):
                 # rlst.append("RDATE:%s" % parse(part).strftime(sfmt))
-                rlst.append("RDATE:%s" % parse_str(part, fmt=sfmt))
+                plus = parse_str(part, fmt=sfmt)
+                if plus >= start:
+                    rlst.append("RDATE:%s" % plus)
     if '-' in hsh:
         tmprule = dtR.rrulestr("\n".join(rlst))
         parts = hsh['-']
@@ -5478,7 +5489,7 @@ def getDataFromFile(f, file2data, bef, file2uuids=None, uuid2hash=None, options=
 
             if 'b' in hsh:
                 time_diff = (dtl - today_datetime).days
-                if time_diff > 0 and time_diff <= hsh['b']:
+                if time_diff > 0 and time_diff <= int(hsh['b']):
                     if 'n' not in hsh or 'd' not in hsh['n']:
                         extstr = '%dd' % time_diff
                         exttd = 0 * ONEDAY
@@ -6150,6 +6161,315 @@ def export_ical_active(file2uuids, uuid2hash, vcal_file, calendars=None):
     finally:
         fo.close()
     return True
+
+
+def export_json(file2uuids, uuid2hash, options={}):
+    """
+    Export items from each calendar to a json file with @k entries corresponding to the calendar name.
+    New ids will be generated each time this is run.
+    """
+    # TODO: export relevant config info as well
+    json_folder = options.get('datadir', None)
+    calendars = options.get('calendars', None)
+    logger.debug("json_folder: {0}; calendars: {1}".format(json_folder, calendars))
+
+    cal_tuples = []
+    calfiles = []
+    if calendars:
+        for cal in calendars:
+            logger.debug('processing cal: {0}'.format(cal))
+            name = cal[0]
+            regex = re.compile(r'^{0}'.format(cal[2]))
+            cal_tuples.append((name, regex))
+    else:
+        logger.debug('processing cal: all')
+        regex = re.compile(r'^.*')
+        cal_tuples.append(('all', regex))
+
+    if not cal_tuples:
+        return
+
+    hsh  = {}
+    hsh['items'] = {}
+    logger.debug('using cal_tuples: {0}'.format(cal_tuples))
+    json_file = os.path.join(json_folder, "etm-db.json")
+
+    prefix, filelist = getFiles(options['datadir'])
+    filetimes = {}
+
+    for fp, rp in filelist:
+        atime = os.path.getatime(fp)
+        mtime = os.path.getmtime(fp)
+        filetimes[rp] = (mtime, max(atime - mtime, 86400))
+
+    # uuids for jobs will have etm:NN appended - we only want one copy
+    # e.g., b63c362940f147a1ae8404d8265fa4bdetm:01
+    for rp in file2uuids:
+        this_calendar = None
+        this_lst = []  # for error logging
+        for name, regex in cal_tuples:
+            if regex.match(rp):
+                this_calendar = name
+                intervals = len(file2uuids[rp])
+                stime, diff = filetimes[rp]
+                delta = diff / intervals
+                last_uid = ""
+                for uid in file2uuids[rp]:
+                    if uid[:32] == last_uid[:32]:
+                        # only use the first instance of job ids
+                        continue
+                    last_uid = uid
+                    secs = int(uniform(stime, stime + delta))
+                    id = int(datetime.fromtimestamp(secs).strftime("%Y%m%d%H%M%S%f"))
+                    stime += delta
+                    old_hsh = uuid2hash[uid]
+                    new_hsh = deepcopy(old_hsh)
+                    itemtype = old_hsh['itemtype']
+
+                    for key in new_hsh:
+                        if type(new_hsh[key]) is datetime:
+                            new_hsh[key] = new_hsh[key].strftime("%Y%m%dT%H%M")
+                        elif type(new_hsh[key]) is timedelta:
+                            new_hsh[key] = fmt_period(new_hsh[key])
+
+                    for key in  ['I', 'fileinfo']:
+                        if key in new_hsh:
+                            del new_hsh[key]
+                    if '_a' in new_hsh:
+                        alerts = []
+                        for alert in new_hsh['_a']:
+                            args = []
+                            if len(alert) >= 3:
+                                for r in alert[2]:
+                                    args.extend(r)
+                            args = [x.strip() for x in args]
+                            for td in alert[0]:
+                                td = fmt_period(td)
+                                for cmd in alert[1]:
+                                    alerts.append([td, cmd] + args)
+                        new_hsh['a'] = alerts
+                        del new_hsh['_a']
+                    if 'h' in new_hsh:
+                        tmp = []
+                        for pair in new_hsh['h']:
+                            tmp.append(pair[0].strftime("%Y%m%dT%H%M"))
+                        new_hsh['h'] = tmp
+
+                    if 'f' in new_hsh:
+                        d, n, f = getDoneAndTwo(old_hsh)
+                        o = old_hsh.get('o', 'k')
+                        if n:
+                            new_hsh['s'] = n.strftime("%Y%m%dT%H:%M")
+                            # if o == 'r':
+                            #     # reset start to the finish time
+                            #     new_hsh['s'] = old_hsh['f'][0][0].strftime("%Y%m%dT%H%M")
+                            # else:
+                            #     # reset start to the next due date
+                            #     new_hsh['s'] = n.strftime("%Y%m%dT%H:%M")
+                            new_hsh.setdefault('h', []).append(new_hsh['f'][0][0].strftime("%Y%m%dT%H%M"))
+                            del new_hsh['f']
+                        else:
+                            new_hsh['f'] = new_hsh['f'][0][0].strftime("%Y%m%dT%H%M")
+
+                    if '+' in new_hsh and 's' in new_hsh:
+                        new_hsh['+'] = [x for x in new_hsh['+'] if x.strftime("%Y%m%dT%H%M") >= new_hsh['s']]
+
+                    if 'rrule' in new_hsh:
+                        del new_hsh['rrule']
+                    if 'r' in new_hsh and 's in new_hsh':
+                        # drop the old dtstart and insert the new
+                        new_hsh['rrulestr'] = "DTSTART:{}\n{}".format(new_hsh['s'], new_hsh['r'][22:])
+                        del new_hsh['r']
+                    elif 's' in new_hsh:
+                        new_hsh['rrulestr'] = "RDATE:{}".format(new_hsh['s'])
+
+                    if '_j' in new_hsh:
+                        # print('jobs', new_hsh['_group_summary'], uid, new_hsh.get('f', 'unfinished'))
+                        count = 0
+                        jobs = {}
+                        # make sure jobs are in q order
+                        finished = True
+                        for job in new_hsh['_j']:
+                            q = job['q']
+                            del job['q']
+                            jobs.setdefault(q, []).append(job)
+
+                            if 'h' in job:
+                                tmp = []
+                                for pair in job['h']:
+                                    tmp.append(pair[0].strftime("%Y%m%dT%H%M"))
+                                job['h'] = tmp
+                            else:
+                                finished = False
+
+                            # if 'f' in job:
+                            #     job['f'] = job['f'][0][0].strftime("%Y%m%dT%H%M")
+                            # else:
+                            #     finished = False
+
+                        if 'f' in new_hsh and not finished:
+                            del new_hsh['f']
+
+                        q_keys = [x for x in jobs]
+                        q_keys.sort()
+                        q_count = 0
+                        prereqs = []
+                        for q_key in q_keys:
+                            tmp = []
+                            for job in jobs[q_key]:
+                                count += 1
+                                job['i'] = str(count)
+                                job['p'] = prereqs
+                                # job['j'] = "{} {}: {}".format(
+                                #     new_hsh['_group_summary'], job['i'], job['j'])
+                                tmp.append(job['i'])
+                            prereqs = tmp
+                        new_hsh['j'] = []
+                        for q in q_keys:
+                            new_hsh['j'].extend(jobs[q])
+                        del new_hsh['_j']
+                    for key in ['+', '-']:
+                        if key in new_hsh:
+                            tmp = []
+                            for dt in new_hsh[key]:
+                                tmp.append(dt.strftime("%Y%m%dT%H%M"))
+                            new_hsh[key] = tmp
+
+                    if '_p' in new_hsh:
+                        if 0 < new_hsh['_p'] < 10:
+                            new_hsh['p'] = new_hsh['_p']
+                        del new_hsh['_p']
+
+                    for key in ['_entry', '_id', '_rrulestr', '_summary', '_r']:
+                        if key in new_hsh:
+                            del new_hsh[key]
+                            nkey = key[1:]
+                            new_hsh[nkey] = old_hsh[key]
+                    this_c = new_hsh.get('c', None)
+                    this_l = new_hsh.get('l', None)
+                    new_hsh['l'] = "; ".join([x for x in [this_l, this_c] if x is not None])
+                    new_hsh['c'] = this_calendar
+                    k = old_hsh.get('k', None)
+                    if k is not None:
+                        new_hsh['n'] = k
+                        del new_hsh['k']
+                    if itemtype in ['+', '-', '%']:
+                        s = old_hsh.get('s', None)
+                        if s is None:
+                            # undated
+                            itemtype = '%'
+                        elif s.hour == s.minute == 0:
+                            # date-only
+                            itemtype = '+'
+                        else:
+                            # date-time
+                            itemtype = '-'
+                    if itemtype in ['^', '+', '%'] and 'z' in new_hsh:
+                        del new_hsh['z']
+                    if '_group_summary' in new_hsh:
+                        new_hsh['summary'] = new_hsh['_group_summary']
+                        del new_hsh['_group_summary']
+
+                    new_hsh['itemtype'] = itemtype
+                    new_hsh['entry'] = hsh2entry(new_hsh)
+                    try:
+                        json.dumps(new_hsh)
+                        hsh['items'][id] = new_hsh
+                    except:
+                        print('bad hsh')
+                        print(new_hsh)
+
+
+        if not this_calendar:
+            logger.debug('skipping {0} - no match in calendars'.format(rp))
+            print('skipping {0} - no match in calendars'.format(rp))
+
+    with open(json_file, 'w') as jo:
+        json.dump(hsh, jo, indent=1, sort_keys=True)
+
+    return True
+
+def etm2dsp(s):
+    """
+    >>> etm2dsp("20160710T1730")
+    (True, '2016-07-10 17:30')
+    >>> etm2dsp("2016710T1730")
+    (False, 'Invalid datetime: 2016710T1730')
+    """
+    dt_regex = re.compile(r'\d{8}T\d{4}')
+    d_regex = re.compile(r'\d{8}')
+    if dt_regex.match(s):
+        return True, "{}-{}-{} {}:{}".format(s[:4], s[4:6], s[6:8], s[9:11], s[11:])
+    elif d_regex.match(s):
+        return True, "{}-{}-{}".format(s[:4], s[4:6], s[6:8])
+    else:
+        return False, "Invalid datetime: {}".format(s)
+
+def hsh2entry(h):
+    """
+    """
+    all_keys = [x for x in "seabr+-cdfghijklmnopqtuvz"]
+    rrule_keys = [x for x in "iMmWwhmEtus"]
+    job_keys = [x for x in "jsabcdefhlnipq"]
+
+    res = []
+    hsh = deepcopy(h)
+    res.append("{} {}".format(hsh['itemtype'], hsh['summary']))
+    for k in all_keys:
+        if k not in hsh:
+            continue
+        v = hsh[k]
+        if k == 's':
+            res.append("@s {}".format(etm2dsp(v)[1]))
+        elif k in ['+', '-', 'h']:
+            # res.append("@{} {}".format(k, ", ".join([etm2dsp(x)[1] for x in v])))
+            res.append("@{} {}".format(k, ", ".join(v)))
+        elif k == 'r':
+            for r in v:
+                frq = r['f']
+                del r['f']
+                tmp = []
+                for amp_key in rrule_keys:
+                    if amp_key not in r:
+                        continue
+                    v = r[amp_key]
+                    if type(v) is list:
+                        v = ", ".join([str(x) for x in v])
+                    tmp.append("&{} {}".format(amp_key, v))
+                res.append("@r {} {}".format(frq, " ".join(tmp)))
+        elif k == 'j':
+            for j in v:
+                jnm = j['j']
+                del j['j']
+                tmp = []
+                for amp_key in job_keys:
+                    if amp_key not in j:
+                        continue
+                    if amp_key == 'a':
+                        for a in j['a']:
+                            tmp.append("&a {}: {}".format(a[0], " ".join(a[1:])))
+                    elif amp_key == 'p':
+                        if j['p']:
+                            tmp.append("&p {}".format(", ".join(j['p'])))
+                        # else:
+                        #     tmp.append("&p None")
+                    # elif amp_key == 'f':
+                    #     tmp.append("&f {}".format("; ".join(j['f'])))
+                    else:
+                        v = j[amp_key]
+                        if type(v) is list:
+                            v = ", ".join([str(x) for x in v])
+                        tmp.append("&{} {}".format(amp_key, v))
+                res.append("@j {} {}".format(jnm, " ".join(tmp)))
+        elif k == 'a':
+            for a in v:
+                res.append("@a {}: {}".format(a[0], ", ".join(a[1:])))
+        # elif k == 'f':
+        #     res.append(("@f {}".format("; ".join(v))))
+        else:
+            res.append("@{} {}".format(k, v))
+    return " ".join(res)
+
 
 
 def export_ical(file2uuids, uuid2hash, vcal_folder, calendars=None):

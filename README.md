@@ -344,7 +344,7 @@ When the major version number is incremented, both the minor version number and 
 
 ## License ##
 
-Copyright (c) 2009-2015 [Daniel Graham]. All rights reserved.
+Copyright (c) 2009-2016 [Daniel Graham]. All rights reserved.
 
 [Daniel Graham]: mailto://daniel.graham@duke.edu
 

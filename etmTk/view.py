@@ -99,7 +99,7 @@ from calendar import Calendar
 from decimal import Decimal
 
 from etmTk.data import (
-    fmt_weekday, fmt_dt, fmt_date, str2hsh, hsh2str, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, fmt_shortdatetime, get_reps, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_ical_item, export_ical_active, fmt_time, fmt_period, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, availableDates, syncTxt, update_subscription)
+    fmt_weekday, fmt_dt, fmt_date, str2hsh, hsh2str, tstr2SCI, leadingzero, relpath, s2or3, send_mail, send_text, get_changes, checkForNewerVersion, datetime2minutes, calyear, expand_template, id2Type, fmt_shortdatetime, get_reps, get_current_time, windoz, mac, setup_logging, gettz, commandShortcut, rrulefmt, tree2Text, date_calculator, AFTER, export_json, export_ical_item, export_ical_active, fmt_time, fmt_period, TimeIt, getReportData, getFileTuples, getAllFiles, updateCurrentFiles, availableDates, syncTxt, update_subscription)
 
 from etmTk.dialog import MenuTree, Timer, ReadOnlyText, MessageWindow, TextDialog, OptionsDialog, GetInteger, GetRepeat, GetDateTime, GetString, FileChoice, FINISH, STOPPED, PAUSED, RUNNING, ONEDAY, ONEMINUTE, SOMEREPS, ALLREPS, type2Text, SimpleEditor
 
@@ -793,6 +793,15 @@ class App(Tk):
         toolsmenu.entryconfig(12, accelerator=l)
         self.add2menu(path, (label, l))
 
+        l = "Shift-J"
+        c = "J"
+        label = _("Export to JSON")
+        toolsmenu.add_command(label=label, underline=1, command=self.exportToJson)
+        self.bind(c, self.exportToJson)
+
+        toolsmenu.entryconfig(13, accelerator=l)
+        self.add2menu(path, (label, l))
+
         # update subscriptions
         l = "Shift-M"
         c = "M"
@@ -800,7 +809,7 @@ class App(Tk):
         toolsmenu.add_command(label=label, underline=1, command=self.updateSubscriptions)
         self.bind(c, self.updateSubscriptions)
 
-        toolsmenu.entryconfig(13, accelerator=l)
+        toolsmenu.entryconfig(14, accelerator=l)
         self.add2menu(path, (label, l))
 
         # changes
@@ -812,7 +821,7 @@ class App(Tk):
             toolsmenu.add_command(label=label, underline=1, command=self.showChanges)
             self.bind(c, lambda event: self.after(AFTER, self.showChanges))
 
-            toolsmenu.entryconfig(14, accelerator=l)
+            toolsmenu.entryconfig(15, accelerator=l)
             self.add2menu(path, (label, l))
 
         menubar.add_cascade(label=path, menu=toolsmenu, underline=0)
@@ -1289,6 +1298,13 @@ returns:
             self._exportItemToIcal()
         else:
             self._exportActiveToIcal()
+
+    def exportToJson(self, e=None):
+        res = export_json(loop.file2uuids, loop.uuid2hash, loop.options)
+        if res:
+            prompt = _("Items successfully exported to etm-db.json")
+        else:
+            prompt = _("Could not export items.")
 
     def _exportItemToIcal(self):
         if 'icsitem_file' in loop.options:
