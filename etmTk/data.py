@@ -95,7 +95,7 @@ if platform.python_version() >= '3':
     python_version = 3
     python_version2 = False
     from io import StringIO
-    # unicode = lambda x: x
+    unicode = str
     u = lambda x: x
     raw_input = input
     from urllib.parse import quote
