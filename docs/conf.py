@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-etm_version = '3.2.28p3'
+etm_version = '3.2.29'
 #
 # etm documentation build configuration file, created by
 # sphinx-quickstart on Tue Oct  4 12:15:08 2016.
