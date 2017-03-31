@@ -17,13 +17,10 @@ logger = logging.getLogger()
 this_dir, this_filename = os.path.split(__file__)
 LANGUAGES = os.path.normpath(os.path.join(this_dir, "locale"))
 
-# BGCOLOR = HLCOLOR = FGCOLOR = CALENDAR_COLORS = None
+BGCOLOR = HLCOLOR = FGCOLOR = CALENDAR_COLORS = None
 
 def _(x):
     return(x)
-
-def addedthis():
-    pass
 
 def setup_logging(level, etmdir=None):
     """
