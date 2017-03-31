@@ -2062,18 +2062,14 @@ def fmt_date(dt, short=False):
             dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt),
                                                  gui_encoding, 'ignore'), TODAY)
         elif dt == tdy.date() - ONEDAY:
-            dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt),
-                                                 gui_encoding, 'ignore'), YESTERDAY)
+            dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt), gui_encoding, 'ignore'), YESTERDAY)
         elif dt == tdy.date() + ONEDAY:
-            dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt),
-                                                 gui_encoding, 'ignore'), TOMORROW)
-=======
+            dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt), gui_encoding, 'ignore'), TOMORROW)
             dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt), gui_encoding, 'ignore'), TODAY)
         elif dt == tdy.date() - ONEDAY:
             dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt), gui_encoding, 'ignore'), YESTERDAY)
         elif dt == tdy.date() + ONEDAY:
             dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt), gui_encoding, 'ignore'), TOMORROW)
->>>>>>> export-json
         elif dt.year == tdy.year:
             dt_fmt = dt.strftime(shortyearlessfmt)
         else:
