@@ -95,7 +95,6 @@ if platform.python_version() >= '3':
     python_version = 3
     python_version2 = False
     from io import StringIO
-    from builtins import str
     unicode = str
     u = lambda x: x
     raw_input = input
@@ -2060,17 +2059,22 @@ def fmt_date(dt, short=False):
         if type(dt) == datetime:
             dt = dt.date()
         if dt == tdy.date():
-            dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt),
-                                                 gui_encoding, 'ignore'), TODAY)
+            if python_version2:
+                dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt),
+                                                     gui_encoding, 'ignore'), TODAY)
+            else:
+                dt_fmt = "{0} ({1})".format(dt.strftime(shortyearlessfmt), TODAY)
+
         elif dt == tdy.date() - ONEDAY:
-            dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt), gui_encoding, 'ignore'), YESTERDAY)
+            if python_version2:
+                dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt), gui_encoding, 'ignore'), YESTERDAY)
+            else:
+                dt_fmt = "{0} ({1})".format(dt.strftime(shortyearlessfmt), YESTERDAY)
         elif dt == tdy.date() + ONEDAY:
-            dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt), gui_encoding, 'ignore'), TOMORROW)
-            dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt), gui_encoding, 'ignore'), TODAY)
-        elif dt == tdy.date() - ONEDAY:
-            dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt), gui_encoding, 'ignore'), YESTERDAY)
-        elif dt == tdy.date() + ONEDAY:
-            dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt), gui_encoding, 'ignore'), TOMORROW)
+            if python_version2:
+                dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt), gui_encoding, 'ignore'), TOMORROW)
+            else:
+                dt_fmt = "{0} ({1})".format(dt.strftime(shortyearlessfmt), TOMORROW)
         elif dt.year == tdy.year:
             dt_fmt = dt.strftime(shortyearlessfmt)
         else:
