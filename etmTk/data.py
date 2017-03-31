@@ -2060,11 +2060,9 @@ def fmt_date(dt, short=False):
             dt = dt.date()
         if dt == tdy.date():
             if python_version2:
-                dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt),
-                                                     gui_encoding, 'ignore'), TODAY)
+                dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt), gui_encoding, 'ignore'), TODAY)
             else:
                 dt_fmt = "{0} ({1})".format(dt.strftime(shortyearlessfmt), TODAY)
-
         elif dt == tdy.date() - ONEDAY:
             if python_version2:
                 dt_fmt = u"{0} ({1})".format(unicode(dt.strftime(shortyearlessfmt), gui_encoding, 'ignore'), YESTERDAY)
