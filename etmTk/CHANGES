@@ -1,26 +1,60 @@
-# Recent changes as of Fri Mar 31 08:04:22 EDT 2017:
-- 13 hours ago (HEAD -> master, tag: 3.2.29) Dan Graham
+# Recent changes as of Fri Mar 31 09:35:30 EDT 2017:
+- 8 minutes ago (HEAD -> master, tag: 3.2.30) Dan Graham
+    4d8cdae 2017-03-31 09:28:19 -0400
+    Incorporated unicode fixes from Sebastian. Merged export-json.
+    Tagged version 3.2.30 [2017-03-31 09:28:19 -0400].
+
+- 25 minutes ago Dan Graham
+    400626d 2017-03-31 09:10:29 -0400
+    Auto-commit: saved data.py
+
+- 29 minutes ago Dan Graham
+    3706c2d 2017-03-31 09:07:09 -0400
+    Auto-commit: saved data.py
+
+- 54 minutes ago Dan Graham
+    8a66e16 2017-03-31 08:41:30 -0400
+    Auto-commit: saved
+    fugitive:///Users/dag/etm-tk/.git//0/etmTk/data.py
+
+- 67 minutes ago Dan Graham
+    6d07cf0 2017-03-31 08:29:11 -0400
+    Auto-commit: saved data.py
+
+- 68 minutes ago Dan Graham
+    d2ae945 2017-03-31 08:28:13 -0400
+    Auto-commit: saved data.py
+
+- 68 minutes ago Dan Graham
+    fd01f91 2017-03-31 08:27:33 -0400
+    Auto-commit: saved data.py
+
+- 77 minutes ago Dan Graham
+    9f5cc21 2017-03-31 08:18:44 -0400
+    Auto-commit: saved data.py
+
+- 15 hours ago (tag: 3.2.29) Dan Graham
     44a7600 2017-03-30 19:03:50 -0400
     Auto-commit: saved data.py Tagged version 3.2.29 [2017-03-30
     19:03:50 -0400].
 
-- 14 hours ago Dan Graham
+- 15 hours ago Dan Graham
     bdd200f 2017-03-30 18:19:52 -0400
     Auto-commit: saved data.py
 
-- 14 hours ago (export-json) Dan Graham
+- 16 hours ago (export-json) Dan Graham
     24c693d 2017-03-30 18:03:51 -0400
     Back to master
 
-- 14 hours ago Dan Graham
+- 16 hours ago Dan Graham
     41f3f98 2017-03-30 17:58:00 -0400
     Auto-commit: saved .gitignore
 
-- 15 hours ago Dan Graham
+- 16 hours ago Dan Graham
     a9a3945 2017-03-30 17:19:56 -0400
     Auto-commit: saved data.py
 
-- 15 hours ago Dan Graham
+- 16 hours ago Dan Graham
     134bd7f 2017-03-30 17:15:53 -0400
     Auto-commit: saved data.py
 
@@ -470,46 +504,4 @@
 - 1 year, 8 months ago Dan Graham
     af056ec 2015-08-15 17:10:19 -0400
     Message tweaks for last alert.
-
-- 1 year, 8 months ago Dan Graham
-    4b9c07c 2015-08-15 16:21:39 -0400
-    Add the timedelta for next scheduled alert or None if this is the
-    last to the hash. Only show the snooze message alert if it is the
-    last.
-
-- 1 year, 8 months ago (tag: 3.2.1) Dan Graham
-    2e1323b 2015-08-15 07:46:45 -0400
-    Use the last snooze minutes as the default for the next. Changed
-    the prompt for countdown to mirror the snooze question. Changed
-    "Snooze/Countdown" to "Countdown". Tagged version 3.2.1
-    [2015-08-15 07:46:45 -0400].
-
-- 1 year, 8 months ago Dan Graham
-    a2e0e13 2015-08-14 15:25:09 -0400
-    Merge branch 'countdown'
-
-- 1 year, 8 months ago (tag: 3.2.0) Dan Graham
-    30774fd 2015-08-14 14:53:03 -0400
-    Label and shortcut menu fixes. Tagged version 3.2.0 [2015-08-14
-    14:53:03 -0400].
-
-- 1 year, 8 months ago (tag: 3.1.61) Dan Graham
-    44471c2 2015-08-14 14:44:27 -0400
-    added snooze screen shot Tagged version 3.1.61 [2015-08-14
-    14:44:27 -0400].
-
-- 1 year, 8 months ago Dan Graham
-    68ca92a 2015-08-14 13:06:06 -0400
-    Removed smtp_to from options.
-
-- 1 year, 8 months ago Dan Graham
-    a891ff7 2015-08-14 07:02:43 -0400
-    Added snooze to the internal message box alert. In expand
-    template, replace multiple blank lines with a single blank line.
-    Added snooze_command and snooze_minutes to options.
-
-- 1 year, 8 months ago Dan Graham
-    38891c4 2015-08-13 10:55:52 -0400
-    Added snooze for message alerts. Display the time of the next
-    countdown or snooze in the status bar.
 
