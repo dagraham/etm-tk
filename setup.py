@@ -60,15 +60,14 @@ setup(
     extras_require=EXTRAS_REQUIRE,
     # extras_require={"icalendar": ["icalendar>=3.8.4"]},
     package_data={
-        'etmTk': ['icons/*', 'etm.desktop', 'etm.appdata.xml', 'CHANGES', 'etm.1', 'etm.xpm'],
+        'etmTk': ['icons/*', 'etm.desktop', 'etm.appdata.xml', 'CHANGES', 'etm.1'],
         'etmTk/help' : ['help/UserManual.html'],
         'etmTk/icons': ['icons/*']},
     data_files=[
         ('share/man/man1', ['etmTk/etm.1']),
         ('share/doc/etm', ['etmTk/CHANGES']),
-        ('share/pixmaps', ['etmTk/etm.xpm']),
         ('share/icons', glob.glob('etmTk/icons/*.gif')),
         ('share/applications', ['etmTk/etm.desktop']),
-        ('share/appdata', ['etmTk/etm.appdata.xml']),
+        ('share/metainfo', ['etmTk/etm.appdata.xml']),
     ]
 )
