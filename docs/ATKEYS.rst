@@ -87,13 +87,13 @@ not given, there are the following possible values for ``action``:
     Execute ``alert_soundcmd`` in ``etmtk.cfg``.
 
 
-``t [; phonenumbers]``      
+``t [; phonenumbers]`` 
     Send text messages to phonenumbers (a comma separated list of 10 digit phone
     numbers with the sms extension of the carrier appended) with the expanded
     value of sms.message as the text message.
 
 
-``v``   
+``v`` 
     Execute ``alert_voicecmd`` in ``etmtk.cfg``.
 
 
@@ -163,13 +163,13 @@ reflecting the datetime that the last job was done and, if the task
 group is repeating, the ``&f`` entries are removed from the individual
 jobs.
 
-Another step is taken for repeating task groups. When the first job in a
+Another step is taken for repeating task groups. When the last job in a
 task group is completed, the ``@s`` entry is updated using the setting
 for ``@o`` (above) to show the next datetime the task group is due and
 the ``@f`` entry is removed from the task group. This means when some,
 but not all of the jobs for the current repetition have been completed,
 only these job completions will be displayed. Otherwise, when none of
-the jobs for the current repetition have been completed, then only that
+the jobs for the current repetition have been completed, then only the
 last completion of the task group itself will be displayed.
 
 Consider, for example, the following repeating task group which repeats
@@ -192,9 +192,7 @@ prerequisite for "mail checks".
 The repetition that was due on 10/25 was completed on 10/24. The next
 repetition was due on 11/23 and, since none of the jobs for this
 repetition have been completed, the completion of the group on 10/24 and
-the list of jobs due on 11/23 will be displayed initially. The following
-sequence of screen shots show the effect of completing the jobs for the
-11/23 repetition one by one on 11/27.
+the list of jobs due on 11/23 will be displayed initially. 
 
 @g goto
 -------
@@ -206,14 +204,14 @@ this case, pressing *G* would open the URL in your default browser::
 
     - join the etm discussion group @s +1/1
       @g http://groups.google.com/group/eventandtaskmanager/topics
-      
+
 
 Template expansion is supported so it is also possible to use a
 ``mailto`` link such as the following::
 
     - the subject of the email @d The body of the email 
       @g mailto:sam@what.com?cc=joe@when.net\&subject=!summary!\&body=!d!
-      
+
 
 Pressing *G* with this item selected would create a new message in your
 email application with "To: sam@what.com", "Cc: joe@when.net", "Subject:
@@ -373,10 +371,10 @@ context "queue" and ordered by age with the oldest first::
     Next
        ...
        queue
-           - first in queue                           3d2h       
-           - second in queue                        1d23h35m     
-           - third in queue                          1d2h35m     
-           - fourth in queue                          3h35m      
+           - first in queue                           3d2h 
+           - second in queue                        1d23h35m 
+           - third in queue                          1d2h35m 
+           - fourth in queue                          3h35m 
 
 @r repetition rule
 ------------------
@@ -393,7 +391,7 @@ A repetition rule begins with::
     @r frequency
 
 where ``frequency`` is one of the following characters:
-    
+
     ===     ======================================================
     y       yearly
     m       monthly
@@ -431,7 +429,7 @@ The ``@r frequency`` entry can, optionally, be followed by one or more
     Use, e.g., -1 for the last day of the month or 5, 10 for the 5th and 10th of the month.
 &W: byweekno 
     (1, 2, ..., 53)
-    
+
 &w: byweekday 
     (*English* weekday abbreviation SU ... SA). 
     Use, e.g., 3WE for the 3rd Wednesday or -1FR, for the last Friday in the month.
