@@ -192,7 +192,9 @@ prerequisite for "mail checks".
 The repetition that was due on 10/25 was completed on 10/24. The next
 repetition was due on 11/23 and, since none of the jobs for this
 repetition have been completed, the completion of the group on 10/24 and
-the list of jobs due on 11/23 will be displayed initially. 
+the list of jobs due on 11/23 will be displayed initially. The following
+sequence of screen shots show the effect of completing the jobs for the
+11/23 repetition one by one on 11/27.
 
 @g goto
 -------
