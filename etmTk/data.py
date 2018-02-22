@@ -6279,7 +6279,7 @@ def export_json(file2uuids, uuid2hash, options={}):
 
                     if 'rrule' in new_hsh:
                         del new_hsh['rrule']
-                    if 'r' in new_hsh and 's in new_hsh':
+                    if 'r' in new_hsh and 's' in new_hsh:
                         # drop the old dtstart and insert the new
                         new_hsh['rrulestr'] = "DTSTART:{}\n{}".format(new_hsh['s'], new_hsh['r'][22:])
                         del new_hsh['r']
@@ -6348,6 +6348,14 @@ def export_json(file2uuids, uuid2hash, options={}):
                             del new_hsh[key]
                             nkey = key[1:]
                             new_hsh[nkey] = old_hsh[key]
+                    if 'r' in new_hsh:
+                        tmp_r = []
+                        for tmp_hsh in new_hsh['r']:
+                            if 't' in tmp_hsh:
+                                tmp_hsh['c'] = tmp_hsh['t']
+                                del tmp_hsh['t']
+                            tmp_r.append(tmp_hsh)
+                        new_hsh['r'] = tmp_r
                     this_c = new_hsh.get('c', None)
                     this_l = new_hsh.get('l', None)
                     temp_l = "; ".join([x for x in [this_l, this_c] if x is not None])
@@ -6426,8 +6434,9 @@ def etm2dsp(s):
 def hsh2entry(h):
     """
     """
-    all_keys = [x for x in "seabr+-cdfghijklmnopqtuvz"]
-    rrule_keys = [x for x in "iMmWwhmEtus"]
+    # all_keys = [x for x in "seabr+-cdfghijklmnopqtuvz"]
+    all_keys = [x for x in "seabr+-cdfghijlmnoptxz"]
+    rrule_keys = [x for x in "iMmWwhmEcus"]
     job_keys = [x for x in "jsabcdefhlnipq"]
 
     res = []
