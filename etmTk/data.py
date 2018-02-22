@@ -19,9 +19,11 @@ LANGUAGES = os.path.normpath(os.path.join(this_dir, "locale"))
 
 BGCOLOR = HLCOLOR = FGCOLOR = CALENDAR_COLORS = None
 
+
 def _(x):
     return(x)
 
+    
 def setup_logging(level, etmdir=None):
     """
     Setup logging configuration. Override root:level in
