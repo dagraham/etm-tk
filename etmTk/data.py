@@ -23,7 +23,7 @@ BGCOLOR = HLCOLOR = FGCOLOR = CALENDAR_COLORS = None
 def _(x):
     return(x)
 
-    
+
 def setup_logging(level, etmdir=None):
     """
     Setup logging configuration. Override root:level in
@@ -6166,7 +6166,7 @@ def export_ical_active(file2uuids, uuid2hash, vcal_file, calendars=None):
 
 def export_json(file2uuids, uuid2hash, options={}):
     """
-    Export items from each calendar to a json file with @k entries corresponding to the calendar name.
+    Export items from each calendar to a json file with @c entries corresponding to the calendar name.
     New ids will be generated each time this is run.
     """
     # TODO: export relevant config info as well
@@ -6207,7 +6207,7 @@ def export_json(file2uuids, uuid2hash, options={}):
     # e.g., b63c362940f147a1ae8404d8265fa4bdetm:01
     for rp in file2uuids:
         this_calendar = None
-        this_lst = []  # for error logging
+        # this_lst = []  # for error logging
         for name, regex in cal_tuples:
             if regex.match(rp):
                 this_calendar = name
@@ -6226,6 +6226,8 @@ def export_json(file2uuids, uuid2hash, options={}):
                     old_hsh = uuid2hash[uid]
                     new_hsh = deepcopy(old_hsh)
                     itemtype = old_hsh['itemtype']
+                    if itemtype in ['=', '#']:
+                        continue
 
                     for key in new_hsh:
                         if type(new_hsh[key]) is datetime:
@@ -6260,7 +6262,7 @@ def export_json(file2uuids, uuid2hash, options={}):
                         d, n, f = getDoneAndTwo(old_hsh)
                         o = old_hsh.get('o', 'k')
                         if n:
-                            new_hsh['s'] = n.strftime("%Y%m%dT%H:%M")
+                            new_hsh['s'] = n.strftime("%Y%m%dT%H%M")
                             # if o == 'r':
                             #     # reset start to the finish time
                             #     new_hsh['s'] = old_hsh['f'][0][0].strftime("%Y%m%dT%H%M")
@@ -6348,28 +6350,43 @@ def export_json(file2uuids, uuid2hash, options={}):
                             new_hsh[nkey] = old_hsh[key]
                     this_c = new_hsh.get('c', None)
                     this_l = new_hsh.get('l', None)
-                    new_hsh['l'] = "; ".join([x for x in [this_l, this_c] if x is not None])
+                    temp_l = "; ".join([x for x in [this_l, this_c] if x is not None])
+                    if temp_l:
+                        new_hsh['l'] = temp_l
                     new_hsh['c'] = this_calendar
                     k = old_hsh.get('k', None)
                     if k is not None:
-                        new_hsh['n'] = k
+                        new_hsh['i'] = k
                         del new_hsh['k']
                     if itemtype in ['+', '-', '%']:
+                        itemtype = '-'
                         s = old_hsh.get('s', None)
                         if s is None:
                             # undated
-                            itemtype = '%'
+                            if 'z' in new_hsh:
+                                del new_hsh['z']
                         elif s.hour == s.minute == 0:
                             # date-only
-                            itemtype = '+'
-                        else:
-                            # date-time
-                            itemtype = '-'
-                    if itemtype in ['^', '+', '%'] and 'z' in new_hsh:
-                        del new_hsh['z']
+                            if 'z' in new_hsh:
+                                del new_hsh['z']
                     if '_group_summary' in new_hsh:
                         new_hsh['summary'] = new_hsh['_group_summary']
                         del new_hsh['_group_summary']
+
+                    if itemtype == "^":
+                        itemtype = "*"
+                        if 'z' in new_hsh:
+                            del new_hsh['z']
+                    elif itemtype == "!":
+                        itemtype = "%"
+                    elif itemtype == "$":
+                        itemtype = "!"
+                    elif itemtype == "~":
+                        itemtype = "$"
+                        tmp_s = parse_str(new_hsh['s'], new_hsh.get('z', None))
+                        tmp_e = parse_period(new_hsh['e'])
+                        new_hsh['f'] = (tmp_s + tmp_e).strftime("%Y%m%dT%H%M")
+
 
                     new_hsh['itemtype'] = itemtype
                     new_hsh['entry'] = hsh2entry(new_hsh)
