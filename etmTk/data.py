@@ -6261,6 +6261,7 @@ def export_json(file2uuids, uuid2hash, options={}):
                     if 'f' in new_hsh:
                         d, n, f = getDoneAndTwo(old_hsh)
                         o = old_hsh.get('o', 'k')
+                        hd = []
                         if n:
                             new_hsh['s'] = n.strftime("%Y%m%dT%H%M")
                             # if o == 'r':
@@ -6269,10 +6270,13 @@ def export_json(file2uuids, uuid2hash, options={}):
                             # else:
                             #     # reset start to the next due date
                             #     new_hsh['s'] = n.strftime("%Y%m%dT%H:%M")
-                            new_hsh.setdefault('h', []).append(new_hsh['f'][0][0].strftime("%Y%m%dT%H%M"))
+                            hd = [x[0].strftime("%Y%m%dT%H%M") for x in new_hsh['f'][-3:]]
                             del new_hsh['f']
                         else:
-                            new_hsh['f'] = new_hsh['f'][0][0].strftime("%Y%m%dT%H%M")
+                            hd = [x[0].strftime("%Y%m%dT%H%M") for x in new_hsh['f'][-3:-1]]
+                            new_hsh['f'] = new_hsh['f'][-1][0].strftime("%Y%m%dT%H%M")
+                        if hd:
+                            new_hsh.setdefault('h', []).extend(hd)
 
                     if '+' in new_hsh and 's' in new_hsh:
                         new_hsh['+'] = [x for x in new_hsh['+'] if x.strftime("%Y%m%dT%H%M") >= new_hsh['s']]
@@ -6280,11 +6284,8 @@ def export_json(file2uuids, uuid2hash, options={}):
                     if 'rrule' in new_hsh:
                         del new_hsh['rrule']
                     if 'r' in new_hsh and 's' in new_hsh:
-                        # drop the old dtstart and insert the new
-                        new_hsh['rrulestr'] = "DTSTART:{}\n{}".format(new_hsh['s'], new_hsh['r'][22:])
+                        new_hsh['rrulestr'] = "{}".format(new_hsh['r'][22:])
                         del new_hsh['r']
-                    elif 's' in new_hsh:
-                        new_hsh['rrulestr'] = "RDATE:{}".format(new_hsh['s'])
 
                     if '_j' in new_hsh:
                         # print('jobs', new_hsh['_group_summary'], uid, new_hsh.get('f', 'unfinished'))
@@ -6391,13 +6392,18 @@ def export_json(file2uuids, uuid2hash, options={}):
                         itemtype = "!"
                     elif itemtype == "~":
                         itemtype = "$"
-                        tmp_s = parse_str(new_hsh['s'], new_hsh.get('z', None))
-                        tmp_e = parse_period(new_hsh['e'])
-                        new_hsh['f'] = (tmp_s + tmp_e).strftime("%Y%m%dT%H%M")
+                        if 'e' in new_hsh:
+                            tmp_s = parse_str(new_hsh['s'], new_hsh.get('z', None))
+                            tmp_e = parse_period(new_hsh['e'])
+                            new_hsh['f'] = (tmp_s + tmp_e).strftime("%Y%m%dT%H%M")
 
 
                     new_hsh['itemtype'] = itemtype
                     new_hsh['entry'] = hsh2entry(new_hsh)
+                    if 'r' in new_hsh:
+                        del new_hsh['r']
+                    # if 'z' in new_hsh:
+                    #     del new_hsh['z']
                     try:
                         json.dumps(new_hsh)
                         hsh['items'][id] = new_hsh
@@ -6418,16 +6424,27 @@ def export_json(file2uuids, uuid2hash, options={}):
 def etm2dsp(s):
     """
     >>> etm2dsp("20160710T1730")
-    (True, '2016-07-10 17:30')
+    (True, '2016-07-10 05:30PM')
     >>> etm2dsp("2016710T1730")
     (False, 'Invalid datetime: 2016710T1730')
+    >>> etm2dsp("20160710")
+    (True, '2016-07-10')
+    >>> etm2dsp("20160710T0000")
+    (True, '2016-07-10')
     """
+
     dt_regex = re.compile(r'\d{8}T\d{4}')
     d_regex = re.compile(r'\d{8}')
-    if dt_regex.match(s):
-        return True, "{}-{}-{} {}:{}".format(s[:4], s[4:6], s[6:8], s[9:11], s[11:])
-    elif d_regex.match(s):
-        return True, "{}-{}-{}".format(s[:4], s[4:6], s[6:8])
+    m_regex = re.compile(r'\d{8}T0000')
+    if m_regex.fullmatch(s):
+        dt = datetime.strptime(s, "%Y%m%dT%H%M")
+        return True, dt.strftime("%Y-%m-%d") 
+    elif d_regex.fullmatch(s):
+        dt = datetime.strptime(s, "%Y%m%d")
+        return True, dt.strftime("%Y-%m-%d") 
+    elif dt_regex.fullmatch(s):
+        dt = datetime.strptime(s, "%Y%m%dT%H%M")
+        return True, dt.strftime("%Y-%m-%d %I:%M%p") 
     else:
         return False, "Invalid datetime: {}".format(s)
 
@@ -6435,19 +6452,24 @@ def hsh2entry(h):
     """
     """
     # all_keys = [x for x in "seabr+-cdfghijklmnopqtuvz"]
-    all_keys = [x for x in "seabr+-cdfghijlmnoptxz"]
+    all_keys = [x for x in "seabr+-cdfghijlmnoptx"]
     rrule_keys = [x for x in "iMmWwhmEcus"]
     job_keys = [x for x in "jsabcdefhlnipq"]
 
     res = []
     hsh = deepcopy(h)
+    zstr = ""
+    if 'z' in hsh and hsh['z']:
+        if hsh['z'] != local_timezone:
+            zstr = ", {}".format(hsh['z'])
+        del hsh['z']
     res.append("{} {}".format(hsh['itemtype'], hsh['summary']))
     for k in all_keys:
         if k not in hsh:
             continue
         v = hsh[k]
         if k == 's':
-            res.append("@s {}".format(etm2dsp(v)[1]))
+            res.append("@s {}{}".format(etm2dsp(v)[1], zstr))
         elif k in ['+', '-', 'h']:
             # res.append("@{} {}".format(k, ", ".join([etm2dsp(x)[1] for x in v])))
             res.append("@{} {}".format(k, ", ".join(v)))
@@ -7792,4 +7814,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         if sys.argv[1] not in ['a', 'c']:
             etmdir = sys.argv.pop(1)
+    import doctest
+    doctest.testmod()
+
     main(etmdir, sys.argv)
