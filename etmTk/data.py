@@ -6255,9 +6255,9 @@ def export_json(file2uuids, uuid2hash, options={}):
                     if 'h' in new_hsh:
                         tmp = []
                         for pair in new_hsh['h']:
-                            tmp.append(pair[0].strftime("%Y%m%dT%H%M"))
+                            # tmp.append(pair[0].strftime("%Y%m%dT%H%M"))
+                            tmp.append([x.strftime("%Y%m%dT%H%M") for x in pair if x])
                         new_hsh['h'] = tmp
-
                     if 'f' in new_hsh:
                         d, n, f = getDoneAndTwo(old_hsh)
                         o = old_hsh.get('o', 'k')
@@ -6355,6 +6355,9 @@ def export_json(file2uuids, uuid2hash, options={}):
                             if 't' in tmp_hsh:
                                 tmp_hsh['c'] = tmp_hsh['t']
                                 del tmp_hsh['t']
+                            if 'f' in tmp_hsh:
+                                tmp_hsh['r'] = tmp_hsh['f']
+                                del tmp_hsh['f']
                             tmp_r.append(tmp_hsh)
                         new_hsh['r'] = tmp_r
                     this_c = new_hsh.get('c', None)
@@ -6400,8 +6403,8 @@ def export_json(file2uuids, uuid2hash, options={}):
 
                     new_hsh['itemtype'] = itemtype
                     new_hsh['entry'] = hsh2entry(new_hsh)
-                    if 'r' in new_hsh:
-                        del new_hsh['r']
+                    # if 'r' in new_hsh:
+                    #     del new_hsh['r']
                     # if 'z' in new_hsh:
                     #     del new_hsh['z']
                     try:
