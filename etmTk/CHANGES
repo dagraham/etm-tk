@@ -1,5 +1,10 @@
-# Recent changes as of Thu Mar  8 14:41:21 EST 2018:
-- 2 minutes ago (HEAD -> master, tag: 3.2.32) Dan Graham
+# Recent changes as of Thu Mar  8 14:55:51 EST 2018:
+- 21 seconds ago (HEAD -> master, tag: 3.2.32p1) Dan Graham
+    8cd923d 2018-03-08 14:55:43 -0500
+    fixed bug in hsh2ical Tagged version 3.2.32p1 [2018-03-08 14:55:43
+    -0500].
+
+- 16 minutes ago (tag: 3.2.32) Dan Graham
     88ed8da 2018-03-08 14:39:39 -0500
     export_json seems to give the desired result. Tagged version
     3.2.32 [2018-03-08 14:39:39 -0500].
@@ -490,10 +495,4 @@
     a546170 2015-08-19 12:39:48 -0400
     added alert_list image Tagged version 3.2.7 [2015-08-19 12:39:48
     -0400].
-
-- 2 years, 7 months ago Dan Graham
-    dc16e1e 2015-08-19 12:32:23 -0400
-    Removed unused variables. Show alert trigger time in snooze
-    dialog. Make snooze trigger at least 40 seconds after closing
-    dialog. Use '~' as show alerts label when none remain.
 
