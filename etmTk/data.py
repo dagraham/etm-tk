@@ -5972,7 +5972,7 @@ def hsh2ical(hsh):
         # repeating
         rlst = hsh[u'_r']
         for r in rlst:
-            if r['f'] == 'l':
+            if 'f' in r and r['f'] == 'l':
                 if '+' not in hsh:
                     logger.warn("An entry for '@+' is required but missing.")
                     continue
