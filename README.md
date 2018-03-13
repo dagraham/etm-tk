@@ -152,17 +152,17 @@ Python 2.7.x or python >= 3.3.0 is required.
 #### From PyPi - the Python Software Foundation Package Index
 
 If you have [pip] installed on your system you can install etm with the single command:
- 
+
     sudo pip install etmtk
-    
+
 and later update to the latest version with
 
     sudo pip install -U etmtk
-    
+
 Alternatively, [easy_install] can be used in a similar manner:
 
     sudo easy_install etmtk
-    
+
 or
 
     sudo easy_install -U etmtk
@@ -344,7 +344,7 @@ When the major version number is incremented, both the minor version number and 
 
 ## License ##
 
-Copyright (c) 2009-2016 [Daniel Graham]. All rights reserved.
+Copyright (c) 2009-2018 [Daniel Graham]. All rights reserved.
 
 [Daniel Graham]: mailto://daniel.graham@duke.edu
 
