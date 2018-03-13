@@ -1,47 +1,75 @@
-# Recent changes as of Thu Mar  8 15:16:37 EST 2018:
-- 21 seconds ago (HEAD -> master, tag: 3.2.33) Dan Graham
+# Recent changes as of Tue Mar 13 16:20:48 EDT 2018:
+- 23 seconds ago (HEAD -> master, tag: 3.2.33p1) Dan Graham
+    5451786 2018-03-13 16:20:38 -0400
+    merged Tagged version 3.2.33p1 [2018-03-13 16:20:38 -0400].
+
+- 28 minutes ago Dan Graham
+    b1ef507 2018-03-13 15:53:07 -0400
+    Merge branch 'master' of https://github.com/dagraham/etm-tk
+
+- 28 minutes ago Dan Graham
+    f7794d0 2018-03-13 15:52:43 -0400
+    data.py
+
+- 30 minutes ago (origin/master) Dan Graham
+    4fdde26 2018-03-13 15:50:42 -0400
+    CHANGES and docs/conf.py
+
+- 32 minutes ago Dan Graham
+    977a78c 2018-03-13 15:48:47 -0400
+    Merge branch 'master' of https://github.com/dagraham/etm-tk
+
+- 55 minutes ago (origin/export-json, export-json) Dan Graham
+    9b00ca7 2018-03-13 15:25:48 -0400
+    fixed bug in exporting alerts to json.
+
+- 5 days ago Dan Graham
     fe9a866 2018-03-08 15:16:24 -0500
     document tweaks Tagged version 3.2.33 [2018-03-08 15:16:24 -0500].
 
-- 21 minutes ago (tag: 3.2.32p1) Dan Graham
+- 5 days ago Dan Graham
     8cd923d 2018-03-08 14:55:43 -0500
     fixed bug in hsh2ical Tagged version 3.2.32p1 [2018-03-08 14:55:43
     -0500].
 
-- 37 minutes ago (tag: 3.2.32) Dan Graham
+- 5 days ago Dan Graham
     88ed8da 2018-03-08 14:39:39 -0500
     export_json seems to give the desired result. Tagged version
     3.2.32 [2018-03-08 14:39:39 -0500].
 
-- 3 days ago Dan Graham
+- 5 days ago Dan Graham
+    342219e 2018-03-08 14:39:39 -0500
+    export_json seems to give the desired result.
+
+- 8 days ago Dan Graham
     06e4b08 2018-03-05 10:59:06 -0500
     More export_json tweaks.
 
-- 12 days ago Dan Graham
+- 2 weeks ago Dan Graham
     3223760 2018-02-24 11:47:12 -0500
     More tweaks on export_json.
 
-- 2 weeks ago Dan Graham
+- 3 weeks ago Dan Graham
     17ad2b3 2018-02-22 12:52:52 -0500
     export_json now switches 't' to 'c' in rrules.
 
-- 2 weeks ago Dan Graham
+- 3 weeks ago Dan Graham
     7130d43 2018-02-22 11:48:46 -0500
     Added a png file and cleaned up extraneous files.
 
-- 2 weeks ago Dan Graham
+- 3 weeks ago Dan Graham
     a469ac1 2018-02-22 11:43:19 -0500
     export_json now uses the new etm-mvc item types
 
-- 2 weeks ago Dan Graham
+- 3 weeks ago Dan Graham
     067b2b3 2018-02-22 10:34:46 -0500
     Ready to work on export-json
 
-- 3 weeks ago Dan Graham
+- 4 weeks ago Dan Graham
     c93a7cb 2018-02-16 21:29:27 -0500
     Auto-commit: saved ATKEYS.rst
 
-- 3 weeks ago Dan Graham
+- 4 weeks ago Dan Graham
     8a46a91 2018-02-16 16:16:18 -0500
     Auto-commit: saved ATKEYS.rst
 
@@ -57,90 +85,90 @@
     Auto-commit: saved setup.py Tagged version 3.2.31 [2017-08-10
     16:27:53 -0400].
 
-- 11 months ago Dan Graham
+- 12 months ago Dan Graham
     3027d50 2017-03-31 11:04:15 -0400
     Auto-commit: saved
     fugitive:///Users/dag/etm-tk/.git//0/etmTk/data.py
 
-- 11 months ago Dan Graham
+- 12 months ago Dan Graham
     0997bc9 2017-03-31 10:55:04 -0400
     Auto-commit: saved
     fugitive:///Users/dag/etm-tk/.git//0/etmTk/data.py
 
-- 11 months ago Dan Graham
+- 12 months ago Dan Graham
     aad1112 2017-03-31 10:50:22 -0400
     Auto-commit: saved
     fugitive:///Users/dag/etm-tk/.git//0/etmTk/data.py
 
-- 11 months ago Dan Graham
+- 12 months ago Dan Graham
     aac9e52 2017-03-31 10:48:22 -0400
     Auto-commit: saved
     fugitive:///Users/dag/etm-tk/.git//0/etmTk/data.py
 
-- 11 months ago Dan Graham
+- 12 months ago Dan Graham
     ce692a2 2017-03-31 10:13:26 -0400
     Auto-commit: saved /Users/dag/etm-tk/setup.py
 
-- 11 months ago Dan Graham
+- 12 months ago Dan Graham
     cffbcdc 2017-03-31 09:39:54 -0400
     Updated conf.py, CHANGES and etm.1
 
-- 11 months ago (tag: 3.2.30) Dan Graham
+- 12 months ago (tag: 3.2.30) Dan Graham
     4d8cdae 2017-03-31 09:28:19 -0400
     Incorporated unicode fixes from Sebastian. Merged export-json.
     Tagged version 3.2.30 [2017-03-31 09:28:19 -0400].
 
-- 11 months ago Dan Graham
+- 12 months ago Dan Graham
     400626d 2017-03-31 09:10:29 -0400
     Auto-commit: saved data.py
 
-- 11 months ago Dan Graham
+- 12 months ago Dan Graham
     3706c2d 2017-03-31 09:07:09 -0400
     Auto-commit: saved data.py
 
-- 11 months ago Dan Graham
+- 12 months ago Dan Graham
     8a66e16 2017-03-31 08:41:30 -0400
     Auto-commit: saved
     fugitive:///Users/dag/etm-tk/.git//0/etmTk/data.py
 
-- 11 months ago Dan Graham
+- 12 months ago Dan Graham
     6d07cf0 2017-03-31 08:29:11 -0400
     Auto-commit: saved data.py
 
-- 11 months ago Dan Graham
+- 12 months ago Dan Graham
     d2ae945 2017-03-31 08:28:13 -0400
     Auto-commit: saved data.py
 
-- 11 months ago Dan Graham
+- 12 months ago Dan Graham
     fd01f91 2017-03-31 08:27:33 -0400
     Auto-commit: saved data.py
 
-- 11 months ago Dan Graham
+- 12 months ago Dan Graham
     9f5cc21 2017-03-31 08:18:44 -0400
     Auto-commit: saved data.py
 
-- 11 months ago (tag: 3.2.29) Dan Graham
+- 12 months ago (tag: 3.2.29) Dan Graham
     44a7600 2017-03-30 19:03:50 -0400
     Auto-commit: saved data.py Tagged version 3.2.29 [2017-03-30
     19:03:50 -0400].
 
-- 11 months ago Dan Graham
+- 12 months ago Dan Graham
     bdd200f 2017-03-30 18:19:52 -0400
     Auto-commit: saved data.py
 
-- 11 months ago Dan Graham
+- 12 months ago Dan Graham
     24c693d 2017-03-30 18:03:51 -0400
     Back to master
 
-- 11 months ago Dan Graham
+- 12 months ago Dan Graham
     41f3f98 2017-03-30 17:58:00 -0400
     Auto-commit: saved .gitignore
 
-- 11 months ago Dan Graham
+- 12 months ago Dan Graham
     a9a3945 2017-03-30 17:19:56 -0400
     Auto-commit: saved data.py
 
-- 11 months ago Dan Graham
+- 12 months ago Dan Graham
     134bd7f 2017-03-30 17:15:53 -0400
     Auto-commit: saved data.py
 
@@ -151,7 +179,7 @@
     [2016-10-05 09:05:13 -0400]. Tagged version 3.2.28p3 [2016-10-05
     09:05:13 -0400].
 
-- 1 year, 5 months ago (origin/export-json) Dan Graham
+- 1 year, 5 months ago Dan Graham
     9bc0b9f 2016-10-04 21:44:28 -0400
     Added rst docs using sphinx.
 
@@ -210,11 +238,11 @@
     Fixed timezone bug in processing dated reports with rrules. Tagged
     version 3.2.27 [2016-05-23 15:04:24 -0400].
 
-- 1 year, 10 months ago Dan Graham
+- 1 year, 11 months ago Dan Graham
     b5b1d4d 2016-04-26 11:16:34 -0400
     Removed version info conflicts.
 
-- 1 year, 10 months ago Dan Graham
+- 1 year, 11 months ago Dan Graham
     d1b86f8 2016-04-26 11:07:42 -0400
     Merge remote-tracking branch 'origin/master'
 
@@ -224,28 +252,28 @@
     #	etmTk/v.py
     #	etmTk/version.py
 
-- 1 year, 10 months ago Dan Graham
+- 1 year, 11 months ago Dan Graham
     ab4b5e9 2016-04-26 11:06:36 -0400
     Coordinated versions with github
 
-- 1 year, 11 months ago (tag: 3.2.26) Dan Graham
+- 2 years ago (tag: 3.2.26) Dan Graham
     74262ed 2016-03-28 10:39:48 -0400
     Fixed @f entry when editing this instance of a repeating task.
     Tagged version 3.2.25 [2016-03-28 10:39:48 -0400]. Tagged version
     3.2.25p1 [2016-03-28 10:39:48 -0400]. Tagged version 3.2.26
     [2016-03-28 10:39:48 -0400].
 
-- 1 year, 11 months ago Dan Graham
+- 2 years ago Dan Graham
     5d5f261 2016-03-28 10:39:48 -0400
     Fixed @f entry when editing this instance of a repeating task.
     Tagged version 3.2.25 [2016-03-28 10:39:48 -0400]. Tagged version
     3.2.25p1 [2016-03-28 10:39:48 -0400].
 
-- 1 year, 11 months ago Dan Graham
+- 2 years ago Dan Graham
     a4cabe7 2016-03-28 10:39:48 -0400
     Fixed @f entry when editing this instance of a repeating task.
 
-- 1 year, 11 months ago Dan Graham
+- 2 years ago Dan Graham
     ef32f89 2016-03-27 15:59:44 -0400
     Fix for dateutil 2.5.1 in getInstance.
 
@@ -425,29 +453,29 @@
     3.2.14p6 [2015-08-29 07:57:43 -0400]. Tagged version 3.2.15
     [2015-08-29 07:57:43 -0400].
 
-- 2 years, 6 months ago (tag: 3.2.13p2) Dan Graham
+- 2 years, 7 months ago (tag: 3.2.13p2) Dan Graham
     a6c3304 2015-08-28 06:27:11 -0400
     Fixed bug in updateClock. Tagged version 3.2.14 [2015-08-28
     06:27:11 -0400].
 
-- 2 years, 6 months ago Dan Graham
+- 2 years, 7 months ago Dan Graham
     3a6a388 2015-08-28 06:27:11 -0400
     Fixed bug in updateClock.
 
-- 2 years, 6 months ago (tag: 3.2.13) Dan Graham
+- 2 years, 7 months ago (tag: 3.2.13) Dan Graham
     2dab897 2015-08-26 12:07:13 -0400
     Set options['bef'] in get_options and update on new_day in
     update_clock. Refactored oneminute, onehour, oneday, oneweek as
     all uppercase to be consistent. Tagged version 3.2.13 [2015-08-26
     12:07:13 -0400].
 
-- 2 years, 6 months ago (tag: 3.2.12) Dan Graham
+- 2 years, 7 months ago (tag: 3.2.12) Dan Graham
     5a76ce8 2015-08-24 17:44:04 -0400
     Changed the options for when/if to close the alert message box to
     message_next and message_last. Tagged version 3.2.12 [2015-08-24
     17:44:04 -0400].
 
-- 2 years, 6 months ago Dan Graham
+- 2 years, 7 months ago Dan Graham
     0588774 2015-08-24 12:57:07 -0400
     Added 'next' and 'next_alert' to template expansions. Added auto
     close to message box dialogs using options 'message_alert_seconds'
@@ -458,40 +486,4 @@
     4d01318 2015-08-21 17:01:13 -0400
     Cancel snooze if item is rescheduled, edited or deleted. Tagged
     version 3.2.11 [2015-08-21 17:01:13 -0400].
-
-- 2 years, 7 months ago (tag: 3.2.10) Dan Graham
-    83af7b5 2015-08-21 11:25:03 -0400
-    Check that @n is only used with item types "-" and "%" and only
-    contains values from "d", "k" and "t". Tagged version 3.2.10
-    [2015-08-21 11:25:03 -0400].
-
-- 2 years, 7 months ago Dan Graham
-    1c681ff 2015-08-21 10:42:34 -0400
-    Check that @n is only used with item types "-" and "%" and only
-    contains values from "d", "k" and "t".
-
-- 2 years, 7 months ago (tag: 3.2.9) Dan Graham
-    e119efe 2015-08-20 13:04:31 -0400
-    Changed sort order for @n. Tagged version 3.2.9 [2015-08-20
-    13:04:31 -0400].
-
-- 2 years, 7 months ago Dan Graham
-    49b11c8 2015-08-20 12:58:52 -0400
-    Added @n (no show) for itemtype "-" only. Takes a list of views
-    from a)genda, d)ay (week and month), t)ag, k)eyword. E.g. with "@n
-    a, d" the task would be omitted from both agenda and day (week and
-    month) views but would appear in tag and keyword views. Note that
-    it is not possible to exclude the item from path view.
-
-- 2 years, 7 months ago (tag: 3.2.8, hidden) Dan Graham
-    afcf5ab 2015-08-19 18:11:40 -0400
-    image updates Tagged version 3.2.8 [2015-08-19 18:11:40 -0400].
-
-- 2 years, 7 months ago Dan Graham
-    d8ba751 2015-08-19 17:58:28 -0400
-    In onFinish, skip alertId for items without starting times.
-
-- 2 years, 7 months ago Dan Graham
-    fac82ae 2015-08-19 17:53:46 -0400
-    Trap and report errors in parse_period.
 
