@@ -6240,16 +6240,22 @@ def export_json(file2uuids, uuid2hash, options={}):
                             del new_hsh[key]
                     if '_a' in new_hsh:
                         alerts = []
-                        for alert in new_hsh['_a']:
+                        for a_tup in new_hsh['_a']:
+                            if len(a_tup) <= 1:
+                                alert = a_tup[0]
+                            else:
+                                alert = a_tup
+
                             args = []
                             if len(alert) >= 3:
                                 for r in alert[2]:
                                     args.extend(r)
                             args = [x.strip() for x in args]
+                            tds = []
                             for td in alert[0]:
-                                td = fmt_period(td)
-                                for cmd in alert[1]:
-                                    alerts.append([td, cmd] + args)
+                                tds.append(fmt_period(td))
+                            for cmd in alert[1]:
+                                alerts.append((tds, cmd, args))
                         new_hsh['a'] = alerts
                         del new_hsh['_a']
                     if 'h' in new_hsh:
@@ -6399,9 +6405,9 @@ def export_json(file2uuids, uuid2hash, options={}):
 
 
                     new_hsh['itemtype'] = itemtype
-                    new_hsh['entry'] = hsh2entry(new_hsh)
-                    if 'r' in new_hsh:
-                        del new_hsh['r']
+                    # new_hsh['entry'] = hsh2entry(new_hsh)
+                    # if 'r' in new_hsh:
+                    #     del new_hsh['r']
                     # if 'z' in new_hsh:
                     #     del new_hsh['z']
                     try:
@@ -7229,7 +7235,7 @@ Generate an agenda including dated items for the next {0} days (agenda_days from
                 tmp = []
                 for h in hsh_rev['_r']:
                     if 'f' in h and h['f'] != u'l':
-                        h['u'] = dtn - ONEMINUTE
+                        h['u'] = (dtn - ONEMINUTE).strftime(sfmt)
                     tmp.append(h)
                 hsh_rev['_r'] = tmp
 
