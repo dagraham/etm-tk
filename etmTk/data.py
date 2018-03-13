@@ -5982,7 +5982,7 @@ def hsh2ical(hsh):
                 dt = dz
                 dd = dz.date()
 
-                r['f'] = 'd'
+                r['r'] = 'd'
                 r['t'] = 1
 
             rhsh = {}
@@ -6240,6 +6240,7 @@ def export_json(file2uuids, uuid2hash, options={}):
                             del new_hsh[key]
                     if '_a' in new_hsh:
                         alerts = []
+<<<<<<< HEAD
                         for a_tup in new_hsh['_a']:
                             if len(a_tup) <= 1:
                                 alert = a_tup[0]
@@ -6256,14 +6257,31 @@ def export_json(file2uuids, uuid2hash, options={}):
                                 tds.append(fmt_period(td))
                             for cmd in alert[1]:
                                 alerts.append((tds, cmd, args))
+=======
+                        for alert in new_hsh['_a']:
+                            tds = [fmt_period(x) for x in alert[0]]
+                            args = []
+                            if len(alert) >= 3:
+                                args = [r.strip() for r in alert[2] if r]
+                            for cmd in alert[1]:
+                                if args:
+                                    alerts.append([tuple(tds), cmd, args])
+                                else:
+                                    alerts.append([tuple(tds), cmd])
+
+                            # for td in alert[0]:
+                            #     td = fmt_period(td)
+                            #     for cmd in alert[1]:
+                            #         alerts.append([td, cmd] + args)
+>>>>>>> 342219e31b609b86f97a56beadb9b1358340bee2
                         new_hsh['a'] = alerts
                         del new_hsh['_a']
                     if 'h' in new_hsh:
                         tmp = []
                         for pair in new_hsh['h']:
                             tmp.append(pair[0].strftime("%Y%m%dT%H%M"))
+                            # tmp.append([x.strftime("%Y%m%dT%H%M") for x in pair if x])
                         new_hsh['h'] = tmp
-
                     if 'f' in new_hsh:
                         d, n, f = getDoneAndTwo(old_hsh)
                         o = old_hsh.get('o', 'k')
@@ -6361,6 +6379,11 @@ def export_json(file2uuids, uuid2hash, options={}):
                             if 't' in tmp_hsh:
                                 tmp_hsh['c'] = tmp_hsh['t']
                                 del tmp_hsh['t']
+                            if 'f' in tmp_hsh:
+                                tmp_hsh['r'] = tmp_hsh['f']
+                                del tmp_hsh['f']
+                            if 'u' in tmp_hsh:
+                                tmp_hsh['u'] = parse(tmp_hsh['u']).strftime("%Y%m%dT%H%M")
                             tmp_r.append(tmp_hsh)
                         new_hsh['r'] = tmp_r
                     this_c = new_hsh.get('c', None)
@@ -6481,8 +6504,8 @@ def hsh2entry(h):
             res.append("@{} {}".format(k, ", ".join(v)))
         elif k == 'r':
             for r in v:
-                frq = r['f']
-                del r['f']
+                frq = r['r']
+                del r['r']
                 tmp = []
                 for amp_key in rrule_keys:
                     if amp_key not in r:
