@@ -6240,7 +6240,6 @@ def export_json(file2uuids, uuid2hash, options={}):
                             del new_hsh[key]
                     if '_a' in new_hsh:
                         alerts = []
-<<<<<<< HEAD
                         for a_tup in new_hsh['_a']:
                             if len(a_tup) <= 1:
                                 alert = a_tup[0]
@@ -6257,7 +6256,6 @@ def export_json(file2uuids, uuid2hash, options={}):
                                 tds.append(fmt_period(td))
                             for cmd in alert[1]:
                                 alerts.append((tds, cmd, args))
-=======
                         for alert in new_hsh['_a']:
                             tds = [fmt_period(x) for x in alert[0]]
                             args = []
@@ -6273,7 +6271,6 @@ def export_json(file2uuids, uuid2hash, options={}):
                             #     td = fmt_period(td)
                             #     for cmd in alert[1]:
                             #         alerts.append([td, cmd] + args)
->>>>>>> 342219e31b609b86f97a56beadb9b1358340bee2
                         new_hsh['a'] = alerts
                         del new_hsh['_a']
                     if 'h' in new_hsh:
