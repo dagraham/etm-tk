@@ -6255,22 +6255,10 @@ def export_json(file2uuids, uuid2hash, options={}):
                             for td in alert[0]:
                                 tds.append(fmt_period(td))
                             for cmd in alert[1]:
-                                alerts.append((tds, cmd, args))
-                        for alert in new_hsh['_a']:
-                            tds = [fmt_period(x) for x in alert[0]]
-                            args = []
-                            if len(alert) >= 3:
-                                args = [r.strip() for r in alert[2] if r]
-                            for cmd in alert[1]:
                                 if args:
-                                    alerts.append([tuple(tds), cmd, args])
+                                    alerts.append((tds, cmd, args))
                                 else:
-                                    alerts.append([tuple(tds), cmd])
-
-                            # for td in alert[0]:
-                            #     td = fmt_period(td)
-                            #     for cmd in alert[1]:
-                            #         alerts.append([td, cmd] + args)
+                                    alerts.append((tds, cmd))
                         new_hsh['a'] = alerts
                         del new_hsh['_a']
                     if 'h' in new_hsh:

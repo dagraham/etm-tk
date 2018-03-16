@@ -68,6 +68,6 @@ setup(
         ('share/doc/etm', ['etmTk/CHANGES']),
         ('share/icons', glob.glob('etmTk/icons/*.gif')),
         ('share/applications', ['etmTk/etm.desktop']),
-        ('share/metainfo', ['etmTk/etm.appdata.xml']),
+        ('share/metainfo', ['etmTk/etm.appdata.xml'])
     ]
 )
