@@ -450,7 +450,7 @@ class App(Tk):
         timermenu.add_command(label=label,
                               command=self.setcountdownTimer)
         timermenu.entryconfig(7, accelerator=l)
-        self.bind(c, self.setcountdownTimer)
+        self.bindTop(c, self.setcountdownTimer)
 
         self.add2menu(path, (label, l))
 
