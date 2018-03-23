@@ -6297,7 +6297,6 @@ def export_json(file2uuids, uuid2hash, options={}):
                         del new_hsh['r']
 
                     if '_j' in new_hsh:
-                        print('jobs\n', new_hsh['_group_summary'], uid, new_hsh.get('f', 'unfinished'))
                         count = 0
                         jobs = {}
                         # make sure jobs are in q order
