@@ -1,95 +1,99 @@
-# Recent changes as of Sun Mar 18 17:37:45 EDT 2018:
-- 2 days ago (HEAD -> master, tag: 3.2.35) Dan Graham
+- 6 minutes ago (HEAD -> master) Dan Graham
+    9a763aa 2018-03-23 17:23:31 -0400
+    Fixed bug in binding for countdown timer. Fixed bug in
+    export_json.
+
+- 7 days ago (tag: 3.2.35) Dan Graham
     6e8b778 2018-03-16 11:36:19 -0400
     Cleaned up duplicate alerts in export_json Tagged version 3.2.35
     [2018-03-16 11:36:19 -0400].
 
-- 5 days ago Dan Graham
+- 10 days ago Dan Graham
     f3abcfe 2018-03-13 16:23:15 -0400
     CHANGES, ... Tagged version 3.2.34 [2018-03-13 16:23:15 -0400].
 
-- 5 days ago Dan Graham
+- 10 days ago Dan Graham
     5451786 2018-03-13 16:20:38 -0400
     merged Tagged version 3.2.33p1 [2018-03-13 16:20:38 -0400].
 
-- 5 days ago Dan Graham
+- 10 days ago Dan Graham
     b1ef507 2018-03-13 15:53:07 -0400
     Merge branch 'master' of https://github.com/dagraham/etm-tk
 
-- 5 days ago Dan Graham
+- 10 days ago Dan Graham
     f7794d0 2018-03-13 15:52:43 -0400
     data.py
 
-- 5 days ago Dan Graham
+- 10 days ago Dan Graham
     4fdde26 2018-03-13 15:50:42 -0400
     CHANGES and docs/conf.py
 
-- 5 days ago Dan Graham
+- 10 days ago Dan Graham
     977a78c 2018-03-13 15:48:47 -0400
     Merge branch 'master' of https://github.com/dagraham/etm-tk
 
-- 5 days ago (origin/export-json) Dan Graham
+- 10 days ago (origin/export-json) Dan Graham
     9b00ca7 2018-03-13 15:25:48 -0400
     fixed bug in exporting alerts to json.
 
-- 10 days ago (tag: 3.2.33) Dan Graham
+- 2 weeks ago (tag: 3.2.33) Dan Graham
     fe9a866 2018-03-08 15:16:24 -0500
     document tweaks Tagged version 3.2.33 [2018-03-08 15:16:24 -0500].
 
-- 10 days ago (tag: 3.2.32p1) Dan Graham
+- 2 weeks ago (tag: 3.2.32p1) Dan Graham
     8cd923d 2018-03-08 14:55:43 -0500
     fixed bug in hsh2ical Tagged version 3.2.32p1 [2018-03-08 14:55:43
     -0500].
 
-- 10 days ago (tag: 3.2.32) Dan Graham
+- 2 weeks ago (tag: 3.2.32) Dan Graham
     88ed8da 2018-03-08 14:39:39 -0500
     export_json seems to give the desired result. Tagged version
     3.2.32 [2018-03-08 14:39:39 -0500].
 
-- 10 days ago (export-json) Dan Graham
+- 2 weeks ago (export-json) Dan Graham
     342219e 2018-03-08 14:39:39 -0500
     export_json seems to give the desired result.
 
-- 13 days ago Dan Graham
+- 3 weeks ago Dan Graham
     06e4b08 2018-03-05 10:59:06 -0500
     More export_json tweaks.
 
-- 3 weeks ago Dan Graham
+- 4 weeks ago Dan Graham
     3223760 2018-02-24 11:47:12 -0500
     More tweaks on export_json.
 
-- 3 weeks ago Dan Graham
+- 4 weeks ago Dan Graham
     17ad2b3 2018-02-22 12:52:52 -0500
     export_json now switches 't' to 'c' in rrules.
 
-- 3 weeks ago Dan Graham
+- 4 weeks ago Dan Graham
     7130d43 2018-02-22 11:48:46 -0500
     Added a png file and cleaned up extraneous files.
 
-- 3 weeks ago Dan Graham
+- 4 weeks ago Dan Graham
     a469ac1 2018-02-22 11:43:19 -0500
     export_json now uses the new etm-mvc item types
 
-- 3 weeks ago Dan Graham
+- 4 weeks ago Dan Graham
     067b2b3 2018-02-22 10:34:46 -0500
     Ready to work on export-json
 
-- 4 weeks ago Dan Graham
+- 5 weeks ago Dan Graham
     c93a7cb 2018-02-16 21:29:27 -0500
     Auto-commit: saved ATKEYS.rst
 
-- 4 weeks ago Dan Graham
+- 5 weeks ago Dan Graham
     8a46a91 2018-02-16 16:16:18 -0500
     Auto-commit: saved ATKEYS.rst
 
-- 7 months ago Dan Graham
+- 8 months ago Dan Graham
     d971c97 2017-08-10 17:13:17 -0400
     Packaging changes requested for Debian/Solus
 
     Updated path for appdata.xml to /usr/share/metainfo and removed
     .xpm icon from package.
 
-- 7 months ago (tag: 3.2.31) Dan Graham
+- 8 months ago (tag: 3.2.31) Dan Graham
     050ec13 2017-08-10 16:27:53 -0400
     Auto-commit: saved setup.py Tagged version 3.2.31 [2017-08-10
     16:27:53 -0400].
@@ -181,39 +185,39 @@
     134bd7f 2017-03-30 17:15:53 -0400
     Auto-commit: saved data.py
 
-- 1 year, 5 months ago (tag: 3.2.28p3) Dan Graham
+- 1 year, 6 months ago (tag: 3.2.28p3) Dan Graham
     759a8d8 2016-10-05 09:05:13 -0400
     Unicode fix provided for lst2str by Sebastian. Tagged version
     3.2.28p1 [2016-10-05 09:05:13 -0400]. Tagged version 3.2.28p2
     [2016-10-05 09:05:13 -0400]. Tagged version 3.2.28p3 [2016-10-05
     09:05:13 -0400].
 
-- 1 year, 5 months ago Dan Graham
+- 1 year, 6 months ago Dan Graham
     9bc0b9f 2016-10-04 21:44:28 -0400
     Added rst docs using sphinx.
 
-- 1 year, 5 months ago (tag: 3.2.28) Dan Graham
+- 1 year, 6 months ago (tag: 3.2.28) Dan Graham
     6fb8f22 2016-10-04 17:24:51 -0400
     import version into conf.py Tagged version 3.2.28 [2016-10-04
     17:24:51 -0400].
 
-- 1 year, 5 months ago Dan Graham
+- 1 year, 6 months ago Dan Graham
     d5898ed 2016-10-04 17:21:53 -0400
     removed keybindings.rst
 
-- 1 year, 5 months ago Dan Graham
+- 1 year, 6 months ago Dan Graham
     b5e7617 2016-10-04 16:45:58 -0400
     Added rst docs using sphinx.
 
-- 1 year, 5 months ago Dan Graham
+- 1 year, 6 months ago Dan Graham
     f533975 2016-10-04 16:22:28 -0400
     Added export_json.
 
-- 1 year, 7 months ago (no_etmdir) Dan Graham
+- 1 year, 8 months ago (no_etmdir) Dan Graham
     a53f82c 2016-08-03 06:46:19 -0400
     Only write colors.cfg if etmdir exists.
 
-- 1 year, 7 months ago Dan Graham
+- 1 year, 8 months ago Dan Graham
     0757f9b 2016-08-03 06:44:58 -0400
     Only write colors.cfg if etmdir exists.
 
@@ -237,7 +241,7 @@
     with ids and prereqs, rrulestr, datetime and timedelta formatting,
     finish and history. Missing currently is an update for entry.
 
-- 1 year, 9 months ago Dan Graham
+- 1 year, 10 months ago Dan Graham
     a847007 2016-06-06 10:56:28 -0400
     Fixed itemtype missing key error when entering "=" default
     entries.
@@ -286,7 +290,7 @@
     ef32f89 2016-03-27 15:59:44 -0400
     Fix for dateutil 2.5.1 in getInstance.
 
-- 2 years, 1 month ago Dan Graham
+- 2 years, 2 months ago Dan Graham
     50d2a52 2016-02-04 15:57:41 -0500
     Merge remote-tracking branch 'origin/master'
 
@@ -296,29 +300,29 @@
     #	etmTk/v.py
     #	etmTk/version.py
 
-- 2 years, 1 month ago Dan Graham
+- 2 years, 2 months ago Dan Graham
     6850202 2016-02-04 15:55:19 -0500
     Update to 3.2.24
 
     Tagged new release
 
-- 2 years, 1 month ago (tag: 3.2.24) Dan Graham
+- 2 years, 2 months ago (tag: 3.2.24) Dan Graham
     151995a 2016-02-04 09:29:19 -0500
     Include both the passed command and the error output in
     check_output. Tagged version 3.2.23p3 [2016-02-04 09:29:19 -0500].
     Tagged version 3.2.24 [2016-02-04 09:29:19 -0500].
 
-- 2 years, 1 month ago (tag: 3.2.23p3) Dan Graham
+- 2 years, 2 months ago (tag: 3.2.23p3) Dan Graham
     a3541eb 2016-02-04 09:29:19 -0500
     Include both the passed command and the error output in
     check_output. Tagged version 3.2.23p3 [2016-02-04 09:29:19 -0500].
 
-- 2 years, 1 month ago (tag: 3.2.23p2) Dan Graham
+- 2 years, 2 months ago (tag: 3.2.23p2) Dan Graham
     fdd1cb1 2016-02-03 16:02:09 -0500
     In check_output, replaced STDOUT with subprocess.STDOUT. Tagged
     version 3.2.23p2 [2016-02-03 16:02:09 -0500].
 
-- 2 years, 1 month ago (tag: 3.2.23p1) Dan Graham
+- 2 years, 2 months ago (tag: 3.2.23p1) Dan Graham
     8fc070e 2016-02-03 11:00:15 -0500
     Replaced subprocess.call with check_output which calls
     subprocess.check_output and logs the error message if an exception
@@ -343,29 +347,29 @@
     2e862aa 2015-11-08 16:57:18 -0500
     Added __init__.py to satisfy setup.py.
 
-- 2 years, 4 months ago Dan Graham
+- 2 years, 5 months ago Dan Graham
     15ede9e 2015-11-07 10:58:35 -0500
     Tagged 3.2.22
 
-- 2 years, 4 months ago Dan Graham
+- 2 years, 5 months ago Dan Graham
     546559b 2015-11-07 09:55:57 -0500
     Added CHANGES and etm.1 to repository to satisfy setup.py. Tagged
     version 3.2.22 [2015-11-07 09:55:57 -0500].
 
-- 2 years, 4 months ago Dan Graham
+- 2 years, 5 months ago Dan Graham
     c6d88f7 2015-11-07 09:55:57 -0500
     Added CHANGES and etm.1 to repository to satisfy setup.py.
 
-- 2 years, 4 months ago Dan Graham
+- 2 years, 5 months ago Dan Graham
     3412ab3 2015-11-06 14:44:23 -0500
     Snooze message modification. Tagged version 3.2.21 [2015-11-06
     14:44:23 -0500].
 
-- 2 years, 4 months ago Dan Graham
+- 2 years, 5 months ago Dan Graham
     39ba0f5 2015-11-06 14:44:23 -0500
     Snooze message modification.
 
-- 2 years, 4 months ago Dan Graham
+- 2 years, 5 months ago Dan Graham
     a6bfc81 2015-11-06 10:39:05 -0500
     Change snooze behavior to wait from the time the snooze button is
     pressed with seconds are rounded off to the nearest minute. Fixed
@@ -418,7 +422,7 @@
     278a723 2015-10-09 06:30:15 -0400
     Added Python 3.5 to the setup.py classifiers.
 
-- 2 years, 5 months ago Dan Graham
+- 2 years, 6 months ago Dan Graham
     11fd77f 2015-10-03 12:47:31 -0400
     Fixed bug when copying an item in monthly view. Tagged version 
     [2015-10-03 12:47:31 -0400]. Tagged version ..p1 [2015-10-03
@@ -426,7 +430,7 @@
     Tagged version ..p3 [2015-10-03 12:47:31 -0400]. Tagged version
     3.2.17p4 [2015-10-03 12:47:31 -0400].
 
-- 2 years, 5 months ago Dan Graham
+- 2 years, 6 months ago Dan Graham
     99477f9 2015-10-03 12:47:31 -0400
     Fixed bug when copying an item in monthly view.
 
@@ -484,3 +488,4958 @@
     message_next and message_last. Tagged version 3.2.12 [2015-08-24
     17:44:04 -0400].
 
+- 2 years, 7 months ago Dan Graham
+    0588774 2015-08-24 12:57:07 -0400
+    Added 'next' and 'next_alert' to template expansions. Added auto
+    close to message box dialogs using options 'message_alert_seconds'
+    for next message boxes and 'message_snooze_seconds' for last
+    message boxes.
+
+- 2 years, 7 months ago (tag: 3.2.11) Dan Graham
+    4d01318 2015-08-21 17:01:13 -0400
+    Cancel snooze if item is rescheduled, edited or deleted. Tagged
+    version 3.2.11 [2015-08-21 17:01:13 -0400].
+
+- 2 years, 7 months ago (tag: 3.2.10) Dan Graham
+    83af7b5 2015-08-21 11:25:03 -0400
+    Check that @n is only used with item types "-" and "%" and only
+    contains values from "d", "k" and "t". Tagged version 3.2.10
+    [2015-08-21 11:25:03 -0400].
+
+- 2 years, 7 months ago Dan Graham
+    1c681ff 2015-08-21 10:42:34 -0400
+    Check that @n is only used with item types "-" and "%" and only
+    contains values from "d", "k" and "t".
+
+- 2 years, 7 months ago (tag: 3.2.9) Dan Graham
+    e119efe 2015-08-20 13:04:31 -0400
+    Changed sort order for @n. Tagged version 3.2.9 [2015-08-20
+    13:04:31 -0400].
+
+- 2 years, 7 months ago Dan Graham
+    49b11c8 2015-08-20 12:58:52 -0400
+    Added @n (no show) for itemtype "-" only. Takes a list of views
+    from a)genda, d)ay (week and month), t)ag, k)eyword. E.g. with "@n
+    a, d" the task would be omitted from both agenda and day (week and
+    month) views but would appear in tag and keyword views. Note that
+    it is not possible to exclude the item from path view.
+
+- 2 years, 7 months ago (tag: 3.2.8, hidden) Dan Graham
+    afcf5ab 2015-08-19 18:11:40 -0400
+    image updates Tagged version 3.2.8 [2015-08-19 18:11:40 -0400].
+
+- 2 years, 7 months ago Dan Graham
+    d8ba751 2015-08-19 17:58:28 -0400
+    In onFinish, skip alertId for items without starting times.
+
+- 2 years, 7 months ago Dan Graham
+    fac82ae 2015-08-19 17:53:46 -0400
+    Trap and report errors in parse_period.
+
+- 2 years, 7 months ago (tag: 3.2.7) Dan Graham
+    a546170 2015-08-19 12:39:48 -0400
+    added alert_list image Tagged version 3.2.7 [2015-08-19 12:39:48
+    -0400].
+
+- 2 years, 7 months ago Dan Graham
+    dc16e1e 2015-08-19 12:32:23 -0400
+    Removed unused variables. Show alert trigger time in snooze
+    dialog. Make snooze trigger at least 40 seconds after closing
+    dialog. Use '~' as show alerts label when none remain.
+
+- 2 years, 7 months ago Dan Graham
+    1b7b32c 2015-08-19 09:37:51 -0400
+    Final tweaks for the show alerts button label.
+
+- 2 years, 7 months ago Dan Graham
+    abb9bbe 2015-08-19 09:11:28 -0400
+    Second pass at snoozing multiple items. Since uuid changes with
+    file updates, e.g., finishing a task, use (summary, s) as alertId.
+    Snooze for the chosen minutes beyond the alert time, not the
+    current time. When finishing a task, use the (summary, s) id to
+    find the correct alert_id to cancel the snooze.
+
+- 2 years, 7 months ago Dan Graham
+    cc3ba53 2015-08-18 14:45:37 -0400
+    First pass at snoozing multiple items. Added option seconds
+    (False) to fmt_time to show seconds when True. Added
+    longreprtimefmt to reprtimefmt in options to show seconds.
+
+- 2 years, 7 months ago (tag: 3.2.6) Dan Graham
+    67607eb 2015-08-18 07:12:59 -0400
+    When a task is finished that has a snooze alert running, cancel
+    the alert. Tagged version 3.2.6 [2015-08-18 07:12:59 -0400].
+
+- 2 years, 7 months ago Dan Graham
+    59b90b6 2015-08-17 17:53:23 -0400
+    Changed binding for onFinish in simpleEditor from Ctrl-w to Ctrl-s
+    to avoid conflicts. Changed button label from Finish to Save and
+    Close.
+
+- 2 years, 7 months ago Dan Graham
+    ca71856 2015-08-17 15:13:55 -0400
+    More KP_Enter bindings. Changed logic for setting master in
+    simpleEditor.
+
+- 2 years, 7 months ago Dan Graham
+    67fe85a 2015-08-17 12:54:41 -0400
+    Only try export_ical if has_calendar is True. Add KP_Enter to
+    Return bindings.
+
+- 2 years, 7 months ago Dan Graham
+    8f82a3c 2015-08-16 14:04:46 -0400
+    updated alert images
+
+- 2 years, 7 months ago (tag: 3.2.5) Dan Graham
+    ce4fd88 2015-08-16 12:14:42 -0400
+    Fixed bug is displaying next starting time. Tagged version 3.2.5
+    [2015-08-16 12:14:42 -0400].
+
+- 2 years, 7 months ago (tag: 3.2.4) Dan Graham
+    a9286a5 2015-08-16 11:36:40 -0400
+    When next is "none", show "at the starting time" instead of "none
+    before starting time" in the message alert. Tagged version 3.2.4
+    [2015-08-16 11:36:40 -0400].
+
+- 2 years, 7 months ago Dan Graham
+    3fcc6cd 2015-08-16 10:54:57 -0400
+    updated readme screenshots
+
+- 2 years, 7 months ago (tag: 3.2.3) Dan Graham
+    9f2ec94 2015-08-16 10:42:42 -0400
+    renamed alert images Tagged version 3.2.3 [2015-08-16 10:42:42
+    -0400].
+
+- 2 years, 7 months ago Dan Graham
+    a0efc30 2015-08-16 10:42:15 -0400
+    Added GetRepeat as subclass of GetInteger with Repeat and Close
+    buttons instead of OK and Cancel.
+
+- 2 years, 7 months ago Dan Graham
+    bf192d6 2015-08-16 09:54:13 -0400
+    Message tweaks.
+
+- 2 years, 7 months ago Dan Graham
+    5138126 2015-08-16 09:48:54 -0400
+    Show next alert in non-snooze alert and current time in title.
+
+- 2 years, 7 months ago (tag: 3.2.2) Dan Graham
+    09ecb48 2015-08-15 18:27:55 -0400
+    Added snooze, no-snooze images Tagged version 3.2.2 [2015-08-15
+    18:27:55 -0400].
+
+- 2 years, 7 months ago Dan Graham
+    af056ec 2015-08-15 17:10:19 -0400
+    Message tweaks for last alert.
+
+- 2 years, 7 months ago Dan Graham
+    4b9c07c 2015-08-15 16:21:39 -0400
+    Add the timedelta for next scheduled alert or None if this is the
+    last to the hash. Only show the snooze message alert if it is the
+    last.
+
+- 2 years, 7 months ago (tag: 3.2.1) Dan Graham
+    2e1323b 2015-08-15 07:46:45 -0400
+    Use the last snooze minutes as the default for the next. Changed
+    the prompt for countdown to mirror the snooze question. Changed
+    "Snooze/Countdown" to "Countdown". Tagged version 3.2.1
+    [2015-08-15 07:46:45 -0400].
+
+- 2 years, 7 months ago Dan Graham
+    a2e0e13 2015-08-14 15:25:09 -0400
+    Merge branch 'countdown'
+
+- 2 years, 7 months ago (tag: 3.2.0, origin/countdown) Dan Graham
+    30774fd 2015-08-14 14:53:03 -0400
+    Label and shortcut menu fixes. Tagged version 3.2.0 [2015-08-14
+    14:53:03 -0400].
+
+- 2 years, 7 months ago (tag: 3.1.61) Dan Graham
+    44471c2 2015-08-14 14:44:27 -0400
+    added snooze screen shot Tagged version 3.1.61 [2015-08-14
+    14:44:27 -0400].
+
+- 2 years, 7 months ago Dan Graham
+    68ca92a 2015-08-14 13:06:06 -0400
+    Removed smtp_to from options.
+
+- 2 years, 7 months ago Dan Graham
+    a891ff7 2015-08-14 07:02:43 -0400
+    Added snooze to the internal message box alert. In expand
+    template, replace multiple blank lines with a single blank line.
+    Added snooze_command and snooze_minutes to options.
+
+- 2 years, 7 months ago Dan Graham
+    38891c4 2015-08-13 10:55:52 -0400
+    Added snooze for message alerts. Display the time of the next
+    countdown or snooze in the status bar.
+
+- 2 years, 7 months ago Dan Graham
+    6ab3eed 2015-08-12 15:13:39 -0400
+    Trap and report errors parsing periods in str2hsh.
+
+- 2 years, 7 months ago (tag: 3.1.60) Dan Graham
+    892e228 2015-08-11 20:58:00 -0400
+    Changed label for countdown timer to snooze/countdown. Bound to
+    shortcut key "z". Tagged version 3.1.60 [2015-08-11 20:58:00
+    -0400].
+
+- 2 years, 7 months ago Dan Graham
+    89f381c 2015-08-11 19:27:57 -0400
+    Added countdown screenshots
+
+- 2 years, 7 months ago Dan Graham
+    e3c74c7 2015-08-11 19:27:15 -0400
+    Added a countdown timer. Fixed colors in MessageWindow.
+
+- 2 years, 7 months ago (tag: 3.1.59) Dan Graham
+    ae31902 2015-08-08 15:43:36 -0400
+    Add 'invitees' from @i entries to the list of recipients for email
+    alerts. Tagged version 3.1.59 [2015-08-08 15:43:36 -0400].
+
+- 2 years, 7 months ago Dan Graham
+    06bed7d 2015-08-08 14:27:46 -0400
+    Fixed email import. Fixed font color for report combobox.
+
+- 2 years, 8 months ago (tag: 3.1.58) Dan Graham
+    2c8e83e 2015-08-05 16:40:25 -0400
+    Allow the CLI report option -w to be zero and, if it is, do not
+    truncate report lines. Fixed bug in setting width1. Tagged version
+    3.1.58 [2015-08-05 16:40:25 -0400].
+
+- 2 years, 8 months ago (tag: 3.1.57) Dan Graham
+    6efad9e 2015-08-04 10:02:37 -0400
+    Found and replaced parse_datetime commands. tagged version 3.1.57
+    [2015-08-04 10:02:37 -0400]
+
+- 2 years, 8 months ago (tag: 3.1.56) Dan Graham
+    8e87bb6 2015-08-04 06:49:44 -0400
+    tagged version 3.1.56 [2015-08-04 06:49:44 -0400]
+
+- 2 years, 8 months ago (tag: 3.1.55) Dan Graham
+    55c01f2 2015-07-31 16:24:03 -0400
+    tagged version 3.1.55 [2015-07-31 16:24:03 -0400]
+
+- 2 years, 8 months ago Dan Graham
+    600511a 2015-07-31 16:11:21 -0400
+    Fixed bug in period_string_regex. When parsing + and - @keys, use
+    zoneinfo from @z and replace with tzinfo=None.
+
+- 2 years, 8 months ago (tag: 3.1.54) Dan Graham
+    b9783ba 2015-07-31 14:37:48 -0400
+    tagged version 3.1.54 [2015-07-31 14:37:48 -0400]
+
+- 2 years, 8 months ago Dan Graham
+    46746ea 2015-07-31 14:15:19 -0400
+    Replaced parse_dt with parse_str. Replaced some calls to
+    parse(parse_dtstr(...)) with parse_str.
+
+- 2 years, 8 months ago Dan Graham
+    db082e6 2015-07-31 14:08:00 -0400
+    Replaced parse_datetime and parse_dtstr with parse_str which
+    returns a string if a datetime format specified and otherwise a
+    datetime object is returned. Error generated using parse are
+    trapped and reported. Call filterView after reschedule and
+    scheduleNewItem.
+
+- 2 years, 8 months ago Dan Graham
+    7975c65 2015-07-31 11:49:16 -0400
+    first pass at parse_str replacement for parse_dtstr and
+    parse_datetime
+
+- 2 years, 8 months ago Dan Graham
+    18ff503 2015-07-31 06:45:33 -0400
+    Merge remote-tracking branch 'origin/master'
+
+- 2 years, 8 months ago Dan Graham
+    2996bad 2015-07-30 18:20:36 -0400
+    Merge remote-tracking branch 'origin/master'
+
+- 2 years, 8 months ago Dan Graham
+    137afe5 2015-07-30 18:20:36 -0400
+    Merge remote-tracking branch 'origin/master'
+
+- 2 years, 8 months ago Dan Graham
+    904fc73 2015-07-30 18:19:31 -0400
+    Updated version information
+
+- 2 years, 8 months ago Dan Graham
+    8ac28f4 2015-07-30 18:19:31 -0400
+    version info
+
+- 2 years, 8 months ago (tag: 3.1.53) Dan Graham
+    1491d33 2015-07-30 17:01:28 -0400
+    tagged version 3.1.53 [2015-07-30 17:01:28 -0400]
+
+- 2 years, 8 months ago Dan Graham
+    aca3cb4 2015-07-30 17:30:38 -0400
+    version number update
+
+- 2 years, 8 months ago Dan Graham
+    fe9e15e 2015-07-30 17:01:28 -0400
+    version number fix
+
+- 2 years, 8 months ago Dan Graham
+    0d02427 2015-07-30 16:58:41 -0400
+    updated version info
+
+- 2 years, 8 months ago Dan Graham
+    8856c57 2015-07-30 16:17:16 -0400
+    Tagged version 3.1.49
+
+- 2 years, 8 months ago Dan Graham
+    2a86da4 2015-07-30 16:17:16 -0400
+    Tagged version 3.1.49
+
+- 2 years, 8 months ago (tag: 3.1.46p6) Dan Graham
+    14c3c33 2015-07-30 16:17:16 -0400
+    Fixed logic for delete all previous tasks with @f entries.
+
+- 2 years, 8 months ago Dan Graham
+    2d8ba7f 2015-07-30 12:23:19 -0400
+    Tagged version 3.1.47
+
+- 2 years, 8 months ago Dan Graham
+    1759887 2015-07-30 12:06:26 -0400
+    updated verson info
+
+- 2 years, 8 months ago (tag: 3.1.46p3) Dan Graham
+    ce4773f 2015-07-30 11:58:33 -0400
+    Fixed logic for edit/delete tasks with @f and/or @- entries. Warn
+    but do not raise error when rrule generates no repetitions. Fixed
+    binding for setFilter.  Keep filter active after edit, delete and
+    finish.
+
+- 2 years, 8 months ago Dan Graham
+    52b686c 2015-07-29 17:02:42 -0400
+    Change the sort datetime to 23:59 but leave dtl 00:00 unchanged in
+    midnight tasks. When @- is empty as a result of deletions, then
+    remove @- itself.
+
+- 2 years, 8 months ago Dan Graham
+    996e767 2015-07-26 13:41:36 -0400
+    Updated version info.
+
+    Added this.
+
+    And this.
+
+- 2 years, 8 months ago (tag: 3.1.46, tag: 3.1.45p3) Dan Graham
+    676ecb8 2015-07-26 11:39:09 -0400
+    Removed global color declarations in Dialog.
+
+- 2 years, 8 months ago Dan Graham
+    d1f251c 2015-07-26 09:58:31 -0400
+    Updated documentation for HEADER links and README samples.
+
+- 2 years, 8 months ago Dan Graham
+    5762d53 2015-07-25 17:47:20 -0400
+    Color fixes for dialog.py.
+
+- 2 years, 8 months ago (tag: 3.1.45) Dan Graham
+    bee920f 2015-07-25 11:28:06 -0400
+    tagged version 3.1.45
+
+- 2 years, 8 months ago Dan Graham
+    caea58c 2015-07-25 11:26:52 -0400
+    When an action timer is deleted, add it's time to idle time.
+
+- 2 years, 8 months ago (tag: 3.1.44) Dan Graham
+    9335900 2015-07-25 10:56:23 -0400
+    tagged version 3.1.44
+
+- 2 years, 8 months ago (tag: 3.1.43p2) Dan Graham
+    54e9dd6 2015-07-24 17:48:00 -0400
+    Dialog formatting and view typo fixes.
+
+- 2 years, 8 months ago Dan Graham
+    1f7e4b9 2015-07-24 15:53:24 -0400
+    Added time and status icon to select timer display. Added
+    adjustIdle to subtract minutes from idle time and add them to the
+    current timer.
+
+- 2 years, 8 months ago (tag: 3.1.43) Dan Graham
+    1a2dc59 2015-07-23 17:14:19 -0400
+    tagged version 3.1.43
+
+- 2 years, 8 months ago (tag: 3.1.42p7) Dan Graham
+    761aa8a 2015-07-23 16:29:40 -0400
+    More clearIdle tweaks.
+
+- 2 years, 8 months ago Dan Graham
+    b9d65c5 2015-07-23 15:02:22 -0400
+    More update status bar when idle is active.
+
+- 2 years, 8 months ago Dan Graham
+    eeac3f3 2015-07-23 14:07:56 -0400
+    Removed unused datafile option. More idletimer tweaks.
+
+- 2 years, 8 months ago Dan Graham
+    91a9037 2015-07-23 13:00:02 -0400
+    Tweaks for which timer menu items are activated. Allow idle
+    display and toggle even without active timers.
+
+- 2 years, 8 months ago (tag: 3.1.42p3) Dan Graham
+    0abd1c2 2015-07-23 08:48:50 -0400
+    Fixed bug in toggleIdle key binding.
+
+- 2 years, 8 months ago (tag: 3.1.42p2) Dan Graham
+    480d703 2015-07-23 08:17:19 -0400
+    added timer images
+
+- 2 years, 8 months ago Dan Graham
+    324daf0 2015-07-23 08:16:51 -0400
+    Fixed bug in toggleIdle.
+
+- 2 years, 8 months ago (tag: 3.1.42) Dan Graham
+    1f495cb 2015-07-23 06:28:50 -0400
+    tagged version 3.1.42
+
+- 2 years, 8 months ago Dan Graham
+    98b5cdd 2015-07-23 06:28:30 -0400
+    Allow false as an entry for show_idletime.
+
+- 2 years, 8 months ago (tag: 3.1.41) Dan Graham
+    64e2065 2015-07-22 22:25:24 -0400
+    tagged version 3.1.41
+
+- 2 years, 8 months ago Dan Graham
+    20991a0 2015-07-22 22:10:05 -0400
+    Added display_idletime to options, default True starts idleTimer
+    in display mode. Added toggle idleTimer and reset idleTimer to
+    timer menu.
+
+- 2 years, 8 months ago Dan Graham
+    8576cde 2015-07-22 20:41:07 -0400
+    Cleaned up print statements. Reset idle timer on new day.
+
+- 2 years, 8 months ago Dan Graham
+    7473d5f 2015-07-22 14:49:45 -0400
+    Added idle timing. Whenever timers are active and none are running
+    (all paused) idle time is incremented. Total idle time is
+    displayed in the status bar.
+
+- 2 years, 8 months ago (tag: 3.1.40p1) Dan Graham
+    fe84525 2015-07-22 12:19:46 -0400
+    Added colors to Timer and timer_status.
+
+- 2 years, 8 months ago (tag: 3.1.40) Dan Graham
+    0d51420 2015-07-22 10:53:33 -0400
+    tagged version 3.1.40
+
+- 2 years, 8 months ago (tag: 3.1.39p13) Dan Graham
+    dd436d6 2015-07-22 10:24:32 -0400
+    Added gui encoding to about.
+
+- 2 years, 8 months ago (tag: 3.1.39p12) Dan Graham
+    f9b847a 2015-07-22 10:02:08 -0400
+    Add colors.cfg to the config files that can be edited through
+    File/Open/Configuration files.
+
+- 2 years, 8 months ago Dan Graham
+    dce5b82 2015-07-22 09:26:33 -0400
+    If colors.cfg does not exist, then create it and populate it with
+    the default color settings.
+
+- 2 years, 8 months ago Dan Graham
+    7f205ea 2015-07-22 08:31:26 -0400
+    Corrected a default color to match colors_light.
+
+- 2 years, 8 months ago Dan Graham
+    19e7007 2015-07-21 18:12:18 -0400
+    version update
+
+- 2 years, 8 months ago (tag: 3.1.39p8) Dan Graham
+    2675e88 2015-07-21 18:04:11 -0400
+    Removed remaining reference to DEFAULTFILL.
+
+- 2 years, 8 months ago Dan Graham
+    755f6ed 2015-07-21 16:02:36 -0400
+    updated dark_week
+
+- 2 years, 8 months ago Dan Graham
+    08af115 2015-07-21 16:00:00 -0400
+    updated dark_week.gif
+
+- 2 years, 8 months ago (tag: 3.1.39p5) Dan Graham
+    494a13a 2015-07-21 15:58:22 -0400
+    More light color tweaks. Coordinated defaults with colors_light.
+
+- 2 years, 8 months ago (tag: 3.1.39p4) Dan Graham
+    507d66b 2015-07-21 15:46:25 -0400
+    More dark color tweaks. Removed default background color - unused.
+
+- 2 years, 8 months ago Dan Graham
+    85d514e 2015-07-21 14:37:07 -0400
+    Updated screen shots
+
+- 2 years, 8 months ago Dan Graham
+    313f351 2015-07-21 14:18:52 -0400
+    Post edit update.
+
+- 2 years, 8 months ago (tag: 3.1.39p1) Dan Graham
+    83c1457 2015-07-21 14:04:59 -0400
+    Fixed key binding for Ctrl-T, show tag view.
+
+- 2 years, 8 months ago (tag: 3.1.39) Dan Graham
+    97825a1 2015-07-21 11:38:42 -0400
+    tagged version 3.1.39
+
+- 2 years, 8 months ago Dan Graham
+    9f3fc73 2015-07-21 11:38:29 -0400
+    version number tweaks
+
+- 2 years, 8 months ago (tag: 3.1.38p7) Dan Graham
+    83e7175 2015-07-21 11:34:02 -0400
+    Test change for version tagging.
+
+- 2 years, 8 months ago Dan Graham
+    203afbb 2015-07-21 11:17:48 -0400
+    tagged version 3.1.40
+
+- 2 years, 8 months ago Dan Graham
+    71cc091 2015-07-21 11:16:07 -0400
+    Test change for version tagging.
+
+- 2 years, 8 months ago Dan Graham
+    c968b05 2015-07-21 10:18:45 -0400
+    tagged version 3.1.39
+
+- 2 years, 8 months ago (tag: 3.1.38-3) Dan Graham
+    eb286cc 2015-07-21 10:06:05 -0400
+    Set self.weekly (self.monthly) after showWeek (showMonth) to avoid
+    processing initial resize events.
+
+- 2 years, 8 months ago (tag: 3.1.38-2) Dan Graham
+    b0b6b08 2015-07-21 06:52:38 -0400
+    Removed highlight in the timer labels in the status bar.
+
+- 2 years, 8 months ago Dan Graham
+    75a2b21 2015-07-20 18:33:07 -0400
+    Removed key shortcut for edit colors - haven't found a key
+    combination that works. Removed binding for load data since
+    restarting etm seems necessary anyway.
+
+- 2 years, 8 months ago (tag: 3.1.38) Dan Graham
+    2425a39 2015-07-20 15:44:30 -0400
+    tagged version 3.1.38
+
+- 2 years, 8 months ago Dan Graham
+    3d2ca42 2015-07-20 15:44:15 -0400
+    Dark brown to dark green screen shots
+
+- 2 years, 8 months ago Dan Graham
+    6ac92d7 2015-07-20 15:41:58 -0400
+    Bind resize to canvas - big improvement. Padding tweaks.
+
+- 2 years, 8 months ago Dan Graham
+    ccbd079 2015-07-20 15:15:15 -0400
+    Call on_resize after resize event to redraw week or month calendar
+    if needed. Work on treepane borders and highlighting. Added
+    beginning and ending verticals in week and month views and
+    adjusted l, r and b for both to allow their display. Color tweaks.
+
+- 2 years, 8 months ago (tag: 3.1.37) Dan Graham
+    c9f79f5 2015-07-19 16:28:41 -0400
+    tagged version 3.1.37
+
+- 2 years, 8 months ago Dan Graham
+    738ee06 2015-07-19 16:24:06 -0400
+    Add HLCOLOR for highlightcolor and use BGCOLOR for
+    highlightbackground. Added option to edit colors.cfg to File/Open
+    menu. Removed focus from pendingAlerts button.  Added initial
+    horizontal grid to month view.
+
+- 2 years, 8 months ago (tag: 3.1.36) Dan Graham
+    ecd8297 2015-07-19 11:38:30 -0400
+    tagged version 3.1.36
+
+- 2 years, 8 months ago Dan Graham
+    c34efd7 2015-07-19 11:36:28 -0400
+    Added dark screen shots.
+
+- 2 years, 8 months ago Dan Graham
+    b51f7b7 2015-07-19 11:34:26 -0400
+    Fixed bug in selectId. In gotoDate, scroll both day and
+    week/month. Added dark_agenda and dark_week to README.
+
+- 2 years, 8 months ago (tag: 3.1.35) Dan Graham
+    a6e9bb8 2015-07-19 10:41:30 -0400
+    tagged version 3.1.35
+
+- 2 years, 8 months ago Dan Graham
+    99622f1 2015-07-19 10:33:31 -0400
+    Added Tk Style setting to "about" information.
+
+- 2 years, 8 months ago Dan Graham
+    418b3b9 2015-07-18 20:49:02 -0400
+    Added ability to provide a file "colors.cfg" in the etm directory
+    to override the default colors for the GUI.
+
+- 2 years, 8 months ago (tag: 3.1.34) Dan Graham
+    52e95b8 2015-07-16 21:08:22 -0400
+    tagged version 3.1.34
+
+- 2 years, 8 months ago Dan Graham
+    80762dd 2015-07-16 17:33:34 -0400
+    Added "style" and "background_color" to options. Switched from
+    Button to ttk.Button which supports style and, save for osx aqua,
+    background color for buttons. All dialogs now support, I hope, the
+    style and background color settings. Week and month colors for
+    holidays, etc still need work as do the foreground colors for
+    darker background settings.
+
+- 2 years, 8 months ago (tag: 3.1.33) Dan Graham
+    f7ae26a 2015-07-15 12:22:10 -0400
+    tagged version 3.1.33
+
+- 2 years, 8 months ago Dan Graham
+    83e0f5a 2015-07-15 12:20:26 -0400
+    When splitting python2 entry using !!, check length of result.
+
+- 2 years, 8 months ago Dan Graham
+    b404e3d 2015-07-15 12:10:52 -0400
+    Fixed bug in processing report data under python 2.  Fixed bug in
+    setting outline depth in the CLI for action reports.
+
+- 2 years, 8 months ago Dan Graham
+    993889a 2015-07-15 08:23:51 -0400
+    Fixed bug in which showMonthly instead of showMonth was called
+    from rescheduleItem.
+
+- 2 years, 8 months ago (tag: 3.1.32) Dan Graham
+    6fb5582 2015-07-12 11:08:31 -0400
+    tagged version 3.1.32
+
+- 2 years, 8 months ago Dan Graham
+    bb95e09 2015-07-12 10:19:05 -0400
+    Added a short option to fmt_period to round off minutes for
+    periods greater than one day and to round off hours for periods
+    greater than one week.  Added "q" to @keys for tasks. Value is a
+    fuzzy datetime. Intended to provide a queue for undated tasks
+    where tasks with older @q entries will list before tasks with
+    latter @q entries. Display the timedelta from the @q value to the
+    current time.
+
+- 2 years, 9 months ago Dan Graham
+    f599570 2015-07-08 18:22:40 -0400
+    Added a comment to etmctrl.sh explaining that it is intended for
+    linux systems to use wmctrl to set the properties of the etm GUI.
+
+- 2 years, 9 months ago (tag: 3.1.31) Dan Graham
+    38c32ef 2015-07-08 18:12:05 -0400
+    tagged version 3.1.31
+
+- 2 years, 9 months ago Dan Graham
+    3abf79f 2015-07-08 18:11:42 -0400
+    Fixed enable/disable bug in the item menu and reorganized the menu
+    items to put open link and show user details last.
+
+- 2 years, 9 months ago (tag: 3.1.30) Dan Graham
+    f35c81d 2015-07-08 14:33:24 -0400
+    tagged version 3.1.30
+
+- 2 years, 9 months ago Dan Graham
+    16f37fc 2015-07-08 14:32:43 -0400
+    Added "Show date and time details" to item menu.  Moved FINISH to
+    dialog.py.  Changed binding for "show outline as text" to Shift-O.
+     Changed binding for "Schedule new" to S.
+
+- 2 years, 9 months ago (tag: 3.1.29) Dan Graham
+    7979109 2015-07-07 14:46:39 -0400
+    tagged version 3.1.29
+
+- 2 years, 9 months ago Dan Graham
+    61e1116 2015-07-07 14:39:25 -0400
+    Changed title bar to show "etm" first, followed by time and short
+    date.
+
+- 2 years, 9 months ago (tag: 3.1.28) Dan Graham
+    b95f7be 2015-07-06 17:44:16 -0400
+    tagged version 3.1.28
+
+- 2 years, 9 months ago Dan Graham
+    87f8fe3 2015-07-06 17:43:57 -0400
+    added etmctrl.sh
+
+- 2 years, 9 months ago Dan Graham
+    c15a9c8 2015-07-06 17:41:00 -0400
+    Added className="EtmTk" to Tk.__init__ to permit window
+    identification in linux for wmctrl.
+
+- 2 years, 9 months ago (tag: 3.1.27) Dan Graham
+    501f976 2015-07-01 16:03:58 -0400
+    tagged version 3.1.27
+
+- 2 years, 9 months ago Dan Graham
+    84c53ef 2015-07-01 14:58:46 -0400
+    Added action_keys, default 'k', to options. When klone  is used,
+    at keys in this string will be appended to the action if given in
+    the item being kloned.
+
+- 2 years, 9 months ago (tag: 3.1.26) Dan Graham
+    e1799c0 2015-07-01 12:16:51 -0400
+    tagged version 3.1.26
+
+- 2 years, 9 months ago Dan Graham
+    3b80be7 2015-07-01 12:16:37 -0400
+    More day date fixes. Renamed chosen_day to chosen_date.
+
+- 2 years, 9 months ago (tag: 3.1.25) Dan Graham
+    5a7ab0f 2015-06-30 20:02:53 -0400
+    tagged version 3.1.25
+
+- 2 years, 9 months ago Dan Graham
+    db9b279 2015-06-30 20:02:29 -0400
+    More checks to make sure chosen_day and active_date are dates. In
+    klone, use entire hsh2str content, not just _summary.
+
+- 2 years, 9 months ago (tag: 3.1.24) Dan Graham
+    fde0425 2015-06-29 19:21:19 -0400
+    tagged version 3.1.24
+
+- 2 years, 9 months ago Dan Graham
+    3938898 2015-06-29 18:31:11 -0400
+    After editItem, return focus to canvas if it had focus before,
+    otherwise to tree.  In getWeek treat chosen_day as a date, not a
+    datetime.
+
+- 2 years, 9 months ago (tag: 3.1.23) Dan Graham
+    781af2e 2015-06-28 12:30:12 -0400
+    tagged version 3.1.23
+
+- 2 years, 9 months ago Dan Graham
+    c74c669 2015-06-28 12:29:52 -0400
+    Fixed bug in creating SAMPLE files for a new user in which open
+    was used instead of codecs.open. Added initial setting for
+    term_encoding and for trans in etm.
+
+- 2 years, 9 months ago (tag: 3.1.22) Dan Graham
+    54ac8eb 2015-06-27 16:32:14 -0400
+    tagged version 3.1.22
+
+- 2 years, 9 months ago Dan Graham
+    3af4f65 2015-06-27 16:32:01 -0400
+    Fixed bug in formatting finish date for day lists.
+
+- 2 years, 9 months ago (tag: 3.1.21) Dan Graham
+    978833c 2015-06-27 12:40:24 -0400
+    tagged version 3.1.21
+
+- 2 years, 9 months ago Dan Graham
+    81fcdaa 2015-06-27 12:38:17 -0400
+    added images
+
+- 2 years, 9 months ago Dan Graham
+    15f781e 2015-06-27 12:37:54 -0400
+    Added international and poedit screenshots to README. Changed
+    locale/ to languages/. Cleaned up some  unused translation
+    strings.
+
+- 2 years, 9 months ago Dan Graham
+    8c04c45 2015-06-26 17:35:44 -0400
+    Use etmdir/locale/... for language files to parallel structure in
+    etmtk.
+
+- 2 years, 9 months ago (tag: 3.1.20) Dan Graham
+    bea6019 2015-06-26 16:22:40 -0400
+    tagged version 3.1.20
+
+- 2 years, 9 months ago Dan Graham
+    8890e6a 2015-06-26 16:22:17 -0400
+    Cleaned up menu entries and fixed python2 bug in Node.
+
+- 2 years, 9 months ago Dan Graham
+    248487a 2015-06-26 14:26:03 -0400
+    Added "available", "waiting", ... to translation strings.
+
+- 2 years, 9 months ago (tag: 3.1.19) Dan Graham
+    a07e945 2015-06-26 13:09:13 -0400
+    tagged version 3.1.19
+
+- 2 years, 9 months ago Dan Graham
+    2b36cf8 2015-06-26 13:09:00 -0400
+    Second pass at translations. Moved gettext stuff to etm and use
+    install to put _() in the global namespace. Fixed node stuff in
+    dialog to work with unicode. Expects to find, e.g., fr_FR.mo in
+    <etmdir>/fr_FR/LC_MESSAGES/.
+
+- 2 years, 9 months ago Dan Graham
+    63f4b60 2015-06-25 14:44:07 -0400
+    Fixed active_date in week and month views to reflect whether or
+    not the canvas has focus. First pass at using translations from
+    locale.cfg -not finished.  Set TODAY, ... in get_options after
+    locale is know. Removed idle vestiges. Use yearless short format
+    in agenda, week and month views. Added encodings to system info
+    (F2). After new item, return focus to canvas or tree according to
+    which one had focus before.  Only import view in etm if using the
+    GUI.
+
+- 2 years, 9 months ago (tag: 3.1.18) Dan Graham
+    2a976e4 2015-06-21 11:27:44 -0400
+    tagged version 3.1.18
+
+- 2 years, 9 months ago Dan Graham
+    8db1263 2015-06-21 10:07:44 -0400
+    Added early_hours to options and a warning to the save
+    confirmation for events or actions with starting times before this
+    24-hour time.
+
+- 2 years, 9 months ago (tag: 3.1.17) Dan Graham
+    63988e4 2015-06-20 11:48:00 -0400
+    tagged version 3.1.17
+
+- 2 years, 9 months ago Dan Graham
+    4f406b9 2015-06-20 11:42:10 -0400
+    Restored Radiobutton.
+
+- 2 years, 9 months ago (tag: 3.1.16) Dan Graham
+    60902b2 2015-06-20 08:24:20 -0400
+    tagged version 3.1.16
+
+- 2 years, 9 months ago Dan Graham
+    cfba28b 2015-06-20 08:24:06 -0400
+    Added ttk import to dialog. Removed unused Radiobutton.
+
+- 2 years, 9 months ago Dan Graham
+    2bef284 2015-06-20 07:28:37 -0400
+    Added unicode = str to the >= 3 part of dialog, Removed unused
+    utf8.
+
+- 2 years, 9 months ago (tag: 3.1.15) Dan Graham
+    3b95fb8 2015-06-19 10:48:50 -0400
+    tagged version 3.1.15
+
+- 2 years, 9 months ago Dan Graham
+    a3add5a 2015-06-19 08:05:05 -0400
+    Fixed bug in cli under python2 comparing unicode and non-unicode
+    strings.
+
+- 2 years, 9 months ago (tag: 3.1.14) Dan Graham
+    aa07025 2015-06-17 13:52:58 -0400
+    tagged version 3.1.14
+
+- 2 years, 9 months ago Dan Graham
+    f29442b 2015-06-17 13:51:37 -0400
+    Fixed bug in which scrollToDate would move the selection in month
+    view to the current weekday number instead of the current month
+    day number.
+
+- 2 years, 9 months ago (tag: 3.1.13, braeburn/master) Dan Graham
+    83cb04e 2015-06-16 15:07:21 -0400
+    tagged version 3.1.13
+
+- 2 years, 9 months ago Dan Graham
+    5f3d29b 2015-06-16 13:51:47 -0400
+    Split timer status into title and status and pack the status part
+    first to avoid it disappearing with resize. Allow @e 0m in
+    actions. In kloneTimer use summary as the starting value in
+    selectTimer and allow editing.
+
+- 2 years, 9 months ago (tag: 3.1.12) Dan Graham
+    38d5762 2015-06-15 13:31:14 -0400
+    tagged version 3.1.12
+
+- 2 years, 9 months ago Dan Graham
+    e13ff34 2015-06-15 13:29:04 -0400
+    Added klone as timer (kloneTimer) command to item menu.  Confirm
+    quit even without running timer. Pause timer when quitting to
+    avoid accumulating down time in running timer.
+
+- 2 years, 9 months ago (tag: 3.1.11) Dan Graham
+    b19c347 2015-06-14 18:22:22 -0400
+    tagged version 3.1.11
+
+- 2 years, 9 months ago Dan Graham
+    bf67a7d 2015-06-14 18:21:48 -0400
+    removed edit.py
+
+- 2 years, 9 months ago (tag: 3.1.10) Dan Graham
+    7417831 2015-06-14 15:03:45 -0400
+    tagged version 3.1.10
+
+- 2 years, 9 months ago Dan Graham
+    d8c5667 2015-06-14 15:01:54 -0400
+    removed erroneous call to getStatus.
+
+- 2 years, 9 months ago Dan Graham
+    a8c8370 2015-06-14 14:17:41 -0400
+    Removed old timer class.
+
+- 2 years, 9 months ago Dan Graham
+    9c80010 2015-06-14 13:59:19 -0400
+    Move timer items to a new menu under File.  Update menu states
+    based on active timers.  Bail on selection if new is false and
+    there are no active timers. Make selection window title reflect
+    purpose of selection, e.g., delete, finish, ... Set minsize for
+    selection window. Update status line on Save and Load timers.
+
+- 2 years, 9 months ago Dan Graham
+    bfcb0aa 2015-06-14 12:22:02 -0400
+    Call newDay on load if active date has changed. Save old timers to
+    inbox. Restart a running timer with 0 minutes for the new day.
+    Cleaned up print statements.
+
+- 2 years, 9 months ago Dan Graham
+    0d0c3af 2015-06-14 09:39:00 -0400
+    Save timer state on quit. Reload on start. On new day, save timers
+    as inbox items and, if there is a currently running timer, also
+    start a new timer with the same summary for the new day. Use the
+    wm_delete_window protocol to call quit in view.py. Warn if a timer
+    is running and if affirmed, pause timer and save timers state.
+
+- 2 years, 9 months ago Dan Graham
+    46771e7 2015-06-13 21:41:43 -0400
+    Fixed import statements. Added wait_window to selectTimers.
+
+- 2 years, 9 months ago (braeburn/timers) Dan Graham
+    9b7ef92 2015-06-13 16:29:10 -0400
+    Timer completion window works. Moved contents of edit.py to
+    dialog.py.
+
+- 2 years, 9 months ago Dan Graham
+    1c0b8d4 2015-06-13 10:31:42 -0400
+    Added class Timers - first step to multiple timers.
+
+- 2 years, 9 months ago Dan Graham
+    de6af69 2015-06-12 17:07:09 -0400
+    Added self.canvas_date to use date selected in week and month view
+    for new items.
+
+- 2 years, 9 months ago (tag: 3.1.9) Dan Graham
+    4caa479 2015-06-11 12:38:17 -0400
+    tagged version 3.1.9
+
+- 2 years, 9 months ago Dan Graham
+    a783bb5 2015-06-11 12:37:54 -0400
+    Removed ETMLOGO and the use of self.iconphoto.
+
+- 2 years, 9 months ago (tag: 3.1.8) Dan Graham
+    a6c6f17 2015-06-11 10:06:21 -0400
+    tagged version 3.1.8
+
+- 2 years, 9 months ago Dan Graham
+    a47d7dd 2015-06-11 10:05:53 -0400
+    Moved conflict identification from data.py to view.py where it
+    respects active calendar setting.
+
+- 2 years, 9 months ago (tag: 3.1.7) Dan Graham
+    8784919 2015-06-11 09:03:26 -0400
+    tagged version 3.1.7
+
+- 2 years, 9 months ago Dan Graham
+    83ec437 2015-06-11 09:02:48 -0400
+    Added updateDay to reschedule and schedule new.
+
+- 2 years, 9 months ago Dan Graham
+    e877839 2015-06-09 08:36:36 -0400
+    Added ICONLOGO - doesn't work on OSX. Improved debug logging for
+    showWeek parameters.
+
+- 2 years, 10 months ago (tag: 3.1.6) Dan Graham
+    cffcece 2015-06-08 14:30:39 -0400
+    tagged version 3.1.6
+
+- 2 years, 10 months ago Dan Graham
+    fef148b 2015-06-08 14:03:14 -0400
+    Fixed bug in CLI ignoring -w and -W options.
+
+- 2 years, 10 months ago Dan Graham
+    01031f8 2015-06-08 08:32:53 -0400
+    Allow toggle labels and print tree in week and month view.
+
+- 2 years, 10 months ago (tag: 3.1.5) Dan Graham
+    64aafa5 2015-06-07 21:48:27 -0400
+    tagged version 3.1.5
+
+- 2 years, 10 months ago Dan Graham
+    9904f82 2015-06-07 21:45:43 -0400
+    When reporting item hsh errors, add file name and line number
+    information.
+
+- 2 years, 10 months ago (tag: 3.1.4) Dan Graham
+    ef1a031 2015-06-07 10:59:55 -0400
+    tagged version 3.1.4
+
+- 2 years, 10 months ago Dan Graham
+    fb9964f 2015-06-07 10:59:34 -0400
+    Set focus on mouse click in week or month view canvas.
+
+- 2 years, 10 months ago Dan Graham
+    a907f9c 2015-06-07 10:40:17 -0400
+    Added new screenshots
+
+- 2 years, 10 months ago (tag: 3.1.3) Dan Graham
+    8dff2d4 2015-06-07 09:52:30 -0400
+    tagged version 3.1.3
+
+- 2 years, 10 months ago Dan Graham
+    c860f94 2015-06-07 09:52:07 -0400
+    In custom view, replace the filter with the combo box.
+
+- 2 years, 10 months ago (tag: 3.1.2) Dan Graham
+    66b51a5 2015-06-07 08:09:23 -0400
+    tagged version 3.1.2
+
+- 2 years, 10 months ago (tag: 3.1.1) Dan Graham
+    09d9922 2015-06-07 08:09:05 -0400
+    tagged version 3.1.1
+
+- 2 years, 10 months ago (tag: 3.1.0-5) Dan Graham
+    c7367c7 2015-06-07 08:08:04 -0400
+    Add icons to the etmTk directory itself for python2.
+
+- 2 years, 10 months ago Dan Graham
+    d5b48ca 2015-06-07 07:42:35 -0400
+    tagged version 3.1.2
+
+- 2 years, 10 months ago Dan Graham
+    017af82 2015-06-07 07:42:06 -0400
+    Fixed bug in setting path to icons.
+
+- 2 years, 10 months ago (tag: 3.1.0-2) Dan Graham
+    6e13fe4 2015-06-07 00:01:57 -0400
+    tagged version 3.1.1
+
+- 2 years, 10 months ago Dan Graham
+    1dad09b 2015-06-07 00:01:34 -0400
+    Corrected icon path.
+
+- 2 years, 10 months ago (tag: 3.1.0) Dan Graham
+    3c8c50a 2015-06-06 23:42:57 -0400
+    tagged version 3.1.0
+
+- 2 years, 10 months ago (tag: 3.0.74-7) Dan Graham
+    29dbd32 2015-06-06 23:33:31 -0400
+    tagged version 3.1.1
+
+- 2 years, 10 months ago Dan Graham
+    be00b65 2015-06-06 23:32:56 -0400
+    Added icons to MANIFEST.in
+
+- 2 years, 10 months ago (tag: 3.1.1-4) Dan Graham
+    13e0c81 2015-06-06 18:33:47 -0400
+    tagged version 3.1.0
+
+- 2 years, 10 months ago Dan Graham
+    a176a6b 2015-06-06 18:30:54 -0400
+    Merged dayweek
+
+- 2 years, 10 months ago (tag: 3.0.62) Dan Graham
+    116c098 2015-06-06 18:22:20 -0400
+    tagged version 3.0.62
+
+- 2 years, 10 months ago Dan Graham
+    857030c 2015-06-06 18:17:00 -0400
+    tagged version 3.1.0
+
+- 2 years, 10 months ago Dan Graham
+    29d33ea 2015-06-06 18:15:51 -0400
+    tagged version 3.1.1
+
+- 2 years, 10 months ago (tag: 3.0.74, braeburn/dayweek) Dan Graham
+    046e92b 2015-06-06 16:21:31 -0400
+    tagged version 3.0.74
+
+- 2 years, 10 months ago Dan Graham
+    759ebbc 2015-06-06 16:20:49 -0400
+    Added space bar binding for goHome to canvas.
+
+- 2 years, 10 months ago (tag: 3.0.73) Dan Graham
+    3b95828 2015-06-06 12:43:24 -0400
+    tagged version 3.0.73
+
+- 2 years, 10 months ago Dan Graham
+    d19afb3 2015-06-06 12:39:28 -0400
+    Fixed bug in setting canvas height in week and month views. Fixed 
+    bug in creating new items with empty data directory.
+
+- 2 years, 10 months ago (tag: 3.0.72) Dan Graham
+    3dfab88 2015-06-05 13:06:34 -0400
+    tagged version 3.0.72
+
+- 2 years, 10 months ago Dan Graham
+    1b67e16 2015-06-05 13:06:03 -0400
+    Removed day from menu and key bindings.
+
+- 2 years, 10 months ago (tag: 3.0.71) Dan Graham
+    e6f477a 2015-06-05 12:05:44 -0400
+    tagged version 3.0.71
+
+- 2 years, 10 months ago Dan Graham
+    6da0f36 2015-06-05 12:04:02 -0400
+    Don't try to set new item time from week view.
+
+- 2 years, 10 months ago Dan Graham
+    d269ec1 2015-06-05 11:41:28 -0400
+    Added updateDay to refresh the day list in week and month views.
+
+- 2 years, 10 months ago (tag: 3.0.70) Dan Graham
+    b3047ee 2015-06-03 20:39:05 -0400
+    tagged version 3.0.70
+
+- 2 years, 10 months ago Dan Graham
+    2ce48b3 2015-06-03 20:37:55 -0400
+    Make right/left cursor keys at end/beginning of week or month move
+    to next/prior week or month.
+
+- 2 years, 10 months ago (tag: 3.0.69) Dan Graham
+    1fba7e7 2015-06-03 20:24:21 -0400
+    tagged version 3.0.69
+
+- 2 years, 10 months ago Dan Graham
+    fbf5af4 2015-06-03 20:23:49 -0400
+    Removed border from week and month views and extended verticals -
+    simpler and nicer.
+
+- 2 years, 10 months ago (tag: 3.0.68) Dan Graham
+    ed181af 2015-06-03 18:37:46 -0400
+    tagged version 3.0.68
+
+- 2 years, 10 months ago Dan Graham
+    4cd67c3 2015-06-03 18:35:43 -0400
+    Refresh day list on item/file change.
+
+- 2 years, 10 months ago (tag: 3.0.67) Dan Graham
+    62844ca 2015-06-03 14:39:06 -0400
+    tagged version 3.0.67
+
+- 2 years, 10 months ago (tag: 3.0.66) Dan Graham
+    b2cb464 2015-06-03 14:24:46 -0400
+    tagged version 3.0.66
+
+- 2 years, 10 months ago (tag: 3.0.65) Dan Graham
+    95a480f 2015-06-03 14:00:56 -0400
+    tagged version 3.0.65
+
+- 2 years, 10 months ago (tag: 3.0.64) Dan Graham
+    02873b1 2015-06-03 13:58:51 -0400
+    tagged version 3.0.64
+
+- 2 years, 10 months ago (tag: 3.0.63) Dan Graham
+    ee20b5a 2015-06-03 13:40:33 -0400
+    tagged version 3.0.63
+
+- 2 years, 10 months ago Dan Graham
+    d93b696 2015-06-03 13:16:34 -0400
+    tagged version 3.0.62
+
+- 2 years, 10 months ago Dan Graham
+    4ac980d 2015-06-03 12:41:30 -0400
+    Tweaked idpos in week and month views.
+
+- 2 years, 10 months ago Dan Graham
+    e6ee79a 2015-06-03 09:02:56 -0400
+    Tweaked scrolling in week view.
+
+- 2 years, 10 months ago Dan Graham
+    ffcbf02 2015-06-02 20:56:59 -0400
+    Replaced "x" and "y" (tuples) with "x_" and "y_" in showWeek.
+
+- 2 years, 10 months ago Dan Graham
+    dd853ca 2015-06-02 19:08:25 -0400
+    Much menu refactoring and comment removal.
+
+- 2 years, 10 months ago Dan Graham
+    a0992f9 2015-06-01 16:17:02 -0400
+    Removed refresh button (toggle active) and search button.
+
+- 2 years, 10 months ago Dan Graham
+    ce7999b 2015-06-01 15:56:35 -0400
+    Removed configureCanvas and binding to <Configure>. Added binding
+    to newItem for newbutton. Removed call to configure calbutton from
+    updateCalendars.
+
+- 2 years, 10 months ago Dan Graham
+    9f7821c 2015-06-01 11:06:41 -0400
+    Selected item in week view now shows details.
+
+- 2 years, 10 months ago Dan Graham
+    9efc6ba 2015-06-01 10:57:15 -0400
+    Mouse click selection now works in week view.
+
+- 2 years, 10 months ago Dan Graham
+    77834ec 2015-06-01 06:59:18 -0400
+    Only nag about the oldest pastdue instance of repeating tasks with
+    overdue restart. Prevent buttons from taking focus so tab switches
+    back and forth from canvas to tree in week and month views.
+
+- 2 years, 10 months ago Dan Graham
+    0595168 2015-05-31 17:58:39 -0400
+    In week and month view, up/down cursor keys now move through dates
+    and select them in the day list.
+
+- 2 years, 10 months ago Dan Graham
+    8a2d916 2015-05-31 14:08:08 -0400
+    added icons
+
+- 2 years, 10 months ago Dan Graham
+    19b643e 2015-05-31 14:05:59 -0400
+    Remove leading zeros from month days (day, week, month views).
+    Week and month views now sync with their day lists. Jump to date
+    selects day in both week and month but cursor keys select week and
+    month begin.
+
+- 2 years, 10 months ago Dan Graham
+    0ba298e 2015-05-30 22:53:43 -0400
+    Without conficts, draw the conflict square in the background color
+    (white, OCCASIONFILL or CURRENTFILL).
+
+- 2 years, 10 months ago Dan Graham
+    46ee0ed 2015-05-30 22:30:22 -0400
+    Only draw the conflict square in week view if flagcolor is not
+    None.
+
+- 2 years, 10 months ago Dan Graham
+    475f9ca 2015-05-30 19:55:16 -0400
+    Week view now displays occasions and today. Adjusted day in week
+    view to be monday of the selected week. Cleaned up comments and
+    print statements.
+
+- 2 years, 10 months ago Dan Graham
+    750c9fb 2015-05-30 16:40:14 -0400
+    Refactored paned window setup and sizing. Removed leading zeros in
+    week view.
+
+- 2 years, 10 months ago Dan Graham
+    664a894 2015-05-30 14:23:53 -0400
+    Added 2nd panedwindow for a total of 3 windows. The top holds the
+    week and month canvases. The middle holds the tree and the bottom
+    holds the details. Display ok but no commands yet.
+
+- 2 years, 10 months ago Dan Graham
+    7ea486c 2015-05-28 21:33:17 -0400
+    Tweaked week and month layouts.
+
+- 2 years, 10 months ago (tag: 3.0.61-13) Dan Graham
+    0e21c48 2015-05-28 18:11:20 -0400
+    added icon_refresh.gif
+
+- 2 years, 10 months ago Dan Graham
+    09a4071 2015-05-28 18:10:55 -0400
+    Updated gettext usage. Import _() from data in dialog, edit and
+    view.
+
+- 2 years, 10 months ago Dan Graham
+    0f90d3a 2015-05-28 14:34:52 -0400
+    Put current time in the title bar.  In week and month views, move
+    the week (month) information up to currentView.
+
+- 2 years, 10 months ago Dan Graham
+    e3a441c 2015-05-27 21:41:12 -0400
+    Added toggleActiveView bound to check button.  Removed filter
+    entry.
+
+- 2 years, 10 months ago Dan Graham
+    341971f 2015-05-27 12:46:32 -0400
+    Added red and green check icons
+
+- 2 years, 10 months ago Dan Graham
+    336d50c 2015-05-27 12:45:12 -0400
+    Red and Green check icons
+
+- 2 years, 10 months ago Dan Graham
+    aaf167e 2015-05-27 10:09:56 -0400
+    removed unused add icon
+
+- 2 years, 10 months ago Dan Graham
+    be652a1 2015-05-27 10:08:58 -0400
+    removed unused png icons
+
+- 2 years, 10 months ago Dan Graham
+    1a96f27 2015-05-27 10:07:33 -0400
+    new 16x16 gif icons
+
+- 2 years, 10 months ago Dan Graham
+    5a977de 2015-05-27 10:06:48 -0400
+    More icon tweaks.
+
+- 2 years, 10 months ago Dan Graham
+    2a8e20e 2015-05-26 16:30:07 -0400
+    added button icons
+
+- 2 years, 10 months ago Dan Graham
+    14b8e21 2015-05-26 16:23:00 -0400
+    Icon adjustments.
+
+- 2 years, 10 months ago Dan Graham
+    2c84da8 2015-05-26 15:43:14 -0400
+    Initial tests for display changes.
+
+- 2 years, 10 months ago (tag: 3.0.61) Dan Graham
+    7a4edae 2015-05-24 16:14:03 -0400
+    tagged version 3.0.61
+
+- 2 years, 10 months ago Dan Graham
+    dc47f67 2015-05-24 16:02:28 -0400
+    Reset self.conflicts in updateDataFromFile.
+
+- 2 years, 10 months ago (tag: 3.0.60) Dan Graham
+    2e5a34d 2015-05-24 15:17:19 -0400
+    tagged version 3.0.60
+
+- 2 years, 10 months ago (tag: 3.0.59) Dan Graham
+    0b353a2 2015-05-24 15:12:04 -0400
+    tagged version 3.0.59
+
+- 2 years, 10 months ago Dan Graham
+    d561367 2015-05-24 15:11:36 -0400
+    Added conflicts in ETMCmd to store a list of isodates with
+    overlapping busy times. Display a rectangular red flag in the
+    lower, left-hand corner of month view cells with conflicts.
+
+- 2 years, 10 months ago (tag: 3.0.58) Dan Graham
+    6a3f63e 2015-05-24 13:40:18 -0400
+    tagged version 3.0.58
+
+- 2 years, 10 months ago Dan Graham
+    57371aa 2015-05-24 13:39:23 -0400
+    Changed month view busy border to cover all 24 hours with a break
+    for midnight in the lower, left-hand corner.
+
+- 2 years, 10 months ago Dan Graham
+    e5a0e4d 2015-05-24 10:41:28 -0400
+    Changed id references from 'i' to 'I' in edit.py.
+
+- 2 years, 10 months ago (tag: 3.0.57) Dan Graham
+    d5e854d 2015-05-24 09:51:41 -0400
+    tagged version 3.0.57
+
+- 2 years, 10 months ago Dan Graham
+    37d784f 2015-05-24 09:46:22 -0400
+    For repeating tasks with @o = r, use hours and minutes from @s in
+    the finish datetime to preserve the displayed starting time.
+
+- 2 years, 10 months ago (tag: 3.0.56) Dan Graham
+    45fa2e7 2015-05-23 16:52:23 -0400
+    tagged version 3.0.56
+
+- 2 years, 10 months ago Dan Graham
+    99d0e28 2015-05-23 16:50:57 -0400
+    Fixed bug in getting reps for task types using the @s hour and
+    minutes for the new start times.
+
+- 2 years, 10 months ago Dan Graham
+    1d441a9 2015-05-23 16:13:28 -0400
+    When applying defaults to an item only use keys that are valid for
+    the item type.  When getting reps for task types use the @s hour
+    and minutes for the new start times.
+
+- 2 years, 10 months ago (tag: 3.0.55) Dan Graham
+    c82e631 2015-05-23 14:00:00 -0400
+    tagged version 3.0.55
+
+- 2 years, 10 months ago (tag: 3.0.54) Dan Graham
+    3c8206b 2015-05-23 12:03:28 -0400
+    tagged version 3.0.54
+
+- 2 years, 10 months ago Dan Graham
+    e4faa25 2015-05-23 11:48:04 -0400
+    removed debug print statements
+
+- 2 years, 10 months ago Dan Graham
+    cf8c026 2015-05-23 11:41:05 -0400
+    Show times for non-midnight tasks the same as events and add to
+    busy times. Allow for multi-day tasks. Set priority for such tasks
+    to 0 (highest) to sort first among tasks.
+
+- 2 years, 10 months ago Dan Graham
+    80df1e0 2015-05-22 18:02:48 -0400
+    Added check that @keys are valid for the given item type.
+
+- 2 years, 10 months ago Dan Graham
+    ca661bd 2015-05-22 16:47:04 -0400
+    Added parsing for @i (invitees).
+
+- 2 years, 10 months ago Dan Graham
+    6bfc991 2015-05-22 14:25:07 -0400
+    Use local_timezone when importing ical if tzid is not available.
+
+- 2 years, 10 months ago (tag: 3.0.53) Dan Graham
+    aa084d7 2015-05-22 13:13:03 -0400
+    tagged version 3.0.53
+
+- 2 years, 10 months ago Dan Graham
+    643d711 2015-05-22 12:47:05 -0400
+    Changed instances of &I entries back to &i.
+
+- 2 years, 10 months ago (tag: 3.0.52) Dan Graham
+    b48b608 2015-05-22 12:25:45 -0400
+    tagged version 3.0.52
+
+- 2 years, 10 months ago Dan Graham
+    5e67f72 2015-05-22 11:04:16 -0400
+    Merge branch 'dayticker'
+
+- 2 years, 10 months ago Dan Graham
+    6474e93 2015-05-22 11:03:27 -0400
+    Limit agenda to days whether items are scheduled or not. Use Today
+    and Tomorrow for relevant date heading. Changed @i (id) to @I and
+    added new @i (invitees).
+
+- 2 years, 10 months ago Dan Graham
+    743b54f 2015-05-21 17:11:44 -0400
+    Use Today and Tomorrow in Agenda view. Removed unneeded getDepths
+    from view.py.
+
+- 2 years, 10 months ago Dan Graham
+    17fbfbb 2015-05-21 16:22:06 -0400
+    Use Yesterday, Today and Tomorrow in fmt_date and
+    fmt_shortdatetime and in Agenda and Day view.
+
+- 2 years, 10 months ago (tag: 3.0.51) Dan Graham
+    fe2f457 2015-05-21 08:35:38 -0400
+    tagged version 3.0.51
+
+- 2 years, 10 months ago Dan Graham
+    99181de 2015-05-21 07:56:52 -0400
+    Changed default for agenda_days to 2 and accept 0 as an option.
+    Only use quote in expand_templates if the template startswith
+    "mailto".
+
+- 2 years, 10 months ago (tag: 3.0.50) Dan Graham
+    b193c21 2015-05-20 12:05:13 -0400
+    tagged version 3.0.50
+
+- 2 years, 10 months ago Dan Graham
+    3cedeac 2015-05-20 11:46:38 -0400
+    In expand_template, quote (urllib) the template components. In
+    openWithDefault, call expand_template on the provided argument.
+    Together, these changes support "mailto" goto links with subject
+    (summary) and body (description) substitutions.
+
+- 2 years, 10 months ago Dan Graham
+    2a9079a 2015-05-19 18:56:51 -0400
+    Added spaces to string displayed when there are no remaining
+    alerts to expand popup display.
+
+- 2 years, 10 months ago (tag: 3.0.49) Dan Graham
+    9a6eed2 2015-05-18 16:37:17 -0400
+    tagged version 3.0.49
+
+- 2 years, 10 months ago Dan Graham
+    8f307dd 2015-05-18 16:05:12 -0400
+    Fixed bug in -m switch in which using -m 1 would persist in
+    subsequent reports.
+
+- 2 years, 10 months ago Dan Graham
+    62cc39e 2015-05-18 15:18:16 -0400
+    Added l (location) to the list of groupby specifications for
+    custom views. Added a "-m" option to custom view with default
+    value 0. Use '-m 1' with groupby elements c, k, l, t and u to
+    display under NONE items that would otherwise have been omitted.
+    Changed Space to Home as the binding for Home.
+
+- 2 years, 10 months ago (tag: 3.0.48) Dan Graham
+    58f5793 2015-05-18 12:06:11 -0400
+    tagged version 3.0.48
+
+- 2 years, 10 months ago Dan Graham
+    d6147f4 2015-05-18 12:05:34 -0400
+    Added ? (someday) items to custom view typeHsh with key "s" and
+    include them by default. Removed extraneous <space> key binding in
+    the GUI.
+
+- 2 years, 10 months ago (tag: 3.0.47) Dan Graham
+    87c45ee 2015-05-17 08:02:42 -0400
+    tagged version 3.0.47
+
+- 2 years, 10 months ago Dan Graham
+    044fb24 2015-05-16 21:25:50 -0400
+    Tweaked minimum window sizes.
+
+- 2 years, 10 months ago (tag: 3.0.46) Dan Graham
+    8747a1a 2015-05-16 21:06:59 -0400
+    tagged version 3.0.46
+
+- 2 years, 10 months ago (tag: 3.0.45-1) Dan Graham
+    dd344de 2015-05-16 21:05:41 -0400
+    Removed extraneous print statements.
+
+- 2 years, 10 months ago (tag: 3.0.45) Dan Graham
+    d080669 2015-05-16 21:02:00 -0400
+    tagged version 3.0.45
+
+- 2 years, 10 months ago (tag: 3.0.44-4) Dan Graham
+    e54c871 2015-05-16 18:26:02 -0400
+    Changed binding for goHome from <space> to <Home> to avoid the
+    builtin behavior of closing the tree node.
+
+- 2 years, 10 months ago (tag: 3.0.44-3) Dan Graham
+    6363554 2015-05-16 10:10:57 -0400
+    Show non-midnight due times for tasks in column 2 in day and
+    agenda view. Changed NONE to gettext translated string wrapped in
+    "~" characters to sort last.
+
+- 2 years, 10 months ago Dan Graham
+    0c583a9 2015-05-16 08:34:20 -0400
+    Fixed bug in formatting non-ascii weekday names in month view.
+
+- 2 years, 10 months ago Dan Graham
+    2fcd5fd 2015-05-15 12:47:51 -0400
+    Show @s time for tasks in column2 if it is not midnight local
+    time.
+
+- 2 years, 10 months ago (tag: 3.0.44) Dan Graham
+    56cddbd 2015-05-14 16:30:50 -0400
+    tagged version 3.0.44
+
+- 2 years, 10 months ago Dan Graham
+    95a7204 2015-05-14 16:27:50 -0400
+    Fixed bug in which an item consisting of a single "=" would not
+    reset the item defaults for subsequent items.
+
+- 2 years, 10 months ago Dan Graham
+    c81065f 2015-05-14 09:06:28 -0400
+    Fixed bug in recognizing and using agenda and report width, indent
+    and colors settings.
+
+- 2 years, 10 months ago Dan Graham
+    b8bce0d 2015-05-14 09:05:09 -0400
+    Reduced minimum size.
+
+- 2 years, 11 months ago Dan Graham
+    9fbcc07 2015-05-07 16:39:07 -0400
+    Added exporter to options to be used for exported CSV files.
+
+- 2 years, 11 months ago Dan Graham
+    1b29231 2015-05-07 15:57:08 -0400
+    Added debian/watch file
+
+- 2 years, 11 months ago Dan Graham
+    26123d6 2015-05-07 14:19:17 -0400
+    When creating new item, leave @s entry unselected and set cursor
+    to 0.0.
+
+- 3 years ago dagraham
+    7b6ba79 2015-03-14 12:19:15 -0400
+    Merge pull request #33 from aeromorrison/master
+
+    Fixed typo.
+- 3 years, 2 months ago aeromorrison
+    92ce7e8 2015-01-28 23:19:54 -0500
+    Fixed typo and universal newline on csv output.
+
+    CSV.writer was introducing an extra line feed character for each
+    line on MS Windows system. Added universal EOL through
+    lineterminator option.
+
+- 3 years, 2 months ago aeromorrison
+    62e94a7 2015-01-28 18:13:26 -0500
+    Fixed typo.
+
+    First commit. Corrected 'cvs' to 'csv'.
+
+- 3 years, 2 months ago (tag: 3.0.43) Dan Graham
+    22f9eb2 2015-01-18 13:09:16 -0500
+    tagged version 3.0.43
+
+- 3 years, 2 months ago (tag: 3.0.42-2) Dan Graham
+    28bf678 2015-01-18 12:06:03 -0500
+    tagged version 3.0.43
+
+- 3 years, 2 months ago Dan Graham
+    3a303ef 2015-01-18 12:01:34 -0500
+    Fixed bug in delete this and all subsequent repetitions
+
+    Do not change starting date/time.
+
+- 3 years, 4 months ago (tag: 3.0.42) Dan Graham
+    23d6aad 2014-11-10 07:00:22 -0500
+    tagged version 3.0.42
+
+- 3 years, 4 months ago Dan Graham
+    b149148 2014-11-10 06:59:52 -0500
+    Incorporated Matt Woodbury's decode fixes for importing icalendar
+    files.
+
+- 3 years, 6 months ago (tag: 3.0.41) Dan Graham
+    580e770 2014-10-05 10:59:22 -0400
+    tagged version 3.0.41
+
+- 3 years, 6 months ago Dan Graham
+    be887a4 2014-10-01 22:00:50 -0400
+    Changed icon name in desktop to etm.
+
+- 3 years, 6 months ago Dan Graham
+    60e9a23 2014-09-24 10:37:43 -0400
+    Improved error reporting in get_rrule.
+
+- 3 years, 6 months ago (tag: 3.0.40) Dan Graham
+    cc56f23 2014-09-15 12:22:51 -0400
+    tagged version 3.0.40
+
+- 3 years, 6 months ago Dan Graham
+    88204ae 2014-09-13 10:31:26 -0400
+    When importing ics, use UTC if a time zone is not provided.
+
+- 3 years, 6 months ago (tag: 3.0.39) Dan Graham
+    0d98398 2014-09-12 13:42:11 -0400
+    tagged version 3.0.39
+
+- 3 years, 6 months ago Dan Graham
+    9213b71 2014-09-12 13:41:46 -0400
+    Added unicode to edit.py and view.py.
+
+- 3 years, 6 months ago Dan Graham
+    3307ee8 2014-09-10 08:44:54 -0400
+    Put the message window last in the alert sequence to avoid the
+    modal window blocking other alerts.
+
+- 3 years, 6 months ago Dan Graham
+    dab1967 2014-09-09 17:35:12 -0400
+    Updated monthly images
+
+- 3 years, 6 months ago (tag: 3.0.38) Dan Graham
+    9b242c4 2014-09-09 09:56:27 -0400
+    tagged version 3.0.38
+
+- 3 years, 6 months ago Dan Graham
+    09e252f 2014-09-09 09:55:54 -0400
+    Use %X and %x to format non-ascii datetimes for python2.
+
+- 3 years, 6 months ago Dan Graham
+    7731160 2014-09-09 09:19:30 -0400
+    Fixed bugs with non-integer screen distances in week and month
+    view.
+
+- 3 years, 6 months ago Dan Graham
+    6b4b562 2014-09-09 09:10:11 -0400
+    Added early and late warning lines to week view days with events
+    falling either before or after the displayed interval. Fixed bug
+    in displaying events starting after display range in week view.
+
+- 3 years, 6 months ago Dan Graham
+    b803a9d 2014-09-09 07:20:37 -0400
+    Replaced day coloring in month view with an "active times" border.
+    Added encode to subprocess call in alert_displaycmd.
+
+- 3 years, 6 months ago Dan Graham
+    1fd8bbf 2014-09-08 09:15:10 -0400
+    Test work on showing event details in month view.
+
+- 3 years, 7 months ago (tag: 3.0.37) Dan Graham
+    f33df38 2014-08-14 12:07:51 -0400
+    tagged version 3.0.37
+
+- 3 years, 7 months ago Dan Graham
+    d2af9c1 2014-08-14 12:07:32 -0400
+    Fixed bug in triggering simultaneous alerts from different items.
+
+- 3 years, 7 months ago (tag: 3.0.36) Dan Graham
+    0faa04b 2014-08-12 17:27:59 -0400
+    tagged version 3.0.36
+
+- 3 years, 7 months ago Dan Graham
+    5739708 2014-08-12 17:27:41 -0400
+    Fixed bug in which "," was omitted in applying prefix to @f and
+    @h.
+
+- 3 years, 8 months ago (tag: 3.0.35) Dan Graham
+    18dd667 2014-08-05 10:40:46 -0400
+    tagged version 3.0.35
+
+- 3 years, 8 months ago Dan Graham
+    1c65b82 2014-08-05 10:39:43 -0400
+    Use prefix for all @-keys including 'f'. Added 'f' to default
+    prefix_uses.
+
+- 3 years, 8 months ago (tag: 3.0.34) Dan Graham
+    972968c 2014-07-18 22:51:08 -0400
+    tagged version 3.0.34
+
+- 3 years, 8 months ago Dan Graham
+    8e74b1a 2014-07-18 22:50:37 -0400
+    version number catchup.
+
+- 3 years, 8 months ago Dan Graham
+    c61ae3a 2014-07-18 22:48:28 -0400
+    Removed unused calfiles definition.
+
+- 3 years, 8 months ago Dan Graham
+    2262706 2014-07-18 22:32:16 -0400
+    Fixed bug in editFile. Ignore calls to selFilter and clearFilter
+    in WEEK, MONTH and CUSTOM views.
+
+- 3 years, 8 months ago (tag: 3.0.33) Dan Graham
+    c9388f4 2014-07-18 12:31:22 -0400
+    tagged version 3.0.33
+
+- 3 years, 8 months ago Dan Graham
+    a06c58c 2014-07-18 09:27:05 -0400
+    Added export_ical_active.
+
+- 3 years, 8 months ago (tag: 3.0.32) Dan Graham
+    9fc1785 2014-07-17 11:07:53 -0400
+    tagged version 3.0.32
+
+- 3 years, 8 months ago Dan Graham
+    3fdcca0 2014-07-17 11:04:53 -0400
+    Trap non-integer errors for &q, &i and &t. Show errror details in
+    export_ical.  When editing an inbox entry, use the existing entry
+    without processing. Fixed missing argument in _exportActiveToIcal.
+     Check for requisite 'k' and 't' entries when creating new items
+    in note, keyword and tag views.
+
+- 3 years, 8 months ago (tag: 3.0.31) Dan Graham
+    20a1694 2014-07-16 15:17:11 -0400
+    tagged version 3.0.31
+
+- 3 years, 8 months ago Dan Graham
+    f73029c 2014-07-16 15:15:59 -0400
+    Replaced "from dateutil.rrule import *" with "from dateutil.rrule
+    import (DAILY, rrule)".  Fail gracefully if 'user_data' exists but
+    is empty.  Initialize global variables term_encoding, etc. 
+    Initialize local_timezone.  In edit.py initialize "self.edithsh =
+    {}" when both edithsh and newhsh are None.
+
+- 3 years, 8 months ago (tag: 3.0.30) Dan Graham
+    5826eb3 2014-07-10 16:13:26 -0400
+    tagged version 3.0.30
+
+- 3 years, 8 months ago Dan Graham
+    c851a91 2014-07-10 16:13:16 -0400
+    Fixes for MANIFEST.in and setup.py.
+
+- 3 years, 8 months ago (tag: 3.0.29-3) Dan Graham
+    93bb2b0 2014-07-10 16:06:50 -0400
+    Added png images.
+
+- 3 years, 8 months ago Dan Graham
+    ea527c1 2014-07-10 16:05:56 -0400
+    Added etm.appdata.xml. Changed etmtk.desktop to etm.desktop.
+    Changed man from etmtk.1 to etm.1, changed etmtk.xpm to etm.xpm.
+
+- 3 years, 8 months ago (tag: 3.0.29-1) Dan Graham
+    4c80ef1 2014-07-10 10:40:55 -0400
+    Added etm.appdata.xml. Changed etmtk.desktop to etm.desktop.
+
+- 3 years, 8 months ago (tag: 3.0.29) Dan Graham
+    73443de 2014-07-09 19:02:03 -0400
+    tagged version 3.0.29
+
+- 3 years, 8 months ago Dan Graham
+    ef6aad1 2014-07-09 19:01:41 -0400
+    Desktop and setup.py fixes for Debian.
+
+- 3 years, 8 months ago Dan Graham
+    784c8f8 2014-07-09 17:43:19 -0400
+    Desktop and setup.py fixes for Debian.
+
+- 3 years, 9 months ago Dan Graham
+    bd2d5eb 2014-07-08 06:47:28 -0400
+    Clean up.
+
+- 3 years, 9 months ago (tag: 3.0.28) Dan Graham
+    7921ce3 2014-07-04 16:34:41 -0400
+    tagged version 3.0.28
+
+- 3 years, 9 months ago Dan Graham
+    33bdd47 2014-07-04 16:33:17 -0400
+    Load completions.cfg, reports.cfg and users.cfg in the root of
+    etmdir.  Added 'update_minutes' to etmtk.cfg and only update
+    current files and files in icssyn_folder when the number of
+    minutes past the hour modulo this setting is zero.
+
+- 3 years, 9 months ago (tag: 3.0.27) Dan Graham
+    3ee1685 2014-07-01 17:52:46 -0400
+    tagged version 3.0.27
+
+- 3 years, 9 months ago Dan Graham
+    5b7422c 2014-07-01 17:50:20 -0400
+    Fixed list check in str2hsh.
+
+- 3 years, 9 months ago Dan Graham
+    0e6cb0c 2014-07-01 17:31:10 -0400
+    Make the urllib import work for both python 2 and 3. Add error
+    trapping in setup_parse. Make sure "pairs" is a list in str2hsh
+    job processing.
+
+- 3 years, 9 months ago (tag: 3.0.26) Dan Graham
+    8d23538 2014-07-01 13:26:44 -0400
+    tagged version 3.0.26
+
+- 3 years, 9 months ago Dan Graham
+    9a829de 2014-07-01 13:12:55 -0400
+    Added 'ics_subscriptions' with update_subscription and import
+    urllib in data.py and updateSubscriptions in view.py.  Removed
+    lint.
+
+- 3 years, 9 months ago (tag: 3.0.25) Dan Graham
+    07c6c21 2014-06-30 13:25:53 -0400
+    tagged version 3.0.25
+
+- 3 years, 9 months ago Dan Graham
+    2f2bb85 2014-06-30 09:57:54 -0400
+    Merge branch 'google'
+
+- 3 years, 9 months ago Dan Graham
+    9007628 2014-06-30 09:51:56 -0400
+    More retain_ids cleanup.
+
+- 3 years, 9 months ago Dan Graham
+    a293d15 2014-06-29 14:06:09 -0400
+    Removed ics_import, changed sync_folder to icssync_folder. Removed
+    retain_ids.
+
+- 3 years, 9 months ago Dan Graham
+    8042b56 2014-06-29 11:42:08 -0400
+    Removed retain_ids.
+
+- 3 years, 9 months ago Dan Graham
+    9f2fc66 2014-06-29 07:19:32 -0400
+    Temporary print statements to debug group task in hsh2str.
+
+- 3 years, 9 months ago (tag: 3.0.24) Dan Graham
+    f4caf0c 2014-06-28 21:39:42 -0400
+    tagged version 3.0.24
+
+- 3 years, 9 months ago Dan Graham
+    c875db6 2014-06-28 15:44:48 -0400
+    When creating a new item, it is now possible to enter a VCALENDAR
+    expression for a single event, todo or journal item in the etm
+    editor. When "finish" is pressed the entry is converted to etm
+    format and any repetitions are displayed.  Fixed bugs in failing
+    to decode items and to distinguish lists in import_ical.
+
+- 3 years, 9 months ago Dan Graham
+    bc4b046 2014-06-28 14:07:27 -0400
+    Catch up.
+
+- 3 years, 9 months ago Dan Graham
+    f7f0f30 2014-06-28 13:56:49 -0400
+    Removing wiki submodule
+
+- 3 years, 9 months ago Dan Graham
+    f0b7d0b 2014-06-28 13:48:13 -0400
+    Removed wiki submodule
+
+- 3 years, 9 months ago Dan Graham
+    c97bac9 2014-06-28 13:45:00 -0400
+    Removed wiki submodule
+
+- 3 years, 9 months ago Dan Graham
+    a3969a7 2014-06-28 11:46:11 -0400
+    Added option  retain_ids to etmtk.cfg. If true, ids will be
+    written to data files and retained between sessions. Added missing
+    v and w to at_keys. Append "etm" to uuids.  Removed unused
+    tooltips.
+
+- 3 years, 9 months ago Dan Graham
+    8c68def 2014-06-28 10:39:16 -0400
+    updated preferenes
+
+- 3 years, 9 months ago Dan Graham
+    d6a49e9 2014-06-28 10:31:26 -0400
+    Fixed bug in syncTxt. Set file2uuids, etc before calling
+    updateCurrentFiles in loadData. Bind ^W in edit.py to onFinish
+    instead of onCheck to properly distinguish file mode. In
+    updateClock, call get_changes before syncing files.
+
+- 3 years, 9 months ago Dan Graham
+    557933e 2014-06-26 11:43:41 -0400
+    Merge branch 'master' of https://github.com/dagraham/etm-tk
+
+    Conflicts:
+    etmTk/version.py
+
+- 3 years, 9 months ago (tag: 3.0.23) Dan Graham
+    9ab9119 2014-06-26 11:38:30 -0400
+    tagged version 3.0.23
+
+- 3 years, 9 months ago Dan Graham
+    f15fb3b 2014-06-26 11:38:07 -0400
+    Corrected entry for current_icsfolder in preferences
+
+- 3 years, 9 months ago Dan Graham
+    d474f08 2014-06-26 11:20:43 -0400
+    tagged version 3.0.23
+
+- 3 years, 9 months ago Dan Graham
+    6750921 2014-06-26 11:19:55 -0400
+    Updated entry for current_icsfolder in preferences
+
+- 3 years, 9 months ago (tag: 3.0.22) Dan Graham
+    3aeca74 2014-06-26 11:05:41 -0400
+    tagged version 3.0.22
+
+- 3 years, 9 months ago Dan Graham
+    cda3008 2014-06-26 11:05:11 -0400
+    Replaced current_icsfile with current_icsfolder in etmtk.cfg. If
+    given, then ics files corresponding to the entries in calendars
+    will be created in this folder and updated as necessary. If there
+    are no entries in calendars, then a single "all.ics" will be
+    created in this folder and updated as necessary. Lint fixes in
+    data.py.
+
+- 3 years, 9 months ago (tag: 3.0.21) Dan Graham
+    2a63fee 2014-06-25 13:49:31 -0400
+    tagged version 3.0.21
+
+- 3 years, 9 months ago Dan Graham
+    1da15b7 2014-06-25 13:43:14 -0400
+    Add unmatched completions to session and offer list of completion
+    files for appending. For both completions and report
+    specifications, only add the new item(s) to the selected file.
+
+- 3 years, 9 months ago Dan Graham
+    b4594d6 2014-06-24 17:08:46 -0400
+    added images
+
+- 3 years, 9 months ago Dan Graham
+    cd36e01 2014-06-24 17:07:20 -0400
+    updated images
+
+- 3 years, 9 months ago Dan Graham
+    9bb21fd 2014-06-24 17:05:05 -0400
+    update notes.md prior to removing from repo
+
+- 3 years, 9 months ago (tag: 3.0.20) Dan Graham
+    6e1dbca 2014-06-24 10:17:58 -0400
+    tagged version 3.0.20
+
+- 3 years, 9 months ago Dan Graham
+    221c040 2014-06-23 06:53:23 -0400
+    Added wiki as submodule to main repository.
+
+- 3 years, 9 months ago Dan Graham
+    bd1e774 2014-06-22 15:59:09 -0400
+    Reverted setup to specify python 2.7 since 2.7.6 was not an
+    options.
+
+- 3 years, 9 months ago (tag: 3.0.19) Dan Graham
+    c779e6f 2014-06-22 13:01:27 -0400
+    tagged version 3.0.19
+
+- 3 years, 9 months ago Dan Graham
+    1b8e92e 2014-06-22 12:54:25 -0400
+    Trap exceptions setting locale in calyear. Added current_icsfile
+    and sync_file options to etmtk.cfg.  Fixed bugs in import_ical. 
+    Added syncTxt and call to it in updateClock. Modified setup to
+    specify python >= 2.7.6.
+
+- 3 years, 9 months ago Dan Graham
+    f9943c4 2014-06-19 13:20:52 -0400
+    Removed extraneous print statments.
+
+- 3 years, 9 months ago Dan Graham
+    5234aa5 2014-06-19 11:15:55 -0400
+    Removed prep_dist.sh and upload.sh from repository.
+
+- 3 years, 9 months ago Dan Graham
+    5c3a727 2014-06-19 11:13:35 -0400
+    Added info logging for locale information. Don't make help
+    directory in upload.sh.
+
+- 3 years, 9 months ago (tag: 3.0.18) Dan Graham
+    71fda80 2014-06-19 09:16:14 -0400
+    tagged version 3.0.18
+
+- 3 years, 9 months ago Dan Graham
+    18fc7b3 2014-06-19 09:14:50 -0400
+    In hsh2ical, process &u as a datetime.  Since '-' and '+'  are
+    stored as datetimes, skip parsing them.
+
+- 3 years, 9 months ago (tag: 3.0.17) Dan Graham
+    3c22ad1 2014-06-18 15:12:07 -0400
+    tagged version 3.0.17
+
+- 3 years, 9 months ago Dan Graham
+    8dc83a2 2014-06-18 15:11:37 -0400
+    Fixed link to GitHub wiki in HEADER.md. Restored mk_docs.sh.
+
+- 3 years, 9 months ago (tag: 3.0.16) Dan Graham
+    faa895b 2014-06-18 13:39:20 -0400
+    tagged version 3.0.16
+
+- 3 years, 9 months ago Dan Graham
+    cc5e1cd 2014-06-18 13:38:28 -0400
+    Fixed link to GitHub wiki in HEADER.md.
+
+- 3 years, 9 months ago Dan Graham
+    4dcc4e2 2014-06-17 17:21:23 -0400
+    Fixed bug in export_ical_item.
+
+- 3 years, 9 months ago Dan Graham
+    2e02ee6 2014-06-17 12:53:17 -0400
+    Fixed bug in export_ical_item.
+
+- 3 years, 9 months ago (tag: 3.0.15) Dan Graham
+    3c8d485 2014-06-16 19:21:48 -0400
+    tagged version 3.0.15
+
+- 3 years, 9 months ago Dan Graham
+    01c2dbd 2014-06-16 19:20:47 -0400
+    Removed ref to logfile in setup logging if etmdir doesn't exist
+    (first use).
+
+- 3 years, 9 months ago Dan Graham
+    a9fa28a 2014-06-16 10:43:02 -0400
+    Trap and return errors in data.py parse(dtstr). Remove cancel
+    button from (error) messageWindow in edit.py and bind Escape along
+    with Return to Ok. Lint removal for etm.
+
+- 3 years, 9 months ago (tag: 3.0.14) Dan Graham
+    c70263c 2014-06-16 07:14:03 -0400
+    tagged version 3.0.14
+
+- 3 years, 9 months ago dagraham
+    a411826 2014-06-16 07:07:32 -0400
+    Merge pull request #22 from Tempel/logfile_init
+
+    Fix logfile creation.
+- 3 years, 9 months ago Randy Heydon
+    daf07c6 2014-06-15 14:21:42 -0400
+    Fix logfile creation.
+
+    If etmtk_log.txt does not already exist, etm would try to create
+    it, but would fail with NameErrors on fp and dfile_encoding. 
+    Since encoding doesn't matter when we're just creating an empty
+    file, replace it with a short call to open. Also note in the
+    README that this file is created as part of initialization.
+
+- 3 years, 9 months ago Dan Graham
+    e8a7950 2014-06-15 13:26:59 -0400
+    Merge branch 'master' of https://github.com/dagraham/etm-tk
+
+    Conflicts:
+    etmTk/version.py
+    prep_dist.sh
+    upload.sh
+
+- 3 years, 9 months ago (tag: 3.0.13) Dan Graham
+    5f3b328 2014-06-15 13:20:42 -0400
+    tagged version 3.0.13
+
+- 3 years, 9 months ago Dan Graham
+    73a1e73 2014-06-15 13:20:34 -0400
+    Removed extraneous line introduced in 3.0.12
+
+- 3 years, 9 months ago (tag: 3.0.12) Dan Graham
+    be88675 2014-06-15 12:12:25 -0400
+    tagged version 3.0.12
+
+- 3 years, 9 months ago Dan Graham
+    b0e23df 2014-06-15 11:58:35 -0400
+    Delint view.py
+
+- 3 years, 9 months ago Dan Graham
+    a1d58b1 2014-06-14 16:17:32 -0400
+    Delint data.py
+
+- 3 years, 9 months ago Dan Graham
+    c0fa5d7 2014-06-14 13:49:54 -0400
+    Delint dialog.py and edit.py
+
+- 3 years, 9 months ago Dan Graham
+    647b4b3 2014-06-14 06:53:10 -0400
+    Remove unneeded sh files from repo.
+
+- 3 years, 9 months ago Dan Graham
+    6d90f92 2014-06-15 12:11:09 -0400
+    Version number fix.
+
+- 3 years, 9 months ago Dan Graham
+    4740b71 2014-06-12 22:28:41 -0400
+    Version number catchup.
+
+- 3 years, 9 months ago Dan Graham
+    0bad07f 2014-06-13 15:33:23 -0400
+    Added prep_dist and upload.
+
+- 3 years, 9 months ago Dan Graham
+    7185a7a 2014-06-14 06:53:10 -0400
+    Remove unneeded sh files from repo.
+
+- 3 years, 9 months ago Dan Graham
+    01ce0ea 2014-06-14 06:44:56 -0400
+    removed prep_dist and upload from repo.
+
+- 3 years, 9 months ago Dan Graham
+    dfdc20e 2014-06-13 15:35:53 -0400
+    Merge branch 'master' of https://github.com/dagraham/etm-tk
+
+    Conflicts:
+    etmTk/version.py
+    upload.sh
+
+- 3 years, 9 months ago Dan Graham
+    7e790b9 2014-06-13 15:33:33 -0400
+    tagged version 3.0.13
+
+- 3 years, 9 months ago Dan Graham
+    b0bfd06 2014-06-13 15:33:23 -0400
+    Added prep_dist and upload.
+
+- 3 years, 9 months ago Dan Graham
+    d221745 2014-06-13 15:30:11 -0400
+    tagged version 3.0.12
+
+- 3 years, 9 months ago Dan Graham
+    539af61 2014-06-13 15:30:01 -0400
+    Version number catchup.
+
+- 3 years, 9 months ago Dan Graham
+    55e60a0 2014-06-13 14:46:48 -0400
+    Added wiki to HEADER.
+
+- 3 years, 9 months ago Dan Graham
+    620f8aa 2014-06-13 06:24:32 -0400
+    Tweaks for mk_docs and upload.
+
+- 3 years, 9 months ago Dan Graham
+    46b8f0b 2014-06-12 22:13:48 -0400
+    moved help files to etm-tk.wiki.
+
+- 3 years, 9 months ago (tag: 3.0.11) Dan Graham
+    f5cdde3 2014-06-13 06:31:06 -0400
+    tagged version 3.0.11
+
+- 3 years, 9 months ago Dan Graham
+    502abbf 2014-06-13 06:24:32 -0400
+    Tweaks for mk_docs and upload.
+
+- 3 years, 9 months ago Dan Graham
+    d93e852 2014-06-13 06:12:46 -0400
+    Merge branch 'master' of https://github.com/dagraham/etm-tk
+
+    Conflicts:
+    etmTk/v.py
+    etmTk/version.py
+
+- 3 years, 9 months ago Dan Graham
+    f60c774 2014-06-12 22:28:54 -0400
+    tagged version 3.0.13
+
+- 3 years, 9 months ago Dan Graham
+    b8d005f 2014-06-12 22:28:41 -0400
+    Version number catchup.
+
+- 3 years, 9 months ago Dan Graham
+    9dea9b6 2014-06-12 22:13:48 -0400
+    moved help files to etm-tk.wiki.
+
+- 3 years, 9 months ago Dan Graham
+    160f91a 2014-06-12 17:43:23 -0400
+    tagged version 3.0.12
+
+- 3 years, 9 months ago (tag: 3.0.9-7) Dan Graham
+    0ea25df 2014-06-12 16:28:49 -0400
+    tagged version 3.0.11
+
+- 3 years, 9 months ago Dan Graham
+    b868f31 2014-06-12 16:24:46 -0400
+    Keep UserManual pdf and html.
+
+- 3 years, 9 months ago Dan Graham
+    76da13f 2014-06-12 15:55:01 -0400
+    Updated version numbers and added INDEX.md.
+
+- 3 years, 9 months ago Dan Graham
+    6fc0e11 2014-06-12 15:52:17 -0400
+    Documentation reorganization.
+
+- 3 years, 9 months ago (tag: 3.0.10) Dan Graham
+    1abc964 2014-06-12 10:14:39 -0400
+    tagged version 3.0.10
+
+- 3 years, 9 months ago Dan Graham
+    840ccc7 2014-06-12 10:14:26 -0400
+    Added tkinter >= 8.5.11 to REQUIRES.
+
+- 3 years, 9 months ago Dan Graham
+    940a6b7 2014-06-12 10:02:25 -0400
+    Removed Windows XP from the trove list of supported platforms.
+
+- 3 years, 9 months ago Dan Graham
+    03776a4 2014-06-12 08:14:13 -0400
+    Documentation updates.
+
+- 3 years, 9 months ago (tag: 3.0.9) Dan Graham
+    a7a8d02 2014-06-11 16:16:39 -0400
+    tagged version 3.0.9
+
+- 3 years, 9 months ago Dan Graham
+    32b1853 2014-06-11 16:02:36 -0400
+    Added warning that timezone information is ignored to result from
+    date calculator for pre 1970 dates under Windows.
+
+- 3 years, 9 months ago Dan Graham
+    7a8f88f 2014-06-11 13:00:43 -0400
+    Eliminated use of the .etmtkdata.pkl file and, with it, the need
+    to import pickle and the functions dump_data and load_data.  Fixed
+    bug in date calculator regex. Restored ability to use
+    "easter(yyyy)" in date calculator.
+
+- 3 years, 9 months ago (tag: 3.0.8) Dan Graham
+    41e220b 2014-06-10 16:55:19 -0400
+    tagged version 3.0.8
+
+- 3 years, 9 months ago Dan Graham
+    25fe717 2014-06-10 15:24:52 -0400
+    Added hack to enable Windoz to deal with pre 1970-01-01 datetimes.
+     Corrected argument call to get_changes.
+
+- 3 years, 9 months ago (tag: 3.0.7) Dan Graham
+    4039055 2014-06-10 11:44:10 -0400
+    tagged version 3.0.7
+
+- 3 years, 9 months ago Dan Graham
+    839d89b 2014-06-10 11:40:02 -0400
+    Only use logfile on startup if etmdir exists.  Dump and load
+    uuid2labels in pickle file.  Only remove pickle file with bad data
+    if it exists. Added &E, byeaster, to rrule options.
+
+- 3 years, 9 months ago Dan Graham
+    e90a89a 2014-06-09 13:03:11 -0400
+    Added Shift-Ctrl-F shortcut for clear filter.
+
+- 3 years, 9 months ago Dan Graham
+    6e871ea 2014-06-09 10:12:35 -0400
+    Added missing nullok to opts for startActionTimer.
+
+- 3 years, 9 months ago (tag: 3.0.6) Dan Graham
+    c507b38 2014-06-09 07:06:24 -0400
+    tagged version 3.0.6
+
+- 3 years, 9 months ago Dan Graham
+    44ddf06 2014-06-09 07:05:22 -0400
+    Initialize edithsh to avoid error when editing files.
+
+- 3 years, 10 months ago Dan Graham
+    27e4034 2014-06-08 12:58:42 -0400
+    Fixed bug in reference to self.options instead of loop.options in
+    edit.py.
+
+- 3 years, 10 months ago Dan Graham
+    e90f9f6 2014-06-08 07:38:43 -0400
+    Delete content on switch to either week or month view.
+
+- 3 years, 10 months ago (tag: 3.0.5) Dan Graham
+    b3ce445 2014-06-07 07:22:09 -0400
+    tagged version 3.0.5
+
+- 3 years, 10 months ago Dan Graham
+    eddae0a 2014-06-07 07:21:55 -0400
+    Use isocalendar week numbers in month view (as in week view).
+    Updated screenshots.
+
+- 3 years, 10 months ago (tag: 3.0.4) Dan Graham
+    079eb9e 2014-06-07 06:39:47 -0400
+    tagged version 3.0.4
+
+- 3 years, 10 months ago Dan Graham
+    6f19cd2 2014-06-06 17:36:08 -0400
+    Make sure tree has focus on startup, even if there are no data
+    items.
+
+- 3 years, 10 months ago Dan Graham
+    2d8f68b 2014-06-06 15:43:35 -0400
+    Remove confirmation for new event on double-click in week view.
+
+- 3 years, 10 months ago Dan Graham
+    688158c 2014-06-06 15:28:05 -0400
+    Don't insert ? and @e 1h when creating a new event in week view.
+
+- 3 years, 10 months ago Dan Graham
+    2708ffc 2014-06-06 15:17:24 -0400
+    When pressing "N" to create a new item in day, week or month view,
+    start with @s set to the currently selected date. Also for Return
+    or Double-Click in month view.
+
+- 3 years, 10 months ago (tag: 3.0.3) Dan Graham
+    368fc1c 2014-06-06 11:40:07 -0400
+    tagged version 3.0.3
+
+- 3 years, 10 months ago Dan Graham
+    b055f61 2014-06-06 11:39:29 -0400
+    Fixed bug in closeMonthly.
+
+- 3 years, 10 months ago Dan Graham
+    55ca301 2014-06-06 10:53:47 -0400
+    Create etmtk_log.txt if it does not exist in get_options.
+
+- 3 years, 10 months ago Dan Graham
+    3968ccd 2014-06-06 10:41:31 -0400
+    Added busy and free times lists to month view.
+
+- 3 years, 10 months ago Dan Graham
+    e01847e 2014-06-05 16:29:15 -0400
+    Updated images and README.
+
+- 3 years, 10 months ago (tag: 3.0.1) Dan Graham
+    fd8354d 2014-06-05 13:06:42 -0400
+    tagged version 3.0.1
+
+- 3 years, 10 months ago Dan Graham
+    8e9293e 2014-06-05 13:05:46 -0400
+    Added monthly screenshot.
+
+- 3 years, 10 months ago Dan Graham
+    acc0f01 2014-06-05 13:05:22 -0400
+    Respect active calendars in month view. Updated shortcuts. Added
+    Month view to overview.
+
+- 3 years, 10 months ago Dan Graham
+    e31ebae 2014-06-05 12:03:37 -0400
+    Month view works with up, down, left, right and space bindings.
+    Day number color reflects number of minutes scheduled.
+
+- 3 years, 10 months ago Dan Graham
+    6838637 2014-06-03 18:56:54 -0400
+    Background color tweaks. Hide insertion cursor in ReadOnlyText.
+
+- 3 years, 10 months ago Dan Graham
+    f05fd06 2014-06-03 06:52:27 -0400
+    Merge branch 'master' of https://github.com/dagraham/etm-tk
+
+    Conflicts:
+    etmTk/v.py
+    etmTk/version.py
+
+- 3 years, 10 months ago (tag: 3.0.0) Dan Graham
+    a96c476 2014-06-03 06:50:31 -0400
+    tagged version 3.0.0
+
+- 3 years, 10 months ago Dan Graham
+    eaa65ad 2014-06-03 06:49:06 -0400
+    Restart version numbering at 3.0.0.
+
+- 3 years, 10 months ago Dan Graham
+    555f0b4 2014-06-03 06:43:05 -0400
+    Changed idle_minum to idle_minutes.  Changed development status to
+    5 - Production/Stable.
+
+- 3 years, 10 months ago Dan Graham
+    0d480e6 2014-06-02 22:50:06 -0400
+    Merge branch 'master' of https://github.com/dagraham/etm-tk
+
+    Conflicts:
+    etmTk/version.py
+
+- 3 years, 10 months ago (tag: 0.2.1) Dan Graham
+    52e103c 2014-06-02 22:48:09 -0400
+    tagged version 0.2.1
+
+- 3 years, 10 months ago Dan Graham
+    c535eca 2014-06-02 22:47:34 -0400
+    Changed development status to 5 - Production/Stable and version to
+    0.2.0.
+
+- 3 years, 10 months ago Dan Graham
+    3095f6b 2014-06-02 22:31:44 -0400
+    tagged version 0.2.1
+
+- 3 years, 10 months ago Dan Graham
+    a797672 2014-06-02 22:31:12 -0400
+    Changed development status to 5 - Production/Stable and version to
+    0.2.0.
+
+- 3 years, 10 months ago (tag: 0.1.44) Dan Graham
+    b92bcc1 2014-06-02 14:59:46 -0400
+    tagged version 0.1.44
+
+- 3 years, 10 months ago Dan Graham
+    79e6ac1 2014-06-02 14:59:35 -0400
+    Fixed bug in passing font to DialogWindow.
+
+- 3 years, 10 months ago (tag: 0.1.43) Dan Graham
+    b551655 2014-06-02 13:15:10 -0400
+    tagged version 0.1.43
+
+- 3 years, 10 months ago Dan Graham
+    10f55d6 2014-06-02 13:14:46 -0400
+    Added available dates screenshots.
+
+- 3 years, 10 months ago Dan Graham
+    55db885 2014-06-02 13:13:53 -0400
+    Updated documentation. Added "tools" section to overview.
+
+- 3 years, 10 months ago Dan Graham
+    0a3142f 2014-06-02 12:06:19 -0400
+    Added availableDates dialog bound to Shift-A. Have MessageWindow
+    and, optionally, OptionsDialog use ReadOnlyText instead of Label.
+    Bind Ctrl-W to Ok in dialog and onCheck in edit. In date
+    calculator and available dates calculator, display result in the
+    GetString itself.
+
+- 3 years, 10 months ago (tag: 0.1.42-1) Dan Graham
+    ddde53d 2014-06-01 13:04:04 -0400
+    Replaced erroneous calls to askfilesaveas with FileChoice in
+    export custom to text and export custom to CSV. Added successful
+    completion message dialog for both.
+
+- 3 years, 10 months ago (tag: 0.1.42) Dan Graham
+    f26540a 2014-05-31 12:27:17 -0400
+    tagged version 0.1.42
+
+- 3 years, 10 months ago Dan Graham
+    4a90de1 2014-05-31 12:16:05 -0400
+    In Finish dialog with new item, Return opens file dialog and
+    Shift-Return bypasses file dialog and saves to current monthly
+    file. In editor, Shift-Return activates Finish. Removed duplicate
+    Custom entry from shortcuts.
+
+- 3 years, 10 months ago (tag: 0.1.41) Dan Graham
+    db846e4 2014-05-30 21:15:10 -0400
+    tagged version 0.1.41
+
+- 3 years, 10 months ago Dan Graham
+    daea422 2014-05-30 20:57:58 -0400
+    Don't allow starting or stopping the idle timer unless the action
+    timer is stopped.
+
+- 3 years, 10 months ago Dan Graham
+    d05fad4 2014-05-30 20:41:54 -0400
+    Fixed bug in setting idle when inactive.
+
+- 3 years, 10 months ago (tag: 0.1.40) Dan Graham
+    5734429 2014-05-30 16:22:33 -0400
+    tagged version 0.1.40
+
+- 3 years, 10 months ago Dan Graham
+    8b587bb 2014-05-30 16:22:17 -0400
+    Updated shortcut documentation.
+
+- 3 years, 10 months ago Dan Graham
+    528de52 2014-05-30 16:18:52 -0400
+    Added finish screenshots.
+
+- 3 years, 10 months ago Dan Graham
+    52d7fa3 2014-05-30 16:17:40 -0400
+    Changed edit item workflow. Removed Validate button. Finish now
+    calls onCheck and either shows errors or offers the opportunity to
+    save changes and exit. Added weekday name abbreviation (%a) to
+    shortdatefmt and shortyearlessfmt.  Changed finished from X to
+    u"\2713" (checkmark). Show at most 10 repetions in finish item
+    dialog.
+
+- 3 years, 10 months ago (tag: 0.1.39) Dan Graham
+    145925b 2014-05-29 06:57:34 -0400
+    tagged version 0.1.39
+
+- 3 years, 10 months ago Dan Graham
+    c0d353b 2014-05-28 20:34:29 -0400
+    Added idle screenshots.
+
+- 3 years, 10 months ago Dan Graham
+    09249a7 2014-05-28 17:08:26 -0400
+    Merge branch 'idle'
+
+- 3 years, 10 months ago Dan Graham
+    8dfd50f 2014-05-28 16:58:12 -0400
+    Updated documentation for idle timer. Added idle_minimum and
+    'idle' to action_timer commands.
+
+- 3 years, 10 months ago Dan Graham
+    4b64230 2014-05-28 15:01:17 -0400
+    Implemented ResolveIdleTime dialog.
+
+- 3 years, 10 months ago Dan Graham
+    ad77d9a 2014-05-28 10:20:45 -0400
+    More idle tweaks.
+
+- 3 years, 10 months ago (tag: 0.1.38) Dan Graham
+    5b0121f 2014-05-28 07:21:57 -0400
+    tagged version 0.1.38
+
+- 3 years, 10 months ago Dan Graham
+    0e38c42 2014-05-27 11:41:24 -0400
+    For new users, use abspath for etmdir and datadir. Added "Polish"
+    test to fmt_time where 24 hour time is pretty much necessary since
+    the ampm suffix is empty.  Added test for non-empty alerts in
+    updateAlerts. Wrap alert commands in s2or3.
+
+- 3 years, 10 months ago Dan Graham
+    8a1e161 2014-05-27 10:01:17 -0400
+    First pass at adding idle to Timer.
+
+- 3 years, 10 months ago Dan Graham
+    1a977ad 2014-05-26 16:16:26 -0400
+    Fixed bug in expanding action_template.
+
+- 3 years, 10 months ago (tag: 0.1.37) Dan Graham
+    f0ff15b 2014-05-26 08:51:22 -0400
+    tagged version 0.1.37
+
+- 3 years, 10 months ago Dan Graham
+    5c99984 2014-05-26 08:49:40 -0400
+    When creating a new item in agenda view, if the selected item has
+    an @c entry but not an @s entry, then insert the @c value in the
+    new item.
+
+- 3 years, 10 months ago Dan Graham
+    1051643 2014-05-26 07:53:12 -0400
+    Documentation corrections. Fixed bug in expand to depth.
+
+- 3 years, 10 months ago (tag: 0.1.36) Dan Graham
+    6fb0939 2014-05-25 16:19:49 -0400
+    tagged version 0.1.36
+
+- 3 years, 10 months ago Dan Graham
+    c0133bf 2014-05-25 16:19:34 -0400
+    Fixed bug in item configuraton for open and close week view.
+
+- 3 years, 10 months ago (tag: 0.1.35) Dan Graham
+    5dff40a 2014-05-25 15:38:37 -0400
+    tagged version 0.1.35
+
+- 3 years, 10 months ago Dan Graham
+    b126279 2014-05-25 15:37:35 -0400
+    Improved active date assignment in agenda view.
+
+- 3 years, 10 months ago Dan Graham
+    3db6450 2014-05-25 13:17:45 -0400
+    updateCurrentFiles on edit changes.
+
+- 3 years, 10 months ago Dan Graham
+    9ca330e 2014-05-25 12:33:25 -0400
+    In editItemFile, open editor at beginning line of the selected
+    item.
+
+- 3 years, 10 months ago (tag: 0.1.34) Dan Graham
+    c9e0aed 2014-05-25 11:42:47 -0400
+    tagged version 0.1.34
+
+- 3 years, 10 months ago Dan Graham
+    4fc56ff 2014-05-25 11:42:13 -0400
+    Added auto insertion of active_date to the "day" part of agenda
+    view.  Added auto insertion of tags for the selected item in tag
+    view.
+
+- 3 years, 10 months ago Dan Graham
+    4b2128e 2014-05-25 11:36:45 -0400
+    Added auto insertion of active_date to the "day" part of agenda
+    view.  Added auto insertion of tags for the selected item in tag
+    view.
+
+- 3 years, 10 months ago Dan Graham
+    b33258f 2014-05-25 11:21:02 -0400
+    Added toggleFinished to View menu with shortcut "x" to toggle
+    displaying/hiding finished items in all tree views.  Added last
+    "show_finished" completions to keywords view. Added edithsh and
+    mode to SimpleEditor when starting a new item with an insertion.
+
+- 3 years, 10 months ago (tag: 0.1.33) Dan Graham
+    ff8fb59 2014-05-24 20:07:47 -0400
+    tagged version 0.1.33
+
+- 3 years, 10 months ago Dan Graham
+    d3dede8 2014-05-24 20:07:24 -0400
+    Added newitem.gif
+
+- 3 years, 10 months ago Dan Graham
+    95a0986 2014-05-24 20:07:07 -0400
+    Start new items with "@k keyword in note and keyword views when an
+    item is selected..
+
+- 3 years, 10 months ago Dan Graham
+    65f2d7c 2014-05-24 19:10:15 -0400
+    Start new items with "@s active_date" in DAY view.
+
+- 3 years, 10 months ago (tag: 0.1.32) Dan Graham
+    817560a 2014-05-24 09:11:31 -0400
+    tagged version 0.1.32
+
+- 3 years, 10 months ago Dan Graham
+    2e2a845 2014-05-24 09:04:29 -0400
+    Updated shortcuts for move item.
+
+- 3 years, 10 months ago Dan Graham
+    928e1da 2014-05-24 08:59:18 -0400
+    Added move item to context menu.
+
+- 3 years, 10 months ago Dan Graham
+    9d9c3fc 2014-05-23 15:05:55 -0400
+    tagged version 0.1.31
+
+- 3 years, 10 months ago Dan Graham
+    3eb8623 2014-05-23 15:05:11 -0400
+    Split SAMPLE into SAMPLE and HOLIDAYS and added USERS. Added
+    starting file structure for new users with personal (with
+    monthly), shared (with holidays) and sample (with samples,
+    completions, reports and users) with complementary etmtk calendars
+    entry. Updated documentation to reflect these changes.
+
+- 3 years, 10 months ago Dan Graham
+    05ae4f0 2014-05-23 13:44:05 -0400
+    Split SAMPLE into SAMPLE and HOLIDAYS and added USERS. Added
+    starting file structure for new users with personal (with
+    monthly), shared (with holidays) and sample (with samples,
+    completions, reports and users) with complementary etmtk calendars
+    entry.
+
+- 3 years, 10 months ago Dan Graham
+    db9b79c 2014-05-23 11:40:58 -0400
+    Handle missing specs gracefully.  Added dialog to choose reports
+    file when specs have been modified and custom view is closing.
+
+- 3 years, 10 months ago Dan Graham
+    8217338 2014-05-23 07:04:06 -0400
+    Added yaml version info to do_v.
+
+- 3 years, 10 months ago (tag: 0.1.30, tag: 0.1.29-9) Dan Graham
+    8a83770 2014-05-22 15:26:03 -0400
+    Trap bad argument strings in the CLI and return an error message.
+
+- 3 years, 10 months ago (tag: 0.1.29-8) Dan Graham
+    aa1e6ad 2014-05-22 15:06:13 -0400
+    Fixed bug in loading data from cfg_files. Fixed bug in displaying
+    report specs in the CLI for help_m and in using them in do_m.
+
+- 3 years, 10 months ago (tag: 0.1.29-7) Dan Graham
+    89d082b 2014-05-22 11:40:46 -0400
+    Respect -w (width for column 1) and -W (width for column 2)
+    arguments in CLI custom reports.  Wrap the filename part of {file}
+    in quotes for Windows paths with spaces.
+
+- 3 years, 10 months ago (tag: 0.1.29-6, tag: 0.1.29-2-1-2) Dan Graham
+    27b9403 2014-05-21 13:37:20 -0400
+    Keep but don't follow prep_dist.sh.
+
+- 3 years, 10 months ago Dan Graham
+    c7d20e2 2014-05-21 13:34:10 -0400
+    Keep but don't track v.py and version.py.
+
+- 3 years, 10 months ago (tag: 0.1.29-2-1) Dan Graham
+    3b3157f 2014-05-21 13:25:34 -0400
+    tagged version 0.1.29-2-1
+
+- 3 years, 10 months ago Dan Graham
+    b929a05 2014-05-21 13:25:20 -0400
+    version number catchup.
+
+- 3 years, 10 months ago (tag: 0.1.29-2-0, tag: 0.1.29-2) Dan Graham
+    1ec49a4 2014-05-21 13:18:29 -0400
+    Only use lightweight tag when not incrementing version number.
+
+- 3 years, 10 months ago Dan Graham
+    be90b89 2014-05-21 12:48:28 -0400
+    Removed self.after from the binding for printTree to pass the
+    event along to printTree.
+
+- 3 years, 10 months ago (tag: 0.1.29) Dan Graham
+    37c7d39 2014-05-21 11:48:24 -0400
+    tagged version 0.1.29
+
+- 3 years, 10 months ago Dan Graham
+    7c3fa38 2014-05-21 11:48:14 -0400
+    Fixed version numbers.
+
+- 3 years, 10 months ago Dan Graham
+    b0405a2 2014-05-21 11:46:29 -0400
+    Fixed binding for printTree.
+
+- 3 years, 10 months ago Dan Graham
+    2bc957a 2014-05-21 11:31:05 -0400
+    Use spaces instead of tabs for indention in file dialogs for
+    Linux. Use re.split in getFileTuples for python 2.7. Removed ttk 
+    from dialog.py. Removed ttk.Scrollbar from dialog.py and view.py.
+    Added missing pady=2 for Buttons in dialog to improve appearance
+    for Linux.
+
+- 3 years, 10 months ago (tag: 0.1.28-1-2) Dan Graham
+    59b59e9 2014-05-21 09:47:37 -0400
+    tagged version 0.1.28-1-2
+
+- 3 years, 10 months ago Dan Graham
+    bc1f8a6 2014-05-21 09:47:03 -0400
+    Added screenshots.
+
+- 3 years, 10 months ago Dan Graham
+    4b2e7b0 2014-05-21 09:46:07 -0400
+    Fixed addition of "other" files in getFiles and getAllFiles. Added
+    etmtk.cfg to other for newFile. Added screenshots for editFile and
+    newFile.
+
+- 3 years, 10 months ago (tag: 0.1.28-1) Dan Graham
+    f9db08d 2014-05-21 06:50:18 -0400
+    tagged version 0.1.28-1
+
+- 3 years, 10 months ago Dan Graham
+    22df327 2014-05-21 06:49:55 -0400
+    Restored editConfig (etmtk.cfg) bound to Shift-P. Use datadir as
+    the root for all file dialogs and for newFile, use "*" as include.
+    Documentation tweaks.
+
+- 3 years, 10 months ago (tag: 0.1.28) Dan Graham
+    f20f5a1 2014-05-20 15:58:09 -0400
+    tagged version 0.1.28
+
+- 3 years, 10 months ago Dan Graham
+    637e558 2014-05-20 15:57:41 -0400
+    Merge branch 'config'
+
+- 3 years, 10 months ago Dan Graham
+    81c5504 2014-05-20 15:57:00 -0400
+    Updated shortcuts.
+
+- 3 years, 10 months ago Dan Graham
+    a92d44c 2014-05-20 15:55:19 -0400
+    Removed open etmtk.cfg from file menu and set the prefix for
+    editCfg to etmdir to pick up etmtk.cfg and other cfg files in the
+    root directory.
+
+- 3 years, 10 months ago Dan Graham
+    55d6658 2014-05-20 15:45:15 -0400
+    Added "Edit file" to item menu to open the editor with the file
+    containing the selected item.
+
+- 3 years, 10 months ago Dan Graham
+    e9f6304 2014-05-20 15:28:06 -0400
+    Cleanup. Work with common_prefix and tuples with relative paths
+    only. Added common_prefix label to FileChoice. Makedirs if needed
+    in newFile and prompt to open.
+
+- 3 years, 10 months ago Dan Graham
+    c22a839 2014-05-20 11:22:26 -0400
+    Changed alert processing to only split on the first colon.
+
+- 3 years, 10 months ago Dan Graham
+    a475dac 2014-05-20 11:15:59 -0400
+    Changed alert processing to only split on the first colon. Added
+    new option to file dialog. Added processing for cfg files in
+    cfg_files.  Many layout tweaks for file dialog. Collapsed open cfg
+    files for each type into open cfg.
+
+- 3 years, 10 months ago Dan Graham
+    7cca13a 2014-05-19 07:15:44 -0400
+    Update settings for configuration files when calendar selection
+    changes.
+
+- 3 years, 10 months ago (tag: 0.1.27-1) Dan Graham
+    fdac4b8 2014-05-18 21:52:28 -0400
+    tagged version 0.1.27-1
+
+- 3 years, 10 months ago Dan Graham
+    87c0ac3 2014-05-18 21:50:37 -0400
+    Replaced asopenfile with internal dialog. Removed
+    auto_completions, report_specifications and users from etmtk.cfg
+    and implemented directory search for completions.cfg, reports.cfg
+    and users.cfg.  Edit menus access all files, completions, reports
+    and users access files in active calendars.
+
+- 3 years, 10 months ago (tag: 0.1.27) Dan Graham
+    8056a53 2014-05-17 16:19:52 -0400
+    tagged version 0.1.27
+
+- 3 years, 10 months ago Dan Graham
+    18a4b81 2014-05-17 16:18:55 -0400
+    Fixed viewmenu config error in set and clear filter.
+
+- 3 years, 10 months ago (tag: 0.1.26-3) Dan Graham
+    123c319 2014-05-17 15:59:41 -0400
+    tagged version 0.1.26-3
+
+- 3 years, 10 months ago Dan Graham
+    364f045 2014-05-17 15:59:17 -0400
+    Added "Schedule new" - similar to Reschedule but doesn't remove
+    the selected instance. Adjusted key bindings.
+
+- 3 years, 10 months ago Dan Graham
+    e1749b4 2014-05-17 14:47:18 -0400
+    More documentation tweaks.  Ignore '-d' in the GUI custom view.
+
+- 3 years, 10 months ago Dan Graham
+    51de936 2014-05-17 14:06:20 -0400
+    Documentation updates.  Added editor keybindings to user manual.
+
+- 3 years, 10 months ago (tag: 0.1.26) Dan Graham
+    7c7c811 2014-05-17 10:08:25 -0400
+    tagged version 0.1.26
+
+- 3 years, 10 months ago Dan Graham
+    3be46c7 2014-05-17 10:08:03 -0400
+    Updated version numbers.
+
+- 3 years, 10 months ago Dan Graham
+    8bdc2c6 2014-05-17 10:04:39 -0400
+    Changed completion regex to recognize & as well as @. Moved
+    completions stuff from edit to data.get_options so that it will be
+    updated when one of the files is edited. Changed self.options in
+    showUserDatails to loop.options to recognize current values. 
+    Fixed editConfig and others to call editFile with config=True.
+
+- 3 years, 10 months ago Dan Graham
+    48838da 2014-05-17 08:23:25 -0400
+    Cleaned up logging.debug statements.
+
+- 3 years, 10 months ago (tag: 0.1.23-12) Dan Graham
+    87dbe5a 2014-05-16 17:17:13 -0400
+    tagged version 0.1.23-12
+
+- 3 years, 10 months ago Dan Graham
+    6abcbed 2014-05-16 15:15:19 -0400
+    tagged version 0.1.25
+
+- 3 years, 10 months ago Dan Graham
+    358e01d 2014-05-16 15:11:25 -0400
+    tagged version 0.1.24-1-1
+
+- 3 years, 10 months ago Dan Graham
+    6981117 2014-05-16 15:11:07 -0400
+    Removed "break" from return value for goToDate to avoid exception.
+
+- 3 years, 10 months ago Dan Graham
+    5ced8de 2014-05-16 15:05:56 -0400
+    tagged version 0.1.24-1
+
+- 3 years, 10 months ago Dan Graham
+    68b36a3 2014-05-16 15:05:36 -0400
+    Restored original default for users to avoid issues with menu
+    entries.
+
+- 3 years, 10 months ago Dan Graham
+    16bdb7b 2014-05-16 14:57:48 -0400
+    tagged version 0.1.24
+
+- 3 years, 10 months ago Dan Graham
+    fed0c4b 2014-05-16 14:57:13 -0400
+    Updated shortcuts.
+
+- 3 years, 10 months ago Dan Graham
+    df9855a 2014-05-16 14:53:11 -0400
+    Make ' ' the default for users to avoid warning. Bound F4 to
+    printTree. Fixed bugs in printWithDefault and tested in both
+    Windows and Linux.
+
+- 3 years, 10 months ago Dan Graham
+    2bbaa47 2014-05-16 10:55:04 -0400
+    Added printTree (View/Print outline - shortcut P) and
+    printWithDefault.
+
+- 3 years, 10 months ago Dan Graham
+    d31fab0 2014-05-15 18:36:39 -0400
+    More fixes for job type keys. Added pu for pastdue job with
+    unfinished prereqs.
+
+- 3 years, 10 months ago Dan Graham
+    e1a8ed7 2014-05-15 16:53:23 -0400
+    Fixes for job type keys, .e.g., pastdue pt -> pc.
+
+- 3 years, 10 months ago Dan Graham
+    50ef836 2014-05-15 16:38:07 -0400
+    Added @h and &h to atkey documentation.
+
+- 3 years, 10 months ago (tag: 0.1.23) Dan Graham
+    459697e 2014-05-15 12:07:23 -0400
+    tagged version 0.1.23
+
+- 3 years, 10 months ago Dan Graham
+    09058cd 2014-05-15 12:07:13 -0400
+    Formatting tweak for @f and @h entries.
+
+- 3 years, 10 months ago Dan Graham
+    503d0d3 2014-05-15 11:13:33 -0400
+    Merge branch 'master' into grp_tasks
+
+- 3 years, 10 months ago Dan Graham
+    3c337e3 2014-05-15 11:10:14 -0400
+    Use s2or3 in showChanges (history) to avoid encoding issues.
+
+- 3 years, 10 months ago Dan Graham
+    da55217 2014-05-15 10:28:17 -0400
+    History keys in task groups for the group itself, @h, and for each
+    job, &h, each with complete histories of done;due completions. Day
+    view shows the most recent "show_completions" from @h. Individual
+    jobs are shown only for the currently active instance.
+
+- 3 years, 10 months ago Dan Graham
+    97bfc3d 2014-05-15 06:50:06 -0400
+    On group finish, set s to following.
+
+- 3 years, 10 months ago Dan Graham
+    e02b825 2014-05-14 16:58:34 -0400
+    Fixed job color and symbol.
+
+- 3 years, 10 months ago Dan Graham
+    3220cb6 2014-05-14 14:56:23 -0400
+    Group add completions to history on finish now works.
+
+- 3 years, 10 months ago Dan Graham
+    7857ddc 2014-05-14 08:27:16 -0400
+    Return "break" from goHome to prevent space closing the branch.
+
+- 3 years, 10 months ago (tag: 0.1.22) Dan Graham
+    e75c710 2014-05-13 07:21:46 -0400
+    tagged version 0.1.22
+
+- 3 years, 10 months ago Dan Graham
+    c8bb2a7 2014-05-13 07:20:49 -0400
+    Set sdt = "" at beginning of getDataFromFile loop to avoid
+    undefined exceptions with bad entries.  In onCheck, show "no reps"
+    warning if none were generated and abort save and exit.
+
+- 3 years, 10 months ago Dan Graham
+    3f1e2d5 2014-05-13 07:20:30 -0400
+    Set sdt = "" at beginning of getDataFromFile loop to avoid
+    undefined exceptions with bad entries.  In onCheck, show "no reps"
+    warning if none were generated and abort save and exit.
+
+- 3 years, 10 months ago Dan Graham
+    22ffe44 2014-05-13 06:50:25 -0400
+    Set sdt = "" at beginning of getDataFromFile loop to avoid
+    undefined exceptions with bad entries.  In onCheck, show "no reps"
+    warning if none were generated.
+
+- 3 years, 10 months ago (tag: 0.1.20-2) Dan Graham
+    9f849eb 2014-05-12 15:44:03 -0400
+    tagged version 0.1.20-2
+
+- 3 years, 10 months ago Dan Graham
+    0c88d06 2014-05-12 10:28:35 -0400
+    Add @z to hsh if missing and either @s in hsh or @f in hsh. Added
+    options to cmd_do_finish to provide local_timezone.
+
+- 3 years, 10 months ago Dan Graham
+    16fb05c 2014-05-11 16:07:57 -0400
+    Switched ':' to '&&' in both mercurial and git commands to be
+    Windows compatible.
+
+- 3 years, 10 months ago (tag: 0.1.20) Dan Graham
+    99a089d 2014-05-11 13:22:04 -0400
+    tagged version 0.1.20
+
+- 3 years, 10 months ago Dan Graham
+    27e6658 2014-05-11 13:19:08 -0400
+    Added all_keys = item_keys + 'entry', 'fileinfo' and other
+    internally generated keys to use in check for bad @keys. Added
+    check for bad &keys to parallel that for @keys - now hopefully no
+    part of an entry will be deleted by validate.
+
+- 3 years, 10 months ago (tag: 0.1.19) Dan Graham
+    fdaec13 2014-05-11 11:33:07 -0400
+    tagged version 0.1.19
+
+- 3 years, 10 months ago Dan Graham
+    b780127 2014-05-11 11:17:30 -0400
+    Removed grab_set from OptionsDialog to prevent a Tk 8.5.11 
+    exception.
+
+- 3 years, 10 months ago Dan Graham
+    d9fce07 2014-05-11 10:46:12 -0400
+    Added @z to prefix uses and moved it's position to the end of
+    item_list.
+
+- 3 years, 10 months ago Dan Graham
+    c6f63fa 2014-05-11 10:34:17 -0400
+    Fixed version info.
+
+- 3 years, 10 months ago Dan Graham
+    015df62 2014-05-11 10:34:05 -0400
+    Merge branch 'master' of https://github.com/dagraham/etm-tk
+
+- 3 years, 10 months ago Dan Graham
+    f2de642 2014-05-11 10:31:58 -0400
+    Added prefix and prefix_uses to etmtk.cfg to set the whitespace
+    prefix for @keys in prefix_uses when displaying and saving items. 
+    Cleaned up logging debug statements. Initialize
+    options['user_data'] to avoid missing key errors.
+
+- 3 years, 10 months ago Dan Graham
+    c134e57 2014-05-11 09:54:45 -0400
+    tagged version 0.1.19
+
+- 3 years, 10 months ago Dan Graham
+    7b31014 2014-05-11 09:25:23 -0400
+    Added prefix and prefix_uses to etmtk.cfg to set the whitespace
+    prefix for @keys in prefix_uses when displaying and saving items.
+
+- 3 years, 10 months ago Dan Graham
+    3818fb5 2014-05-11 08:25:31 -0400
+    Only add @z entries to items with @s entries.
+
+- 3 years, 10 months ago Dan Graham
+    be225d8 2014-05-11 08:01:32 -0400
+    Fixed bug in newEvent affecting python2 integer formatting.
+
+- 3 years, 10 months ago Dan Graham
+    0484a93 2014-05-10 19:48:55 -0400
+    working on float v decimal.
+
+- 3 years, 10 months ago Dan Graham
+    a8878ac 2014-05-10 16:42:22 -0400
+    Added check for deleted keys in hsh2str an. Add to returned msg to
+    onCheck (validate) and don't update edit text if there are msg.
+
+- 3 years, 10 months ago (tag: 0.1.18) Dan Graham
+    b8b2df7 2014-05-10 13:46:06 -0400
+    tagged version 0.1.18
+
+- 3 years, 10 months ago Dan Graham
+    ac09bbf 2014-05-10 13:40:09 -0400
+    Updated documentation for users.
+
+- 3 years, 10 months ago Dan Graham
+    11c5afc 2014-05-10 13:06:55 -0400
+    Added users to etmtk.cfg with auto-completion, showUserDetails
+    command bound to "u" when an item with an @u field is selected and
+    an editUsers command bound to "U".
+
+- 3 years, 10 months ago (tag: 0.1.17) Dan Graham
+    cbcfbca 2014-05-10 08:03:36 -0400
+    tagged version 0.1.17
+
+- 3 years, 10 months ago Dan Graham
+    95e9276 2014-05-10 07:57:53 -0400
+    Fixed reversal in n and N commands that broke note view in the
+    GUI. Don't show hidden items in tag or keyword view. Added NONE =
+    '~~~' as the default tag and keyword. Changed the default outline
+    depth to 0.
+
+- 3 years, 10 months ago Dan Graham
+    ef8ef64 2014-05-09 22:23:10 -0400
+    When closing custom view or calling save changes from custom menu,
+    show addition(s) and get confirmation to save (without opening
+    editor). Make sure duplicates in list are not saved.
+
+- 3 years, 10 months ago Dan Graham
+    4d6cbd5 2014-05-09 17:15:29 -0400
+    Fixed bug in saveSpecs.
+
+- 3 years, 10 months ago (tag: 0.1.16) Dan Graham
+    c1c1a76 2014-05-09 15:02:03 -0400
+    tagged version 0.1.16
+
+- 3 years, 10 months ago Dan Graham
+    729c418 2014-05-09 15:01:38 -0400
+    Corrected git history_command template.
+
+- 3 years, 10 months ago Dan Graham
+    b67fcb9 2014-05-09 14:44:05 -0400
+    Documentation tweaks. Search for hg.exe and git.exe on Windoz; hg
+    and git otherwise. Ignore path and just use hg or git as the
+    command if it is found.  Replaced call to subprocess.Popen with
+    subprocess.check_output and calls to os.system with
+    subprocess.call. Added re.DOTALL to -S search in custom view.  Use
+    '~' as the default context for undated tasks.  Make 0 the default
+    outline depth for AGENDA as well as CUSTOM. Removed "break" from
+    several return statements.
+
+- 3 years, 10 months ago (tag: 0.1.15-3) Dan Graham
+    909f37e 2014-05-09 07:17:58 -0400
+    tagged version 0.1.15-3
+
+- 3 years, 10 months ago Dan Graham
+    18a2497 2014-05-09 07:16:27 -0400
+    Tweaked logging info for vcs setup.
+
+- 3 years, 10 months ago Dan Graham
+    ef5fcdb 2014-05-09 06:39:10 -0400
+    Updated graphics in README. Better logging debug and info for vcs
+    setup. Corrected images path in upload.sh.
+
+- 3 years, 11 months ago Dan Graham
+    07568fc 2014-05-08 15:45:46 -0400
+    Added CSV screenshot.
+
+- 3 years, 11 months ago (tag: 0.1.15) Dan Graham
+    7fdc387 2014-05-08 15:03:50 -0400
+    tagged version 0.1.15
+
+- 3 years, 11 months ago Dan Graham
+    989814d 2014-05-08 15:03:29 -0400
+    Added note about focus and the O, L and S shortcuts in custom
+    view. Added missing depth defaults for AGENDA, DAY and TAG.
+    Changed binding for Escape from tree and content to fltr.
+
+- 3 years, 11 months ago (tag: 0.1.14-1-2-1-1) Dan Graham
+    511ff40 2014-05-08 14:55:51 -0400
+    tagged version 0.1.14-1-2-1-1
+
+- 3 years, 11 months ago Dan Graham
+    44e5337 2014-05-08 14:55:36 -0400
+    Added note about focus and the O, L and S shortcuts in custom
+    view. Added missing depth defaults for AGENDA, DAY and TAG.
+
+- 3 years, 11 months ago (tag: 0.1.14-1-2-1) Dan Graham
+    f1de8bc 2014-05-08 14:38:54 -0400
+    tagged version 0.1.14-1-2-1
+
+- 3 years, 11 months ago Dan Graham
+    8df12e5 2014-05-08 14:38:35 -0400
+    Use report settings from etmtk.cfg in producing text exports and
+    popups. Set the default outline depth for custom view to 0 and
+    revert to this with each new report.
+
+- 3 years, 11 months ago (tag: 0.1.14-1-2) Dan Graham
+    d6bcc2b 2014-05-08 14:06:12 -0400
+    tagged version 0.1.14-1-2
+
+- 3 years, 11 months ago Dan Graham
+    d729364 2014-05-08 14:05:33 -0400
+    Added custom view gifs.
+
+- 3 years, 11 months ago Dan Graham
+    e5ed812 2014-05-08 14:05:16 -0400
+    Set options vcs_system = '' if the system given cannot be setup
+    properly.  Added depth arg to tree2Text so that popup will
+    preserve the depth of the current view. Fixed bug in showing
+    action reports in custom view. Added custom, agenda, day and tag
+    to the views for which depth is stored. Reset depth2id in
+    showTree. Remove uuid from summary before displaying or exporting.
+
+- 3 years, 11 months ago (tag: 0.1.14-1) Dan Graham
+    416e88d 2014-05-07 20:11:58 -0400
+    tagged version 0.1.14-1
+
+- 3 years, 11 months ago Dan Graham
+    e3fc5fa 2014-05-07 20:06:45 -0400
+    Fixed bug in Escape binding.
+
+- 3 years, 11 months ago (tag: 0.1.14) Dan Graham
+    3db0ce6 2014-05-07 19:38:42 -0400
+    tagged version 0.1.14
+
+- 3 years, 11 months ago Dan Graham
+    9088096 2014-05-07 19:35:22 -0400
+    Added a new "Custom view" to the gui to replace the old report
+    window. All the functionality of the old reports but with output
+    in tree format with details. Corrected command line arguments, n:
+    new item, N: show notes, c: custom report. Added "show as text"
+    command bound to *S* to all outline views. Changed toc depth to 2
+    in the user manual.
+
+- 3 years, 11 months ago Dan Graham
+    a65b01b 2014-05-07 06:56:53 -0400
+    Merge branch 'master' into report
+
+- 3 years, 11 months ago Dan Graham
+    c96c13d 2014-05-07 06:56:29 -0400
+    Applied stash.
+
+- 3 years, 11 months ago (tag: 0.1.13) Dan Graham
+    972d145 2014-05-07 06:49:54 -0400
+    tagged version 0.1.13
+
+- 3 years, 11 months ago Dan Graham
+    69e70f3 2014-05-07 06:49:14 -0400
+    Fixed encoding bug in calyear.
+
+- 3 years, 11 months ago (tag: 0.1.12) Dan Graham
+    ebaf3e9 2014-05-07 06:31:08 -0400
+    tagged version 0.1.12
+
+- 3 years, 11 months ago Dan Graham
+    c5caff3 2014-05-07 06:30:08 -0400
+    Fixed erroneous call to parse in OnSelect.
+
+- 3 years, 11 months ago Dan Graham
+    e90fec5 2014-05-06 17:09:28 -0400
+    Document updates from master.
+
+- 3 years, 11 months ago Dan Graham
+    73f599e 2014-05-06 17:09:07 -0400
+    Merge branch 'master' into report
+
+- 3 years, 11 months ago Dan Graham
+    db7ded9 2014-05-06 16:49:17 -0400
+    Removed WhatsNew temporarily.
+
+- 3 years, 11 months ago (tag: 0.1.11) Dan Graham
+    bc12f98 2014-05-06 16:36:12 -0400
+    tagged version 0.1.11
+
+- 3 years, 11 months ago Dan Graham
+    c97aeba 2014-05-06 16:35:31 -0400
+    Updated shortcuts.md for new bindings.
+
+- 3 years, 11 months ago Dan Graham
+    cd12c81 2014-05-06 16:28:28 -0400
+    Pulled dtSelect fix from master.
+
+- 3 years, 11 months ago Dan Graham
+    20263fa 2014-05-06 16:27:29 -0400
+    Merge branch 'master' into report
+
+- 3 years, 11 months ago Dan Graham
+    a45b7fb 2014-05-06 16:25:33 -0400
+    Fixed bug in which dtSelected in week view was a datetime but
+    dtSelected in a tree view was a string. Made both datetimes to
+    avoid subsequent parsing.
+
+- 3 years, 11 months ago Dan Graham
+    f144bb4 2014-05-06 12:16:25 -0400
+    Added separators to Views optionmenu and added REPORT as an
+    option.
+
+- 3 years, 11 months ago Dan Graham
+    dd3561f 2014-05-06 10:43:24 -0400
+    Wrapped calls to os.path.join in os.path.normpath. Refactored view
+    plurals to singular, e.g., NOTES -> NOTE.
+
+- 3 years, 11 months ago Dan Graham
+    aed9977 2014-05-05 21:53:56 -0400
+    Implemented -S search-all in reports. Regex filter for 'entry' +
+    'filepath'.
+
+- 3 years, 11 months ago (tag: 0.1.10) Dan Graham
+    f774f9b 2014-05-05 15:30:56 -0400
+    tagged version 0.1.10
+
+- 3 years, 11 months ago Dan Graham
+    de69c54 2014-05-05 15:28:47 -0400
+    Made the time line in week view only span the current day.
+
+- 3 years, 11 months ago Dan Graham
+    09c8e06 2014-05-05 14:53:17 -0400
+    Make '~' the default tag and the default keyword.
+
+- 3 years, 11 months ago Dan Graham
+    3602375 2014-05-05 14:00:50 -0400
+    Fixed bug in which, e.g., Ctrl-N would both create a new item
+    (wrong) and swith to note view (right). Fixed bug in calls to
+    editFile by invoke menu would throw exceptions on return. Fixed
+    various instances in which item calls, e.g., copyItem, would be
+    invoked when no item is selected.
+
+- 3 years, 11 months ago (tag: 0.1.9-1-1) Dan Graham
+    d7e40cc 2014-05-04 11:28:22 -0400
+    tagged version 0.1.9-1-1
+
+- 3 years, 11 months ago Dan Graham
+    6bb5089 2014-05-04 11:27:18 -0400
+    Cleaned up comments in view.py.
+
+- 3 years, 11 months ago (tag: 0.1.9-1) Dan Graham
+    b0d919c 2014-05-04 09:41:51 -0400
+    tagged version 0.1.9-1
+
+- 3 years, 11 months ago Dan Graham
+    1bee065 2014-05-04 09:41:27 -0400
+    Documentation tweaks and corrections to key-binding references.
+    Removed unused process_lines. Corrected binding for showChanges.
+
+- 3 years, 11 months ago (tag: 0.1.9) Dan Graham
+    0337c85 2014-05-03 20:46:31 -0400
+    tagged version 0.1.9
+
+- 3 years, 11 months ago (tag: 0.1.8-7) Dan Graham
+    10a7427 2014-05-03 19:57:51 -0400
+    tagged version 0.1.8-7
+
+- 3 years, 11 months ago Dan Graham
+    8c9b8ba 2014-05-03 19:57:27 -0400
+    Assign tag in prep_dist even when not updating.
+
+- 3 years, 11 months ago Dan Graham
+    721d78f 2014-05-03 19:53:33 -0400
+    Check that key is in uuid2labels before deleting. Don't warn for
+    missing labels for inbox items. Changed binding A -> Shift-A for
+    showAlerts.
+
+- 3 years, 11 months ago Dan Graham
+    75007a9 2014-05-03 17:28:58 -0400
+    Updated version number
+
+- 3 years, 11 months ago Dan Graham
+    c800ca0 2014-05-03 17:23:42 -0400
+    Removed setup-linux, setup-py2app and setup_cxfreeze. Many tweaks
+    to setup.py to get UserManual.html packaged correctly for
+    python2.7 and 3.x.
+
+- 3 years, 11 months ago Dan Graham
+    5cfd0b7 2014-05-03 14:59:42 -0400
+    Added MANIFEST.in to repo.
+
+- 3 years, 11 months ago Dan Graham
+    ad04eda 2014-05-03 14:58:48 -0400
+    Changed help: ? shows shortcuts, F1 opens UserManual.html using
+    the system default app. Removed HelpWindow. Added UserManual to
+    MANIFEST.in and package_data in setup.py. All key bindings now
+    show as accelerators on OSX . Reorganized menus. Changed toc level
+    in manual from 2 to 1. Don't commit when patch is not incremented
+    and use otag as the version number. Removed background shading for
+    pre and code in style-before.
+
+- 3 years, 11 months ago Dan Graham
+    1370fe6 2014-05-03 10:00:40 -0400
+    Simplified many key bindings, e.g., Ctrl-E -> e, Shift-Ctrl-E ->
+    Ctrl-E. Added "see" to clearFilter for previously selected row.
+    Added exportToIcal to export item if an item is selected,
+    otherwise active calendars.
+
+- 3 years, 11 months ago (tag: 0.1.8) Dan Graham
+    d79f1e0 2014-05-03 06:44:50 -0400
+    tagged version 0.1.8
+
+- 3 years, 11 months ago Dan Graham
+    9f6ae1f 2014-05-03 06:44:24 -0400
+    When setting the label column assign "***" and log a warning if
+    the key is missing from uuid2labels.
+
+- 3 years, 11 months ago (tag: 0.1.7) Dan Graham
+    2b37486 2014-05-02 14:49:20 -0400
+    tagged version 0.1.7
+
+- 3 years, 11 months ago Dan Graham
+    046e893 2014-05-02 14:16:30 -0400
+    tagged version 0.1.7
+
+- 3 years, 11 months ago Dan Graham
+    12fc274 2014-05-02 14:04:10 -0400
+    Fixed bug in restoring previous outline depths in keywords, notes
+    and paths views.
+
+- 3 years, 11 months ago Dan Graham
+    8db229e 2014-05-02 13:26:24 -0400
+    tagged version 0.1.6
+
+- 3 years, 11 months ago Dan Graham
+    50719fd 2014-05-02 13:24:45 -0400
+    Don't exclude # from the item types for which labels are created.
+
+- 3 years, 11 months ago Dan Graham
+    0ee3efa 2014-05-02 12:58:04 -0400
+    In add2Tree, split the uuid on ":" to remove the instance
+    information from the actual uuid.
+
+- 3 years, 11 months ago Dan Graham
+    bb3b6ab 2014-05-02 12:47:35 -0400
+    Put a space character in the label of every item as the first
+    character - hack to prevent first character from showing when the
+    column is hidden.
+
+- 3 years, 11 months ago Dan Graham
+    05e9657 2014-05-02 11:27:28 -0400
+    Added gif files for labels.
+
+- 3 years, 11 months ago Dan Graham
+    a7145d5 2014-05-02 10:54:55 -0400
+    Fixed bug in always including p in label column. Measure widths
+    needed for columns based on font size in use. List labels in
+    alphabetical order.
+
+- 3 years, 11 months ago (tag: 0.1.5) Dan Graham
+    895482f 2014-05-02 07:15:09 -0400
+    tagged version 0.1.5
+
+- 3 years, 11 months ago Dan Graham
+    5ae184a 2014-05-02 07:14:54 -0400
+    Added discussion clicking in the details panel to edit an item.
+
+- 3 years, 11 months ago Dan Graham
+    a7ca856 2014-05-02 07:07:43 -0400
+    Added discussion of labels column to overview.
+
+- 3 years, 11 months ago Dan Graham
+    4d542c2 2014-05-02 06:55:31 -0400
+    Remove debugging print statement.
+
+- 3 years, 11 months ago Dan Graham
+    68b0add 2014-05-02 06:49:46 -0400
+    Merge branch 'labels'
+
+    Conflicts:
+    etmTk/version.py
+
+- 3 years, 11 months ago Dan Graham
+    4bf2be2 2014-05-01 18:58:17 -0400
+    Truncated cheatsheet by removing views, preferences and shortcuts
+    that are different under etmtk.
+
+- 3 years, 11 months ago Dan Graham
+    e37c6ff 2014-05-01 18:22:50 -0400
+    Fixed error in cheatsheet.tex and added it to the repository.
+    Changed mk_docs to produce cheatsheet.pdf and upload to include it
+    in the d) group.
+
+- 3 years, 11 months ago (tag: 0.1.4) Dan Graham
+    d39e75c 2014-05-01 16:34:05 -0400
+    tagged version 0.1.4
+
+- 3 years, 11 months ago Dan Graham
+    79c7568 2014-05-01 15:37:48 -0400
+    Fixed erroneous col2 - col3 switch in add2Tree.
+
+- 3 years, 11 months ago Dan Graham
+    bd4c3c0 2014-05-01 15:15:03 -0400
+    Added &u user to the acceptable amp keys for jobs.
+
+- 3 years, 11 months ago Dan Graham
+    121501e 2014-05-01 15:15:03 -0400
+    Added &u user to the acceptable amp keys for jobs.
+
+- 3 years, 11 months ago (tag: 0.1.3) Dan Graham
+    d2a1fe9 2014-05-01 14:20:34 -0400
+    tagged version 0.1.3
+
+- 3 years, 11 months ago Dan Graham
+    f34db9e 2014-05-01 14:18:50 -0400
+    Added screenshots showing the disappearing labels column.
+
+- 3 years, 11 months ago Dan Graham
+    ff0145e 2014-05-01 14:15:32 -0400
+    Implemented a labels column in outline views that can be toggled
+    on and off with Ctrl-L.
+
+- 3 years, 11 months ago Dan Graham
+    16f0843 2014-05-01 12:17:20 -0400
+    Added column for  item labels where, for example, an item with @a,
+    @c, @d and @k fields would have the label 'acdk'.
+
+- 3 years, 11 months ago Dan Graham
+    1602294 2014-05-01 09:36:12 -0400
+    Refactored addToTree -> add2Tree
+
+- 3 years, 11 months ago Dan Graham
+    fc3b9a5 2014-05-01 06:25:21 -0400
+    Added GitHub to "about"
+
+- 3 years, 11 months ago Dan Graham
+    53316c1 2014-05-01 05:39:30 -0400
+    tagged version 0.1.3
+
+- 3 years, 11 months ago Dan Graham
+    68fe28d 2014-05-01 05:39:05 -0400
+    Fixed empty message bug in commit for file edit. Set mode =
+    "Edited file".
+
+- 3 years, 11 months ago Dan Graham
+    b5ce335 2014-05-01 05:02:22 -0400
+    Store the dates for day view branches in id2date in addToTree. 
+    This avoids needing to parse, possibly non-English, dates in day
+    view branches.
+
+- 3 years, 11 months ago Dan Graham
+    81a4c02 2014-04-30 17:00:15 -0400
+    In reports when grouping by week, 0 pad the week number and
+    prepend the year to get the sorting right.
+
+- 3 years, 11 months ago Dan Graham
+    9b7677b 2014-04-30 15:18:23 -0400
+    tagged version 0.1.2
+
+- 3 years, 11 months ago (tag: 0.1.1) Dan Graham
+    83145f6 2014-04-30 15:06:47 -0400
+    tagged version 0.1.1
+
+- 3 years, 11 months ago Dan Graham
+    dcc186f 2014-04-30 15:06:06 -0400
+    Moved deepcopy from makeTree to mk_rep where it will not be called
+    recursively.
+
+- 3 years, 11 months ago Dan Graham
+    6baa36d 2014-04-30 14:45:53 -0400
+    Restored deepcopy in makeTree.
+
+- 3 years, 11 months ago Dan Graham
+    8bcd809 2014-04-30 13:42:13 -0400
+    In editItem return if an item is not selected to avoid <FocusIn>
+    exception.
+
+- 3 years, 11 months ago Dan Graham
+    debc71b 2014-04-30 13:31:41 -0400
+    Use datetimes instead of strings in the last position in item
+    tuples to avoid parsing in addToTree. Removed zip_safe and
+    install_requires from setup.py. Cleaned up upload.sh and enabled
+    p).
+
+- 3 years, 11 months ago Dan Graham
+    c009d2a 2014-04-29 20:07:52 -0400
+    version number fix
+
+- 3 years, 11 months ago Dan Graham
+    07218ee 2014-04-29 19:56:39 -0400
+    Merge branch 'master' of https://github.com/dagraham/etm-tk
+
+    Conflicts:
+    etmTk/v.py
+    etmTk/version.py
+
+- 3 years, 11 months ago Dan Graham
+    32908ac 2014-04-29 19:51:37 -0400
+    tagged version 0.1.1
+
+- 3 years, 11 months ago Dan Graham
+    ddb0e00 2014-04-29 19:51:16 -0400
+    Convert screen measurements in week view to integers to avoid
+    exceptions when dealing with non US locales.
+
+- 3 years, 11 months ago (tag: 0.1.0) Dan Graham
+    9b0d05f 2014-04-29 17:35:55 -0400
+    tagged version 0.1.0
+
+- 3 years, 11 months ago Dan Graham
+    33a9767 2014-04-29 17:17:51 -0400
+    version number catchup
+
+- 3 years, 11 months ago Dan Graham
+    8e1ac6e 2014-04-29 16:22:34 -0400
+    tagged version 0.1.0
+
+- 3 years, 11 months ago Dan Graham
+    8ef852a 2014-04-29 16:22:00 -0400
+    Changed status to 4-Beta. Documentation tweaks.
+
+- 3 years, 11 months ago Dan Graham
+    1a57533 2014-04-29 15:46:18 -0400
+    tagged version 0.0.75
+
+- 3 years, 11 months ago Dan Graham
+    3c16ace 2014-04-29 15:46:02 -0400
+    Use patch level "x" in v.py to have the updated patch level be 0.
+
+- 3 years, 11 months ago Dan Graham
+    4a42d57 2014-04-29 15:20:20 -0400
+    tagged version 0.0.74-5
+
+- 3 years, 11 months ago Dan Graham
+    7ca4ffa 2014-04-29 15:19:56 -0400
+    Removed "with" from safe_save and restored original open/close.
+    Worked on tag in prep_dist.
+
+- 3 years, 11 months ago Dan Graham
+    e714429 2014-04-29 14:09:45 -0400
+    tagged version 0.0.75
+
+- 3 years, 11 months ago Dan Graham
+    ef8567f 2014-04-29 14:08:52 -0400
+    Send git add and commit stdout to /dev/null.
+
+- 3 years, 11 months ago Dan Graham
+    c2cb4b8 2014-04-29 13:54:00 -0400
+    Normalize path from askopenfilename to prevent the appearance of
+    file changes under Windows.
+
+- 3 years, 11 months ago Dan Graham
+    e5f4b9b 2014-04-29 11:49:00 -0400
+    tagged version 0.0.74
+
+- 3 years, 11 months ago (tag: 0.0.74) Dan Graham
+    132309b 2014-04-29 11:17:44 -0400
+    tagged version 0.0.74
+
+- 3 years, 11 months ago Dan Graham
+    063e605 2014-04-29 10:59:46 -0400
+    Make '' the default for vcs_system and require that it be in [git,
+    mercurial, '']. Only use customizations in vcs_settings if
+    vcs_system is either git or mercurial. Only put Show history in
+    menu and bind Ctrl-H if vcs_system is either git or mercurial. 
+    Changed debug to info for results of get_changes in updateClock.
+    Put changes for the last 4 weeks in CHANGES.
+
+- 3 years, 11 months ago Dan Graham
+    14161e2 2014-04-28 18:22:34 -0400
+    Improved timezone support in the date calculator.
+
+- 3 years, 11 months ago (tag: 0.0.73) Dan Graham
+    d4f68b3 2014-04-28 16:32:41 -0400
+    tagged version 0.0.73
+
+- 3 years, 11 months ago Dan Graham
+    1a402a7 2014-04-28 15:01:27 -0400
+    Trimmed git output: 0 context lines, no diff, index or \ No
+    newline... lines. Removed file from message.
+
+- 3 years, 11 months ago (tag: 0.0.72-2) Dan Graham
+    9cb1f86 2014-04-28 12:19:30 -0400
+    updated version number
+
+- 3 years, 11 months ago Dan Graham
+    17da4aa 2014-04-28 12:19:16 -0400
+    Changed prep_dist to update v.py and version.py before commit.
+
+- 3 years, 11 months ago Dan Graham
+    c6425a7 2014-04-28 11:35:52 -0400
+    version number change
+
+- 3 years, 11 months ago (tag: 0.0.72) Dan Graham
+    3a24758 2014-04-28 11:26:40 -0400
+    Add either .hgignore (mercurial) or .gitignore (git) to datadir if
+    missing to ignore all hidden files. Fixed init_command under
+    mercurial to init the repository and commit all changes. Fixed
+    usage of {repo} vs {work} in several instances. Added level 2
+    timer for showChanges.
+
+- 3 years, 11 months ago Dan Graham
+    ea5ee72 2014-04-28 06:51:06 -0400
+    Only run vcs init if {repo} is missing.
+
+- 3 years, 11 months ago Dan Graham
+    cf39676 2014-04-28 06:43:38 -0400
+    Fixed bug in the default vcs_settings for git. Added {work} to the
+    template substitutions for vcs commands.
+
+- 3 years, 11 months ago Dan Graham
+    7983aad 2014-04-27 15:01:21 -0400
+    updated v.py and version.py
+
+- 3 years, 11 months ago Dan Graham
+    c1c9b4c 2014-04-27 14:56:30 -0400
+    Fixed fontsize discussion in preferences. Added mk_docs to
+    prep_dist.
+
+- 3 years, 11 months ago Dan Graham
+    84683f1 2014-04-27 14:42:24 -0400
+    Merge branch 'master' of https://github.com/dagraham/etm-tk
+
+    Conflicts:
+    etmTk/help/PREFERENCES.md
+
+- 3 years, 11 months ago Dan Graham
+    246dc80 2014-04-27 14:34:40 -0400
+    Replaced fontsize in etmtk.cfg with fontsize_fixed and
+    fontsize_tree. Added v.py and version.py to repository.
+
+- 3 years, 11 months ago Dan Graham
+    0c875dc 2014-04-27 14:21:19 -0400
+    Added v.py and version.py to repository.
+
+- 3 years, 11 months ago (tag: 0.0.71) Dan Graham
+    ae31170 2014-04-27 14:17:25 -0400
+    Replaced fontsize in etmtk.cfg with fontsize_fixed and
+    fontsize_tree.
+
+- 3 years, 11 months ago (tag: 0.0.70) Dan Graham
+    da7cdfb 2014-04-26 16:28:00 -0400
+    Added details_rows and completions_width to etmtk.cfg. Locate the
+    completions popup relative to the edit window.
+
+- 3 years, 11 months ago Dan Graham
+    4edd549 2014-04-25 16:13:22 -0400
+    Centered all screen shot images in README.
+
+- 3 years, 11 months ago Dan Graham
+    b7c7371 2014-04-25 14:58:30 -0400
+    moved images README and HEADER to root
+
+- 3 years, 11 months ago Dan Graham
+    052243e 2014-04-25 14:56:46 -0400
+    Moved HEADER, README and images/ to root
+
+    Done to make README available on GitHub
+
+- 3 years, 11 months ago Dan Graham
+    8a51280 2014-04-25 14:41:51 -0400
+    Added png and gif files
+
+- 3 years, 11 months ago Dan Graham
+    8166cb7 2014-04-25 14:19:37 -0400
+    Improved output in prep_dist
+
+- 3 years, 11 months ago (tag: 0.0.69) Dan Graham
+    6178f37 2014-04-25 11:13:49 -0400
+    Toggle binding for Control-F between set filter and show free
+    times using showWeekly and closeWeekly.
+
+- 3 years, 11 months ago Dan Graham
+    ee03c38 2014-04-25 07:19:22 -0400
+    Save and restore window size and position.
+
+- 3 years, 11 months ago (tag: 0.0.68) Dan Graham
+    b89671b 2014-04-24 16:52:15 -0400
+    Added vcs_commands to etmtk.cfg wherein default commands from
+    vcs_system can be overriden. Dump etmtk.cfg using yaml
+    default_flow_style=False.
+
+- 3 years, 11 months ago Dan Graham
+    d7146ac 2014-04-24 13:50:11 -0400
+    Clean up.
+
+- 3 years, 11 months ago Dan Graham
+    ca2a5ba 2014-04-24 12:36:18 -0400
+    Fixed bug in history_command in getGit.
+
+- 3 years, 11 months ago (tag: 0.0.66) Dan Graham
+    eff515b 2014-04-24 11:52:37 -0400
+    Check for hg and then git and use the first as the default for
+    vcs_system. Added git to installation instructions in README.
+    Improved git log formatting for CHANGES and show history.
+
+- 3 years, 11 months ago (tag: 0.0.65) Dan Graham
+    a36bbd3 2014-04-24 09:30:41 -0400
+    "git tweaks for prep_dist"
+
+- 3 years, 11 months ago Daniel Graham
+    9bd4c36 2014-04-24 08:44:54 -0400
+    git tweaks for prep_dist and logging
+
+- 3 years, 11 months ago Daniel Graham
+    97b3812 2014-04-22 13:03:00 -0400
+    Added tag 0.0.64 for changeset 0f5ed0b423fb
+
+- 3 years, 11 months ago (tag: 0.0.64) Daniel Graham
+    52f2b01 2014-04-22 13:02:46 -0400
+    The date_calculator now accepts timezone information.  Added
+    disabled/normal adjustment in the menu for show free periods. 
+    Documentation tweaks. Added patch for dgui_encoding to trap error
+    when the system locale is not set. Thanks Randy.
+
+- 3 years, 11 months ago Daniel Graham
+    75f0776 2014-04-22 12:47:34 -0400
+    The date_calculator now accepts timezone information.  Added
+    disabled/normal adjustment in the menu for show free periods. 
+    Documentation tweaks.
+
+- 3 years, 11 months ago Daniel Graham
+    ea7bb88 2014-04-21 18:17:56 -0400
+    Added tag 0.0.63 for changeset 4eac453645ae
+
+- 3 years, 11 months ago (tag: 0.0.63) Daniel Graham
+    bae5893 2014-04-21 18:16:54 -0400
+    Changed erroneous use of openmenu to newmenu.
+
+- 3 years, 11 months ago Daniel Graham
+    244b7d8 2014-04-21 17:46:18 -0400
+    Added tag 0.0.62 for changeset 44c203f0cd61
+
+- 3 years, 11 months ago (tag: 0.0.62) Daniel Graham
+    857fc30 2014-04-21 17:45:02 -0400
+    Removed erroneous filedialog import.
+
+- 3 years, 11 months ago Daniel Graham
+    4d903ec 2014-04-21 14:41:29 -0400
+    Added tag 0.0.61 for changeset 9a501434b912
+
+- 3 years, 11 months ago (tag: 0.0.61) Daniel Graham
+    0802234 2014-04-21 14:32:53 -0400
+    Fixed a bug in reporting stats in updateViewData when an item is
+    saved to an empty (new) file. Updated docs for create new file
+    shortcut.
+
+- 3 years, 11 months ago Daniel Graham
+    aae8161 2014-04-21 14:10:25 -0400
+    Added repetition examples using minute frequencies to README and
+    Overview. Added ability to create a new data file under File/New
+    and bound to Shift-Ctrl-N.
+
+- 3 years, 11 months ago Daniel Graham
+    dc83169 2014-04-20 12:10:11 -0400
+    Added tag 0.0.60 for changeset d98fd0ca4f99
+
+- 3 years, 11 months ago (tag: 0.0.60) Daniel Graham
+    44f5044 2014-04-20 12:09:48 -0400
+    In weekview, set active_date to the beginning day of the week.
+
+- 3 years, 11 months ago Daniel Graham
+    6a9c621 2014-04-20 12:00:50 -0400
+    Added 'outline_depth' to etmtk.cfg with a default value of 2.
+    Outlines for keyword, note and path views will, by default, open
+    to this depth. Added level 2 timing for showing outline and week
+    views.
+
+- 3 years, 11 months ago Daniel Graham
+    5ebac49 2014-04-20 10:44:14 -0400
+    Make sure the values provided for the keys in freetimes either are
+    integers or can be converted to integers; otherwise use the
+    defaults and provide informative logger.warn entries.
+
+- 3 years, 11 months ago Daniel Graham
+    fe1d585 2014-04-20 09:23:52 -0400
+    Coordinate day and week views so that either view will always
+    display the days that were last active in the other view.
+
+- 3 years, 11 months ago Daniel Graham
+    10c8e2f 2014-04-19 21:11:07 -0400
+    Removed traceback.
+
+- 3 years, 11 months ago Daniel Graham
+    8f313e6 2014-04-19 14:49:42 -0400
+    Removed %Z from status bar datetime format.
+
+- 3 years, 11 months ago Daniel Graham
+    30b4e34 2014-04-19 12:50:09 -0400
+    Added tag 0.0.59 for changeset 4030c48b7622
+
+- 3 years, 11 months ago (tag: 0.0.59) Daniel Graham
+    d41c36f 2014-04-19 12:49:49 -0400
+    Make TimeIt use time.clock in Windows and time.time otherwise.
+
+- 3 years, 11 months ago Daniel Graham
+    d616224 2014-04-19 12:33:48 -0400
+    Added info timer to updateClock.
+
+- 3 years, 11 months ago Daniel Graham
+    8ee1956 2014-04-19 12:16:21 -0400
+    Added tag 0.0.58 for changeset ff9337fb3157
+
+- 3 years, 11 months ago (tag: 0.0.58) Daniel Graham
+    86ab7f9 2014-04-19 12:15:53 -0400
+    Fixed bug that raised exceptions parsing dates for addToTree in
+    Windows.
+
+- 3 years, 11 months ago Daniel Graham
+    5cfeab0 2014-04-19 11:18:11 -0400
+    Cleaned up completed todos.
+
+- 3 years, 11 months ago Daniel Graham
+    5a51e3f 2014-04-19 09:58:29 -0400
+    Added report spec as a header for command line reports generated
+    by "r" and "m" commands.
+
+- 3 years, 11 months ago Daniel Graham
+    02acb42 2014-04-19 08:30:05 -0400
+    Added tag 0.0.57 for changeset 35d828a34bd6
+
+- 3 years, 11 months ago (tag: 0.0.57) Daniel Graham
+    9519161 2014-04-19 08:26:49 -0400
+    Changed 'wrap' to 'buffer' in freetimes, added validation in
+    get_options and improved description in preferences. Changed
+    showBusyTimes to showBusyPeriods and showFreeTimes to
+    showFreePeriods and changed "times" to "periods" their titles.
+
+- 3 years, 11 months ago Daniel Graham
+    ade18e9 2014-04-18 20:34:11 -0400
+    Added tag 0.0.56 for changeset 6bb2f71da92e
+
+- 3 years, 11 months ago (tag: 0.0.56) Daniel Graham
+    05a6890 2014-04-18 20:33:32 -0400
+    more documentation fixes
+
+- 3 years, 11 months ago Daniel Graham
+    8a66618 2014-04-18 20:16:58 -0400
+    documentation fixes
+
+- 3 years, 11 months ago Daniel Graham
+    26411d2 2014-04-18 20:16:08 -0400
+    Added an optional 'shared_completions' to 'auto_completions' in
+    etmtk.cfg. If shared_completions exists, any completions in the
+    file that are not in auto_completions will be added and made
+    available to the editor.
+
+- 3 years, 11 months ago Daniel Graham
+    ffb6aec 2014-04-18 15:40:17 -0400
+    Added tag 0.0.55 for changeset e5ba460df7bb
+
+- 3 years, 11 months ago (tag: 0.0.55) Daniel Graham
+    b677c9b 2014-04-18 15:35:54 -0400
+    Added showFreeTimes.
+
+- 3 years, 11 months ago Daniel Graham
+    4ae8293 2014-04-17 17:37:14 -0400
+    Added tag 0.0.53 for changeset 7167d98a1a13
+
+- 3 years, 11 months ago (tag: 0.0.53) Daniel Graham
+    88f6da4 2014-04-17 17:16:11 -0400
+    Fixed CLI bug: use "n" for note view and "i" for new item.  Add
+    cli arg to safe_save and only call updateDataFromFile if
+    cli=False.
+
+- 3 years, 11 months ago Daniel Graham
+    5d7b78a 2014-04-17 10:38:24 -0400
+    Added tag 0.0.52 for changeset 54c4ec4dedb4
+
+- 3 years, 11 months ago (tag: 0.0.52) Daniel Graham
+    c6089a5 2014-04-17 10:38:04 -0400
+    Updated shortcuts docs for load data from files command.
+
+- 3 years, 11 months ago Daniel Graham
+    fd70d2f 2014-04-17 10:31:08 -0400
+    Fixed erroneous use of skiplist in make report.
+
+- 3 years, 11 months ago Daniel Graham
+    2d33315 2014-04-17 10:04:07 -0400
+    Added clear_all_data to be called in getViewData to avoid creating
+    duplicate entries in the various data structures.  Added
+    Shift-Ctrl-L binding and menu entry under tools to call loadData.
+    Cleaned up logging level 1 output.
+
+- 3 years, 11 months ago Daniel Graham
+    fde31c2 2014-04-16 18:47:31 -0400
+    Added tag 0.0.51 for changeset a44585b34375
+
+- 3 years, 11 months ago (tag: 0.0.51) Daniel Graham
+    24bb6a2 2014-04-16 18:44:09 -0400
+    import from etm-tk-skiplist
+
+- 3 years, 11 months ago Daniel Graham
+    00f2d41 2014-04-15 18:51:03 -0400
+    Fixed a bug in getPrevNext in which dates from inactive calendars
+    were being added to the list.
+
+- 3 years, 11 months ago Daniel Graham
+    9604390 2014-04-13 15:59:35 -0400
+    Added tag 0.0.50 for changeset b9ebaedb4ed9
+
+- 3 years, 11 months ago (tag: 0.0.50) Daniel Graham
+    1d439a3 2014-04-13 15:54:54 -0400
+    Fixed erroneous format index.
+
+- 3 years, 11 months ago Daniel Graham
+    42dc415 2014-04-13 12:35:29 -0400
+    Added tag 0.0.49 for changeset e3b4b36a320b
+
+- 3 years, 11 months ago (tag: 0.0.49) Daniel Graham
+    1971343 2014-04-13 12:14:21 -0400
+    Cleaned up unneeded logging.debug statements. Return "break" from
+    onActivate to prevent outline branch closing after processing. Set
+    @s for actions to the time that the timer was stopped instead of
+    the time it was started.
+
+- 3 years, 11 months ago Daniel Graham
+    c418716 2014-04-12 20:51:51 -0400
+    Added tag 0.0.48 for changeset 20138ace6dc9
+
+- 3 years, 11 months ago (tag: 0.0.48) Daniel Graham
+    b43300e 2014-04-12 20:51:37 -0400
+    Fixed bug in opening file dialog for a new, undated item.
+
+- 3 years, 11 months ago Daniel Graham
+    68e0631 2014-04-12 20:06:06 -0400
+    Added tag 0.0.47 for changeset f83c8bddfcd7
+
+- 3 years, 11 months ago (tag: 0.0.47) Daniel Graham
+    4292eed 2014-04-12 19:48:43 -0400
+    Removed "M" as a date specification - it duplicates "MM" and leads
+    to difficulties.
+
+- 3 years, 11 months ago Daniel Graham
+    0799d6c 2014-04-12 19:35:51 -0400
+    Made changes to ensure_monthly to use correct data directory on
+    startup.
+
+- 3 years, 11 months ago Daniel Graham
+    b950838 2014-04-12 17:13:54 -0400
+    Fixed bug in report CSV export in which groups with a single leaf
+    would be omitted. Fixed bug in which 'd' instead of 'dd' was being
+    inserted into grpby tuples.
+
+- 3 years, 11 months ago Daniel Graham
+    493cd4b 2014-04-12 14:43:00 -0400
+    Set path to error logging file correctly and added path to logging
+    info. Only expand middle tuple in add2list if it is a tuple.
+    Append items to list in getDataFromFile instead of using add2list.
+    Use add2list in updateViewFromFile.  Added timing for getViewData,
+    updateViewData and command line cmd execution reporting all in
+    logging info. Cleaned up extraneous logging debugs.
+
+- 3 years, 11 months ago Daniel Graham
+    4c8280e 2014-04-12 09:40:46 -0400
+    Added updateViewData and related functions. Now when a change is
+    made only the data from the affected file is processed and used to
+    alter view data.
+
+- 3 years, 11 months ago Daniel Graham
+    619211c 2014-04-11 12:48:58 -0400
+    Only show unfinished tasks and unfinished instances of repeating
+    tasks in c reports that group by dates.
+
+- 3 years, 11 months ago Daniel Graham
+    a8d0d64 2014-04-11 11:25:35 -0400
+    Replace datespec 'd' with 'dd' since they both involve %d and the
+    use of 'dd' was giving %d%d.
+
+- 3 years, 11 months ago Daniel Graham
+    f3fcdbc 2014-04-11 11:08:14 -0400
+    Put logging file in etmdir. Added indexableskiplist stuff -
+    perhaps to replace bisect. Added fmt_shortdatetime for adjusting
+    column 2 display. Factored out file stuff from getViewData into
+    getDataFromFile - first step to processing only changed file.  If
+    there is no further due date, show last done in folder view. Show
+    last 'show_finished' completions in day view. Only show past due
+    days if less than 99. Replace leading zeros in column 2 dates and
+    times.  Fixed 'fn' bug in showChanges.
+
+- 3 years, 11 months ago Daniel Graham
+    ea9ce3f 2014-04-10 13:09:38 -0400
+    Added tag 0.0.46 for changeset 38a64ca93afd
+
+- 3 years, 11 months ago (tag: 0.0.46) Daniel Graham
+    68ede8c 2014-04-10 13:08:10 -0400
+    Put messageWindow for editor over editor. Fixed Ctrl-? binding in
+    editor - should be Control-question. Removed scrollbar from editor
+    messageWindow.
+
+- 3 years, 11 months ago Daniel Graham
+    6d8447f 2014-04-10 11:49:10 -0400
+    Ctrl-? invalid in Linux, changed to Ctrl-V.
+
+- 3 years, 11 months ago Daniel Graham
+    093b0dc 2014-04-10 07:27:19 -0400
+    Use python_version2 switch in term_print. Working on export report
+    as CSV.
+
+- 3 years, 11 months ago Daniel Graham
+    0eadf68 2014-04-09 16:07:45 -0400
+    Added tag 0.0.45 for changeset b1ef3fbe7086
+
+- 3 years, 11 months ago (tag: 0.0.45) Daniel Graham
+    c506e62 2014-04-09 16:05:55 -0400
+    Removed "Clear selection" from menu and bindings - not needed. 
+    Worked on restoring focus properly from clearFilter.
+
+- 3 years, 11 months ago Daniel Graham
+    8c631d3 2014-04-09 14:46:43 -0400
+    Fixed bug in which "finish" would not be enable appropriately for
+    beginby and finished.
+
+- 3 years, 11 months ago Daniel Graham
+    d5de548 2014-04-09 13:58:30 -0400
+    Fixed bug in setting starting time for timer.
+
+- 3 years, 11 months ago Daniel Graham
+    c84613b 2014-04-09 13:21:39 -0400
+    Implemented auto-completions using an entry widget and listbox.
+    Entry uses a stringvar with a trace that updates the listbox.
+
+- 3 years, 11 months ago Daniel Graham
+    e1b9e40 2014-04-09 06:48:19 -0400
+    Added tag 0.0.44 for changeset 65ecdc33a478
+
+- 3 years, 11 months ago (tag: 0.0.44) Daniel Graham
+    10ed4e8 2014-04-09 06:46:14 -0400
+    Dump data to pickle file in updateDataFromFile. Set @s in actions
+    to the datetime the timer is started. In SimpleEdit, do not open a
+    second completions window and make sure Escape closes completions
+    and clears find before quitting.
+
+- 4 years ago Daniel Graham
+    b9c35dc 2014-04-08 21:06:32 -0400
+    Added tag 0.0.43 for changeset 965df2d98e0e
+
+- 4 years ago (tag: 0.0.43) Daniel Graham
+    0b721ea 2014-04-08 17:07:00 -0400
+    Call loadData on startup but otherwise call updataDataFromFile
+    whenever safe_save changes a file. Big speed up since only the
+    modified file is processed.
+
+- 4 years ago Daniel Graham
+    c380e2c 2014-04-07 16:23:44 -0400
+    Added tag 0.0.42 for changeset d825a893cae8
+
+- 4 years ago (tag: 0.0.42) Daniel Graham
+    428326c 2014-04-07 16:22:56 -0400
+    Inserted WidgetRedirector and OriginalCommand from
+    idlelib.WidgetRedirector to avoid the installation requirement.
+
+- 4 years ago Daniel Graham
+    58f4710 2014-04-07 14:37:52 -0400
+    Added tag 0.0.41 for changeset efab038f6fd5
+
+- 4 years ago (tag: 0.0.41) Daniel Graham
+    810054f 2014-04-07 14:37:35 -0400
+    Updated documentation for report changes.
+
+- 4 years ago Daniel Graham
+    208c991 2014-04-07 14:10:15 -0400
+    Refactored saveReportAs -> exportText.
+
+- 4 years ago Daniel Graham
+    b46a5d1 2014-04-07 13:59:18 -0400
+    Implemented saveReportAs. Removed emailReport as unneeded - easier
+    to attach either a text or csv report.
+
+- 4 years ago Daniel Graham
+    60261c5 2014-04-07 12:21:51 -0400
+    Added internal cross links.
+
+- 4 years ago Daniel Graham
+    a24e3a3 2014-04-07 11:35:20 -0400
+    Removed sunmoon and weather.
+
+- 4 years ago Daniel Graham
+    e5dfcdb 2014-04-07 11:33:55 -0400
+    Removed rowsize as an option.
+
+- 4 years ago Daniel Graham
+    4debb9a 2014-04-07 11:10:46 -0400
+    documentation tweaks
+
+- 4 years ago Daniel Graham
+    aaebfd6 2014-04-07 10:34:38 -0400
+    Added tag 0.0.40 for changeset 6237ad6fed4c
+
+- 4 years ago (tag: 0.0.40) Daniel Graham
+    7e5ffb0 2014-04-07 10:34:10 -0400
+    UserManual corrections. Added Edit and Report  to shortcuts.
+    Replaced erroneous references to etmqt with etmtk. Added note that
+    "Escape closes most dialogs" to shortcuts. Added quit button to
+    reports. Changed "Ok" in edit to "Save and Exit". Fixed various
+    key bindings.
+
+- 4 years ago Daniel Graham
+    25f53d1 2014-04-06 16:12:28 -0400
+    Added tag 0.0.39 for changeset bbea8cf17212
+
+- 4 years ago (tag: 0.0.39) Daniel Graham
+    bdf47e1 2014-04-06 16:02:11 -0400
+    Changed bindings to be more consistent with etm_qt. F4->yearly
+    calendar, F5->date calculator, F6 and Shift-F6->export as iCal.
+    Added starting etm section to overview. Remove images from
+    UserManual and added latex/pdf production. Added mention of
+    automatic creation of etmtk.cfg to README.
+
+- 4 years ago Daniel Graham
+    12498e4 2014-04-06 12:18:15 -0400
+    Added tag 0.0.38 for changeset 44b64f64e536
+
+- 4 years ago (tag: 0.0.38) Daniel Graham
+    03906a6 2014-04-06 12:18:00 -0400
+    If etmtk.cfg does not exist but etm.cfg does, then use the latter
+    to create the former.
+
+- 4 years ago Daniel Graham
+    6bd2a0e 2014-04-05 19:53:59 -0400
+    Implemented do_n to create new items from the command line.
+
+- 4 years ago Daniel Graham
+    b9ba880 2014-04-05 16:35:17 -0400
+    Added tag 0.0.37 for changeset d21ba55d648d
+
+- 4 years ago (tag: 0.0.37) Daniel Graham
+    8424404 2014-04-05 16:35:07 -0400
+    Fixed 2nd column formatting error in reports involving grouping by
+    dates. Skip empy lines when showing lists of report
+    specifications. Open editor with report_specs file when changes
+    are saved.
+
+- 4 years ago Daniel Graham
+    7131291 2014-04-05 07:59:38 -0400
+    Added tag 0.0.36 for changeset 2a3347ff840c
+
+- 4 years ago (tag: 0.0.36) Daniel Graham
+    053b973 2014-04-05 07:57:46 -0400
+    Usage corrections.
+
+- 4 years ago Daniel Graham
+    2d2bda4 2014-04-04 18:31:09 -0400
+    Added tag 0.0.35 for changeset f4d0859aae7c
+
+- 4 years ago (tag: 0.0.35) Daniel Graham
+    d6fe42c 2014-04-04 18:30:31 -0400
+    Implemented saveSpecs in reports - sort and remove empty lines
+    before saving. Only add items that generate reports without
+    raising exceptions.
+
+- 4 years ago Daniel Graham
+    223acc6 2014-04-04 16:22:02 -0400
+    Clean up.
+
+- 4 years ago Daniel Graham
+    afc44aa 2014-04-04 16:14:41 -0400
+    Added word wrap to editor.  Added ability to specify an initial
+    time when starting the timer. Documentation fixes and
+    improvements.
+
+- 4 years ago Daniel Graham
+    4f58b5f 2014-04-03 11:44:07 -0400
+    Added tag 0.0.34 for changeset 1e7c96231b91
+
+- 4 years ago (tag: 0.0.34) Daniel Graham
+    891377b 2014-04-03 11:41:41 -0400
+    Clean up. README updates.
+
+- 4 years ago Daniel Graham
+    b3ca0b7 2014-04-02 17:39:58 -0400
+    Added tag 0.0.33 for changeset c3a072870e2c
+
+- 4 years ago (tag: 0.0.33) Daniel Graham
+    f5ed181 2014-04-02 17:39:45 -0400
+    In reports, if a spec is modified prompt to save changes and if
+    yes, then write sorted spec list to reports file.
+
+- 4 years ago Daniel Graham
+    e12b7f5 2014-04-02 16:55:06 -0400
+    Clean up.
+
+- 4 years ago Daniel Graham
+    98e9c88 2014-04-02 12:37:45 -0400
+    Renamed Schedule View as Day View. Omit finished tasks, actions
+    and notes from Agenda View.
+
+- 4 years ago Daniel Graham
+    f6a7d16 2014-04-02 08:01:35 -0400
+    Added get_week for format the week header for a given date.
+
+- 4 years ago Daniel Graham
+    f73db5b 2014-04-01 16:29:24 -0400
+    Add weeks to report groupby date options. Allow @e entries in
+    creating actions.
+
+- 4 years ago Daniel Graham
+    e00c0dd 2014-03-31 05:43:18 -0400
+    Don't show timeline before 7a or after 11p.
+
+- 4 years ago Daniel Graham
+    1dcd1fb 2014-03-30 16:28:28 -0400
+    Added tag 0.0.32 for changeset 7cedc589b0bf
+
+- 4 years ago (tag: 0.0.32) Daniel Graham
+    3a84cbd 2014-03-30 16:27:20 -0400
+    Added h (hours) and n (minutes) to the frequency keys for @r.
+    Cleaned up comments.
+
+- 4 years ago Daniel Graham
+    d556e14 2014-03-29 23:24:48 -0400
+    Removed 'current_time' tag from today column text to prevent it's
+    removal when moving current time line.
+
+- 4 years ago Daniel Graham
+    5ba3216 2014-03-29 10:48:02 -0400
+    Fixed bug in creating file in ensureMonthly. Make sure focus
+    returns to canvas after delete, ...
+
+- 4 years ago Daniel Graham
+    f0c07ee 2014-03-28 15:11:50 -0400
+    Added tag 0.0.31 for changeset 3da207158e34
+
+- 4 years ago (tag: 0.0.31) Daniel Graham
+    5b95b98 2014-03-28 15:10:46 -0400
+    Added tag 0.0.31 for changeset b52893640282
+
+- 4 years ago Daniel Graham
+    f00c139 2014-03-28 15:10:23 -0400
+    Added closeItemMenu to unpost itemmenu popup and restore focus to
+    tree or canvas under Linux.
+
+- 4 years ago Daniel Graham
+    eceb658 2014-03-28 14:06:18 -0400
+    Prevented space from collapsing and expanding tree branches.
+    Prevented Return from triggering popup when an item is not
+    selected.
+
+- 4 years ago Daniel Graham
+    4b5711d 2014-03-28 13:29:15 -0400
+    Added a hack to prevent ties in alert minutes by adding 6 seconds
+    to each alert that would otherwise be tied. Added pady entries to
+    buttons and such to make them size properly for Linux. Added
+    weekview up, down accelerators when not mac.
+
+- 4 years ago Daniel Graham
+    505676e 2014-03-27 11:36:07 -0400
+    Added tag 0.0.30 for changeset 515ab55ed301
+
+- 4 years ago (tag: 0.0.30) Daniel Graham
+    27b7628 2014-03-27 11:35:52 -0400
+    Tag grid lines in weekview "grid" and keep them on top.
+
+- 4 years ago Daniel Graham
+    0d69de4 2014-03-25 15:39:59 -0400
+    Export item/active to ical to F4/^F4. Finish to ^X.
+
+- 4 years ago Daniel Graham
+    f6df868 2014-03-25 14:08:32 -0400
+    Added tag 0.0.29 for changeset 20aa07c0de9b
+
+- 4 years ago (tag: 0.0.29) Daniel Graham
+    cdddf24 2014-03-25 14:07:05 -0400
+    Implemented next and previous sibling for outlines bound to
+    control down and up. Redraw timeline on updateClock instead of the
+    entire weekview.
+
+- 4 years ago Daniel Graham
+    bf61fdd 2014-03-25 08:34:18 -0400
+    Make sure that dtSelected is a string suitable for display as the
+    instance in which prompts.
+
+- 4 years ago Daniel Graham
+    b503426 2014-03-24 16:09:32 -0400
+    Added tag 0.0.28 for changeset f238a11bbbe3
+
+- 4 years ago (tag: 0.0.28) Daniel Graham
+    be242fd 2014-03-24 16:09:10 -0400
+    forget and pack fltrbox when entering and leaving weekview. Set
+    disabled/normal for apply filter, clear filter and outline depth.
+
+- 4 years ago Daniel Graham
+    01b6e0c 2014-03-24 12:02:27 -0400
+    Added ':' to regex for completions for keywords.
+
+- 4 years ago Daniel Graham
+    c4e53a6 2014-03-24 10:40:42 -0400
+    Added tag 0.0.27 for changeset 69d4548952cb
+
+- 4 years ago (tag: 0.0.27) Daniel Graham
+    732074d 2014-03-24 10:11:24 -0400
+    Replaced spurious references to self.win with self.canvas. Set
+    current_day in showWeek so that it's updated in update_clock.
+
+- 4 years ago Daniel Graham
+    1de0be3 2014-03-23 22:41:06 -0400
+    Added master (return focus) to Dialog.
+
+- 4 years ago Daniel Graham
+    fe29a2a 2014-03-23 22:31:44 -0400
+    Added get_current_time to imports from data in dialog.
+
+- 4 years ago Daniel Graham
+    8989e00 2014-03-23 22:19:34 -0400
+    Added tag 0.0.26 for changeset e942b5330107
+
+- 4 years ago (tag: 0.0.26) Daniel Graham
+    5c98adf 2014-03-23 22:19:25 -0400
+    After change showWeek or showView depending upon active view.
+
+- 4 years ago Daniel Graham
+    61c8552 2014-03-23 22:04:20 -0400
+    Bug fixes.
+
+- 4 years ago Daniel Graham
+    67c49de 2014-03-23 20:50:13 -0400
+    Select calendars moved to topbar along with filter entry field.
+
+- 4 years ago Daniel Graham
+    f1ff702 2014-03-22 18:19:52 -0400
+    Rolled weekview current week and goto week into corresponding
+    treeview commands. Fixed bug involving goto current date when the
+    only item is a beginby.
+
+- 4 years ago Daniel Graham
+    9a67aae 2014-03-22 16:48:26 -0400
+    Moved weekview to toppane. Invoke popup for item menu in both tree
+    and week views. Show details in both views. About to move filter
+    and calendars to topbar.
+
+- 4 years ago Daniel Graham
+    64f6fe7 2014-03-22 12:15:40 -0400
+    Added parse_dt to permit importing to dialog. Moved view selection
+    from menu to topbar and included showweekly. Thinking about moving
+    week view to main toppanel.
+
+- 4 years ago Daniel Graham
+    9ab353a 2014-03-21 19:27:58 -0400
+    Factored out dialog stuff from view to dialog (new). Removed msg
+    from parse_period, etc. Fixed setup_cxfreeze and changed prep_dist
+    to use it.
+
+- 4 years ago (tag: 0.0.25) Daniel Graham
+    4b9e397 2014-03-21 19:21:03 -0400
+    Factored out dialog stuff from view to dialog (new). Removed msg
+    from parse_period, etc. Fixed setup_cxfreeze and changed prep_dist
+    to use it.
+
+- 4 years ago Daniel Graham
+    ce14896 2014-03-20 10:28:46 -0400
+    Added tag 0.0.24 for changeset ac94d26cbc95
+
+- 4 years ago (tag: 0.0.24) Daniel Graham
+    54aae1a 2014-03-20 10:27:10 -0400
+    Usage fixes. Fixed bindings to call closeWeekly always when
+    closing weekview. Added "return" to menu edit item shortcuts.
+    Replaced "not default calendars" with "*".
+
+- 4 years ago Daniel Graham
+    9fcb7d9 2014-03-18 15:37:43 -0400
+    Fixed bug in showing details for occasions in weekview.
+
+- 4 years ago Daniel Graham
+    578a6b5 2014-03-18 15:25:17 -0400
+    Added default and non-default colors to weekview. Skip reminders.
+
+- 4 years ago Daniel Graham
+    130ffcb 2014-03-17 18:48:11 -0400
+    Added tag 0.0.23 for changeset 3cd695240f5d
+
+- 4 years ago (tag: 0.0.23) Daniel Graham
+    54dc517 2014-03-17 18:44:31 -0400
+    Set self.win = None when closing weekview to avoid bad window bug.
+
+- 4 years ago Daniel Graham
+    ebddd74 2014-03-17 15:45:14 -0400
+    Added tag 0.0.22 for changeset 3dbac15b4d3a
+
+- 4 years ago (tag: 0.0.22) Daniel Graham
+    d979c85 2014-03-17 15:41:41 -0400
+    Cursor movement through items in weekview now cycles in both
+    directions and conflicts are left on top. Return msg with result
+    from date_calculator, parse_period, etc. Pass both parent and
+    master (return focus) to SimpleEditor. Added win.protocol
+    WM_DELETE_WINDOW with callback to MessageWindow and other
+    Toplevels.
+
+- 4 years ago Daniel Graham
+    cb24209 2014-03-14 16:49:13 -0400
+    Added tag 0.0.20 for changeset 46d0495c57ce
+
+- 4 years ago (tag: 0.0.20) Daniel Graham
+    49fd4ac 2014-03-14 16:48:49 -0400
+    Documentation adjustments for week view.
+
+- 4 years ago Daniel Graham
+    1689922 2014-03-14 14:54:02 -0400
+    Added tag 0.0.19 for changeset 152dc5936109
+
+- 4 years ago (tag: 0.0.19) Daniel Graham
+    2c34cf4 2014-03-14 14:52:46 -0400
+    Fixed bug in starting action based on selection.
+
+- 4 years ago Daniel Graham
+    ef68362 2014-03-14 13:05:03 -0400
+    Implemented action timer start, toggle, finish and restart after
+    cancel edit.
+
+- 4 years ago Daniel Graham
+    0d5a929 2014-03-14 08:44:22 -0400
+    Refresh week view if open on save.  Don't try to activate popup on
+    click unless id is in busyHsh.
+
+- 4 years ago Daniel Graham
+    3d4bb0b 2014-03-14 07:59:03 -0400
+    Added tag 0.0.18 for changeset b84bf166a319
+
+- 4 years ago (tag: 0.0.18) Daniel Graham
+    b70408c 2014-03-14 07:58:24 -0400
+    Implemented notes view with notes sorted by keyword. Those without
+    keywords are assigned "none".
+
+- 4 years ago Daniel Graham
+    b8950bf 2014-03-13 16:19:40 -0400
+    Added tag 0.0.17 for changeset a9d8f32c978a
+
+- 4 years ago (tag: 0.0.17) Daniel Graham
+    49c5fd6 2014-03-13 16:18:27 -0400
+    Ctrl-Click in week view now creates new event or, when an item is
+    under the click, pops up a menu of options. Current day column is
+    filled and a line corresponding to the current time is drawn.
+
+- 4 years ago Daniel Graham
+    99327dc 2014-03-12 15:23:41 -0400
+    Added tag 0.0.16 for changeset ce76a498cc55
+
+- 4 years ago (tag: 0.0.16) Daniel Graham
+    2482ca9 2014-03-12 15:23:28 -0400
+    Added md files and style-before to repository.
+
+- 4 years ago Daniel Graham
+    7509508 2014-03-12 15:17:25 -0400
+    Fixed bugs in week view and created submenu in Views. Added ical
+    export for selected item and active calendars.
+
+- 4 years ago Daniel Graham
+    561d962 2014-03-11 20:04:26 -0400
+    Added tag 0.0.15 for changeset a0d924c621c9
+
+- 4 years ago (tag: 0.0.15) Daniel Graham
+    7f6bd4f 2014-03-11 19:31:40 -0400
+    Added conflict identification, cursor movement through both items
+    and weeks and popup actions to week view.
+
+- 4 years ago Daniel Graham
+    062baf7 2014-03-10 21:31:27 -0400
+    Week view works with both busytimes and occasions.
+
+- 4 years ago Daniel Graham
+    6f27708 2014-03-10 09:08:29 -0400
+    html5 -> html in pandoc to avoid lintian issue with attached js
+    script. First pass at showWeekly.
+
+- 4 years, 1 month ago Daniel Graham
+    8c4e072 2014-03-07 12:02:04 -0500
+    Added tag 0.0.14 for changeset dfea8971fb06
+
+- 4 years, 1 month ago (tag: 0.0.14) Daniel Graham
+    f5afdd0 2014-03-07 12:01:29 -0500
+    For new installs (no datadir): added default contents for
+    completions and reports; default 'join etm' task for current month
+    file. Adjusted colors for av, by, ev, oc, so and un. Added isfile
+    test for auto_completions when starting editor. Made deep copy of
+    alerts and adjust copy for current calendar settings. Call
+    updateAlerts from updateCalendars.  Added help files to mk_docs.
+    Work on HEADER and README. Added platform test to prep_dist.
+    Removed App and py2app stuff from setup.py.
+
+- 4 years, 1 month ago Daniel Graham
+    240b4be 2014-03-06 11:59:20 -0500
+    Added tag 0.0.14 for changeset 065bbadc1ba7
+
+- 4 years, 1 month ago Daniel Graham
+    d03b59a 2014-03-05 15:33:26 -0500
+    Added tag 0.0.13 for changeset 23d6c13087b4
+
+- 4 years, 1 month ago (tag: 0.0.13) Daniel Graham
+    c44fc5f 2014-03-05 15:30:39 -0500
+    Fixed package_data in setup.py. Added ability to cxfreeze both
+    Darwin and Linux packages in prep_dist.sh. Removed notebook and
+    replaced it in help with an optionMenu.
+
+- 4 years, 1 month ago Daniel Graham
+    9688187 2014-03-03 07:59:14 -0500
+    moved xpm file to etmTk
+
+- 4 years, 1 month ago Daniel Graham
+    5e77ef6 2014-03-03 07:58:02 -0500
+    Various documentation and man page tweaks.
+
+- 4 years, 1 month ago Daniel Graham
+    4e6e79e 2014-03-02 15:33:29 -0500
+    Fixed bug in setting hg_history in etmtk.cfg. Command line now
+    implements all basic functions except n (new item).
+
+- 4 years, 1 month ago Daniel Graham
+    b9fa118 2014-03-01 08:18:00 -0500
+    Added tag 0.0.12 for changeset 4bb745436cd0
+
+- 4 years, 1 month ago (tag: 0.0.12) Daniel Graham
+    56a3c5d 2014-03-01 08:17:44 -0500
+    Removed unused idlelib imports.
+
+- 4 years, 1 month ago Daniel Graham
+    05c7324 2014-03-01 07:21:34 -0500
+    Added tag 0.0.11 for changeset e9676337e133
+
+- 4 years, 1 month ago (tag: 0.0.11) Daniel Graham
+    e23ae29 2014-03-01 07:19:34 -0500
+    Commented out language stuff since it involves path names that
+    don't work in packaging. Removed import idlelib get_accelerator -
+    cxfreeze now works again!
+
+- 4 years, 1 month ago Daniel Graham
+    8a49517 2014-02-28 16:31:21 -0500
+    Added tag 0.0.10 for changeset e171c5b129cd
+
+- 4 years, 1 month ago (tag: 0.0.10) Daniel Graham
+    5ab84ce 2014-02-28 16:31:02 -0500
+    Moved make report, show changes and export active to tools.
+
+- 4 years, 1 month ago Daniel Graham
+    865633e 2014-02-28 13:18:52 -0500
+    Filter works and focus is returned to tree on closing.
+
+- 4 years, 1 month ago Daniel Graham
+    acdcba9 2014-02-27 17:00:10 -0500
+    Apply calendars filter to alarms. All commands now to menu bar.
+    Implemented setFilters.
+
+- 4 years, 1 month ago Daniel Graham
+    945c90e 2014-02-26 14:10:54 -0500
+    Use options['fontsize'] and TkFixedFont in fixed text displays.
+
+- 4 years, 1 month ago Daniel Graham
+    c58c45c 2014-02-26 10:44:30 -0500
+    Moved new to filemenu. Fixed formatting in showMenu.
+
+- 4 years, 1 month ago Daniel Graham
+    1593877 2014-02-23 21:06:36 -0500
+    Added tag 0.0.9 for changeset dc921a47277c
+
+- 4 years, 1 month ago (tag: 0.0.9) Daniel Graham
+    7540a59 2014-02-23 21:05:22 -0500
+    Completion tweaks. Help tweaks.
+
+- 4 years, 1 month ago Daniel Graham
+    5a4edbc 2014-02-23 10:01:21 -0500
+    Moved keybindings to Ctrl (not Command) and made consistent. All
+    seem to work. Added patch to Tk/Tcl version info.
+
+- 4 years, 1 month ago Daniel Graham
+    e8e8ac4 2014-02-21 09:34:38 -0500
+    Added help files to repository.
+
+- 4 years, 1 month ago Daniel Graham
+    9eaac21 2014-02-20 19:15:33 -0500
+    Added tag 0.0.8 for changeset fdf24a98255b
+
+- 4 years, 1 month ago (tag: 0.0.8) Daniel Graham
+    0d02579 2014-02-20 17:00:52 -0500
+    Implemented completion in edit bound to Control/Command + /.
+
+- 4 years, 1 month ago Daniel Graham
+    ca19774 2014-02-18 22:20:19 -0500
+    Put bad items in in basket to be fixed.
+
+- 4 years, 1 month ago Daniel Graham
+    8e0e6dd 2014-02-18 07:28:59 -0500
+    Take account of configuration file changes when edit closes.
+
+- 4 years, 1 month ago Daniel Graham
+    c462e8d 2014-02-16 14:36:57 -0500
+    Edit.py: Cmd-F focuses entry box. Cmd-G searches again forward and
+    wraps.
+
+- 4 years, 1 month ago Daniel Graham
+    db23e12 2014-02-15 14:44:27 -0500
+    Added openWithDefault as Open link (Cmd-G).
+
+- 4 years, 1 month ago Daniel Graham
+    540d6ac 2014-02-15 12:38:25 -0500
+    Added tag 0.0.7 for changeset e2ecc16717fd
+
+- 4 years, 1 month ago (tag: 0.0.7) Daniel Graham
+    6d3b282 2014-02-15 12:36:04 -0500
+    removed v.py from repository - added it to hgignore.
+
+- 4 years, 1 month ago Daniel Graham
+    d1a001a 2014-02-15 11:55:04 -0500
+    Tweaked colors. Fixed bug in processing repeating item in which
+    all repetitions are prior to the current date.
+
+- 4 years, 1 month ago Daniel Graham
+    8bb4300 2014-02-15 09:31:51 -0500
+    Added colors. Fixed display of 'next' items in agenda view.
+
+- 4 years, 1 month ago Daniel Graham
+    3770b34 2014-02-14 23:18:48 -0500
+    Added tag 0.0.6 for changeset 19e83848eb9b
+
+- 4 years, 1 month ago (tag: 0.0.6) Daniel Graham
+    35ae70a 2014-02-14 23:18:13 -0500
+    Removed v.py from repository.
+
+- 4 years, 1 month ago Daniel Graham
+    25fd0f2 2014-02-14 23:08:37 -0500
+    Return focus to tree after edit.
+
+- 4 years, 1 month ago Daniel Graham
+    1b900d9 2014-02-14 18:32:20 -0500
+    Implemented updateCurrentFiles both text and html (with colors).
+
+- 4 years, 1 month ago Daniel Graham
+    412300c 2014-02-14 16:29:48 -0500
+    Added tag 0.0.5 for changeset 4d82f93e0346
+
+- 4 years, 1 month ago (tag: 0.0.5) Daniel Graham
+    49ed3f8 2014-02-14 16:29:26 -0500
+    Implemented showMenu (menu and toolbar commands and shortcuts as
+    an outline). All key bindings seem to work. Implemented
+    dateCalculator.
+
+- 4 years, 1 month ago Daniel Graham
+    be949ee 2014-02-13 17:15:35 -0500
+    Added tag 0.0.4 for changeset 0c2c58313620
+
+- 4 years, 1 month ago (tag: 0.0.4) Daniel Graham
+    8d0bd92 2014-02-13 17:15:24 -0500
+    First pass at help - auto generated menu/shortcuts tree.
+
+- 4 years, 1 month ago Daniel Graham
+    a0eea56 2014-02-12 13:58:18 -0500
+    Changed platformShortcut to commandShortcut and added a parallel
+    optionShortcut for Alt/Option. Changed file menu bindings to
+    Alt/Option to avoid the editor inserting keystrokes twice. Display
+    only relative path in file menu options and in edit title.
+
+- 4 years, 1 month ago Daniel Graham
+    e1f77b1 2014-02-11 16:59:11 -0500
+    Added cloneItem and tweaked editItem. Better hg loggging.
+
+- 4 years, 1 month ago Daniel Graham
+    7184671 2014-02-10 11:29:29 -0500
+    removed logging.yaml
+
+- 4 years, 1 month ago Daniel Graham
+    be88091 2014-02-10 10:51:51 -0500
+    fixed bug in setting new version on version change.
+
+- 4 years, 1 month ago Daniel Graham
+    1c6c0a5 2014-02-10 10:31:26 -0500
+    Added tag 0.0.3 for changeset 58a354f9f97b
+
+- 4 years, 1 month ago (tag: 0.0.3) Daniel Graham
+    4e3ef59 2014-02-10 10:29:59 -0500
+    Put debug setup in etm with command line opts to set debug level
+    and specify etmdir. Added modal switch to Dialog. Added active
+    calendar filter to showBusyTimes.
+
+- 4 years, 1 month ago Daniel Graham
+    187f52a 2014-02-09 15:48:47 -0500
+    Tweaks to setup and prep_dist to get os x package.
+
+- 4 years, 1 month ago Daniel Graham
+    ca5ed93 2014-02-09 08:54:55 -0500
+    Added tag 0.0.2 for changeset 8e1f6b44a5d0
+
+- 4 years, 1 month ago (tag: 0.0.2) Daniel Graham
+    5458668 2014-02-09 08:54:40 -0500
+    fixed bug in etm.
+
+- 4 years, 1 month ago Daniel Graham
+    f5ee69b 2014-02-09 08:44:33 -0500
+    Added logging.yaml to setup. Fixed bug in calling updateAlerts
+    from updateClock. Added windoz setup to send_email. Fixed bug in
+    filterView argument setup.
+
+- 4 years, 1 month ago Daniel Graham
+    1b19760 2014-02-08 15:45:25 -0500
+    added etmdir to etm_test.
+
+- 4 years, 1 month ago Daniel Graham
+    2313b4f 2014-02-08 14:45:47 -0500
+    Added compression for freeze folder.
+
+- 4 years, 1 month ago Daniel Graham
+    dad7baf 2014-02-08 13:52:16 -0500
+    editor.py -> edit.py. prep_dist and setup seem to work. cxfreeze
+    also.
+
+- 4 years, 1 month ago Daniel Graham
+    acb1d65 2014-02-08 13:35:50 -0500
+    Added tag 0.0.1 for changeset c8ea11458409
+
+- 4 years, 1 month ago (tag: 0.0.1) Daniel Graham
+    fffcc4f 2014-02-08 12:18:48 -0500
+    more reorganization
+
+- 4 years, 1 month ago Daniel Graham
+    ba304e1 2014-02-08 11:33:25 -0500
+    more reorganization
+
+- 4 years, 1 month ago Daniel Graham
+    3a4cf28 2014-02-08 11:28:09 -0500
+    reorganizing
+
+- 4 years, 1 month ago Daniel Graham
+    7a3a24a 2014-02-08 10:30:27 -0500
+    Added tag 0.0.1 for changeset ddac75890ff7
+
+- 4 years, 1 month ago Daniel Graham
+    0619a4a 2014-02-08 10:21:58 -0500
+    Added tag 0.0.1 for changeset bc5fd5428000
+
+- 4 years, 1 month ago Daniel Graham
+    17729af 2014-02-08 10:20:50 -0500
+    Moved etmtk.py to etmtk. Work on setup.py and prep_dist.
+
+- 4 years, 1 month ago Daniel Graham
+    f3f931e 2014-02-08 08:24:33 -0500
+    Fixed bug in TextWindow. Filter now matches branches as well as
+    leaves.
+
+- 4 years, 1 month ago Daniel Graham
+    0bfdf40 2014-02-07 15:48:33 -0500
+    Implemented way of restoring view after reloading data by using
+    the id (row) of the element at y=1 before the change. Disable edit
+    menu unless an item is selected.
+
+- 4 years, 1 month ago Daniel Graham
+    50997ab 2014-02-07 15:05:24 -0500
+    Implemented reschedule item. Added inbox and someday to agend.
+
+- 4 years, 2 months ago Daniel Graham
+    1703c54 2014-02-06 16:42:12 -0500
+    Tweaks to return focus to the tree from the editor.
+
+- 4 years, 2 months ago Daniel Graham
+    17b8bff 2014-02-06 12:59:28 -0500
+    Background color tweaks.
+
+- 4 years, 2 months ago Daniel Graham
+    4a85bd0 2014-02-06 08:51:44 -0500
+    Implemented editItem and newItem.
+
+- 4 years, 2 months ago Daniel Graham
+    c12b597 2014-02-04 16:21:32 -0500
+    First pass at implementing editor.
+
+- 4 years, 2 months ago Daniel Graham
+    b4a09b0 2014-02-03 16:00:47 -0500
+    Set maximum number of numbered option key bindings at 9.
+    Implemented finishItem.
+
+- 4 years, 2 months ago Daniel Graham
+    3546786 2014-02-03 14:52:59 -0500
+    Replaced optionmenu with radiobuttons in OptionsDialog.
+
+- 4 years, 2 months ago Daniel Graham
+    5825b02 2014-01-30 15:09:00 -0500
+    More timer and logging tweaks.
+
+- 4 years, 2 months ago Daniel Graham
+    2130e04 2014-01-30 15:07:12 -0500
+    Replace hours and minutes in elapsed time with fmt_period.
+
+- 4 years, 2 months ago Daniel Graham
+    36fee6e 2014-01-30 14:12:15 -0500
+    First pass at action timer. Start and toggle work, both bound to
+    Cmd +.
+
+- 4 years, 2 months ago Daniel Graham
+    fbca9b1 2014-01-29 15:52:21 -0500
+    Disable File/Calendar menu if options['calendars'] is not set.
+
+- 4 years, 2 months ago Daniel Graham
+    e5ff8a8 2014-01-29 13:30:09 -0500
+    Much work on pycharm warnings.
+
+- 4 years, 2 months ago Daniel Graham
+    b69596e 2014-01-27 16:44:51 -0500
+    Fixed bug in which today would be erroneously added as a
+    completion date.
+
+- 4 years, 2 months ago Daniel Graham
+    7790c57 2014-01-27 12:02:21 -0500
+    Added logging. Wish I had known about this before!
+
+- 4 years, 2 months ago Daniel Graham
+    d266f28 2014-01-25 10:57:26 -0500
+    moved etmtk.py to etmTk.
+
+- 4 years, 2 months ago Daniel Graham
+    3df13f0 2014-01-23 17:33:08 -0500
+    Added showChanges with dialog to choose the number to display.
+
+- 4 years, 2 months ago Daniel Graham
+    70a5efb 2014-01-23 14:53:54 -0500
+    Added showBusyTimes and showCalendar.
+
+- 4 years, 2 months ago Daniel Graham
+    378895a 2014-01-23 10:40:08 -0500
+    Dialog windows work with menus and key bindings.
+
+- 4 years, 2 months ago Daniel Graham
+    0960574 2014-01-22 09:29:05 -0500
+    Much work on key bindings. About to work on menus.
+
+- 4 years, 2 months ago Daniel Graham
+    863898a 2014-01-20 13:16:24 -0500
+    Implemented alerts with show alerts button in status bar.
+
+- 4 years, 2 months ago Daniel Graham
+    2ac95d4 2014-01-19 13:27:54 -0500
+    Added menu with Calendars checkbox and implemented calendars
+    filter. Display an * in status bar when non default calendars are
+    selected.
+
+- 4 years, 2 months ago Daniel Graham
+    8dcf8d2 2014-01-18 17:23:31 -0500
+    Get unfinished status for tasks from the leading character in
+    'text'.
+
+- 4 years, 2 months ago Daniel Graham
+    290055d 2014-01-18 16:40:39 -0500
+    Fixed bug in which a day with only a finished task would not be
+    indexed.
+
+- 4 years, 2 months ago Daniel Graham
+    52f309b 2014-01-17 17:37:37 -0500
+    Added ... to edit and delete for repeating items. Simplified
+    details display.
+
+- 4 years, 2 months ago Daniel Graham
+    e71544f 2014-01-17 15:36:24 -0500
+    Added OptionsDialog for editWhich and deleteWhich. Enable/disable
+    menu items based on selection.
+
+- 4 years, 2 months ago Daniel Graham
+    49a2a77 2014-01-16 17:39:28 -0500
+    Added status bar with active view and current time.
+
+- 4 years, 2 months ago Daniel Graham
+    fa8a607 2014-01-16 12:29:35 -0500
+    Added view menu and changed entry to filter.
+
+- 4 years, 2 months ago Daniel Graham
+    cc62c71 2014-01-15 09:58:53 -0500
+    Changed messageWindow from Label to Text and added vertical
+    scrollbar.
+
+- 4 years, 2 months ago Daniel Graham
+    f2d7aa0 2014-01-14 13:50:24 -0500
+    Added goHome bound to <space> in tree view.
+
+- 4 years, 2 months ago Daniel Graham
+    ee57747 2014-01-14 13:39:04 -0500
+    Tab now toggles focus between command field and display panel.
+
+- 4 years, 2 months ago Daniel Graham
+    bd14e98 2014-01-13 11:16:56 -0500
+    Fixed bug in ledger reporting.
+
+- 4 years, 2 months ago Daniel Graham
+    dbec799 2014-01-13 10:25:01 -0500
+    Fixed scrolltodate bug involving failure to clear old date2id
+    hash.
+
+- 4 years, 2 months ago Daniel Graham
+    5b51ab8 2014-01-12 18:22:23 -0500
+    Don't include 'none' in keyword view.
+
+- 4 years, 2 months ago Daniel Graham
+    ad6a13e 2014-01-12 18:15:54 -0500
+    Added in basket and someday maybe to agenda.
+
+- 4 years, 2 months ago Daniel Graham
+    1883ef4 2014-01-12 17:14:34 -0500
+    Added schedule (days), path (folder), tag and keyword views with
+    filters.
+
+- 4 years, 2 months ago Daniel Graham
+    ed16253 2014-01-12 14:24:41 -0500
+    Addet stretch to tree in panedwindow.
+
+- 4 years, 2 months ago Daniel Graham
+    853260f 2014-01-12 14:04:42 -0500
+    Scroll to date works. Added PanedWindow for tree and details.
+
+- 4 years, 2 months ago Daniel Graham
+    969fa1c 2014-01-12 09:52:53 -0500
+    About to switch from grid to pack and add PanedWindow.
+
+- 4 years, 2 months ago Daniel Graham
+    db86ea5 2014-01-11 15:58:37 -0500
+    Details show correctly for selected tree row. Double click and
+    Return on item call OnActivate.
+
+- 4 years, 2 months ago Daniel Graham
+    a17336f 2014-01-11 12:08:46 -0500
+    Moved entry to top, added text below to show details of selected
+    item.
+
+- 4 years, 2 months ago Daniel Graham
+    893a29a 2014-01-10 23:46:07 -0500
+    Command history works. Time repots work.
+
+- 4 years, 2 months ago Daniel Graham
+    6f56ce9 2014-01-10 16:59:57 -0500
+    Made modal classes for message and dialog.
+
+- 4 years, 2 months ago Daniel Graham
+    a32f74f 2014-01-10 12:51:18 -0500
+    about to reorganize
+
+- 4 years, 2 months ago Daniel Graham
+    aff3625 2014-01-10 10:50:53 -0500
+    Made messageWindow modal. Implemented count2id.
+
+- 4 years, 2 months ago Daniel Graham
+    1392d36 2014-01-09 15:52:50 -0500
+    Basic stuff works. Added message dialog (custom - no icon) with
+    active button and fixed width font."
+
+- 4 years, 3 months ago Daniel Graham
+    bf6e69c 2014-01-01 10:55:48 -0500
+    removed etm_kv
+
+- 4 years, 3 months ago Daniel Graham
+    cf57288 2014-01-01 10:54:39 -0500
+    tkinter window size, tree display with 2 columns, the first
+    stretching and the second fixed and centered.
+
+- 4 years, 3 months ago Daniel Graham
+    246169c 2013-12-31 12:07:31 -0500
+    renamed etm -> main
+
+- 4 years, 3 months ago Daniel Graham
+    72fb3b0 2013-12-31 07:24:37 -0500
+    Edit, delete and finish now work.
+
+- 4 years, 3 months ago Daniel Graham
+    d3a24d5 2013-12-29 14:47:57 -0500
+    about to add scrollview
+
+- 4 years, 3 months ago Daniel Graham
+    6287101 2013-12-28 09:36:06 -0500
+    Removed all Qt traces. etmData.py -> data.py.
+
+- 4 years, 3 months ago Daniel Graham
+    e6b45d2 2013-12-28 08:50:58 -0500
+    Added gettext. tr() -> _().
+
+- 4 years, 3 months ago Daniel Graham
+    8d9dcff 2013-12-27 19:08:41 -0500
+    Changed labels, a -> agenda, r -> report, t -> time report
+
+- 4 years, 3 months ago Daniel Graham
+    e146ed9 2013-12-25 19:29:54 -0500
+    Fixed boxlayout problem.
+
+- 4 years, 3 months ago Daniel Graham
+    4336c21 2013-12-25 18:21:04 -0500
+    Modal view and focus working - issue with adding BoxLayout twice.
+
+- 4 years, 3 months ago Daniel Graham
+    9640383 2013-12-24 11:06:28 -0500
+    Modal works.
+
+- 4 years, 3 months ago Daniel Graham
+    66cc28e 2013-12-23 20:51:52 -0500
+    popup works - sort of.
+
+- 4 years, 3 months ago Daniel Graham
+    143f7be 2013-12-23 13:44:00 -0500
+    Added status bar with current time display. Switched from rst (too
+    slow) to text (codeinput) for output.
+
+- 4 years, 3 months ago Daniel Graham
+    d18fafa 2013-12-21 10:51:32 -0500
+    initial commit
