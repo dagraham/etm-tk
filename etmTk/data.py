@@ -6364,7 +6364,13 @@ def export_json(file2uuids, uuid2hash, options={}):
                             if 't' in tmp_hsh:
                                 tmp_hsh['c'] = tmp_hsh['t']
                                 del tmp_hsh['t']
+                            if 'r' in tmp_hsh and tmp_hsh['r'] == 'l':
+                                del tmp_hsh['r']
+                                continue
                             if 'f' in tmp_hsh:
+                                if tmp_hsh['f'] == 'l':
+                                    del tmp_hsh['f']
+                                    continue
                                 tmp_hsh['r'] = tmp_hsh['f']
                                 del tmp_hsh['f']
                             if 'u' in tmp_hsh:
@@ -6405,7 +6411,6 @@ def export_json(file2uuids, uuid2hash, options={}):
                     elif itemtype == "$":
                         itemtype = "!"
                     elif itemtype == "~":
-                        itemtype = "$"
                         if 'e' in new_hsh:
                             tmp_s = parse_str(new_hsh['s'], new_hsh.get('z', None))
                             tmp_e = parse_period(new_hsh['e'])
