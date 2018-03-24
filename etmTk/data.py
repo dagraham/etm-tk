@@ -6297,15 +6297,14 @@ def export_json(file2uuids, uuid2hash, options={}):
                         del new_hsh['r']
 
                     if '_j' in new_hsh:
-                        # print('jobs', new_hsh['_group_summary'], uid, new_hsh.get('f', 'unfinished'))
                         count = 0
                         jobs = {}
                         # make sure jobs are in q order
                         finished = True
                         for job in new_hsh['_j']:
                             q = job['q']
-                            del job['q']
                             jobs.setdefault(q, []).append(job)
+                            del job['q']
 
                             if 'h' in job:
                                 tmp = []
@@ -6315,10 +6314,10 @@ def export_json(file2uuids, uuid2hash, options={}):
                             else:
                                 finished = False
 
-                            # if 'f' in job:
-                            #     job['f'] = job['f'][0][0].strftime("%Y%m%dT%H%M")
-                            # else:
-                            #     finished = False
+                            if 'f' in job:
+                                job['f'] = job['f'][0][0].strftime("%Y%m%dT%H%M")
+                            else:
+                                finished = False
 
                         if 'f' in new_hsh and not finished:
                             del new_hsh['f']

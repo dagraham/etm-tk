@@ -24,13 +24,13 @@ setup(
     version=version,
     include_package_data=True,
     zip_safe=False,
-    url='http://people.duke.edu/~dgraham/etmtk',
+    url='https://github.com/dagraham/etm-tk',
     description='event and task manager',
     long_description='manage events and tasks using simple text files',
     platforms='Any',
     license='License :: OSI Approved :: GNU General Public License (GPL)',
     author='Daniel A Graham',
-    author_email='daniel.graham@duke.edu',
+    author_email='dnlgrhm@gmail.com',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
@@ -68,6 +68,6 @@ setup(
         ('share/doc/etm', ['etmTk/CHANGES']),
         ('share/icons', glob.glob('etmTk/icons/*.gif')),
         ('share/applications', ['etmTk/etm.desktop']),
-        ('share/metainfo', ['etmTk/etm.appdata.xml']),
+        ('share/metainfo', ['etmTk/etm.appdata.xml'])
     ]
 )

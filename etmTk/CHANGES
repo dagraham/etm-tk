@@ -1,90 +1,113 @@
-# Recent changes as of Tue Mar 13 16:23:26 EDT 2018:
-- 17 seconds ago (HEAD -> master, tag: 3.2.34) Dan Graham
+# Recent changes as of Fri Mar 23 17:37:22 EDT 2018:
+- 56 seconds ago (HEAD -> master, tag: 3.2.36) Dan Graham
+    a219190 2018-03-23 17:36:34 -0400
+    removed extraneous print from export_json. Tagged version 3.2.36
+    [2018-03-23 17:36:34 -0400].
+
+- 5 minutes ago Dan Graham
+    df29f61 2018-03-23 17:32:23 -0400
+    patched CHANGES
+
+- 14 minutes ago Dan Graham
+    9a763aa 2018-03-23 17:23:31 -0400
+    Fixed bug in binding for countdown timer. Fixed bug in
+    export_json.
+
+- 7 days ago (tag: 3.2.35) Dan Graham
+    6e8b778 2018-03-16 11:36:19 -0400
+    Cleaned up duplicate alerts in export_json Tagged version 3.2.35
+    [2018-03-16 11:36:19 -0400].
+
+- 7 days ago Dan Graham
+    ea61619 2018-03-16 11:36:19 -0400
+    Cleaned up duplicate alerts in export_json
+
+- 10 days ago Dan Graham
     f3abcfe 2018-03-13 16:23:15 -0400
     CHANGES, ... Tagged version 3.2.34 [2018-03-13 16:23:15 -0400].
 
-- 3 minutes ago (tag: 3.2.33p1) Dan Graham
+- 10 days ago Dan Graham
     5451786 2018-03-13 16:20:38 -0400
     merged Tagged version 3.2.33p1 [2018-03-13 16:20:38 -0400].
 
-- 30 minutes ago Dan Graham
+- 10 days ago Dan Graham
     b1ef507 2018-03-13 15:53:07 -0400
     Merge branch 'master' of https://github.com/dagraham/etm-tk
 
-- 31 minutes ago Dan Graham
+- 10 days ago Dan Graham
     f7794d0 2018-03-13 15:52:43 -0400
     data.py
 
-- 33 minutes ago (origin/master) Dan Graham
+- 10 days ago Dan Graham
     4fdde26 2018-03-13 15:50:42 -0400
     CHANGES and docs/conf.py
 
-- 35 minutes ago Dan Graham
+- 10 days ago Dan Graham
     977a78c 2018-03-13 15:48:47 -0400
     Merge branch 'master' of https://github.com/dagraham/etm-tk
 
-- 58 minutes ago (origin/export-json, export-json) Dan Graham
+- 10 days ago (origin/export-json) Dan Graham
     9b00ca7 2018-03-13 15:25:48 -0400
     fixed bug in exporting alerts to json.
 
-- 5 days ago Dan Graham
+- 2 weeks ago (tag: 3.2.33) Dan Graham
     fe9a866 2018-03-08 15:16:24 -0500
     document tweaks Tagged version 3.2.33 [2018-03-08 15:16:24 -0500].
 
-- 5 days ago Dan Graham
+- 2 weeks ago (tag: 3.2.32p1) Dan Graham
     8cd923d 2018-03-08 14:55:43 -0500
     fixed bug in hsh2ical Tagged version 3.2.32p1 [2018-03-08 14:55:43
     -0500].
 
-- 5 days ago Dan Graham
+- 2 weeks ago (tag: 3.2.32) Dan Graham
     88ed8da 2018-03-08 14:39:39 -0500
     export_json seems to give the desired result. Tagged version
     3.2.32 [2018-03-08 14:39:39 -0500].
 
-- 5 days ago Dan Graham
+- 2 weeks ago (export-json) Dan Graham
     342219e 2018-03-08 14:39:39 -0500
     export_json seems to give the desired result.
 
-- 8 days ago Dan Graham
+- 3 weeks ago Dan Graham
     06e4b08 2018-03-05 10:59:06 -0500
     More export_json tweaks.
 
-- 2 weeks ago Dan Graham
+- 4 weeks ago Dan Graham
     3223760 2018-02-24 11:47:12 -0500
     More tweaks on export_json.
 
-- 3 weeks ago Dan Graham
+- 4 weeks ago Dan Graham
     17ad2b3 2018-02-22 12:52:52 -0500
     export_json now switches 't' to 'c' in rrules.
 
-- 3 weeks ago Dan Graham
+- 4 weeks ago Dan Graham
     7130d43 2018-02-22 11:48:46 -0500
     Added a png file and cleaned up extraneous files.
 
-- 3 weeks ago Dan Graham
+- 4 weeks ago Dan Graham
     a469ac1 2018-02-22 11:43:19 -0500
     export_json now uses the new etm-mvc item types
 
-- 3 weeks ago Dan Graham
+- 4 weeks ago Dan Graham
     067b2b3 2018-02-22 10:34:46 -0500
     Ready to work on export-json
 
-- 4 weeks ago Dan Graham
+- 5 weeks ago Dan Graham
     c93a7cb 2018-02-16 21:29:27 -0500
     Auto-commit: saved ATKEYS.rst
 
-- 4 weeks ago Dan Graham
+- 5 weeks ago Dan Graham
     8a46a91 2018-02-16 16:16:18 -0500
     Auto-commit: saved ATKEYS.rst
 
-- 7 months ago Dan Graham
+- 8 months ago Dan Graham
     d971c97 2017-08-10 17:13:17 -0400
     Packaging changes requested for Debian/Solus
 
     Updated path for appdata.xml to /usr/share/metainfo and removed
     .xpm icon from package.
 
-- 7 months ago (tag: 3.2.31) Dan Graham
+- 8 months ago (tag: 3.2.31) Dan Graham
     050ec13 2017-08-10 16:27:53 -0400
     Auto-commit: saved setup.py Tagged version 3.2.31 [2017-08-10
     16:27:53 -0400].
@@ -176,39 +199,39 @@
     134bd7f 2017-03-30 17:15:53 -0400
     Auto-commit: saved data.py
 
-- 1 year, 5 months ago (tag: 3.2.28p3) Dan Graham
+- 1 year, 6 months ago (tag: 3.2.28p3) Dan Graham
     759a8d8 2016-10-05 09:05:13 -0400
     Unicode fix provided for lst2str by Sebastian. Tagged version
     3.2.28p1 [2016-10-05 09:05:13 -0400]. Tagged version 3.2.28p2
     [2016-10-05 09:05:13 -0400]. Tagged version 3.2.28p3 [2016-10-05
     09:05:13 -0400].
 
-- 1 year, 5 months ago Dan Graham
+- 1 year, 6 months ago Dan Graham
     9bc0b9f 2016-10-04 21:44:28 -0400
     Added rst docs using sphinx.
 
-- 1 year, 5 months ago (tag: 3.2.28) Dan Graham
+- 1 year, 6 months ago (tag: 3.2.28) Dan Graham
     6fb8f22 2016-10-04 17:24:51 -0400
     import version into conf.py Tagged version 3.2.28 [2016-10-04
     17:24:51 -0400].
 
-- 1 year, 5 months ago Dan Graham
+- 1 year, 6 months ago Dan Graham
     d5898ed 2016-10-04 17:21:53 -0400
     removed keybindings.rst
 
-- 1 year, 5 months ago Dan Graham
+- 1 year, 6 months ago Dan Graham
     b5e7617 2016-10-04 16:45:58 -0400
     Added rst docs using sphinx.
 
-- 1 year, 5 months ago Dan Graham
+- 1 year, 6 months ago Dan Graham
     f533975 2016-10-04 16:22:28 -0400
     Added export_json.
 
-- 1 year, 7 months ago (no_etmdir) Dan Graham
+- 1 year, 8 months ago (no_etmdir) Dan Graham
     a53f82c 2016-08-03 06:46:19 -0400
     Only write colors.cfg if etmdir exists.
 
-- 1 year, 7 months ago Dan Graham
+- 1 year, 8 months ago Dan Graham
     0757f9b 2016-08-03 06:44:58 -0400
     Only write colors.cfg if etmdir exists.
 
@@ -232,7 +255,7 @@
     with ids and prereqs, rrulestr, datetime and timedelta formatting,
     finish and history. Missing currently is an update for entry.
 
-- 1 year, 9 months ago Dan Graham
+- 1 year, 10 months ago Dan Graham
     a847007 2016-06-06 10:56:28 -0400
     Fixed itemtype missing key error when entering "=" default
     entries.
@@ -281,7 +304,7 @@
     ef32f89 2016-03-27 15:59:44 -0400
     Fix for dateutil 2.5.1 in getInstance.
 
-- 2 years, 1 month ago Dan Graham
+- 2 years, 2 months ago Dan Graham
     50d2a52 2016-02-04 15:57:41 -0500
     Merge remote-tracking branch 'origin/master'
 
@@ -291,29 +314,29 @@
     #	etmTk/v.py
     #	etmTk/version.py
 
-- 2 years, 1 month ago Dan Graham
+- 2 years, 2 months ago Dan Graham
     6850202 2016-02-04 15:55:19 -0500
     Update to 3.2.24
 
     Tagged new release
 
-- 2 years, 1 month ago (tag: 3.2.24) Dan Graham
+- 2 years, 2 months ago (tag: 3.2.24) Dan Graham
     151995a 2016-02-04 09:29:19 -0500
     Include both the passed command and the error output in
     check_output. Tagged version 3.2.23p3 [2016-02-04 09:29:19 -0500].
     Tagged version 3.2.24 [2016-02-04 09:29:19 -0500].
 
-- 2 years, 1 month ago (tag: 3.2.23p3) Dan Graham
+- 2 years, 2 months ago (tag: 3.2.23p3) Dan Graham
     a3541eb 2016-02-04 09:29:19 -0500
     Include both the passed command and the error output in
     check_output. Tagged version 3.2.23p3 [2016-02-04 09:29:19 -0500].
 
-- 2 years, 1 month ago (tag: 3.2.23p2) Dan Graham
+- 2 years, 2 months ago (tag: 3.2.23p2) Dan Graham
     fdd1cb1 2016-02-03 16:02:09 -0500
     In check_output, replaced STDOUT with subprocess.STDOUT. Tagged
     version 3.2.23p2 [2016-02-03 16:02:09 -0500].
 
-- 2 years, 1 month ago (tag: 3.2.23p1) Dan Graham
+- 2 years, 2 months ago (tag: 3.2.23p1) Dan Graham
     8fc070e 2016-02-03 11:00:15 -0500
     Replaced subprocess.call with check_output which calls
     subprocess.check_output and logs the error message if an exception
@@ -338,29 +361,29 @@
     2e862aa 2015-11-08 16:57:18 -0500
     Added __init__.py to satisfy setup.py.
 
-- 2 years, 4 months ago Dan Graham
+- 2 years, 5 months ago Dan Graham
     15ede9e 2015-11-07 10:58:35 -0500
     Tagged 3.2.22
 
-- 2 years, 4 months ago Dan Graham
+- 2 years, 5 months ago Dan Graham
     546559b 2015-11-07 09:55:57 -0500
     Added CHANGES and etm.1 to repository to satisfy setup.py. Tagged
     version 3.2.22 [2015-11-07 09:55:57 -0500].
 
-- 2 years, 4 months ago Dan Graham
+- 2 years, 5 months ago Dan Graham
     c6d88f7 2015-11-07 09:55:57 -0500
     Added CHANGES and etm.1 to repository to satisfy setup.py.
 
-- 2 years, 4 months ago Dan Graham
+- 2 years, 5 months ago Dan Graham
     3412ab3 2015-11-06 14:44:23 -0500
     Snooze message modification. Tagged version 3.2.21 [2015-11-06
     14:44:23 -0500].
 
-- 2 years, 4 months ago Dan Graham
+- 2 years, 5 months ago Dan Graham
     39ba0f5 2015-11-06 14:44:23 -0500
     Snooze message modification.
 
-- 2 years, 4 months ago Dan Graham
+- 2 years, 5 months ago Dan Graham
     a6bfc81 2015-11-06 10:39:05 -0500
     Change snooze behavior to wait from the time the snooze button is
     pressed with seconds are rounded off to the nearest minute. Fixed
@@ -413,7 +436,7 @@
     278a723 2015-10-09 06:30:15 -0400
     Added Python 3.5 to the setup.py classifiers.
 
-- 2 years, 5 months ago Dan Graham
+- 2 years, 6 months ago Dan Graham
     11fd77f 2015-10-03 12:47:31 -0400
     Fixed bug when copying an item in monthly view. Tagged version 
     [2015-10-03 12:47:31 -0400]. Tagged version ..p1 [2015-10-03
@@ -421,15 +444,15 @@
     Tagged version ..p3 [2015-10-03 12:47:31 -0400]. Tagged version
     3.2.17p4 [2015-10-03 12:47:31 -0400].
 
-- 2 years, 5 months ago Dan Graham
+- 2 years, 6 months ago Dan Graham
     99477f9 2015-10-03 12:47:31 -0400
     Fixed bug when copying an item in monthly view.
 
-- 2 years, 5 months ago Dan Graham
+- 2 years, 6 months ago Dan Graham
     03da1c8 2015-10-02 11:00:58 -0400
     Updated REQUIRES and EXTRAS in setup.py.
 
-- 2 years, 5 months ago (tag: 3.2.17) Dan Graham
+- 2 years, 6 months ago (tag: 3.2.17) Dan Graham
     16b846a 2015-10-01 07:44:08 -0400
     Added def for _() to data.  Some refactoring and optimizations,
     e.g., removed unused lines2Items.  Changed "start time" to
@@ -451,38 +474,9 @@
     'by', 'fn', 'ns', 'oc' to hide from the agenda day view. Tagged
     version 3.2.16 [2015-09-11 13:57:23 -0400].
 
-- 2 years, 6 months ago (tag: 3.2.15) Dan Graham
+- 2 years, 7 months ago (tag: 3.2.15) Dan Graham
     0fe0e4b 2015-08-29 07:57:43 -0400
     Use naive datetime in setting 'bef' in updateClock. Tagged version
     3.2.14p6 [2015-08-29 07:57:43 -0400]. Tagged version 3.2.15
     [2015-08-29 07:57:43 -0400].
-
-- 2 years, 7 months ago (tag: 3.2.13p2) Dan Graham
-    a6c3304 2015-08-28 06:27:11 -0400
-    Fixed bug in updateClock. Tagged version 3.2.14 [2015-08-28
-    06:27:11 -0400].
-
-- 2 years, 7 months ago Dan Graham
-    3a6a388 2015-08-28 06:27:11 -0400
-    Fixed bug in updateClock.
-
-- 2 years, 7 months ago (tag: 3.2.13) Dan Graham
-    2dab897 2015-08-26 12:07:13 -0400
-    Set options['bef'] in get_options and update on new_day in
-    update_clock. Refactored oneminute, onehour, oneday, oneweek as
-    all uppercase to be consistent. Tagged version 3.2.13 [2015-08-26
-    12:07:13 -0400].
-
-- 2 years, 7 months ago (tag: 3.2.12) Dan Graham
-    5a76ce8 2015-08-24 17:44:04 -0400
-    Changed the options for when/if to close the alert message box to
-    message_next and message_last. Tagged version 3.2.12 [2015-08-24
-    17:44:04 -0400].
-
-- 2 years, 7 months ago Dan Graham
-    0588774 2015-08-24 12:57:07 -0400
-    Added 'next' and 'next_alert' to template expansions. Added auto
-    close to message box dialogs using options 'message_alert_seconds'
-    for next message boxes and 'message_snooze_seconds' for last
-    message boxes.
 
