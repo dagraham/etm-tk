@@ -11,7 +11,7 @@ import os.path
 
 logger = logging.getLogger()
 import codecs
-import yaml
+import ruamel.yaml as yaml
 
 import platform
 
@@ -1175,7 +1175,7 @@ class Timer():
         load activeTimers
         """
         fo = codecs.open(self.etmtimers, 'r', self.dfile_encoding)
-        tmp = yaml.load(fo)
+        tmp = yaml.safe_load(fo)
         fo.close()
         (self.activeDate, self.activeTimers, self.currentTimer, self.currentStatus, self.currentMinutes, self.idlestart, self.idletime) = tmp
         if self.idlestart or self.idletime:

@@ -670,7 +670,8 @@ def gettz(z=None):
 
 import calendar
 
-import yaml
+# import yaml
+import ruamel.yaml as yaml
 from itertools import groupby
 # from dateutil.rrule import *
 from dateutil.rrule import (DAILY, rrule)
@@ -1193,7 +1194,7 @@ def setConfig(options):
         elif n == "users":
             user_files.append((np, fp, False))
             fo = codecs.open(fp, 'r', dfile_encoding)
-            tmp = yaml.load(fo)
+            tmp = yaml.safe_load(fo)
             fo.close()
             try:
                 # if a key already exists, use the tmp value
@@ -1226,7 +1227,7 @@ def setConfig(options):
             for fp in options['cfg_files']['users']:
                 user_files.append((relpath(fp, options['etmdir']), fp, False))
                 fo = codecs.open(fp, 'r', dfile_encoding)
-                tmp = yaml.load(fo)
+                tmp = yaml.safe_load(fo)
                 fo.close()
                 # if a key already exists, use this value
                 options['user_data'].update(tmp)
@@ -1303,7 +1304,7 @@ def get_options(d=''):
     if os.path.isfile(colors_cfg):
         logger.info('using colors file: {0}'.format(colors_cfg))
         fo = codecs.open(colors_cfg, 'r', dfile_encoding)
-        use_colors = yaml.load(fo)
+        use_colors = yaml.safe_load(fo)
         fo.close()
 
         if use_colors:
@@ -1325,7 +1326,7 @@ def get_options(d=''):
     if os.path.isfile(locale_cfg):
         logger.info('using locale file: {0}'.format(locale_cfg))
         fo = codecs.open(locale_cfg, 'r', dfile_encoding)
-        use_locale = yaml.load(fo)
+        use_locale = yaml.safe_load(fo)
         fo.close()
         if use_locale:
             dgui_encoding = use_locale[0][1]
@@ -1486,7 +1487,7 @@ def get_options(d=''):
         try:
             logger.info('user options: {0}'.format(newconfig))
             fo = codecs.open(newconfig, 'r', dfile_encoding)
-            user_options = yaml.load(fo)
+            user_options = yaml.safe_load(fo)
             fo.close()
         except yaml.parser.ParserError:
             logger.exception(
@@ -1497,7 +1498,7 @@ def get_options(d=''):
             using_oldcfg = True
             logger.info('user options: {0}'.format(oldconfig))
             fo = codecs.open(oldconfig, 'r', dfile_encoding)
-            user_options = yaml.load(fo)
+            user_options = yaml.safe_load(fo)
             fo.close()
         except yaml.parser.ParserError:
             logger.exception(
@@ -6363,13 +6364,7 @@ def export_json(file2uuids, uuid2hash, options={}):
                             if 't' in tmp_hsh:
                                 tmp_hsh['c'] = tmp_hsh['t']
                                 del tmp_hsh['t']
-                            if 'r' in tmp_hsh and tmp_hsh['r'] == 'l':
-                                del tmp_hsh['r']
-                                continue
                             if 'f' in tmp_hsh:
-                                if tmp_hsh['f'] == 'l':
-                                    del tmp_hsh['f']
-                                    continue
                                 tmp_hsh['r'] = tmp_hsh['f']
                                 del tmp_hsh['f']
                             if 'u' in tmp_hsh:
@@ -6410,6 +6405,7 @@ def export_json(file2uuids, uuid2hash, options={}):
                     elif itemtype == "$":
                         itemtype = "!"
                     elif itemtype == "~":
+                        itemtype = "%"
                         if 'e' in new_hsh:
                             tmp_s = parse_str(new_hsh['s'], new_hsh.get('z', None))
                             tmp_e = parse_period(new_hsh['e'])
