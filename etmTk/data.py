@@ -6321,7 +6321,10 @@ def export_json(file2uuids, uuid2hash, options={}):
                                 finished = False
 
                         if 'f' in new_hsh and not finished:
-                            del new_hsh['f']
+
+                            print('leaving f in', new_hsh)
+
+                            # del new_hsh['f']
 
                         q_keys = [x for x in jobs]
                         q_keys.sort()
@@ -6390,8 +6393,9 @@ def export_json(file2uuids, uuid2hash, options={}):
                                 del new_hsh['z']
                         elif s.hour == s.minute == 0:
                             # date-only
-                            if 'z' in new_hsh:
-                                del new_hsh['z']
+                            pass
+                            # if 'z' in new_hsh:
+                            #     del new_hsh['z']
                     if '_group_summary' in new_hsh:
                         new_hsh['summary'] = new_hsh['_group_summary']
                         del new_hsh['_group_summary']
