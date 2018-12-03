@@ -6301,7 +6301,6 @@ def export_json(file2uuids, uuid2hash, options={}):
                         count = 0
                         jobs = {}
                         # make sure jobs are in q order
-                        finished = True
                         for job in new_hsh['_j']:
                             q = job['q']
                             jobs.setdefault(q, []).append(job)
@@ -6312,23 +6311,12 @@ def export_json(file2uuids, uuid2hash, options={}):
                                 for pair in job['h']:
                                     tmp.append(pair[0].strftime("%Y%m%dT%H%M"))
                                 job['h'] = tmp
-                            else:
-                                finished = False
 
                             if 'f' in job:
                                 job['f'] = job['f'][0][0].strftime("%Y%m%dT%H%M")
-                            else:
-                                finished = False
-
-                        if 'f' in new_hsh and not finished:
-
-                            print('leaving f in', new_hsh)
-
-                            # del new_hsh['f']
 
                         q_keys = [x for x in jobs]
                         q_keys.sort()
-                        q_count = 0
                         prereqs = []
                         for q_key in q_keys:
                             tmp = []
