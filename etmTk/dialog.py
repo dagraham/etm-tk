@@ -656,12 +656,12 @@ class SimpleEditor(Toplevel):
         logger.debug('target: {0}'.format(target))
         if target:
             where = self.text.search(target, INSERT, nocase=1)
-        if where:
-            pastit = where + ('+%dc' % len(target))
-            self.text.tag_add(FOUND, where, pastit)
-            self.text.mark_set(INSERT, pastit)
-            self.text.see(INSERT)
-            self.text.focus()
+            if where:
+                pastit = where + ('+%dc' % len(target))
+                self.text.tag_add(FOUND, where, pastit)
+                self.text.mark_set(INSERT, pastit)
+                self.text.see(INSERT)
+                self.text.focus()
 
     def cancel(self, e=None):
         t = self.find_text.get()
