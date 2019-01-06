@@ -5,7 +5,7 @@ import glob
 
 import sys
 
-INSTALL_REQUIRES = ["python-dateutil>=1.5", "PyYaml>=3.10"]
+INSTALL_REQUIRES = ["python-dateutil>=1.5", "ruamel.yaml>=0.15.80"]
 EXTRAS_REQUIRE = {"icalendar": ["icalendar>=3.8.4", "pytz>=2015.1"]}
 
 APP = ['etm']

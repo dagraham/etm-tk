@@ -6200,21 +6200,27 @@ def export_json(file2uuids, uuid2hash, options={}):
     filetimes = {}
 
     for fp, rp in filelist:
-        atime = os.path.getatime(fp)
-        mtime = os.path.getmtime(fp)
-        filetimes[rp] = (mtime, max(atime - mtime, 86400))
+        atime = int(os.path.getatime(fp))
+        ctime = int(os.path.getctime(fp))
+        mtime = int(os.path.getmtime(fp))
+        # filetimes[rp] = (ctime, max(mtime - ctime, 86400))
+        mincm = min(ctime, mtime)
+        # filetimes[rp] = (mincm, max(atime-mincm, 3600))
+        filetimes[rp] = (mincm,  3600)
 
     # uuids for jobs will have etm:NN appended - we only want one copy
     # e.g., b63c362940f147a1ae8404d8265fa4bdetm:01
-    for rp in file2uuids:
+    rps = [x for x in file2uuids]
+    rps.sort()
+    for rp in rps:
         this_calendar = None
+        intervals = len(file2uuids[rp])
+        stime, diff = filetimes[rp]
+        delta = int(diff / intervals)
         # this_lst = []  # for error logging
         for name, regex in cal_tuples:
             if regex.match(rp):
                 this_calendar = name
-                intervals = len(file2uuids[rp])
-                stime, diff = filetimes[rp]
-                delta = diff / intervals
                 last_uid = ""
                 for uid in file2uuids[rp]:
                     if uid[:32] == last_uid[:32]:
@@ -6222,7 +6228,7 @@ def export_json(file2uuids, uuid2hash, options={}):
                         continue
                     last_uid = uid
                     secs = int(uniform(stime, stime + delta))
-                    id = int(datetime.fromtimestamp(secs).strftime("%Y%m%d%H%M%S%f"))
+                    id = datetime.fromtimestamp(secs).strftime("%Y%m%d%H%M%S%f")
                     stime += delta
                     old_hsh = uuid2hash[uid]
                     new_hsh = deepcopy(old_hsh)
