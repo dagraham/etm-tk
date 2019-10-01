@@ -4241,7 +4241,7 @@ or 0 to expand all branches completely.""")
 
                 if item_type:
                     # This hack avoids encoding issues under python 2
-                    col1 = "{0} {1}".format(id2Type[item_type], col1)
+                    col1 = "{0} {1}".format(id2Type[item_type], col1.replace('\n', ' '))
 
                 if type(col3) == int:
                     col3 = '%s' % col3
