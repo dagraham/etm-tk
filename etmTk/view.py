@@ -216,6 +216,13 @@ class App(Tk):
 
         style = self.options['style']
         s = ttk.Style()
+
+        # Fix broken tkinter Treeview colors for Python3.7+
+        # Fix source: https://bugs.python.org/issue36468
+        def fixed_map(option):
+            return [elm for elm in s.map('Treeview', query_opt=option) if elm[:2] != ('!disabled', '!selected')]
+        s.map('Treeview', foreground=fixed_map('foreground'), background=fixed_map('background'))
+
         styles = s.theme_names()
         if style in styles:
             logger.info("using style {0}".format(style))
