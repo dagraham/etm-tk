@@ -562,10 +562,7 @@ class SimpleEditor(Toplevel):
         if text.startswith("BEGIN:VCALENDAR"):
             text = import_ical(vcal=text)
         logger.debug("text: {0} '{01}'".format(type(text), text))
-        if self.edithsh and 'i' in self.edithsh:
-            uid = self.edithsh['i']
-        else:
-            uid = None
+        uid = self.edithsh['i'] if self.edithsh and 'i' in self.edithsh else None
         hsh, msg = str2hsh(text, options=self.options, uid=uid)
         logger.debug('itemtype: "{0}"'.format(hsh.get('itemtype', 'none')))
 
@@ -581,12 +578,12 @@ class SimpleEditor(Toplevel):
                         warn = _("Is {0} the starting time you intended?".format(fmt_time(dt, options=self.options)))
                     dtfmt = fmt_shortdatetime(hsh['s'], self.options)
                 else:
-                    if not dt.hour and not dt.minute:
+                    if not (dt.hour or dt.minute):
                         dtfmt = fmt_date(dt, short=True)
                     else:
                         dtfmt = fmt_shortdatetime(hsh['s'], self.options)
                 post = _(" starting {0}.").format(dtfmt)
-            else:  # unscheduled
+            else:    # unscheduled
                 pre = _("Unscheduled ")
 
             prompt = "{0}{1}{2}".format(pre, type2Text[hsh['itemtype']], post)
@@ -621,10 +618,7 @@ class SimpleEditor(Toplevel):
                     except:
                         repsfmt = [unicode(x.strftime("%X %x")) for x in reps]
                     logger.debug("{0}: {1}".format(showing_all, repsfmt))
-                    if showing_all:
-                        reps = ALLREPS
-                    else:
-                        reps = SOMEREPS
+                    reps = ALLREPS if showing_all else SOMEREPS
                     prompt = "{0}, {1}:\n\n  {2}".format(prompt, reps, "\n  ".join(repsfmt))
             else:
                 warn = "No repetitions were generated.\nConsider removing the @r entry."
@@ -989,10 +983,7 @@ class Timer():
         # reset idle
         self.idletime = 0 * ONEMINUTE
         if self.activeTimers:
-            if self.currentStatus == RUNNING:
-                self.idlestart = None
-            else:
-                self.idlestart = datetime.now()
+            self.idlestart = None if self.currentStatus == RUNNING else datetime.now()
         else:
             self.idlestart = None
             self.idleactive = False
@@ -1190,17 +1181,14 @@ class Timer():
         if not self.selected:
             return
 
-        if self.currentStatus == PAUSED:
-            if self.idlestart:
-                self.idletime += datetime.now() - self.idlestart
-                self.idlestart = None
+        if self.currentStatus == PAUSED and self.idlestart:
+            self.idletime += datetime.now() - self.idlestart
+            self.idlestart = None
 
         summary = self.selected
         if summary not in self.activeTimers:
             # new timer
-            hsh = {}
-            hsh['total'] = 0 * ONEMINUTE
-            hsh['stop'] = datetime.now()
+            hsh = {'total': 0 * ONEMINUTE, 'stop': datetime.now()}
         else:
             hsh = self.activeTimers[summary]
 
@@ -1290,8 +1278,7 @@ class Timer():
 
         if running:
             # currentStatus == RUNNING
-            hsh = {}
-            hsh['total'] = 0 * ONEMINUTE
+            hsh = {'total': 0 * ONEMINUTE}
             hsh['start'] = hsh['stop'] = now
             self.activeTimers[self.currentTimer] = hsh
         else:
@@ -1308,7 +1295,7 @@ class Timer():
         """
 
         """
-        if not self.activeTimers or not self.currentTimer:
+        if not (self.activeTimers and self.currentTimer):
             return
 
         hsh = self.activeTimers[self.currentTimer]
@@ -1352,7 +1339,7 @@ class Timer():
         """
         Return the status of the timers for the status bar
         """
-        if not self.activeTimers and not self.idlestart and not self.idletime:
+        if not (self.activeTimers or self.idlestart or self.idletime):
             return "", ""
         idlestatus = ""
         now = datetime.now()
@@ -1451,10 +1438,7 @@ class FileChoice(object):
         self.value = None
         self.prefix = prefix
         self.list = list
-        if prefix and start:
-            self.start = relpath(start, prefix)
-        else:
-            self.start = start
+        self.start = relpath(start, prefix) if prefix and start else start
         self.ext = ext
         self.new = new
 
@@ -1931,7 +1915,10 @@ class OptionsDialog():
                     txt = self.options[i][0]
                     self.check_values[i] = BooleanVar(self.parent)
                     self.check_values[i].set(self.options[i][1])
-                    Checkbutton(self.win, text=self.options[i][0], padx=20, variable=self.check_values[i]).pack(padx=10, anchor=W)
+                    Checkbutton(
+                        self.win, text=txt, padx=20, variable=self.check_values[i]
+                    ).pack(padx=10, anchor=W)
+
         box = Frame(self.win)
         box.configure(bg=BGCOLOR, highlightcolor=HLCOLOR)
         # if list:

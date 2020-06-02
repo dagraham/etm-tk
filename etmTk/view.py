@@ -1096,13 +1096,12 @@ class App(Tk):
     def toggleLabels(self, e=None):
         if e and e.char != "l":
             return
+        width0 = self.tree.column('#0')['width']
         if self.labels:
-            width0 = self.tree.column('#0')['width']
             self.tree.column('#0', width=width0 + self.col2_width)
             self.tree.column('#1', width=0)
             self.labels = False
         else:
-            width0 = self.tree.column('#0')['width']
             self.tree.column('#0', width=width0 - self.col2_width)
             self.tree.column('#1', width=self.col2_width)
             self.labels = True
@@ -1173,11 +1172,7 @@ class App(Tk):
         if self.default_calendars:
             prompt = _("Display items from calendars selected below.")
             title = CALENDARS
-            if self.weekly or self.monthly:
-                master = self.canvas
-            else:
-                master = self.tree
-
+            master = self.canvas if self.weekly or self.monthly else self.tree
             values = OptionsDialog(parent=self, master=master, title=title, prompt=prompt, opts=loop.calendars, radio=False, yesno=False).getValue()
 
             if values != loop.calendars:
@@ -1236,10 +1231,7 @@ class App(Tk):
             os.startfile(path)
             return()
 
-        if mac:
-            cmd = 'open' + " {0}".format(path)
-        else:
-            cmd = 'xdg-open' + " {0}".format(path)
+        cmd = 'open' + " {0}".format(path) if mac else 'xdg-open' + " {0}".format(path)
         self.check_output(cmd)
         return
 
@@ -1250,12 +1242,12 @@ class App(Tk):
         fo.close()
         if windoz:
             os.startfile(loop.tmpfile, "print")
-            return
         else:
             cmd = "lp -s -o media='letter' -o cpi=12 -o lpi=8 -o page-left=48 -o page-right=48 -o page-top=48 -o page-bottom=48 {0}\n".format(loop.tmpfile)
             # cmd = "lpr -l {0}".format(loop.tmpfile)
             self.check_output(cmd)
-            return
+
+        return
 
     def showUserDetails(self, e=None):
         if not self.itemSelected or 'u' not in self.itemSelected:
@@ -1339,28 +1331,26 @@ returns:
         # hack to avoid Ctrl-n activation
         if e and e.char != "n":
             return
-        if self.weekly or self.monthly:
-            master = self.canvas
-        else:
-            master = self.tree
+        master = self.canvas if self.weekly or self.monthly else self.tree
         if self.view in [AGENDA, WEEK, MONTH]:
             if self.active_date:
-                if self.itemSelected:
-                    if 's' in self.itemSelected:
-                        text = " @s {0}".format(self.active_date)
-                    elif 'c' in self.itemSelected:
-                        text = " @c {0}".format(self.itemSelected['c'])
-                    else:
-                        text = " "
-                else:
+                if (
+                    self.itemSelected
+                    and 's' in self.itemSelected
+                    or not self.itemSelected
+                ):
                     text = " @s {0}".format(self.active_date)
+                elif 'c' in self.itemSelected:
+                    text = " @c {0}".format(self.itemSelected['c'])
+                else:
+                    text = " "
             elif self.canvas_date:
                 text = " @s {0}".format(self.canvas_date)
             else:
                 text = " "
             changed = SimpleEditor(parent=self, master=master, start=text, options=loop.options).changed
         elif self.view in [KEYWORD, NOTE] and self.itemSelected:
-            if self.itemSelected and 'k' in self.itemSelected:
+            if 'k' in self.itemSelected:
                 text = " @k {0}".format(self.itemSelected['k'])
             else:
                 text = ""
@@ -1402,10 +1392,7 @@ returns:
                 _("this and all subsequent instances"),
                 _("all instances")]
 
-        if self.weekly or self.monthly:
-            master = self.canvas
-        else:
-            master = self.tree
+        master = self.canvas if self.weekly or self.monthly else self.tree
         index, value = OptionsDialog(parent=self, master=master, title=_("instance: {0}").format(instance), prompt=prompt, opts=opt_lst, yesno=False).getValue()
         return index, value
 
@@ -1434,11 +1421,7 @@ returns:
                 return
             choice = 3
 
-        if self.weekly or self.monthly:
-            master = self.canvas
-        else:
-            master = self.tree
-
+        master = self.canvas if self.weekly or self.monthly else self.tree
         hsh_cpy = deepcopy(self.itemSelected)
         hsh_cpy['fileinfo'] = None
 
@@ -1675,11 +1658,7 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
         ret = loop.delete_item()
 
         self.updateAlerts()
-        if self.weekly:
-            self.canvas.focus_set()
-            self.updateDay()
-            self.showWeek()
-        elif self.monthly:
+        if self.weekly or self.monthly:
             self.canvas.focus_set()
             self.updateDay()
             self.showWeek()
@@ -1874,10 +1853,7 @@ Adding item to {1} failed - aborted removing item from {2}""".format(
             return
         titlefile = os.path.normpath(relpath(file, loop.options['datadir']))
         logger.debug('file: {0}; config: {1}'.format(file, config))
-        if self.weekly or self.monthly:
-            master = self.canvas
-        else:
-            master = self.tree
+        master = self.canvas if self.weekly or self.monthly else self.tree
         changed = SimpleEditor(parent=self, master=master, file=file, line=line, options=loop.options, title=titlefile).changed
         logger.debug('changed: {0}'.format(changed))
         if changed:

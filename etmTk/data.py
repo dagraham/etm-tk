@@ -41,10 +41,7 @@ def setup_logging(level, etmdir=None):
         '5': logging.CRITICAL
     }
 
-    if level in log_levels:
-        loglevel = log_levels[level]
-    else:
-        loglevel = log_levels['3']
+    loglevel = log_levels.get(level, log_levels['3'])
 
     if os.path.isdir(etmdir):
         logfile = os.path.normpath(os.path.abspath(os.path.join(etmdir, "etmtk_log.txt")))
@@ -109,15 +106,13 @@ else:
 
 def s2or3(s):
     if python_version == 2:
-        if type(s) is unicode:
+        if type(s) is unicode or type(s) is not str:
             return s
-        elif type(s) is str:
+        else:
             try:
                 return unicode(s, term_encoding)
             except ValueError:
                 logger.error('s2or3 exception: {0}'.format(s))
-        else:
-            return s
     else:
         return s
 
@@ -492,15 +487,9 @@ def commandShortcut(s):
     Produce label, command pairs from s based on Command for OSX
     and Control otherwise.
     """
-    if s.upper() == s and s.lower() != s:
-        shift = "Shift-"
-    else:
-        shift = ""
-    if mac:
-        # return "{0}Cmd-{1}".format(shift, s), "<{0}Command-{1}>".format(shift, s)
-        return "{0}Ctrl-{1}".format(shift, s.upper()), "<{0}Control-{1}>".format(shift, s)
-    else:
-        return "{0}Ctrl-{1}".format(shift, s.upper()), "<{0}Control-{1}>".format(shift, s)
+    shift = "Shift-" if s.upper() == s and s.lower() != s else ""
+    # return "{0}Cmd-{1}".format(shift, s), "<{0}Command-{1}>".format(shift, s)
+    return "{0}Ctrl-{1}".format(shift, s.upper()), "<{0}Control-{1}>".format(shift, s)
 
 
 def optionShortcut(s):
@@ -508,10 +497,7 @@ def optionShortcut(s):
     Produce label, command pairs from s based on Command for OSX
     and Control otherwise.
     """
-    if s.upper() == s and s.lower() != s:
-        shift = "Shift-"
-    else:
-        shift = ""
+    shift = "Shift-" if s.upper() == s and s.lower() != s else ""
     if mac:
         return "{0}Alt-{1}".format(shift, s.upper()), "<{0}Option-{1}>".format(shift, s)
     else:
@@ -540,10 +526,7 @@ def dt_to_str(dt, s):
 
 def get_week(dt):
     yn, wn, dn = dt.isocalendar()
-    if dn > 1:
-        days = dn - 1
-    else:
-        days = 0
+    days = dn - 1 if dn > 1 else 0
     weekbeg = dt - days * ONEDAY
     weekend = dt + (6 - days) * ONEDAY
     ybeg = weekbeg.year
@@ -560,8 +543,7 @@ def get_week(dt):
         header = "{0} - {1}".format(
             fmt_dt(weekbeg, '%b %d, %Y'), fmt_dt(weekend, '%b %d, %Y'))
     header = leadingzero.sub('', header)
-    theweek = "{0} {1}: {2}".format(_("Week"), "{0:02d}".format(wn), header)
-    return theweek
+    return "{0} {1}: {2}".format(_("Week"), "{0:02d}".format(wn), header)
 
 
 from etmTk.v import version
@@ -589,10 +571,7 @@ else:
     default_style = 'default'
 
 # used in hack to prevent dialog from hanging under os x
-if mac:
-    AFTER = 200
-else:
-    AFTER = 1
+AFTER = 200 if mac else 1
 
 
 class TimeIt(object):
@@ -745,10 +724,7 @@ def pathSearch(filename):
 
 
 def getMercurial():
-    if windoz:
-        hg = pathSearch('hg.exe')
-    else:
-        hg = pathSearch('hg')
+    hg = pathSearch('hg.exe') if windoz else pathSearch('hg')
     if hg:
         logger.debug('found hg: {0}'.format(hg))
         base_command = "hg -R {work}"
@@ -764,10 +740,7 @@ def getMercurial():
 
 
 def getGit():
-    if windoz:
-        git = pathSearch('git.exe')
-    else:
-        git = pathSearch('git')
+    git = pathSearch('git.exe') if windoz else pathSearch('git')
     if git:
         logger.debug('found git: {0}'.format(git))
         base_command = "git --git-dir {repo} --work-tree {work}"
